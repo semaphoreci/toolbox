@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+IFS=$'\n\t'
+
+git clone $SEMAPHORE_GIT_URL $SEMAPHORE_PROJECT_DIR
+cd $SEMAPHORE_PROJECT_DIR
+git reset -q --hard $SEMAPHORE_GIT_REVISION
+cd -
