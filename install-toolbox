@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+IFS=$'\n\t'
+
+sudo ln -sf ~/.toolbox/checkout /usr/bin/checkout
+sudo chmod +x /usr/bin/checkout
