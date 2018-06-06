@@ -5,3 +5,9 @@ IFS=$'\n\t'
 
 sudo ln -sf ~/.toolbox/checkout /usr/bin/checkout
 sudo chmod +x /usr/bin/checkout
+
+sudo ln -sf ~/.toolbox/retry /usr/bin/retry
+sudo chmod +x /usr/bin/retry
+
+sudo ln -sf ~/.toolbox/ssh-session-cli /usr/bin/semaphore
+sudo chmod +x /usr/bin/semaphore
