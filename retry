@@ -1,0 +1,66 @@
+#!/bin/bash
+#
+# Copied from: https://raw.githubusercontent.com/renderedtext/scripts/8f67b78cef7f5a7556777f59a5f290db8b23abe1/utility/retry
+#
+# Retries a command several times.
+#
+# Options:
+#   -t, --times  - Number of times to retry the command (default: 3)
+#   -s, --sleep  - Number of seconds to sleep between retries (default: 0)
+#
+
+function retry_execution {
+  local __n__=3;       # retry 3 times by default
+  local __sleep__=0; # don't sleep by default
+
+  # parsing command line options
+
+  while true; do
+    case "$1" in
+
+      -t|--times)
+        shift   # drop --times from the args
+        __n__="$1"  # $1 contains the number of iterations
+        shift
+        ;;
+
+      -s|--sleep)
+        shift             # drop --sleep from the args
+        __sleep__="$1"  # $1 contains the sleep value
+        shift
+        ;;
+
+      *)
+        break;  # no more args to parse
+
+    esac
+  done
+
+
+  # executing command
+
+  local __cmd__="$@";
+  local __result__="0";
+
+  for __i__ in $(seq 1 $__n__); do
+    eval "$__cmd__";
+
+    __result__="$?";
+    # echo "$__result__";
+
+    if [ $__result__ -eq "0" ]; then
+      exit 0; # command executed succesfully
+    else
+      if [[ $__i__ == $__n__ ]]; then
+        echo "[$__i__/$__n__] Execution Failed with exit status $__result__. No more retries."
+
+        exit $__result__; # exit with the same exit status as the invoked command
+      else
+        echo "[$__i__/$__n__] Execution Failed with exit status $__result__. Retrying."
+        sleep $__sleep__;
+      fi
+    fi
+  done
+}
+
+retry_execution $@
