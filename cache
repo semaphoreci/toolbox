@@ -1,1 +1,8 @@
+#!/usr/bin/env bash
 
+set -eo pipefail
+IFS=$'\n\t'
+
+echo -n "Restoring cache..."
+sleep 5
+echo "Done."
