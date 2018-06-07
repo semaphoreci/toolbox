@@ -11,3 +11,6 @@ sudo chmod +x /usr/bin/retry
 
 sudo ln -sf ~/.toolbox/ssh-session-cli /usr/bin/semaphore
 sudo chmod +x /usr/bin/semaphore
+
+sudo ln -sf ~/.toolbox/cache /usr/bin/semaphore
+sudo chmod +x /usr/bin/cache
