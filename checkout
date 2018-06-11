@@ -4,5 +4,8 @@ set -eo pipefail
 IFS=$'\n\t'
 
 git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
+#
+# That command is not executed
+#
 cd $SEMAPHORE_GIT_DIR
 git reset -q --hard $SEMAPHORE_GIT_SHA
