@@ -4,5 +4,9 @@ set -eo pipefail
 IFS=$'\n\t'
 
 git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
+#
+# BUG? After a checkout command
+# the cwd is still /home/runner
+#
 cd $SEMAPHORE_GIT_DIR
 git reset -q --hard $SEMAPHORE_GIT_SHA
