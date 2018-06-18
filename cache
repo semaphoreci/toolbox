@@ -1,8 +1,312 @@
-#!/usr/bin/env bash
+#!/bin/bash
+#
+# Storing and fetching a Semaphore project's dependency cache files
 
-set -eo pipefail
-IFS=$'\n\t'
+VERSION=0.1
+SSH_PRIVATE_KEY_PATH="/home/vagrant/.ssh/hetzner_storage_bx20"
 
-echo -n "Restoring cache..."
-sleep 5
-echo "Done."
+################################################################################
+# Send the files identified by the key, to the cache repository using SFTP
+# Globals:
+#   SEMAPHORE_CACHE_KEY
+#   SEMAPHORE_LOCAL_CACHE_PATHS
+# Arguments:
+#   cache_key, path
+# Returns:
+#   None
+################################################################################
+cache::store() {
+  if [[ $# -ne 4 ]]; then
+    cache::err "Incorrect number of arguments!"
+  fi
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      "-k" | "--key")
+        SEMAPHORE_CACHE_KEY=$2
+
+        if [[ -z $SEMAPHORE_CACHE_KEY ]]; then
+          cache::err "Cache key can't be empty!"
+        fi
+
+        readonly SEMAPHORE_CACHE_KEY
+
+        shift 2
+        ;;
+      # TODO: can have multiple paths, separated with ,
+      "-p" | "--path")
+        SEMAPHORE_LOCAL_CACHE_PATHS=$2
+
+        if [[ -z $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
+          cache::err "Cache path can't be empty!"
+        fi
+
+        readonly SEMAPHORE_LOCAL_CACHE_PATHS
+        shift 2
+        ;;
+      *)
+        cache::err "Invalid arguments!"
+        ;;
+    esac
+  done
+
+  cache::sftp_put
+}
+
+
+################################################################################
+# Wrapper around SFTP 'put'
+# Globals:
+#   SEMAPHORE_CACHE_KEY
+#   SEMAPHORE_LOCAL_CACHE_PATHS
+# Arguments:
+#   None
+# Returns:
+#   None
+################################################################################
+cache::sftp_put() {
+  for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
+    if ! [[ -e $local_path ]]; then
+      cache::log "'${local_path}' doesn't exist locally, skipping."
+
+      continue
+    fi
+
+    cache::log "Uploading '${local_path}'..."
+    cache::sftp "put -r ${local_path} ${SEMAPHORE_CACHE_KEY}"
+  done
+
+  cache::log "Showing remaining space on remote."
+  cache::sftp "df -h"
+}
+
+
+################################################################################
+# Download the files identified by the key to the path
+# Globals:
+#   SEMAPHORE_CACHE_BASE_URL
+#   SEMAPHORE_SEMAPHORE_CACHE_KEY
+# Arguments:
+#   SEMAPHORE_CACHE_KEY
+# Returns:
+#   None
+################################################################################
+cache::restore() {
+  if [[ $# -ne 2 ]]; then
+    cache::err "Incorrect number of arguments!"
+  fi
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      "-k" | "--key")
+        SEMAPHORE_CACHE_KEY=$2
+
+        if [[ -z $SEMAPHORE_CACHE_KEY ]]; then
+          cache::err "Cache key can't be empty!"
+        fi
+
+        readonly SEMAPHORE_CACHE_KEY
+
+        shift 2
+        ;;
+      *)
+        cache::err "Invalid argument!"
+    esac
+  done
+
+  cache::sftp_get
+}
+
+
+################################################################################
+# Wrapper around SFTP 'get'
+# Globals:
+#   SEMAPHORE_CACHE_KEY
+# Arguments:
+#   None
+# Returns:
+#   None
+################################################################################
+cache::sftp_get() {
+  cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
+  cache::sftp "cd ${SEMAPHORE_CACHE_KEY}\nget -r *"
+  cache::log "Transfer completed."
+}
+
+
+################################################################################
+# Wrapper around SFTP
+# Globals:
+#   SSH_PRIVATE_KEY_PATH
+#   SEMAPHORE_CACHE_URL
+# Arguments:
+#   command
+# Returns:
+#   None
+################################################################################
+cache::sftp() {
+  local sftp_command
+  local command_log
+  local command_status
+
+  sftp_command=$1
+
+  if [[ -z $sftp_command ]]; then
+    cache::err "SFTP command can't be empty!"
+  fi
+
+  command_log=$(echo -e "$sftp_command" | sftp -4 -i $SSH_PRIVATE_KEY_PATH $SEMAPHORE_CACHE_URL)
+  command_status=$?
+
+  if [[ $command_status -ne 0 ]]; then
+    cache::err "Error while executing SFTP command '$sftp_command'"
+  fi
+
+  cache::log "SFTP command ran successfully.\nLog:\n---\n${command_log}\n---\n"
+}
+
+
+################################################################################
+# Prints the program usage
+# Globals:
+#   VERSION
+# Arguments:
+#   None
+# Returns:
+#   None
+################################################################################
+cache::print_usage() {
+  echo "Usage: cache ${VERSION} | Utility for saving and fetching dependency caches"
+  echo -e "\ncache [store|restore] opts"
+  echo "store opts:"
+  echo -e "\t --key CACHE_KEY, defines the cache revision, where the files will be stored"
+  echo -e "\t --path LOCAL_PATH, defines the local path(s), which should be uploaded to the cache storage"
+  echo "restore opts:"
+  echo -e "\t --key CACHE_KEY, defines which remote cache content will be pulled"
+}
+
+
+################################################################################
+# Cheks the presence of the SSH key which is used to access the cache storage
+# Globals:
+#   none
+# Arguments:
+#   none
+# Returns:
+#   none
+################################################################################
+cache::check_ssh_key() {
+  local ssh_key_fingerprint
+
+  if ! [[ -e $SSH_PRIVATE_KEY_PATH ]]; then
+    cache::err "Private SSH key missing! (${SSH_PRIVATE_KEY_PATH})"
+  fi
+
+  ssh_key_fingerprint=$(ssh-keygen -l -f $SSH_PRIVATE_KEY_PATH)
+
+  if [[ $? != 0 ]]; then
+    cache::err $ssh_key_fingerprint
+  fi
+
+  cache::log "SSH key fingerprint (MD5): ${ssh_key_fingerprint}"
+}
+
+
+################################################################################
+# Checks if 'sftp' is available
+# Globals:
+#   none
+# Arguments:
+#   none
+# Returns:
+#   none
+################################################################################
+cache::check_sftp() {
+  if which sftp &> /dev/null; then
+    return 0;
+  else
+    cache::err "The 'sftp' executable is missing or not in the \$PATH"
+  fi
+}
+
+
+################################################################################
+# Checks if the required environment variables are set
+# Globals:
+#   none
+# Arguments:
+#   none
+# Returns:
+#   none
+################################################################################
+cache::check_env() {
+  if [[ -z $SEMAPHORE_CACHE_URL ]]; then
+    cache::err "'SEMAPHORE_CACHE_URL' environment variable not set!"
+  fi
+}
+
+
+################################################################################
+# Helper function to show error messages and to terminate execution on error
+# Globals:
+#   none
+# Arguments:
+#   message
+# Returns:
+#   1
+################################################################################
+cache::err() {
+  echo -e "! [$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@\n" >&2
+
+  cache::print_usage
+
+  exit 1
+}
+
+
+################################################################################
+# Helper function to show log messages
+# Globals:
+#   none
+# Arguments:
+#   message
+# Returns:
+#   none
+################################################################################
+cache::log() {
+  echo -e "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@" >&2
+}
+
+
+################################################################################
+# The main entrypoint to the script. It initiates the store or restore actions.
+# Globals:
+#   none
+# Arguments:
+#   'restore', 'store'
+# Returns:
+#   none
+################################################################################
+cache::main() {
+  cache::check_sftp
+  cache::check_ssh_key
+  cache::check_env
+
+  case "$1" in
+    "restore" )
+      shift
+
+      cache::restore "$@"
+      ;;
+    "store" )
+      shift
+
+      cache::store "$@"
+      ;;
+    * )
+      cache::print_usage
+      ;;
+  esac
+}
+
+cache::main "$@"
