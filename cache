@@ -77,6 +77,7 @@ cache::lftp_put() {
 
     cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY_MD5}'..."
     cache::lftp "mkdir -p ${SEMAPHORE_CACHE_KEY_MD5}"
+    # TODO: --only-newer, download only newer files (-c won't work)
     cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY_MD5}/"
     cache::log "Upload complete."
   done
