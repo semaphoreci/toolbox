@@ -2,9 +2,7 @@
 #
 # Storing and fetching a Semaphore project's dependency cache files
 
-
 VERSION=0.1
-SSH_PRIVATE_KEY_PATH="/home/vagrant/.ssh/hetzner_storage_bx20"
 
 ################################################################################
 # Send the files identified by the key, to the cache repository using SFTP
@@ -256,6 +254,10 @@ cache::check_sftp() {
 cache::check_env() {
   if [[ -z $SEMAPHORE_CACHE_URL ]]; then
     cache::err "'SEMAPHORE_CACHE_URL' environment variable not set!"
+  fi
+
+  if [[ -z $SSH_PRIVATE_KEY_PATH ]]; then
+    cache::err "'SSH_PRIVATE_KEY_PATH' environment variable not set!"
   fi
 }
 
