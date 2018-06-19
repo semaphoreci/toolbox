@@ -2,6 +2,7 @@
 #
 # Storing and fetching a Semaphore project's dependency cache files
 
+
 VERSION=0.1
 SSH_PRIVATE_KEY_PATH="/home/vagrant/.ssh/hetzner_storage_bx20"
 
@@ -129,6 +130,14 @@ cache::restore() {
 ################################################################################
 cache::sftp_get() {
   cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
+
+  # check if directory exists
+  cache::sftp "cd ${SEMAPHORE_CACHE_KEY}" &> /dev/null
+
+  if [[ $E_DNT_EXST = 1 ]]; then
+    cache::err "Directory named under key '${SEMAPHORE_CACHE_KEY}' doesn't exist on remote!"
+  fi
+
   cache::sftp "cd ${SEMAPHORE_CACHE_KEY}\nget -r *"
   cache::log "Transfer completed."
 }
@@ -139,6 +148,7 @@ cache::sftp_get() {
 # Globals:
 #   SSH_PRIVATE_KEY_PATH
 #   SEMAPHORE_CACHE_URL
+#   E_DNT_EXST
 # Arguments:
 #   command
 # Returns:
@@ -155,11 +165,15 @@ cache::sftp() {
     cache::err "SFTP command can't be empty!"
   fi
 
-  command_log=$(echo -e "$sftp_command" | sftp -4 -i $SSH_PRIVATE_KEY_PATH $SEMAPHORE_CACHE_URL)
+  command_log=$(echo -e "$sftp_command" | sftp -4 -i $SSH_PRIVATE_KEY_PATH $SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
 
   if [[ $command_status -ne 0 ]]; then
     cache::err "Error while executing SFTP command '$sftp_command'"
+  fi
+
+  if [[ $command_log =~ 'No such file' ]]; then
+    E_DNT_EXST=1
   fi
 
   cache::log "SFTP command ran successfully.\nLog:\n---\n${command_log}\n---\n"
