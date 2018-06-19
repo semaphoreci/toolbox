@@ -129,7 +129,12 @@ cache::lftp_get() {
   cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
 
   cache::lftp "mirror ${SEMAPHORE_CACHE_KEY}/ ."
-  cache::log "Transfer completed."
+
+  if [[ $E_FLMSNG = 1 ]]; then
+    cache::log "File missing from remote. Skipping."
+  else
+    cache::log "Transfer completed."
+  fi
 }
 
 
@@ -159,18 +164,23 @@ cache::lftp() {
   command_status=$?
 
   # Ignore the error when creating a directory which is already present
-  if [[ $command_log =~ 'File already exists' ]]; then
+  if [[ $command_log =~ 'File already exists' ]] && [[ $lftp_command =~ 'mkdir' ]]; then
     W_FLAEX=1
 
     return
   fi
 
-  if [[ $command_status -ne 0 ]]; then
-    cache::log "Log:\n${command_log}"
-    cache::err "Error while executing LFTP command '$lftp_command'"
+  # Ignore the error fetching non-existent cache
+  if [[ $command_log =~ 'Access failed: No such file' ]] && [[ $lftp_command =~ 'mirror' ]]; then
+    E_FLMSNG=1
+
+    return
   fi
 
-  cache::log "LFTP command ran successfully.\nLog:\n---\n${command_log}\n---\n"
+  if [[ $command_status -ne 0 ]]; then
+    cache::log "Log:\n---\n${command_log}\n---\n"
+    cache::err "Error while executing LFTP command '$lftp_command'"
+  fi
 }
 
 
