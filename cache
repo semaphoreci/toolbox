@@ -28,7 +28,11 @@ cache::store() {
           cache::err "Cache key can't be empty!"
         fi
 
-        readonly SEMAPHORE_CACHE_KEY
+        if ! [[ -f $SEMAPHORE_CACHE_KEY ]]; then
+          cache::err "Cache key should be a regular file!"
+        fi
+
+        cache::calculate_key_md5
 
         shift 2
         ;;
@@ -56,7 +60,7 @@ cache::store() {
 ################################################################################
 # Wrapper around LFTP 'put'
 # Globals:
-#   SEMAPHORE_CACHE_KEY
+#   SEMAPHORE_CACHE_KEY_MD5
 #   SEMAPHORE_LOCAL_CACHE_PATHS
 # Arguments:
 #   None
@@ -71,9 +75,9 @@ cache::lftp_put() {
       continue
     fi
 
-    cache::log "Uploading '${local_path}'..."
-    cache::lftp "mkdir -p ${SEMAPHORE_CACHE_KEY}"
-    cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY}/"
+    cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY_MD5}'..."
+    cache::lftp "mkdir -p ${SEMAPHORE_CACHE_KEY_MD5}"
+    cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY_MD5}/"
     cache::log "Upload complete."
   done
 }
@@ -85,7 +89,7 @@ cache::lftp_put() {
 #   SEMAPHORE_CACHE_BASE_URL
 #   SEMAPHORE_SEMAPHORE_CACHE_KEY
 # Arguments:
-#   SEMAPHORE_CACHE_KEY
+#   None
 # Returns:
 #   None
 ################################################################################
@@ -103,7 +107,11 @@ cache::restore() {
           cache::err "Cache key can't be empty!"
         fi
 
-        readonly SEMAPHORE_CACHE_KEY
+        if ! [[ -f $SEMAPHORE_CACHE_KEY ]]; then
+          cache::err "Cache key should be a regular file!"
+        fi
+
+        cache::calculate_key_md5
 
         shift 2
         ;;
@@ -126,9 +134,9 @@ cache::restore() {
 #   None
 ################################################################################
 cache::lftp_get() {
-  cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
+  cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY_MD5}."
 
-  cache::lftp "mirror ${SEMAPHORE_CACHE_KEY}/ ."
+  cache::lftp "mirror ${SEMAPHORE_CACHE_KEY_MD5}/ ."
 
   if [[ $E_FLMSNG = 1 ]]; then
     cache::log "File missing from remote. Skipping."
@@ -180,6 +188,16 @@ cache::lftp() {
   if [[ $command_status -ne 0 ]]; then
     cache::log "Log:\n---\n${command_log}\n---\n"
     cache::err "Error while executing LFTP command '$lftp_command'"
+  fi
+}
+
+cache::calculate_key_md5() {
+  SEMAPHORE_CACHE_KEY_MD5=$(md5sum ${SEMAPHORE_CACHE_KEY})
+
+  if [[ $? -ne 0 ]]; then
+    cache::err "Failed to generate MD5 sum for the provided key. (${SEMAPHORE_CACHE_KEY})"
+  else
+    SEMAPHORE_CACHE_KEY_MD5=$(echo $SEMAPHORE_CACHE_KEY_MD5 | cut -d' ' -f1)
   fi
 }
 
