@@ -5,7 +5,7 @@
 VERSION=0.1
 
 ################################################################################
-# Send the files identified by the key, to the cache repository using SFTP
+# Send the files identified by the key, to the cache repository using LFTP
 # Globals:
 #   SEMAPHORE_CACHE_KEY
 #   SEMAPHORE_LOCAL_CACHE_PATHS
@@ -49,12 +49,12 @@ cache::store() {
     esac
   done
 
-  cache::sftp_put
+  cache::lftp_put
 }
 
 
 ################################################################################
-# Wrapper around SFTP 'put'
+# Wrapper around LFTP 'put'
 # Globals:
 #   SEMAPHORE_CACHE_KEY
 #   SEMAPHORE_LOCAL_CACHE_PATHS
@@ -63,7 +63,7 @@ cache::store() {
 # Returns:
 #   None
 ################################################################################
-cache::sftp_put() {
+cache::lftp_put() {
   for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
     if ! [[ -e $local_path ]]; then
       cache::log "'${local_path}' doesn't exist locally, skipping."
@@ -72,11 +72,10 @@ cache::sftp_put() {
     fi
 
     cache::log "Uploading '${local_path}'..."
-    cache::sftp "put -r ${local_path} ${SEMAPHORE_CACHE_KEY}"
+    cache::lftp "mkdir -p ${SEMAPHORE_CACHE_KEY}"
+    cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY}/"
+    cache::log "Upload complete."
   done
-
-  cache::log "Showing remaining space on remote."
-  cache::sftp "df -h"
 }
 
 
@@ -113,12 +112,12 @@ cache::restore() {
     esac
   done
 
-  cache::sftp_get
+  cache::lftp_get
 }
 
 
 ################################################################################
-# Wrapper around SFTP 'get'
+# Wrapper around LFTP 'get'
 # Globals:
 #   SEMAPHORE_CACHE_KEY
 # Arguments:
@@ -126,23 +125,16 @@ cache::restore() {
 # Returns:
 #   None
 ################################################################################
-cache::sftp_get() {
+cache::lftp_get() {
   cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
 
-  # check if directory exists
-  cache::sftp "cd ${SEMAPHORE_CACHE_KEY}" &> /dev/null
-
-  if [[ $E_DNT_EXST = 1 ]]; then
-    cache::err "Directory named under key '${SEMAPHORE_CACHE_KEY}' doesn't exist on remote!"
-  fi
-
-  cache::sftp "cd ${SEMAPHORE_CACHE_KEY}\nget -r *"
+  cache::lftp "mirror ${SEMAPHORE_CACHE_KEY}/ ."
   cache::log "Transfer completed."
 }
 
 
 ################################################################################
-# Wrapper around SFTP
+# Wrapper around LFTP
 # Globals:
 #   SSH_PRIVATE_KEY_PATH
 #   SEMAPHORE_CACHE_URL
@@ -152,29 +144,33 @@ cache::sftp_get() {
 # Returns:
 #   None
 ################################################################################
-cache::sftp() {
-  local sftp_command
+cache::lftp() {
+  local lftp_command
   local command_log
   local command_status
 
-  sftp_command=$1
+  lftp_command=$1
 
-  if [[ -z $sftp_command ]]; then
-    cache::err "SFTP command can't be empty!"
+  if [[ -z $lftp_command ]]; then
+    cache::err "LFTP command can't be empty!"
   fi
 
-  command_log=$(echo -e "$sftp_command" | sftp -4 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $SSH_PRIVATE_KEY_PATH $SEMAPHORE_CACHE_URL 2>&1)
+  command_log=$(echo -e "$lftp_command" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
 
+  # Ignore the error when creating a directory which is already present
+  if [[ $command_log =~ 'File already exists' ]]; then
+    W_FLAEX=1
+
+    return
+  fi
+
   if [[ $command_status -ne 0 ]]; then
-    cache::err "Error while executing SFTP command '$sftp_command'"
+    cache::log "Log:\n${command_log}"
+    cache::err "Error while executing LFTP command '$lftp_command'"
   fi
 
-  if [[ $command_log =~ 'No such file' ]]; then
-    E_DNT_EXST=1
-  fi
-
-  cache::log "SFTP command ran successfully.\nLog:\n---\n${command_log}\n---\n"
+  cache::log "LFTP command ran successfully.\nLog:\n---\n${command_log}\n---\n"
 }
 
 
@@ -215,7 +211,7 @@ cache::check_ssh_key() {
 
 
 ################################################################################
-# Checks if 'sftp' is available
+# Checks if 'lftp' is available
 # Globals:
 #   none
 # Arguments:
@@ -223,11 +219,11 @@ cache::check_ssh_key() {
 # Returns:
 #   none
 ################################################################################
-cache::check_sftp() {
-  if which sftp &> /dev/null; then
+cache::check_lftp() {
+  if which lftp &> /dev/null; then
     return 0;
   else
-    cache::err "The 'sftp' executable is missing or not in the \$PATH"
+    cache::err "The 'lftp' executable is missing or not in the \$PATH"
   fi
 }
 
@@ -244,6 +240,10 @@ cache::check_sftp() {
 cache::check_env() {
   if [[ -z $SEMAPHORE_CACHE_URL ]]; then
     cache::err "'SEMAPHORE_CACHE_URL' environment variable not set!"
+  fi
+
+  if [[ -z $SEMAPHORE_CACHE_USERNAME ]]; then
+    cache::err "'SEMAPHORE_CACHE_USERNAME' environment variable not set!"
   fi
 
   if [[ -z $SSH_PRIVATE_KEY_PATH ]]; then
@@ -294,7 +294,7 @@ cache::log() {
 #   none
 ################################################################################
 cache::main() {
-  cache::check_sftp
+  cache::check_lftp
   cache::check_ssh_key
   cache::check_env
 
