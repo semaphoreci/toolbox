@@ -163,7 +163,7 @@ cache::sftp() {
     cache::err "SFTP command can't be empty!"
   fi
 
-  command_log=$(echo -e "$sftp_command" | sftp -4 -i $SSH_PRIVATE_KEY_PATH $SEMAPHORE_CACHE_URL 2>&1)
+  command_log=$(echo -e "$sftp_command" | sftp -4 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $SSH_PRIVATE_KEY_PATH $SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
 
   if [[ $command_status -ne 0 ]]; then
@@ -208,19 +208,9 @@ cache::print_usage() {
 #   none
 ################################################################################
 cache::check_ssh_key() {
-  local ssh_key_fingerprint
-
   if ! [[ -e $SSH_PRIVATE_KEY_PATH ]]; then
     cache::err "Private SSH key missing! (${SSH_PRIVATE_KEY_PATH})"
   fi
-
-  ssh_key_fingerprint=$(ssh-keygen -l -f $SSH_PRIVATE_KEY_PATH)
-
-  if [[ $? != 0 ]]; then
-    cache::err $ssh_key_fingerprint
-  fi
-
-  cache::log "SSH key fingerprint (MD5): ${ssh_key_fingerprint}"
 }
 
 
