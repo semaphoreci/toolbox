@@ -337,6 +337,39 @@ cache::log() {
 }
 
 
+# TEMPORARY - REMOVE
+cache::load_ssh_key() {
+  eval $(ssh-agent)
+  ssh-add <( echo "-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAtYoWE75DcXbidMVhYSsUSw5ETT0LCNjY4AHseelNFX08tdvp
+gPE12VY8tqOpkU2KnC9WowCHIx6XhYa/220eRaJUTsvtXy7GmZ0tRwhu27axPVLA
+QB26FUh1m+pQaMh1KFFJLDwpkFsIYywGF3LcEVIBaP9PkRBDZYgy2sZrElJnjLJQ
+jANupmFkU9hwFTsFz8UZ9sbZGdHzJLWISN3UqPmSlbr8b7D1PpBKdgQqbWCDicDc
+ribN7Gr4NlAGLZTxOObPxbZM6KhFik50+/pkHSDDSwkP1vSzs4G180u5WkXbVNc/
+qMXAn0fLOMkMg88tBk7Oozv80tBMzkVfHCBDqQIDAQABAoIBAG7D4TKMrXPmmMes
+wvzZnxkojE4gR8JPJQyQv+umiMzqzAceNfvhsPx53LOHamfoywD+9TqhkNLB0Ku9
+CwTkMEtGf3BQhvXDgZOqzjyADbvrXXtQKVM1kBt6SaAnOIamgK1n42ClGKsmkBiK
+fPEDuPisc4XP+YlGRgkGMBlCZYQYUQ/a7Yij5X4B8MFv05F1nLyV48m5zs1j8UxV
+N6xo6NvDK1clneonYVK5ehJGiUXPItJcw0WZUsjMeH7YwtDKap5jSH5H6MhhH1ah
+aBe1vgIoyGT56UljXAr4qII+nz+Q+dzU+KCFvJfaBHbhOop61hlbwLt3vDl3fGBf
+pi716M0CgYEA7f7WbImUkIXfidmDCP0KVM+x18VF4pgHJzNUSTGoc/3NCDSOL/48
+srPO/6UZrq2WTZE8sioo6DCw1t3r2IdmQ9uPY5FWnJ5ZxBVFFSmB9irj/3ZW8Y9z
+idhuTUX37868u/Uh76BB9EVe7b8w0T1TZD9Krh6g2RfpxVRlAWZ8j1sCgYEAw0Xj
+BsgvJ0CNpCQYBqOP9aK/grQE6AseUff7x6L5mYPLa5pOtCEp7Bz+HqZTTrvjblTc
+z8bOdkDK7WwglloFjdRHrKAHUf+iJpMnVNeCikhQjoDIIH+5NgE6TGf1vNEHXmw7
+VlYN9FQUb4hfZCREtbrfUIGvBR7VGo7yDSreDEsCgYEAkwb3IrBP9oSt13Rnjhr8
+0e5JePonNVgkOyRrspgZ8CZgDuyg1qdiiieo/qfZWN9mVl8eNxbylJbX+LW6qNbk
+55DxYVp9Pl5ZKFjXh75Pymsu1TgfeDXd88+gPN630A9Q63EB2Q6RED326jtOBkWz
+id/L3AuR5OvwAHcluxq8YrcCgYEAhOhGU1FhNrgrL7MZXztoOmnhK1bXmBApPOUq
+S4DTnfckN0K5msSPwhMhqz7NqOMdMvUzrX/E+puzAtH7hBoVeakod4gcM2VouhSi
+So68XN5HZhalH+mO6AEB6ws/KJqlB1FnOaYsrUWk+xy4wHInCgH9CNCbjUKlDQSK
+Hwg0Re0CgYBL7Wv8o+IIDwdv/TvDtRk7xnp/gmZt/WB1ffzlA2CnTkwDNVIaMHu2
+0y02UqE7GS8E0l4tdJFmJu7yijsfFqVskICjnXYJ/5x336YVaEpZyvP0E/tLdrA2
+2xfD9T/MxUpki9HgXEAOBFRH53Z14daN+tm5QnLTyRR57/sK215CLA==
+-----END RSA PRIVATE KEY-----")
+}
+
+
 ################################################################################
 # The main entrypoint to the script. It initiates the store or restore actions.
 # Globals:
@@ -350,6 +383,9 @@ cache::main() {
   cache::check_lftp
   cache::check_ssh_key
   cache::check_env
+
+  # TODO: temporary -- only for testing
+  cache::load_ssh_key
 
   case "$1" in
     "restore" )
