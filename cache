@@ -2,7 +2,14 @@
 #
 # Storing and fetching a Semaphore project's dependency cache files
 
-VERSION=0.1
+VERSION=0.2
+
+# LFTP Errors
+E_NOSFL='Access failed: No such file'
+
+# Script errors
+E_FLMSNG=0 # file missing
+E_FLAE=0 # file already exists
 
 ################################################################################
 # Send the files identified by the key, to the cache repository using LFTP
@@ -62,6 +69,7 @@ cache::store() {
 # Globals:
 #   SEMAPHORE_CACHE_KEY_MD5
 #   SEMAPHORE_LOCAL_CACHE_PATHS
+#   E_FLMSNG
 # Arguments:
 #   None
 # Returns:
@@ -75,11 +83,18 @@ cache::lftp_put() {
       continue
     fi
 
-    cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY_MD5}'..."
-    cache::lftp "mkdir -p ${SEMAPHORE_CACHE_KEY_MD5}"
-    # TODO: --only-newer, download only newer files (-c won't work)
-    cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY_MD5}/"
-    cache::log "Upload complete."
+    # checks if the key is present
+    cache::lftp "ls ${SEMAPHORE_CACHE_KEY_MD5}"
+
+    if [[ $E_FLMSNG = 1 ]]; then
+      cache::lftp "mkdir -p ${SEMAPHORE_CACHE_KEY_MD5}"
+
+      cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY_MD5}'..."
+      cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY_MD5}/"
+      cache::log "Upload complete."
+    else
+      cache::log "Key '${SEMAPHORE_CACHE_KEY_MD5}' already present on remote. Skipping upload."
+    fi
   done
 }
 
@@ -129,6 +144,7 @@ cache::restore() {
 # Wrapper around LFTP 'get'
 # Globals:
 #   SEMAPHORE_CACHE_KEY
+#   E_FLMSNG
 # Arguments:
 #   None
 # Returns:
@@ -173,14 +189,20 @@ cache::lftp() {
   command_status=$?
 
   # Ignore the error when creating a directory which is already present
-  if [[ $command_log =~ 'File already exists' ]] && [[ $lftp_command =~ 'mkdir' ]]; then
+  if [[ "${command_log}" =~ 'File already exists' ]] && [[ "${lftp_command}" =~ 'mkdir' ]]; then
     W_FLAEX=1
 
     return
   fi
 
   # Ignore the error fetching non-existent cache
-  if [[ $command_log =~ 'Access failed: No such file' ]] && [[ $lftp_command =~ 'mirror' ]]; then
+  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'mirror' ]]; then
+    E_FLMSNG=1
+
+    return
+  fi
+
+  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'ls' ]]; then
     E_FLMSNG=1
 
     return
