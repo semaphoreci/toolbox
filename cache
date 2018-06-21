@@ -2,7 +2,7 @@
 #
 # Storing and fetching a Semaphore project's dependency cache files
 
-VERSION=0.2
+VERSION=0.3
 
 # LFTP Errors
 E_NOSFL='Access failed: No such file'
@@ -152,11 +152,13 @@ cache::restore() {
 cache::lftp_get() {
   cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY_MD5}."
 
-  cache::lftp "mirror ${SEMAPHORE_CACHE_KEY_MD5}/ ."
+  # checks if the key is present
+  cache::lftp "ls ${SEMAPHORE_CACHE_KEY_MD5}"
 
   if [[ $E_FLMSNG = 1 ]]; then
     cache::log "File missing from remote. Skipping."
   else
+    cache::lftp "mirror ${SEMAPHORE_CACHE_KEY_MD5}/ ."
     cache::log "Transfer completed."
   fi
 }
@@ -190,13 +192,6 @@ cache::lftp() {
   # Ignore the error when creating a directory which is already present
   if [[ "${command_log}" =~ 'File already exists' ]] && [[ "${lftp_command}" =~ 'mkdir' ]]; then
     W_FLAEX=1
-
-    return
-  fi
-
-  # Ignore the error fetching non-existent cache
-  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'mirror' ]]; then
-    E_FLMSNG=1
 
     return
   fi
@@ -271,10 +266,16 @@ cache::check_ssh_key() {
 #   none
 ################################################################################
 cache::load_ssh_key() {
-  cache::log "Loading SSH key into the agent"
+  local ssh_agent_error_log
 
-  eval $(ssh-agent) &> /dev/null
-  ssh-add <(cat ${SSH_PRIVATE_KEY_PATH})
+  cache::log "Loading SSH key into the agent"
+  ssh_agent_log=$(eval $(ssh-agent) 2>&1 && ssh-add <(cat ${SSH_PRIVATE_KEY_PATH}) 2>&1)
+
+  if [[ $? = 0 ]]; then
+    cache::log "SSH agent set"
+  else
+    cache::err "Error while configuring the SSH agent!\nLog: ${ssh_agent_log}"
+  fi
 }
 
 
