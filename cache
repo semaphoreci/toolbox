@@ -68,9 +68,7 @@ cache::store() {
 ################################################################################
 # Wrapper around LFTP 'put'
 # Globals:
-#   SEMAPHORE_CACHE_KEY_MD5
-#   SEMAPHORE_LOCAL_CACHE_PATHS
-#   E_FLMSNG
+#   None
 # Arguments:
 #   None
 # Returns:
@@ -105,8 +103,7 @@ cache::lftp_put() {
 ################################################################################
 # Download the files identified by the key to the path
 # Globals:
-#   SEMAPHORE_CACHE_BASE_URL
-#   SEMAPHORE_SEMAPHORE_CACHE_KEY
+#   SEMAPHORE_CACHE_KEY
 # Arguments:
 #   None
 # Returns:
@@ -148,7 +145,7 @@ cache::restore() {
 ################################################################################
 # Wrapper around LFTP 'get'
 # Globals:
-#   SEMAPHORE_CACHE_KEY
+#   SEMAPHORE_CACHE_KEY_MD5
 #   E_FLMSNG
 # Arguments:
 #   None
@@ -173,9 +170,11 @@ cache::lftp_get() {
 ################################################################################
 # Wrapper around LFTP
 # Globals:
-#   SSH_PRIVATE_KEY_PATH
+#   E_FLMSNG
+#   E_NOSFL
+#   W_FLAEX
 #   SEMAPHORE_CACHE_URL
-#   E_DNT_EXST
+#   SEMAPHORE_CACHE_USERNAME
 # Arguments:
 #   command
 # Returns:
@@ -214,6 +213,17 @@ cache::lftp() {
   fi
 }
 
+################################################################################
+# Calculates the md5 sum for the cache key (string, file)
+# Globals:
+#   SEMAPHORE_CACHE_KEY
+#   SEMAPHORE_CACHE_KEY_MD5
+# Arguments:
+#   command
+# Returns:
+#   None
+################################################################################
+
 cache::calculate_key_md5() {
   if [[ -f $SEMAPHORE_CACHE_KEY ]]; then
     cache::log "Cache key is a file. Calculating md5 hash..."
@@ -238,6 +248,8 @@ cache::calculate_key_md5() {
 # Prints the program usage
 # Globals:
 #   VERSION
+#   SEMAPHORE_CACHE_USERNAME
+#   SEMAPHORE_CACHE_URL
 # Arguments:
 #   None
 # Returns:
@@ -264,7 +276,7 @@ cache::print_usage() {
 ################################################################################
 # Cheks the presence of the SSH key which is used to access the cache storage
 # Globals:
-#   none
+#   SSH_PRIVATE_KEY_PATH
 # Arguments:
 #   none
 # Returns:
@@ -279,7 +291,7 @@ cache::check_ssh_key() {
 ################################################################################
 # Loads the private SSH key into the agent
 # Globals:
-#   none
+#   SSH_PRIVATE_KEY_PATH
 # Arguments:
 #   none
 # Returns:
@@ -320,7 +332,9 @@ cache::check_lftp() {
 ################################################################################
 # Checks if the required environment variables are set
 # Globals:
-#   none
+#   SEMAPHORE_CACHE_URL
+#   SEMAPHORE_CACHE_USERNAME
+#   SSH_PRIVATE_KEY_PATH
 # Arguments:
 #   none
 # Returns:
@@ -346,7 +360,7 @@ cache::check_env() {
 ################################################################################
 # Helper function to show error messages and to terminate execution on error
 # Globals:
-#   none
+#   DATE_FORMAT
 # Arguments:
 #   message
 # Returns:
@@ -362,7 +376,7 @@ cache::err() {
 ################################################################################
 # Helper function to show log messages
 # Globals:
-#   none
+#   DATE_FORMAT
 # Arguments:
 #   message
 # Returns:
