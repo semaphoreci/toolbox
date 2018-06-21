@@ -11,6 +11,9 @@ E_NOSFL='Access failed: No such file'
 E_FLMSNG=0 # file missing
 E_FLAE=0 # file already exists
 
+# Misc
+DATE_FORMAT='%H:%M %d/%m/%Y'
+
 ################################################################################
 # Send the files identified by the key, to the cache repository using LFTP
 # Globals:
@@ -22,6 +25,8 @@ E_FLAE=0 # file already exists
 #   None
 ################################################################################
 cache::store() {
+  cache::log "Storing content on cache repository..."
+
   if [[ $# -ne 4 ]]; then
     cache::err "Incorrect number of arguments!"
   fi
@@ -92,7 +97,7 @@ cache::lftp_put() {
       cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY_MD5}/"
       cache::log "Upload complete."
     else
-      cache::log "Key '${SEMAPHORE_CACHE_KEY_MD5}' already present on remote. Skipping upload."
+      cache::log "Key '${SEMAPHORE_CACHE_KEY_MD5}' already present on remote. Skipping."
     fi
   done
 }
@@ -109,6 +114,8 @@ cache::lftp_put() {
 #   None
 ################################################################################
 cache::restore() {
+  cache::log "* Restoring content from cache repository..."
+
   if [[ $# -ne 2 ]]; then
     cache::err "Incorrect number of arguments!"
   fi
@@ -271,9 +278,7 @@ cache::load_ssh_key() {
   cache::log "Loading SSH key into the agent"
   ssh_agent_log=$(eval $(ssh-agent) 2>&1 && ssh-add <(cat ${SSH_PRIVATE_KEY_PATH}) 2>&1)
 
-  if [[ $? = 0 ]]; then
-    cache::log "SSH agent set"
-  else
+  if ! [[ $? = 0 ]]; then
     cache::err "Error while configuring the SSH agent!\nLog: ${ssh_agent_log}"
   fi
 }
@@ -289,6 +294,8 @@ cache::load_ssh_key() {
 #   none
 ################################################################################
 cache::check_lftp() {
+  cache::log "Checking if LFPT is present"
+
   if which lftp &> /dev/null; then
     return 0;
   else
@@ -307,6 +314,8 @@ cache::check_lftp() {
 #   none
 ################################################################################
 cache::check_env() {
+  cache::log "Checking environment variables"
+
   if [[ -z $SEMAPHORE_CACHE_URL ]]; then
     cache::err "'SEMAPHORE_CACHE_URL' environment variable not set!"
   fi
@@ -331,9 +340,7 @@ cache::check_env() {
 #   1
 ################################################################################
 cache::err() {
-  echo -e "! [$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@\n" >&2
-
-  cache::print_usage
+  echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
 
   exit 1
 }
@@ -349,7 +356,7 @@ cache::err() {
 #   none
 ################################################################################
 cache::log() {
-  echo -e "[$(date +'%H:%M | %d-%m-%Y')]: $@" >&2
+  echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
 }
 
 ################################################################################
