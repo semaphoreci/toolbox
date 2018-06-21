@@ -2,7 +2,7 @@
 #
 # Storing and fetching a Semaphore project's dependency cache files
 
-VERSION=0.2
+VERSION=0.3
 
 # LFTP Errors
 E_NOSFL='Access failed: No such file'
@@ -10,6 +10,9 @@ E_NOSFL='Access failed: No such file'
 # Script errors
 E_FLMSNG=0 # file missing
 E_FLAE=0 # file already exists
+
+# Misc
+DATE_FORMAT='%H:%M %d/%m/%Y'
 
 ################################################################################
 # Send the files identified by the key, to the cache repository using LFTP
@@ -22,6 +25,8 @@ E_FLAE=0 # file already exists
 #   None
 ################################################################################
 cache::store() {
+  cache::log "### Storing content on cache repository ###"
+
   if [[ $# -ne 4 ]]; then
     cache::err "Incorrect number of arguments!"
   fi
@@ -33,10 +38,6 @@ cache::store() {
 
         if [[ -z $SEMAPHORE_CACHE_KEY ]]; then
           cache::err "Cache key can't be empty!"
-        fi
-
-        if ! [[ -f $SEMAPHORE_CACHE_KEY ]]; then
-          cache::err "Cache key should be a regular file!"
         fi
 
         cache::calculate_key_md5
@@ -54,6 +55,7 @@ cache::store() {
         shift 2
         ;;
       *)
+        cache::print_usage
         cache::err "Invalid arguments!"
         ;;
     esac
@@ -75,6 +77,8 @@ cache::store() {
 #   None
 ################################################################################
 cache::lftp_put() {
+  cache::log "Starting upload"
+
   for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
     if ! [[ -e $local_path ]]; then
       cache::log "'${local_path}' doesn't exist locally, skipping."
@@ -92,7 +96,7 @@ cache::lftp_put() {
       cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY_MD5}/"
       cache::log "Upload complete."
     else
-      cache::log "Key '${SEMAPHORE_CACHE_KEY_MD5}' already present on remote. Skipping upload."
+      cache::log "Key '${SEMAPHORE_CACHE_KEY_MD5}' already present on remote. Skipping."
     fi
   done
 }
@@ -109,6 +113,8 @@ cache::lftp_put() {
 #   None
 ################################################################################
 cache::restore() {
+  cache::log "\n### Restoring content from cache repository ###"
+
   if [[ $# -ne 2 ]]; then
     cache::err "Incorrect number of arguments!"
   fi
@@ -152,11 +158,13 @@ cache::restore() {
 cache::lftp_get() {
   cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY_MD5}."
 
-  cache::lftp "mirror ${SEMAPHORE_CACHE_KEY_MD5}/ ."
+  # checks if the key is present
+  cache::lftp "ls ${SEMAPHORE_CACHE_KEY_MD5}"
 
   if [[ $E_FLMSNG = 1 ]]; then
     cache::log "File missing from remote. Skipping."
   else
+    cache::lftp "mirror ${SEMAPHORE_CACHE_KEY_MD5}/ ."
     cache::log "Transfer completed."
   fi
 }
@@ -194,13 +202,6 @@ cache::lftp() {
     return
   fi
 
-  # Ignore the error fetching non-existent cache
-  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'mirror' ]]; then
-    E_FLMSNG=1
-
-    return
-  fi
-
   if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'ls' ]]; then
     E_FLMSNG=1
 
@@ -214,12 +215,21 @@ cache::lftp() {
 }
 
 cache::calculate_key_md5() {
-  SEMAPHORE_CACHE_KEY_MD5=$(md5sum ${SEMAPHORE_CACHE_KEY})
+  if [[ -f $SEMAPHORE_CACHE_KEY ]]; then
+    cache::log "Cache key is a file. Calculating md5 hash..."
+    SEMAPHORE_CACHE_KEY_MD5=$(md5sum ${SEMAPHORE_CACHE_KEY})
+  else
+    cache::log "Cache key is a string. Calculating md5 hash..."
+    SEMAPHORE_CACHE_KEY_MD5=$(echo ${SEMAPHORE_CACHE_KEY} | md5sum)
+  fi
+
 
   if [[ $? -ne 0 ]]; then
-    cache::err "Failed to generate MD5 sum for the provided key. (${SEMAPHORE_CACHE_KEY})"
+    cache::err "Failed to generate md5 sum for the provided key. (${SEMAPHORE_CACHE_KEY})"
   else
     SEMAPHORE_CACHE_KEY_MD5=$(echo $SEMAPHORE_CACHE_KEY_MD5 | cut -d' ' -f1)
+
+    cache::log "md5 hash: ${SEMAPHORE_CACHE_KEY_MD5}"
   fi
 }
 
@@ -234,15 +244,20 @@ cache::calculate_key_md5() {
 #   None
 ################################################################################
 cache::print_usage() {
-  echo "Usage: cache ${VERSION} | Utility for saving and fetching dependency caches"
+  echo -e "\n#####################################################################################################"
+  echo -e "cache ${VERSION} | Utility for saving and fetching dependency caches"
   echo -e "\ncache [store|restore] opts"
   echo "store opts:"
-  echo -e "\t --key CACHE_KEY, defines the cache revision, where the files will be stored"
-  echo -e "\t --path LOCAL_PATH, defines the local path(s), which should be uploaded to the cache storage"
+  echo -e "\t --key CACHE_KEY"
+  echo -e "\t --path LOCAL_PATH"
   echo "restore opts:"
-  echo -e "\t --key CACHE_KEY, defines which remote cache content will be pulled"
+  echo -e "\t --key CACHE_KEY"
+  echo -e "\nDetails:"
+  echo -e "\t --path, defines the local path(s), which should be uploaded to the cache storage"
+  echo -e "\t --key, defines the cache revision, where the files will be stored. The key can be a file or a string, from which and md5 will be calculated"
   echo -e "\nTo access the storage with SFTP, run the following command in the SSH Semaphore environment:"
   echo -e "\t sftp ${SEMAPHORE_CACHE_USERNAME}@${SEMAPHORE_CACHE_URL}"
+  echo -e "#####################################################################################################"
 }
 
 
@@ -271,10 +286,14 @@ cache::check_ssh_key() {
 #   none
 ################################################################################
 cache::load_ssh_key() {
-  cache::log "Loading SSH key into the agent"
+  local ssh_agent_error_log
 
-  eval $(ssh-agent) &> /dev/null
-  ssh-add <(cat ${SSH_PRIVATE_KEY_PATH})
+  cache::log "Loading SSH key into the agent"
+  ssh_agent_log=$(eval $(ssh-agent) 2>&1 && ssh-add <(cat ${SSH_PRIVATE_KEY_PATH}) 2>&1)
+
+  if ! [[ $? = 0 ]]; then
+    cache::err "Error while configuring the SSH agent!\nLog: ${ssh_agent_log}"
+  fi
 }
 
 
@@ -288,6 +307,8 @@ cache::load_ssh_key() {
 #   none
 ################################################################################
 cache::check_lftp() {
+  cache::log "Checking if LFPT is present"
+
   if which lftp &> /dev/null; then
     return 0;
   else
@@ -306,6 +327,8 @@ cache::check_lftp() {
 #   none
 ################################################################################
 cache::check_env() {
+  cache::log "Checking environment variables"
+
   if [[ -z $SEMAPHORE_CACHE_URL ]]; then
     cache::err "'SEMAPHORE_CACHE_URL' environment variable not set!"
   fi
@@ -330,9 +353,7 @@ cache::check_env() {
 #   1
 ################################################################################
 cache::err() {
-  echo -e "! [$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@\n" >&2
-
-  cache::print_usage
+  echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
 
   exit 1
 }
@@ -348,7 +369,7 @@ cache::err() {
 #   none
 ################################################################################
 cache::log() {
-  echo -e "[$(date +'%H:%M | %d-%m-%Y')]: $@" >&2
+  echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
 }
 
 ################################################################################
