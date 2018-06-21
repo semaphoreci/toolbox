@@ -25,7 +25,7 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 #   None
 ################################################################################
 cache::store() {
-  cache::log "# Storing content on cache repository..."
+  cache::log "### Storing content on cache repository ###"
 
   if [[ $# -ne 4 ]]; then
     cache::err "Incorrect number of arguments!"
@@ -55,6 +55,7 @@ cache::store() {
         shift 2
         ;;
       *)
+        cache::print_usage
         cache::err "Invalid arguments!"
         ;;
     esac
@@ -112,7 +113,7 @@ cache::lftp_put() {
 #   None
 ################################################################################
 cache::restore() {
-  cache::log "# Restoring content from cache repository..."
+  cache::log "\n### Restoring content from cache repository ###"
 
   if [[ $# -ne 2 ]]; then
     cache::err "Incorrect number of arguments!"
@@ -243,15 +244,20 @@ cache::calculate_key_md5() {
 #   None
 ################################################################################
 cache::print_usage() {
-  echo "Usage: cache ${VERSION} | Utility for saving and fetching dependency caches"
+  echo -e "\n#####################################################################################################"
+  echo -e "cache ${VERSION} | Utility for saving and fetching dependency caches"
   echo -e "\ncache [store|restore] opts"
   echo "store opts:"
-  echo -e "\t --key CACHE_KEY, defines the cache revision, where the files will be stored"
-  echo -e "\t --path LOCAL_PATH, defines the local path(s), which should be uploaded to the cache storage"
+  echo -e "\t --key CACHE_KEY"
+  echo -e "\t --path LOCAL_PATH"
   echo "restore opts:"
-  echo -e "\t --key CACHE_KEY, defines which remote cache content will be pulled"
+  echo -e "\t --key CACHE_KEY"
+  echo -e "\nDetails:"
+  echo -e "\t --path, defines the local path(s), which should be uploaded to the cache storage"
+  echo -e "\t --key, defines the cache revision, where the files will be stored. The key can be a file or a string, from which and md5 will be calculated"
   echo -e "\nTo access the storage with SFTP, run the following command in the SSH Semaphore environment:"
   echo -e "\t sftp ${SEMAPHORE_CACHE_USERNAME}@${SEMAPHORE_CACHE_URL}"
+  echo -e "#####################################################################################################"
 }
 
 
