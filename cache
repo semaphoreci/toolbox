@@ -125,10 +125,6 @@ cache::restore() {
           cache::err "Cache key can't be empty!"
         fi
 
-        if ! [[ -f $SEMAPHORE_CACHE_KEY ]]; then
-          cache::err "Cache key should be a regular file!"
-        fi
-
         cache::calculate_key_md5
 
         shift 2
