@@ -25,7 +25,7 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 #   None
 ################################################################################
 cache::store() {
-  cache::log "Storing content on cache repository..."
+  cache::log "# Storing content on cache repository..."
 
   if [[ $# -ne 4 ]]; then
     cache::err "Incorrect number of arguments!"
@@ -38,10 +38,6 @@ cache::store() {
 
         if [[ -z $SEMAPHORE_CACHE_KEY ]]; then
           cache::err "Cache key can't be empty!"
-        fi
-
-        if ! [[ -f $SEMAPHORE_CACHE_KEY ]]; then
-          cache::err "Cache key should be a regular file!"
         fi
 
         cache::calculate_key_md5
@@ -80,6 +76,8 @@ cache::store() {
 #   None
 ################################################################################
 cache::lftp_put() {
+  cache::log "Starting upload"
+
   for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
     if ! [[ -e $local_path ]]; then
       cache::log "'${local_path}' doesn't exist locally, skipping."
@@ -114,7 +112,7 @@ cache::lftp_put() {
 #   None
 ################################################################################
 cache::restore() {
-  cache::log "* Restoring content from cache repository..."
+  cache::log "# Restoring content from cache repository..."
 
   if [[ $# -ne 2 ]]; then
     cache::err "Incorrect number of arguments!"
@@ -216,12 +214,21 @@ cache::lftp() {
 }
 
 cache::calculate_key_md5() {
-  SEMAPHORE_CACHE_KEY_MD5=$(md5sum ${SEMAPHORE_CACHE_KEY})
+  if [[ -f $SEMAPHORE_CACHE_KEY ]]; then
+    cache::log "Cache key is a file. Calculating md5 hash..."
+    SEMAPHORE_CACHE_KEY_MD5=$(md5sum ${SEMAPHORE_CACHE_KEY})
+  else
+    cache::log "Cache key is a string. Calculating md5 hash..."
+    SEMAPHORE_CACHE_KEY_MD5=$(echo ${SEMAPHORE_CACHE_KEY} | md5sum)
+  fi
+
 
   if [[ $? -ne 0 ]]; then
-    cache::err "Failed to generate MD5 sum for the provided key. (${SEMAPHORE_CACHE_KEY})"
+    cache::err "Failed to generate md5 sum for the provided key. (${SEMAPHORE_CACHE_KEY})"
   else
     SEMAPHORE_CACHE_KEY_MD5=$(echo $SEMAPHORE_CACHE_KEY_MD5 | cut -d' ' -f1)
+
+    cache::log "md5 hash: ${SEMAPHORE_CACHE_KEY_MD5}"
   fi
 }
 
