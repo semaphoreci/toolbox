@@ -1,3 +1,4 @@
+#!/bin/bash
 
 function checkout {
   git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
