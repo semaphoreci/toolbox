@@ -5,3 +5,5 @@ function checkout {
   git reset -q --hard $SEMAPHORE_GIT_SHA
   cd $SEMAPHORE_GIT_DIR
 }
+
+export -f checkout
