@@ -1,0 +1,7 @@
+
+function checkout {
+  git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
+  cd $SEMAPHORE_GIT_DIR
+  git reset -q --hard $SEMAPHORE_GIT_SHA
+  cd $SEMAPHORE_GIT_DIR
+}
