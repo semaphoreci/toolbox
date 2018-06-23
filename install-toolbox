@@ -5,7 +5,6 @@ IFS=$'\n\t'
 
 sudo ln -sf ~/.toolbox/libcheckout /usr/bin/libcheckout
 sudo chmod +x /usr/bin/libcheckout
-source /usr/bin/libcheckout
 
 sudo ln -sf ~/.toolbox/retry /usr/bin/retry
 sudo chmod +x /usr/bin/retry
