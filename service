@@ -1,0 +1,149 @@
+#!/bin/bash
+
+# Thin wrapper around starting background services with Docker
+
+VERSION=0.1
+
+# Misc
+DATE_FORMAT='%H:%M %d/%m/%Y'
+
+
+################################################################################
+# Pull the passed Docker image
+# Globals:
+#   none
+# Arguments:
+#   image_name 
+# Returns:
+#   none
+#
+# TODO: support multiple images
+################################################################################
+service::pull_image() {
+  local image_name=$1
+
+  if ! echo $image_name | grep -E '^[[:alnum:]]+(:[[:alnum:]]+)?$'; then
+    service::err "Invalid image name provided '${image_name}'"
+  fi
+
+  service::log "Pulling service image: ${image}"
+  echo docker pull $1
+}
+
+
+################################################################################
+# Start service
+# Globals:
+#   none
+# Arguments:
+#   image_name
+# Returns:
+#   none
+################################################################################
+service::start() {
+  local image_name="$1"
+  local service_name="${image_name%:*}"
+  local command_log=""
+  local command_status=""
+
+  service::pull_image $image_name
+
+  service::log "Starting '${service_name}' ..."
+
+  command_log=$(echo docker run --net=host --name $service_name $image_name)
+  command_status=$?
+
+  if [[ $command_status -eq 1 ]]; then
+    service::err "Failed to start the service!\n\n${command_log}"
+  fi
+
+  service::log $command_log
+  service::log "'${service_name}' successfully started. Listening on port <port>."
+}
+
+
+################################################################################
+# Stop service
+# Globals:
+#   none
+# Arguments:
+#   service_name
+# Returns:
+#   none
+################################################################################
+service::stop() {
+  echo TODO
+}
+
+
+################################################################################
+# Service status
+# Globals:
+#   none
+# Arguments:
+#   service_name
+# Returns:
+#   none
+################################################################################
+service::status() {
+  echo TODO
+}
+
+
+################################################################################
+# Helper function to show log messages
+# Globals:
+#   DATE_FORMAT
+# Arguments:
+#   message
+# Returns:
+#   none
+################################################################################
+service::log() {
+  echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
+}
+
+
+################################################################################
+# Helper function to show error messages and to terminate execution on error
+# Globals:
+#   DATE_FORMAT
+# Arguments:
+#   err, message
+# Returns:
+#   1
+################################################################################
+service::err() {
+  echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
+
+  exit 1
+}
+
+
+################################################################################
+# Entry point to the script
+################################################################################
+service::main () {
+  case "$1" in
+    "start" )
+      shift
+
+      service::start "$@"
+      ;;
+    "stop" )
+      shift
+
+      service::stop "$@"
+      ;;
+    "status" )
+      shift
+
+      service::status "$@"
+      ;;
+    * )
+      service::print_usage
+      ;;
+  esac
+}
+
+service::main "$@"
