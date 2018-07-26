@@ -1,0 +1,272 @@
+#!/bin/bash
+
+# Thin wrapper around starting background services with Docker
+
+VERSION=0.5
+
+# Misc
+DATE_FORMAT='%H:%M %d/%m/%Y'
+
+
+################################################################################
+# Pull the passed Docker image
+# Globals:
+#   none
+# Arguments:
+#   image_name
+# Returns:
+#   0,1,...,n
+#
+# TODO: support multiple images
+################################################################################
+service::pull_image() {
+  local image_name=$1
+
+  if [[ -z $image_name ]]; then
+    service:err "Image name can't be empty"
+  fi
+
+  if ! echo $image_name | grep -E '^[[:alnum:]]+(:[[:alnum:]]+)?$' &>/dev/null; then
+    service::err "Invalid image name provided '${image_name}'"
+  fi
+
+  service::log "Pulling service image for '${image_name}'"
+  service::run_cmd docker pull $image_name
+}
+
+
+################################################################################
+# Start a service with the defined Docker image
+# Globals:
+#   none
+# Arguments:
+#   image_name
+# Returns:
+#   0,1
+# TODO: wait for service
+################################################################################
+service::start() {
+  local image_name
+  local service_name
+  local command_log
+  local command_status
+  local service_check_log
+
+  image_name=$1
+  service_name="${image_name%:*}"
+  command_log=""
+  command_status=""
+
+  service::log "Starting '${service_name}' ..."
+
+  service_check_log=$( service::status $service_name &>/dev/null )
+  service_status=$?
+
+  if [[ $service_status -eq 0 ]]; then
+    service::log "'${service_name}' already started. Skipping."
+  else
+    service::pull_image $image_name
+
+    command_log=$( service::run_cmd "docker run --net=host --rm -d --name $service_name $image_name" )
+    command_status=$?
+
+    if ! [[ $command_status -eq 0 ]]; then
+      service::err "Failed to start '${service_name}'"
+    fi
+
+    service::log "'${service_name}' successfully started."
+    # the service needs a couple of secondns to become available
+  fi
+}
+
+
+################################################################################
+# Stop service if started
+# Globals:
+#   none
+# Arguments:
+#   service_name
+# Returns:
+#   0
+################################################################################
+service::stop() {
+  local service_name
+  local service_check_log
+
+  service_name=$1
+  service_check_log=$( service::status $service_name &>/dev/null )
+  service_status=$?
+
+  if [[ $service_status -eq 0 ]]; then
+    stop_output=$( service::run_cmd docker stop $service_name )
+
+    service::log "'${service_name}' stopped."
+  else
+    service::log "No running service with name '${service_name}' was found. Skipping."
+  fi
+
+  return 0
+}
+
+
+################################################################################
+# Service status
+# Globals:
+#   none
+# Arguments:
+#   service_name
+# Returns:
+#   0,1...n
+################################################################################
+service::status() {
+  local service_name
+  local docker_ps
+
+  service_name=$1
+  docker_ps=$( service::run_cmd docker ps | grep $service_name &>/dev/null )
+  service_status=$?
+
+  if [[ $service_status -eq 0 ]]; then
+    service::log "'${service_name}' running."
+    service::log $(service::port_info $service_name)
+  else
+    service::log "'${service_name}' not running."
+  fi
+
+  return $service_status
+}
+
+
+################################################################################
+# Helper for running commands with the ability to dry-run
+# Globals:
+#   DRYRUN
+# Arguments:
+#   command
+# Returns:
+#   0,1...n
+################################################################################
+service::run_cmd() {
+  local cmd=$@
+  local out=""
+  local status=0
+
+  if [[ -n $DRYRUN ]]; then
+    service::log "Dry-running '${cmd}'"
+  else
+    out=$($cmd 2>&1)
+    status=$?
+  fi
+
+  if ! [[ $status -eq 0 ]]; then
+    service::err "Failed to run command '${cmd}'\n\nReason:\n${out}"
+  fi
+
+  echo "$out"
+  return $status
+}
+
+
+################################################################################
+# Gets port information about the running service
+# Globals:
+#   none
+# Arguments:
+#   service_name
+# Returns:
+#   port
+################################################################################
+service::port_info() {
+  local service_name
+  local service_check_log
+
+  service_name=$1
+  port_check_log=$( service::run_cmd sudo netstat -tlpn | grep $service_name 2>&1 )
+  port_status=$?
+
+  if [[ $service_status -eq 0 ]]; then
+    listens_on=$( echo ${port_check_log} | awk '{print $4}' )
+
+    echo "Listens on ${listens_on}"
+  else
+    echo "No port found for '${service_name}'."
+  fi
+
+  return 0
+}
+
+
+################################################################################
+# Helper function to show log messages
+# Globals:
+#   DATE_FORMAT
+# Arguments:
+#   message
+# Returns:
+#   none
+################################################################################
+service::log() {
+  echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
+}
+
+
+################################################################################
+# Helper function to show error messages and to terminate execution on error
+# Globals:
+#   DATE_FORMAT
+# Arguments:
+#   err, message
+# Returns:
+#   1
+################################################################################
+service::err() {
+  echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
+
+  exit 1
+}
+
+
+################################################################################
+# Prints the program usage
+# Globals:
+#   VERSION
+# Arguments:
+#   None
+# Returns:
+#   None
+################################################################################
+service::print_usage() {
+  echo -e "\n#####################################################################################################"
+  echo -e "service ${VERSION} | Utility for starting background services, listening on 0.0.0.0, using Docker"
+  echo -e "\nservice [start|stop|status] image_name"
+  echo -e "#####################################################################################################"
+}
+
+
+################################################################################
+# Entry point to the script
+################################################################################
+service::main () {
+  case "$1" in
+    "start" )
+      shift
+
+      service::start "$@"
+      ;;
+    "stop" )
+      shift
+
+      service::stop "$@"
+      ;;
+    "status" )
+      shift
+
+      service::status "$@"
+      ;;
+    * )
+      service::print_usage
+      ;;
+  esac
+}
+
+service::main "$@"
