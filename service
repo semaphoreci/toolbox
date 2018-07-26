@@ -2,7 +2,7 @@
 
 # Thin wrapper around starting background services with Docker
 
-VERSION=0.2
+VERSION=0.4
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
@@ -36,13 +36,13 @@ service::pull_image() {
 
 
 ################################################################################
-# Helper for running commands
+# Helper for running commands with the ability to dry-run
 # Globals:
 #   DRYRUN
 # Arguments:
 #   command
 # Returns:
-#   none
+#   0,1...n
 ################################################################################
 service::run_cmd() {
   local cmd=$@
@@ -60,37 +60,53 @@ service::run_cmd() {
     service::err "Failed to run command '${cmd}'\n\nReason:\n${out}"
   fi
 
-  echo $out
+  echo "$out"
   return $status
 }
 
 
 ################################################################################
-# Start service
+# Start a service with the defined Docker image
 # Globals:
 #   none
 # Arguments:
 #   image_name
 # Returns:
 #   none
+# TODO: wait for service
 ################################################################################
 service::start() {
-  local image_name="$1"
-  local service_name="${image_name%:*}"
-  local command_log=""
-  local command_status=""
+  local image_name
+  local service_name
+  local command_log
+  local command_status
+  local service_check_log
 
-  service::pull_image $image_name
+  image_name=$1
+  service_name="${image_name%:*}"
+  command_log=""
+  command_status=""
 
   service::log "Starting '${service_name}' ..."
 
-  command_log=$( service::run_cmd "docker run --net=host --rm -d --name $service_name $image_name" )
+  service_check_log=$( service::status $service_name &>/dev/null )
+  service_status=$?
 
-  if ! [[ $? -eq 0 ]]; then
-    service::err "Failed to start '${service_name}'"
+  if [[ $service_status -eq 0 ]]; then
+    service::log "'${service_name}' already started. Skipping."
+  else
+    service::pull_image $image_name
+
+    command_log=$( service::run_cmd "docker run --net=host --rm -d --name $service_name $image_name" )
+    command_status=$?
+
+    if ! [[ $command_status -eq 0 ]]; then
+      service::err "Failed to start '${service_name}'"
+    fi
+
+    service::log "'${service_name}' successfully started."
+    # the service needs a couple of secondns to become available
   fi
-
-  service::log "'${service_name}' successfully started. Listening on port <port>."
 }
 
 
@@ -142,6 +158,7 @@ service::status() {
 
   if [[ $service_status -eq 0 ]]; then
     service::log "'${service_name}' running."
+    service::log $(service::port_info $service_name)
   else
     service::log "'${service_name}' not running."
   fi
@@ -149,6 +166,34 @@ service::status() {
   return $service_status
 }
 
+
+################################################################################
+# Gets port information about the running service
+# Globals:
+#   none
+# Arguments:
+#   service_name
+# Returns:
+#   port
+################################################################################
+service::port_info() {
+  local service_name
+  local service_check_log
+
+  service_name=$1
+  port_check_log=$( service::run_cmd sudo netstat -tlpn | grep $service_name 2>&1 )
+  port_status=$?
+
+  if [[ $service_status -eq 0 ]]; then
+    listens_on=$( echo ${port_check_log} | awk '{print $4}' )
+
+    echo "Listens on ${listens_on}"
+  else
+    echo "No port found for '${service_name}'."
+  fi
+
+  return 0
+}
 
 ################################################################################
 # Helper function to show log messages
