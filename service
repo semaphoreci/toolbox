@@ -15,7 +15,7 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 # Arguments:
 #   image_name
 # Returns:
-#   none
+#   0,1,...,n
 #
 # TODO: support multiple images
 ################################################################################
@@ -36,43 +36,13 @@ service::pull_image() {
 
 
 ################################################################################
-# Helper for running commands with the ability to dry-run
-# Globals:
-#   DRYRUN
-# Arguments:
-#   command
-# Returns:
-#   0,1...n
-################################################################################
-service::run_cmd() {
-  local cmd=$@
-  local out=""
-  local status=0
-
-  if [[ -n $DRYRUN ]]; then
-    service::log "Dry-running '${cmd}'"
-  else
-    out=$($cmd 2>&1)
-    status=$?
-  fi
-
-  if ! [[ $status -eq 0 ]]; then
-    service::err "Failed to run command '${cmd}'\n\nReason:\n${out}"
-  fi
-
-  echo "$out"
-  return $status
-}
-
-
-################################################################################
 # Start a service with the defined Docker image
 # Globals:
 #   none
 # Arguments:
 #   image_name
 # Returns:
-#   none
+#   0,1
 # TODO: wait for service
 ################################################################################
 service::start() {
@@ -111,7 +81,7 @@ service::start() {
 
 
 ################################################################################
-# Stop service
+# Stop service if started
 # Globals:
 #   none
 # Arguments:
@@ -168,6 +138,36 @@ service::status() {
 
 
 ################################################################################
+# Helper for running commands with the ability to dry-run
+# Globals:
+#   DRYRUN
+# Arguments:
+#   command
+# Returns:
+#   0,1...n
+################################################################################
+service::run_cmd() {
+  local cmd=$@
+  local out=""
+  local status=0
+
+  if [[ -n $DRYRUN ]]; then
+    service::log "Dry-running '${cmd}'"
+  else
+    out=$($cmd 2>&1)
+    status=$?
+  fi
+
+  if ! [[ $status -eq 0 ]]; then
+    service::err "Failed to run command '${cmd}'\n\nReason:\n${out}"
+  fi
+
+  echo "$out"
+  return $status
+}
+
+
+################################################################################
 # Gets port information about the running service
 # Globals:
 #   none
@@ -194,6 +194,7 @@ service::port_info() {
 
   return 0
 }
+
 
 ################################################################################
 # Helper function to show log messages
