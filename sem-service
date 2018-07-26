@@ -26,7 +26,7 @@ service::pull_image() {
     service:err "Image name can't be empty"
   fi
 
-  if ! echo $image_name | grep -E '^[[:alnum:]]+(:[[:alnum:]]+)?$' &>/dev/null; then
+  if ! echo $image_name | grep -E '^[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
     service::err "Invalid image name provided '${image_name}'"
   fi
 
