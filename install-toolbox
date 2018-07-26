@@ -14,3 +14,6 @@ sudo chmod +x /usr/bin/semaphore
 
 sudo ln -sf ~/.toolbox/cache /usr/bin/cache
 sudo chmod +x /usr/bin/cache
+
+sudo ln -sf ~/.toolbox/sem-service /usr/bin/sem-service
+sudo chmod +x /usr/bin/sem-service
