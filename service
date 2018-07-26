@@ -2,7 +2,7 @@
 
 # Thin wrapper around starting background services with Docker
 
-VERSION=0.1
+VERSION=0.2
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
@@ -13,7 +13,7 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 # Globals:
 #   none
 # Arguments:
-#   image_name 
+#   image_name
 # Returns:
 #   none
 #
@@ -22,12 +22,46 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 service::pull_image() {
   local image_name=$1
 
-  if ! echo $image_name | grep -E '^[[:alnum:]]+(:[[:alnum:]]+)?$'; then
+  if [[ -z $image_name ]]; then
+    service:err "Image name can't be empty"
+  fi
+
+  if ! echo $image_name | grep -E '^[[:alnum:]]+(:[[:alnum:]]+)?$' &>/dev/null; then
     service::err "Invalid image name provided '${image_name}'"
   fi
 
-  service::log "Pulling service image: ${image}"
-  echo docker pull $1
+  service::log "Pulling service image for '${image_name}'"
+  service::run_cmd docker pull $image_name
+}
+
+
+################################################################################
+# Helper for running commands
+# Globals:
+#   DRYRUN
+# Arguments:
+#   command
+# Returns:
+#   none
+################################################################################
+service::run_cmd() {
+  local cmd=$@
+  local out=""
+  local status=0
+
+  if [[ -n $DRYRUN ]]; then
+    service::log "Dry-running '${cmd}'"
+  else
+    out=$($cmd 2>&1)
+    status=$?
+  fi
+
+  if ! [[ $status -eq 0 ]]; then
+    service::err "Failed to run command '${cmd}'\n\nReason:\n${out}"
+  fi
+
+  echo $out
+  return $status
 }
 
 
@@ -50,14 +84,12 @@ service::start() {
 
   service::log "Starting '${service_name}' ..."
 
-  command_log=$(echo docker run --net=host --name $service_name $image_name)
-  command_status=$?
+  command_log=$( service::run_cmd "docker run --net=host --rm -d --name $service_name $image_name" )
 
-  if [[ $command_status -eq 1 ]]; then
-    service::err "Failed to start the service!\n\n${command_log}"
+  if ! [[ $? -eq 0 ]]; then
+    service::err "Failed to start '${service_name}'"
   fi
 
-  service::log $command_log
   service::log "'${service_name}' successfully started. Listening on port <port>."
 }
 
@@ -69,10 +101,25 @@ service::start() {
 # Arguments:
 #   service_name
 # Returns:
-#   none
+#   0
 ################################################################################
 service::stop() {
-  echo TODO
+  local service_name
+  local service_check_log
+
+  service_name=$1
+  service_check_log=$( service::status $service_name &>/dev/null )
+  service_status=$?
+
+  if [[ $service_status -eq 0 ]]; then
+    stop_output=$( service::run_cmd docker stop $service_name )
+
+    service::log "'${service_name}' stopped."
+  else
+    service::log "No running service with name '${service_name}' was found. Skipping."
+  fi
+
+  return 0
 }
 
 
@@ -83,10 +130,23 @@ service::stop() {
 # Arguments:
 #   service_name
 # Returns:
-#   none
+#   0,1...n
 ################################################################################
 service::status() {
-  echo TODO
+  local service_name
+  local docker_ps
+
+  service_name=$1
+  docker_ps=$( service::run_cmd docker ps | grep $service_name &>/dev/null )
+  service_status=$?
+
+  if [[ $service_status -eq 0 ]]; then
+    service::log "'${service_name}' running."
+  else
+    service::log "'${service_name}' not running."
+  fi
+
+  return $service_status
 }
 
 
