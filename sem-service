@@ -48,9 +48,10 @@ service::pull_image() {
 service::start() {
   local image_name
   local service_name
-  local command_log
   local command_status
+  local command_log
   local service_check_log
+  local pull_log
 
   image_name=$1
   service_name="${image_name%:*}"
@@ -65,7 +66,12 @@ service::start() {
   if [[ $service_status -eq 0 ]]; then
     service::log "'${service_name}' already started. Skipping."
   else
-    service::pull_image $image_name
+    pull_log=$(service::pull_image $image_name)
+    pull_status=$?
+
+    if ! [[ $pull_status -eq 0 ]]; then
+      service::err "Failed to pull the image."
+    fi
 
     command_log=$( service::run_cmd "docker run --net=host --rm -d --name $service_name $image_name" )
     command_status=$?
