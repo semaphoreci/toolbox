@@ -2,7 +2,7 @@
 
 # Thin wrapper around starting background services with Docker
 
-VERSION=0.5
+VERSION=0.6
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
@@ -73,7 +73,7 @@ service::start() {
       service::err "Failed to pull the image."
     fi
 
-    command_log=$( service::run_cmd "docker run --net=host --rm -d --name $service_name $image_name" )
+    command_log=$( service::run_cmd "docker run --net=host --rm -d $@ --name $service_name $image_name" )
     command_status=$?
 
     if ! [[ $command_status -eq 0 ]]; then
