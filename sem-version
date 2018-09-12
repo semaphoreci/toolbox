@@ -33,7 +33,7 @@ version::change_ruby() {
 }
 
 version::change_node() {
-  version::change "node use"
+  version::change "nvm use"
 
   return $?
 }
