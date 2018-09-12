@@ -1,4 +1,14 @@
 function checkout() {
+  if [ -z $SEMAPHORE_GIT_BRANCH ] || [ -z $SEMAPHORE_GIT_URL ] || [ -z $SEMAPHORE_GIT_DIR ] || [ -z $SEMAPHORE_GIT_SHA ]; then
+    echo "[CHECKOUT ERROR] The following variables need to be exported:"
+    echo "SEMAPHORE_GIT_URL"
+    echo "SEMAPHORE_GIT_DIR"
+    echo "SEMAPHORE_GIT_BRANCH"
+    echo "SEMAPHORE_GIT_SHA"
+
+    exit 1
+  fi
+
   git clone --branch $SEMAPHORE_GIT_BRANCH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
   cd $SEMAPHORE_GIT_DIR
   git reset -q --hard $SEMAPHORE_GIT_SHA
