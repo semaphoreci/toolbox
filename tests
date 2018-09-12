@@ -1,0 +1,24 @@
+set -e
+
+. libcheckout
+
+echo "Testing checkout..."
+
+echo "Test checkout #1: without environment variables returns error"
+
+! checkout
+
+echo "Test checkout #2: clones the repo with variables set"
+
+rm -rf /tmp/repo
+SEMAPHORE_GIT_URL=https://github.com/mojombo/grit.git \
+SEMAPHORE_GIT_BRANCH=master \
+SEMAPHORE_GIT_DIR=/tmp/repo \
+SEMAPHORE_GIT_SHA=5608567 \
+checkout
+echo "Checking created dir..."
+cd /tmp/repo
+echo "Checking git repo..."
+git status
+echo "Checking git branch..."
+git branch | grep master

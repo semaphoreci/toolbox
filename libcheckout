@@ -6,7 +6,7 @@ function checkout() {
     echo "SEMAPHORE_GIT_BRANCH"
     echo "SEMAPHORE_GIT_SHA"
 
-    exit 1
+    return 1
   fi
 
   git clone --branch $SEMAPHORE_GIT_BRANCH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
