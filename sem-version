@@ -112,9 +112,9 @@ version::log() {
 #   1
 ################################################################################
 version::err() {
-echo -e "\n! [$(version::date)]: $@" >&2
+  echo -e "\n! [$(version::date)]: $@" >&2
 
-exit 1
+  return 1
 }
 
 ################################################################################
@@ -130,6 +130,8 @@ version::main() {
   if ! [[ $# -eq 2 ]]; then
     version::usage
     version::err "Unsupported number of arguments provided!"
+
+    return $?
   fi
 
   language=$1
@@ -141,6 +143,8 @@ version::main() {
 
       if ! [[ $(type -t $fn_name) == function ]]; then
         version::err "Function '${fn_name}' not implemented. Language '${language}' might not be supported."
+
+        return $?
       fi
 
       log=$(version::change_${1} $2)
@@ -148,6 +152,8 @@ version::main() {
 
       if [[ fn_status -ne 0 ]]; then
         version::err "Failed to switch version.\nLog:\n$log"
+
+        return $?
       fi
 
       version::log $log
