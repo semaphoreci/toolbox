@@ -28,30 +28,44 @@ version::change() {
 
 version::change_ruby() {
   version::change "rbenv global"
+
+  return $?
 }
 
 version::change_node() {
   version::change "node use"
+
+  return $?
 }
 
 version::change_elixir() {
   version::change "kiex use"
+
+  return $?
 }
 
 version::change_go() {
   version::change "change-go-version"
+
+  return $?
 }
 
 version::change_java() {
   version::change "change-java-version"
+
+  return $?
 }
 
 version::change_php() {
   version::change "phpbrew use"
+
+  return $?
 }
 
 version::change_python() {
   version::change "change-python-version"
+
+  return $?
 }
 ################################################################################
 # End of language manager wrappers
