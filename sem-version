@@ -3,7 +3,7 @@
 # Changing language versions
 
 VERSION="0.2"
-SUPPORTED_LANGUAGES=(ruby node)
+SUPPORTED_LANGUAGES=(elixir go java php ruby python node)
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
