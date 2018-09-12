@@ -2,34 +2,36 @@
 
 # Changing language versions
 
-VERSION="0.1"
+VERSION="0.2"
 SUPPORTED_LANGUAGES=(ruby node)
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
 ################################################################################
-# Wrappers around language managers
+# Generic function which executes the passed 'command' to switch the version
 # Globals:
-#   language_version
+#   language, language_version
 # Arguments:
-#   none
+#   command
 # Returns:
 #  0, 1-127 (exit status of the language manager command)
-version::change_ruby() {
-  version::log "Changing Ruby to version ${language_version}"
-  echo "rbenv global ${language_version}"
+version::change() {
+  command=$1
+  version::log "Changing '${language}' to version ${language_version}"
+
+  echo "${command} ${language_version}"
   ch_status=$?
 
   return $ch_status
 }
 
-version::change_node() {
-  version::log "Changing Node.js to version ${language_version}"
-  echo "nvm use ${language_version}"
-  ch_status=$?
+version::change_ruby() {
+  version::change "rbenv global"
+}
 
-  return $ch_status
+version::change_node() {
+  version::change "node use"
 }
 ################################################################################
 # End of language manager wrappers
