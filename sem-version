@@ -2,7 +2,7 @@
 
 # Changing language versions
 
-VERSION="0.3"
+VERSION="0.4"
 SUPPORTED_LANGUAGES=(elixir go java php ruby python node)
 
 # Misc
@@ -149,6 +149,9 @@ version::main() {
       if [[ fn_status -ne 0 ]]; then
         version::err "Failed to switch version.\nLog:\n$log"
       fi
+
+      version::log $log
+      version::log "Switch successful."
 
       break
     fi
