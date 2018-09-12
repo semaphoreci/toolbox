@@ -20,7 +20,7 @@ version::change() {
   command=$1
   version::log "Changing '${language}' to version ${language_version}"
 
-  echo "${command} ${language_version}"
+  $command $language_version
   ch_status=$?
 
   return $ch_status
