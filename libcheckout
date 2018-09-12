@@ -1,10 +1,10 @@
 function checkout() {
   if [ -z $SEMAPHORE_GIT_BRANCH ] || [ -z $SEMAPHORE_GIT_URL ] || [ -z $SEMAPHORE_GIT_DIR ] || [ -z $SEMAPHORE_GIT_SHA ]; then
-    echo "[CHECKOUT ERROR] The following variables need to be exported:"
-    echo "SEMAPHORE_GIT_URL"
-    echo "SEMAPHORE_GIT_DIR"
-    echo "SEMAPHORE_GIT_BRANCH"
-    echo "SEMAPHORE_GIT_SHA"
+    echo "[CHECKOUT ERROR] Some of these variables are unset:"
+    echo "SEMAPHORE_GIT_URL=$SEMAPHORE_GIT_URL"
+    echo "SEMAPHORE_GIT_DIR=$SEMAPHORE_GIT_DIR"
+    echo "SEMAPHORE_GIT_BRANCH=$SEMAPHORE_GIT_BRANCH"
+    echo "SEMAPHORE_GIT_SHA=$SEMAPHORE_GIT_SHA"
 
     return 1
   fi
