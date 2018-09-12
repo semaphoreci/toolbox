@@ -136,7 +136,7 @@ version::main() {
   language_version=$2
 
   for (( i=0; i < ${#SUPPORTED_LANGUAGES}; i++ )); do
-    if [[ ${SUPPORTED_LANGUAGES[i]} -eq $1 ]]; then
+    if [[ ${SUPPORTED_LANGUAGES[i]} -eq $laguage ]]; then
       fn_name="version::change_${language}"
 
       if ! [[ $(type -t $fn_name) == function ]]; then
