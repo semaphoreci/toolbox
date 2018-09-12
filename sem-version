@@ -177,11 +177,6 @@ version::main() {
   done
 }
 
-# needs to be a function, to work properly with function based language managers
-# like 'nvm'
 sem-version() {
   version::main "$@"
 }
-
-# tmp so that the exe works
-version::main "$@"
