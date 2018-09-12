@@ -1,0 +1,144 @@
+#!/bin/bash
+
+# Changing language versions
+
+VERSION="0.1"
+SUPPORTED_LANGUAGES=(ruby node)
+
+# Misc
+DATE_FORMAT='%H:%M %d/%m/%Y'
+
+################################################################################
+# Wrappers around language managers
+# Globals:
+#   language_version
+# Arguments:
+#   none
+# Returns:
+#  0, 1-127 (exit status of the language manager command)
+version::change_ruby() {
+  version::log "Changing Ruby to version ${language_version}"
+  echo "rbenv global ${language_version}"
+  ch_status=$?
+
+  return $ch_status
+}
+
+version::change_node() {
+  version::log "Changing Node.js to version ${language_version}"
+  echo "nvm use ${language_version}"
+  ch_status=$?
+
+  return $ch_status
+}
+################################################################################
+# End of language manager wrappers
+################################################################################
+
+
+################################################################################
+# Prints the usage
+# Globals:
+#   none
+# Arguments:
+#   none
+# Returns:
+#   none
+version::usage() {
+echo -e "
+################################################################################
+sem-version ${VERSION} | Utility to change a selected languages active version
+
+Usage:
+  sem-version language version
+################################################################################
+"
+}
+
+################################################################################
+# Helper to print date in the given format
+# Globals:
+#   DATE_FORMAT
+# Arguments:
+#   message
+# Returns:
+#   none
+################################################################################
+version::date() {
+  date +"${DATE_FORMAT}"
+}
+
+################################################################################
+# Helper to display info messages
+# Globals:
+#   none
+# Arguments:
+#   message
+# Returns:
+#   none
+################################################################################
+version::log() {
+  echo -e "\n[$(version::date)]: $@" >&2
+}
+
+################################################################################
+# Helper function to show error messages and to terminate execution on error
+# Globals:
+#   DATE_FORMAT
+# Arguments:
+#   message
+# Returns:
+#   1
+################################################################################
+version::err() {
+echo -e "\n! [$(version::date)]: $@" >&2
+
+exit 1
+}
+
+################################################################################
+# The main entrypoint to the script. Holds the switching logic.
+# Globals:
+#   SUPPORTED_LANGUAGES
+# Arguments:
+#   'language', 'version'
+# Returns:
+#   none
+################################################################################
+version::main() {
+  if ! [[ $# -eq 2 ]]; then
+    version::usage
+    version::err "Unsupported number of arguments provided!"
+  fi
+
+  language=$1
+  language_version=$2
+
+  for (( i=0; i < ${#SUPPORTED_LANGUAGES}; i++ )); do
+    if [[ ${SUPPORTED_LANGUAGES[i]} -eq $1 ]]; then
+      fn_name="version::change_${language}"
+
+      if ! [[ $(type -t $fn_name) == function ]]; then
+        version::err "Function '${fn_name}' not implemented. Language '${language}' might not be supported."
+      fi
+
+      log=$(version::change_${1} $2)
+      fn_status=$?
+
+      if [[ fn_status -ne 0 ]]; then
+        version::err "Failed to switch version.\nLog:\n$log"
+      fi
+
+      break
+    fi
+  done
+}
+
+# needs to be a function, to work properly with function based language managers
+# like 'nvm'
+sem-version() {
+  version::main "$@"
+}
+
+# tmp so that the exe works
+version::main "$@"
