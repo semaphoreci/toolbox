@@ -2,7 +2,7 @@
 
 # Changing language versions
 
-VERSION="0.5"
+VERSION="0.6"
 SUPPORTED_LANGUAGES=(elixir go java php ruby python node)
 
 # Misc
@@ -20,7 +20,7 @@ version::change() {
   command=$1
   version::log "Changing '${language}' to version ${language_version}"
 
-  $command $language_version
+  eval $command $language_version
   ch_status=$?
 
   return $ch_status
