@@ -17,3 +17,6 @@ sudo chmod +x /usr/bin/cache
 
 sudo ln -sf ~/.toolbox/sem-service /usr/bin/sem-service
 sudo chmod +x /usr/bin/sem-service
+
+# Needs to be sourced to properly work
+. ~/.toolbox/sem-version

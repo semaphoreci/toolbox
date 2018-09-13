@@ -1,0 +1,182 @@
+#!/bin/bash
+
+# Changing language versions
+
+VERSION="0.6"
+SUPPORTED_LANGUAGES=(elixir go java php ruby python node)
+
+# Misc
+DATE_FORMAT='%H:%M %d/%m/%Y'
+
+################################################################################
+# Generic function which executes the passed 'command' to switch the version
+# Globals:
+#   language, language_version
+# Arguments:
+#   command
+# Returns:
+#  0, 1-127 (exit status of the language manager command)
+version::change() {
+  command=$1
+  version::log "Changing '${language}' to version ${language_version}"
+
+  eval $command $language_version
+  ch_status=$?
+
+  return $ch_status
+}
+
+version::change_ruby() {
+  version::change "rbenv global"
+
+  return $?
+}
+
+version::change_node() {
+  version::change "nvm use"
+
+  return $?
+}
+
+version::change_elixir() {
+  version::change "kiex use"
+
+  return $?
+}
+
+version::change_go() {
+  version::change "change-go-version"
+
+  return $?
+}
+
+version::change_java() {
+  version::change "change-java-version"
+
+  return $?
+}
+
+version::change_php() {
+  version::change "phpbrew use"
+
+  return $?
+}
+
+version::change_python() {
+  version::change "change-python-version"
+
+  return $?
+}
+################################################################################
+# End of language manager wrappers
+################################################################################
+
+
+################################################################################
+# Prints the usage
+# Globals:
+#   none
+# Arguments:
+#   none
+# Returns:
+#   none
+version::usage() {
+  echo -e "
+################################################################################
+sem-version ${VERSION} | Utility to change a selected languages active version
+
+Usage:
+  sem-version language version
+################################################################################"
+}
+
+################################################################################
+# Helper to print date in the given format
+# Globals:
+#   DATE_FORMAT
+# Arguments:
+#   message
+# Returns:
+#   none
+################################################################################
+version::date() {
+  date +"${DATE_FORMAT}"
+}
+
+################################################################################
+# Helper to display info messages
+# Globals:
+#   none
+# Arguments:
+#   message
+# Returns:
+#   none
+################################################################################
+version::log() {
+  echo -e "\n[$(version::date)]: $@" >&2
+}
+
+################################################################################
+# Helper function to show error messages and to terminate execution on error
+# Globals:
+#   DATE_FORMAT
+# Arguments:
+#   message
+# Returns:
+#   1
+################################################################################
+version::err() {
+  echo -e "\n! [$(version::date)]: $@" >&2
+
+  return 1
+}
+
+################################################################################
+# The main entrypoint to the script. Holds the switching logic.
+# Globals:
+#   SUPPORTED_LANGUAGES
+# Arguments:
+#   'language', 'version'
+# Returns:
+#   none
+################################################################################
+version::main() {
+  if ! [[ $# -eq 2 ]]; then
+    version::usage
+    version::err "Unsupported number of arguments provided!"
+
+    return $?
+  fi
+
+  language=$1
+  language_version=$2
+
+  for (( i=0; i < ${#SUPPORTED_LANGUAGES}; i++ )); do
+    if [[ ${SUPPORTED_LANGUAGES[i]} -eq $laguage ]]; then
+      fn_name="version::change_${language}"
+
+      if ! [[ $(type -t $fn_name) == function ]]; then
+        version::err "Function '${fn_name}' not implemented. Language '${language}' might not be supported."
+
+        return $?
+      fi
+
+      version::change_${language} $language_version
+      fn_status=$?
+
+      if [[ fn_status -ne 0 ]]; then
+        version::err "Failed to switch version.\nLog:\n$log"
+
+        return $?
+      fi
+
+      version::log "Switch successful."
+
+      break
+    fi
+  done
+}
+
+sem-version() {
+  version::main "$@"
+}
