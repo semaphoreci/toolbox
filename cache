@@ -40,8 +40,6 @@ cache::store() {
           cache::err "Cache key can't be empty!"
         fi
 
-        cache::calculate_key_md5
-
         shift 2
         ;;
       "-p" | "--path")
@@ -85,17 +83,16 @@ cache::lftp_put() {
     fi
 
     # checks if the key is present
-    cache::lftp "ls ${SEMAPHORE_CACHE_KEY_MD5}"
-
-    if [[ $E_FLMSNG = 1 ]]; then
-      cache::lftp "mkdir -p ${SEMAPHORE_CACHE_KEY_MD5}"
-
-      cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY_MD5}'..."
-      cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY_MD5}/"
-      cache::log "Upload complete."
-    else
-      cache::log "Key '${SEMAPHORE_CACHE_KEY_MD5}' already present on remote. Skipping."
+    cache::lftp "ls ${SEMAPHORE_CACHE_KEY}"
+    if [[ $E_FLMSNG != 1 ]]; then
+      cache::log "Key '${SEMAPHORE_CACHE_KEY}' already present on remote. Removing it and adding a new one."
+      cache::lftp "rm -r ${SEMAPHORE_CACHE_KEY}"
     fi
+
+    cache::lftp "mkdir -p ${SEMAPHORE_CACHE_KEY}"
+    cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
+    cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY}/"
+    cache::log "Upload complete."
   done
 }
 
@@ -124,8 +121,6 @@ cache::restore() {
         if [[ -z $SEMAPHORE_CACHE_KEY ]]; then
           cache::err "Cache key can't be empty!"
         fi
-
-        cache::calculate_key_md5
 
         shift 2
         ;;
@@ -165,15 +160,15 @@ cache::clear() {
 #   None
 ################################################################################
 cache::lftp_get() {
-  cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY_MD5}."
+  cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
 
   # checks if the key is present
-  cache::lftp "ls ${SEMAPHORE_CACHE_KEY_MD5}"
+  cache::lftp "ls ${SEMAPHORE_CACHE_KEY}"
 
   if [[ $E_FLMSNG = 1 ]]; then
     cache::log "File missing from remote. Skipping."
   else
-    cache::lftp "mirror ${SEMAPHORE_CACHE_KEY_MD5}/ ."
+    cache::lftp "mirror ${SEMAPHORE_CACHE_KEY}/ ."
     cache::log "Transfer completed."
   fi
 }
