@@ -89,9 +89,9 @@ cache::lftp_put() {
       cache::lftp "rm -r ${SEMAPHORE_CACHE_KEY}"
     fi
 
-    cache::lftp "mkdir -p ${SEMAPHORE_CACHE_KEY}"
+    #cache::lftp "mkdir -p ${SEMAPHORE_CACHE_KEY}"
     cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
-    cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY}/"
+    cache::lftp "put ${local_path} ${SEMAPHORE_CACHE_KEY}"
     cache::log "Upload complete."
   done
 }
