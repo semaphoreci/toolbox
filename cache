@@ -173,7 +173,7 @@ cache::lftp_get() {
   #else
   ls -lah
   cd /tmp
-  cache::lftp "get1 ${SEMAPHORE_CACHE_KEY}"
+  cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
   ls -lah
   cd -
   ls -lah
