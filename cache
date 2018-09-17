@@ -166,16 +166,18 @@ cache::lftp_get() {
   cache::lftp "ls"
 
   # checks if the key is present
-  cache::lftp "ls ${SEMAPHORE_CACHE_KEY}"
+  #cache::lftp "ls ${SEMAPHORE_CACHE_KEY}"
 
-  if [[ $E_FLMSNG = 1 ]]; then
-    cache::log "File missing from remote. Skipping."
-  else
+  #if [[ $E_FLMSNG = 1 ]]; then
+  #  cache::log "File missing from remote. Skipping."
+  #else
+  ls -1
     cache::lftp "get1 ${SEMAPHORE_CACHE_KEY}"
     tar xzf $SEMAPHORE_CACHE_KEY
     rm -rf $SEMAPHORE_CACHE_KEY
     cache::log "Transfer completed."
-  fi
+    ls -1
+  #fi
 }
 
 
