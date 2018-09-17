@@ -206,6 +206,8 @@ cache::lftp() {
   command_log=$(echo -e "$lftp_command" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
 
+  echo $command_log
+
   # Ignore the error when creating a directory which is already present
   if [[ "${command_log}" =~ 'File already exists' ]] && [[ "${lftp_command}" =~ 'mkdir' ]]; then
     W_FLAEX=1
