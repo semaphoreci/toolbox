@@ -137,6 +137,22 @@ cache::restore() {
   cache::lftp_get
 }
 
+################################################################################
+# Deletes all files on cache server
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   None
+################################################################################
+cache::clear() {
+  cache::log "\n### Deleting all caches ###"
+
+  cache::lftp "glob -a rm -r *"
+
+  cache::log "\n### Deleted all caches ###"
+}
 
 ################################################################################
 # Wrapper around LFTP 'get'
