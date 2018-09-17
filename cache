@@ -425,6 +425,11 @@ cache::main() {
 
       cache::store "$@"
       ;;
+    "clear" )
+      shift
+
+      cache::clear "$@"
+      ;;
     * )
       cache::print_usage
       ;;
