@@ -187,7 +187,7 @@ cache::lftp() {
     cache::err "LFTP command can't be empty!"
   fi
 
-  command_log=$(echo -e "$lftp_command" | lftp -v 1 -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
+  command_log=$(echo -e "$lftp_command" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
 
   # Ignore the error when creating a directory which is already present
