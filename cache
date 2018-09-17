@@ -163,6 +163,8 @@ cache::clear() {
 cache::lftp_get() {
   cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
 
+  cache::lftp "ls"
+
   # checks if the key is present
   cache::lftp "ls ${SEMAPHORE_CACHE_KEY}"
 
