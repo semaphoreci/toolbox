@@ -169,7 +169,9 @@ cache::lftp_get() {
   if [[ $E_FLMSNG = 1 ]]; then
     cache::log "File missing from remote. Skipping."
   else
-    cache::lftp "mirror ${SEMAPHORE_CACHE_KEY}/ ."
+    cache::lftp "get1 ${SEMAPHORE_CACHE_KEY}"
+    tar xzf $SEMAPHORE_CACHE_KEY
+    rm -rf $SEMAPHORE_CACHE_KEY
     cache::log "Transfer completed."
   fi
 }
