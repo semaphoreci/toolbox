@@ -89,9 +89,10 @@ cache::lftp_put() {
       cache::lftp "rm -r ${SEMAPHORE_CACHE_KEY}"
     fi
 
-    cache::lftp "mkdir -p ${SEMAPHORE_CACHE_KEY}"
+    tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
     cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
-    cache::lftp "mirror -R ${local_path} ${SEMAPHORE_CACHE_KEY}/"
+    cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
+    rm -rf /tmp/$SEMAPHORE_CACHE_KEY
     cache::log "Upload complete."
   done
 }
@@ -162,15 +163,12 @@ cache::clear() {
 cache::lftp_get() {
   cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
 
-  # checks if the key is present
-  cache::lftp "ls ${SEMAPHORE_CACHE_KEY}"
-
-  if [[ $E_FLMSNG = 1 ]]; then
-    cache::log "File missing from remote. Skipping."
-  else
-    cache::lftp "mirror ${SEMAPHORE_CACHE_KEY}/ ."
-    cache::log "Transfer completed."
-  fi
+  cd /tmp
+  cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
+  cd -
+  tar xzf /tmp/$SEMAPHORE_CACHE_KEY -C .
+  rm -rf /tmp/$SEMAPHORE_CACHE_KEY
+  cache::log "Transfer completed."
 }
 
 
@@ -200,6 +198,8 @@ cache::lftp() {
 
   command_log=$(echo -e "$lftp_command" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
+
+  echo $command_log
 
   # Ignore the error when creating a directory which is already present
   if [[ "${command_log}" =~ 'File already exists' ]] && [[ "${lftp_command}" =~ 'mkdir' ]]; then
