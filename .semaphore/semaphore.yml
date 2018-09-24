@@ -1,0 +1,18 @@
+version: "v1.0"
+name: First pipeline example
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+
+blocks:
+  - name: Build
+    task:
+      jobs:
+      - name: Setup bats-core
+        commands:
+          - checkout
+          - git submodule init && git submodule update
+          - sudo ./bats-core/install.sh /usr/local
+          - which bats
+          - bats tests
