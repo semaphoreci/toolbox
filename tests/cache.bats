@@ -1,8 +1,12 @@
 #!/usr/bin/env bats
 
-@test "Store file in cache" {
+load "support/bats-support/load"
+load "support/bats-assert/load"
+
+@test "store file in cache" {
   mkdir tmp && touch tmp/example.file
   run bash -c './cache store --key v4 --path tmp'
-  [ "$status" -eq 0 ]
-  [[ ${lines[4]} =~ "Starting upload" ]]
+
+  assert_success
+  assert_output --partial "Starting upload"
 }
