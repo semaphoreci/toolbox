@@ -24,3 +24,15 @@ teardown() {
   assert_success
   assert_output --partial "Deleting all caches"
 }
+
+@test "restoring directory from cache" {
+  mkdir tmp && touch tmp/example.file
+  cache store --key test-restoring --path tmp/example.file
+  rm -rf tmp
+  run bash -c './cache restore --key test-restoring'
+
+  assert_success
+  assert_output --partial "Transferring from cache repository, using cache key: test-restoring"
+  assert_output --partial "Transfer completed"
+  assert [ -e "tmp/example.file" ]
+}
