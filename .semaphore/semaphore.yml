@@ -9,10 +9,9 @@ blocks:
   - name: Build
     task:
       jobs:
-      - name: Setup bats-core
+      - name: Bats tests
         commands:
           - checkout
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
-          - which bats
           - bats tests
