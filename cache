@@ -82,9 +82,7 @@ cache::lftp_put() {
       continue
     fi
 
-    # checks if the key is present
-    cache::lftp "ls ${SEMAPHORE_CACHE_KEY}"
-    if [[ $E_FLMSNG != 1 ]]; then
+    if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
       cache::log "Key '${SEMAPHORE_CACHE_KEY}' already present on remote. Removing it and adding a new one."
       cache::lftp "rm -r ${SEMAPHORE_CACHE_KEY}"
     fi
@@ -161,6 +159,13 @@ cache::clear() {
 #   None
 ################################################################################
 cache::lftp_get() {
+   #  if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
+   #    cache::log "Key '${SEMAPHORE_CACHE_KEY}' already present on remote. Removing it and adding a new one."
+   #   cache::lftp "rm -r ${SEMAPHORE_CACHE_KEY}"
+   # else
+   #   cache::log "Key '${SEMAPHORE_CACHE_KEY}' does not exist on cache repository, skipping restore."
+   # fi
+
   cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
 
   cd /tmp
@@ -363,6 +368,24 @@ cache::check_env() {
   fi
 }
 
+
+################################################################################
+# Helper function to check if file is present on cache directory
+# Globals:
+#   E_FLMSNG
+# Arguments:
+#   key
+# Returns:
+#   0 or 1
+################################################################################
+cache::file_is_present() {
+  cache::lftp "ls $1"
+    if [[ "$E_FLMSNG" == "1" ]]; then
+      return 0
+    elif [[ "$E_FLMSNG" == "0" ]]; then
+      return 1
+    fi
+}
 
 ################################################################################
 # Helper function to show error messages and to terminate execution on error

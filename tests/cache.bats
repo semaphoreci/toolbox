@@ -57,5 +57,5 @@ teardown() {
 
   assert_success
   assert_output --partial "Transferring from cache repository, using cache key: test"
-  assert_output --partial "'test' does not exist on cache repository, skipping."
+  assert_output --partial "'test' does not exist on cache repository, skipping restore."
 }
