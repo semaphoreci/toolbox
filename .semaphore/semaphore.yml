@@ -6,10 +6,10 @@ agent:
     os_image: ubuntu1804
 
 blocks:
-  - name: Build
+  - name: Run Tests
     task:
       jobs:
-      - name: Bats tests
+      - name: Run Bats tests
         commands:
           - checkout
           - git submodule init && git submodule update
