@@ -379,12 +379,13 @@ cache::check_env() {
 #   0 or 1
 ################################################################################
 cache::file_is_present() {
+  echo $1
   cache::lftp "ls $1"
-    if [[ "$E_FLMSNG" == "1" ]]; then
-      return 0
-    elif [[ "$E_FLMSNG" == "0" ]]; then
-      return 1
-    fi
+  if [[ "$E_FLMSNG" == "1" ]]; then
+    true
+  elif [[ "$E_FLMSNG" == "0" ]]; then
+    false
+  fi
 }
 
 ################################################################################
