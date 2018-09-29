@@ -159,21 +159,18 @@ cache::clear() {
 #   None
 ################################################################################
 cache::lftp_get() {
-   #  if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
-   #    cache::log "Key '${SEMAPHORE_CACHE_KEY}' already present on remote. Removing it and adding a new one."
-   #   cache::lftp "rm -r ${SEMAPHORE_CACHE_KEY}"
-   # else
-   #   cache::log "Key '${SEMAPHORE_CACHE_KEY}' does not exist on cache repository, skipping restore."
-   # fi
-
   cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
 
-  cd /tmp
-  cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
-  cd -
-  tar xzf /tmp/$SEMAPHORE_CACHE_KEY -C .
-  rm -rf /tmp/$SEMAPHORE_CACHE_KEY
-  cache::log "Transfer completed."
+  if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
+    cd /tmp
+    cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
+    cd -
+    tar xzf /tmp/$SEMAPHORE_CACHE_KEY -C .
+    rm -rf /tmp/$SEMAPHORE_CACHE_KEY
+    cache::log "Transfer completed."
+  else
+    cache::log "Key '${SEMAPHORE_CACHE_KEY}' does not exist on cache repository, skipping restore."
+  fi
 }
 
 
@@ -379,12 +376,15 @@ cache::check_env() {
 #   0 or 1
 ################################################################################
 cache::file_is_present() {
-  echo $1
+  cache::log "Checking E_FLMSNG variable:"
+  echo $E_FLMSNG
   cache::lftp "ls $1"
+  cache::log "Checking E_FLMSNG variable:"
+  echo $E_FLMSNG
   if [[ "$E_FLMSNG" == "1" ]]; then
-    true
-  elif [[ "$E_FLMSNG" == "0" ]]; then
     false
+  elif [[ "$E_FLMSNG" == "0" ]]; then
+    true
   fi
 }
 

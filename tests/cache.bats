@@ -28,7 +28,6 @@ teardown() {
 @test "store existing local file which is already present in cache repository" {
   mkdir tmp && touch tmp/example.file
   cache store --key test-storing --path tmp
-  cache restore --key test-storing
   run bash -c './cache store --key test-storing --path tmp'
 
   assert_success
@@ -68,5 +67,5 @@ teardown() {
 
   assert_success
   assert_output --partial "Transferring from cache repository, using cache key: test"
-  assert_output --partial "'test' does not exist on cache repository, skipping restore."
+  assert_output --partial "Key 'test' does not exist on cache repository, skipping restore."
 }
