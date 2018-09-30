@@ -156,11 +156,11 @@ cache::clear() {
 #   None
 ################################################################################
 cache::list() {
-  cache::log "\n### Listing all caches ###"
+  cache::log "\n### Listing available keys in cache repository ###"
 
   cache::lftp "cls -l"
 
-  cache::log "\n### Listed all caches ###"
+  cache::log "\n### Listed available keys in cache repository ##"
 }
 
 ################################################################################
