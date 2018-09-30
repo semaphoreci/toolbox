@@ -209,9 +209,7 @@ cache::lftp() {
   local command_log
   local command_status
 
-  cache::log "Executing $1 via lftp"
   lftp_command=$1
-  cache::log "$lftp_command"
 
   if [[ -z $lftp_command ]]; then
     cache::err "LFTP command can't be empty!"
@@ -400,7 +398,6 @@ cache::file_is_present() {
   FILE_NAME=$1
   cache::log "Checking E_FLMSNG variable:"
   echo $E_FLMSNG
-  cache::log "Checking if file $1 is present in cache repository"
   cache::log "Checking if file $FILE_NAME is present in cache repository"
   cache::lftp "ls ${FILE_NAME}"
   cache::log "Checking E_FLMSNG variable:"
