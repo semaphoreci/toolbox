@@ -62,7 +62,6 @@ cache::store() {
   cache::lftp_put
 }
 
-
 ################################################################################
 # Wrapper around LFTP 'put'
 # Globals:
@@ -94,7 +93,6 @@ cache::lftp_put() {
     cache::log "Upload complete."
   done
 }
-
 
 ################################################################################
 # Download the files identified by the key to the path
@@ -160,7 +158,7 @@ cache::clear() {
 cache::list() {
   cache::log "\n### Listing all caches ###"
 
-  cache::lftp "ls"
+  cache::lftp "cls -l"
 
   cache::log "\n### Listed all caches ###"
 }
@@ -176,10 +174,10 @@ cache::list() {
 #   None
 ################################################################################
 cache::lftp_get() {
-  cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
-  echo $E_FLMSNG
+  cache::log "Using cache key: ${SEMAPHORE_CACHE_KEY}."
 
   if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
+    cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
     cd /tmp
     cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
     cd -
@@ -216,10 +214,10 @@ cache::lftp() {
     cache::err "LFTP command can't be empty!"
   fi
 
-  command_log=`$(echo -e "${lftp_command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)`
+  command_log=$(echo -e "${lftp_command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
 
-  cache::log "\n $command_log"
+  cache::log "\n$command_log"
 
   # Ignore the error when creating a directory which is already present
   if [[ "${command_log}" =~ 'File already exists' ]] && [[ "${lftp_command}" =~ 'mkdir' ]]; then
@@ -228,7 +226,7 @@ cache::lftp() {
     return
   fi
 
-  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'ls' ]]; then
+  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'cls' ]]; then
     E_FLMSNG=1
 
     return
@@ -237,7 +235,7 @@ cache::lftp() {
   if [[ $command_status -ne 0 ]]; then
     cache::log "Log:\n---\n${command_log}\n---\n"
     cache::err "Error while executing LFTP command '$lftp_command'"
-  fi
+   fi
 }
 
 ################################################################################
@@ -394,15 +392,12 @@ cache::check_env() {
 #   true or false
 ################################################################################
 cache::file_is_present() {
-  local FILE_NAME
+  local KEY
 
-  FILE_NAME=$1
-  cache::log "Checking E_FLMSNG variable:"
-  echo $E_FLMSNG
-  cache::log "Checking if file $FILE_NAME is present in cache repository"
-  cache::lftp "ls ${FILE_NAME}"
-  cache::log "Checking E_FLMSNG variable:"
-  echo $E_FLMSNG
+  KEY=$1
+  cache::log "Checking if key $KEY is present in cache repository"
+  cache::lftp "cls ${KEY}"
+
   if [[ "$E_FLMSNG" == "1" ]]; then
     false
   elif [[ "$E_FLMSNG" == "0" ]]; then
@@ -451,7 +446,6 @@ cache::main() {
   cache::check_ssh_key
   cache::load_ssh_key
   cache::check_env
-
 
   case "$1" in
     "restore" )
