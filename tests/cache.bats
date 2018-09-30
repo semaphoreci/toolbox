@@ -28,6 +28,7 @@ teardown() {
 @test "store existing local file which is already present in cache repository" {
   mkdir tmp && touch tmp/example.file
   cache store --key test-storing --path tmp
+  ./cache list
   run bash -c './cache store --key test-storing --path tmp'
 
   assert_success

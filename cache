@@ -149,6 +149,23 @@ cache::clear() {
 }
 
 ################################################################################
+# Lists all files on cache server
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   None
+################################################################################
+cache::list() {
+  cache::log "\n### Listing all caches ###"
+
+  cache::lftp "ls"
+
+  cache::log "\n### Listed all caches ###"
+}
+
+################################################################################
 # Wrapper around LFTP 'get'
 # Globals:
 #   SEMAPHORE_CACHE_KEY_MD5
@@ -446,6 +463,11 @@ cache::main() {
       shift
 
       cache::clear "$@"
+      ;;
+    "list" )
+      shift
+
+      cache::list "$@"
       ;;
     * )
       cache::print_usage
