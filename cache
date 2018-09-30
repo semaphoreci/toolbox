@@ -209,16 +209,18 @@ cache::lftp() {
   local command_log
   local command_status
 
+  cache::log "Executing $1 via lftp"
   lftp_command=$1
+  cache::log "$lftp_command"
 
   if [[ -z $lftp_command ]]; then
     cache::err "LFTP command can't be empty!"
   fi
 
-  command_log=$(echo -e "$lftp_command" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
+  command_log=`$(echo -e "${lftp_command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)`
   command_status=$?
 
-  echo $command_log
+  cache::log "\n $command_log"
 
   # Ignore the error when creating a directory which is already present
   if [[ "${command_log}" =~ 'File already exists' ]] && [[ "${lftp_command}" =~ 'mkdir' ]]; then
@@ -393,9 +395,14 @@ cache::check_env() {
 #   0 or 1
 ################################################################################
 cache::file_is_present() {
+  local FILE_NAME
+
+  FILE_NAME=$1
   cache::log "Checking E_FLMSNG variable:"
   echo $E_FLMSNG
-  cache::lftp "ls $1"
+  cache::log "Checking if file $1 is present in cache repository"
+  cache::log "Checking if file $FILE_NAME is present in cache repository"
+  cache::lftp "ls ${FILE_NAME}"
   cache::log "Checking E_FLMSNG variable:"
   echo $E_FLMSNG
   if [[ "$E_FLMSNG" == "1" ]]; then
