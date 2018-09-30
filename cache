@@ -177,6 +177,7 @@ cache::list() {
 ################################################################################
 cache::lftp_get() {
   cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
+  echo $E_FLMSNG
 
   if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
     cd /tmp
@@ -388,9 +389,9 @@ cache::check_env() {
 # Globals:
 #   E_FLMSNG
 # Arguments:
-#   key
+#   key (file name)
 # Returns:
-#   0 or 1
+#   true or false
 ################################################################################
 cache::file_is_present() {
   local FILE_NAME
