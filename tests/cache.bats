@@ -14,11 +14,14 @@ teardown() {
 
 @test "store local file to cache repository" {
   mkdir tmp && touch tmp/example.file
-  run bash -c './cache store --key test-storing --path tmp'
+  run ./cache store --key test-storing --path tmp
 
   assert_success
   assert_output --partial "Uploading 'tmp' with cache key 'test-storing'"
   assert_output --partial "Upload complete."
+
+  run ./cache has_key test-storing
+  assert_success
 }
 
 @test "store nonexistent local file to cache repository" {
@@ -32,12 +35,18 @@ teardown() {
 @test "store with key which is already present in cache repository" {
   mkdir tmp && touch tmp/example.file
   cache store --key test-storing --path tmp
-  ./cache list
+
+  run ./cache has_key test-storing
+  assert_success
+
   run bash -c './cache store --key test-storing --path tmp'
 
   assert_success
   assert_output --partial "Key 'test-storing' already present on remote."
   assert_output --partial "Upload complete."
+
+  run ./cache has_key test-storing
+  assert_success
 }
 
 ################################################################################
@@ -48,6 +57,10 @@ teardown() {
   mkdir tmp && mkdir tmp/first && mkdir tmp/first/second && touch tmp/first/second/example.file
   cache store --key restore-dir-hierarchy --path tmp/first/second
   rm -rf tmp
+
+  run ./cache has_key restore-dir-hierarchy
+  assert_success
+
   run ./cache restore --key restore-dir-hierarchy
 
   assert_success
@@ -58,7 +71,10 @@ teardown() {
 }
 
 @test "restoring nonexistent directory from cache" {
-  run bash -c './cache restore --key test'
+  run ./cache has_key test
+  assert_failure
+
+  run ./cache restore --key test
 
   assert_success
   assert_output --partial "Using cache key: test".
@@ -117,14 +133,14 @@ teardown() {
   run ./cache has_key example-key
 
   assert_success
-  assert_output --partial "Key example-key exists in cache repository"
+  assert_output --partial "Key example-key exists in cache repository."
 }
 
 @test "checking if nonexistent key is present in cache repository" {
-  cache clear
+  ./cache clear
   cache store --key example-key --path tmp
   run ./cache has_key example-key
 
-  assert_failure
-  assert_output --partial "Key example-key doesn't exist in cache repository"
+  assert_success
+  assert_output --partial "Key example-key doesn't exist in cache repository."
 }

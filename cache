@@ -164,6 +164,31 @@ cache::list() {
 }
 
 ################################################################################
+# Checks if a specified key is used in cache repository
+# Globals:
+#   None
+# Arguments:
+#   has_key
+# Returns:
+#   0 or 1
+################################################################################
+cache::has_key() {
+  local KEY
+
+  KEY=$1
+
+  if cache::file_is_present ${KEY}; then
+    cache::log "Key ${KEY} exists in cache repository."
+
+    exit 0
+  else
+    cache::log "Key ${KEY} doesn't exist in cache repository."
+
+    exit 1
+  fi
+}
+
+################################################################################
 # Wrapper around LFTP 'get'
 # Globals:
 #   SEMAPHORE_CACHE_KEY_MD5
@@ -467,6 +492,11 @@ cache::main() {
       shift
 
       cache::list "$@"
+      ;;
+    "has_key" )
+      shift
+
+      cache::has_key "$@"
       ;;
     * )
       cache::print_usage
