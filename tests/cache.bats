@@ -106,3 +106,25 @@ teardown() {
 
   assert_success
 }
+
+################################################################################
+# cache has_key
+################################################################################
+
+@test "checking if existing key is present in cache repository" {
+  mkdir tmp && touch tmp/example.file
+  cache store --key example-key --path tmp
+  run ./cache has_key example-key
+
+  assert_success
+  assert_output --partial "Key example-key exists in cache repository"
+}
+
+@test "checking if nonexistent key is present in cache repository" {
+  cache clear
+  cache store --key example-key --path tmp
+  run ./cache has_key example-key
+
+  assert_failure
+  assert_output --partial "Key example-key doesn't exist in cache repository"
+}
