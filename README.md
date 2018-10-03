@@ -10,7 +10,7 @@ git clone https://github.com/semaphoreci/toolbox.git ~/.toolbox
 # Install binaries
 bash ~/.toolbox/install-toolbox
 
-# Source functions into currect session
+# Source functions into current session
 source ~/.toolbox/toolbox
 
 # Add toolbox to your bash_profile to activate it in every SSH session
