@@ -4,7 +4,7 @@ load "support/bats-support/load"
 load "support/bats-assert/load"
 
 teardown() {
-  cache clear
+  ./cache clear
   rm -rf tmp
 }
 
@@ -25,7 +25,7 @@ teardown() {
 }
 
 @test "store nonexistent local file to cache repository" {
-  run bash -c './cache store --key test-storing --path tmp'
+  run ./cache store --key test-storing --path tmp
 
   assert_success
   assert_output --partial "Starting upload"
@@ -34,12 +34,12 @@ teardown() {
 
 @test "store with key which is already present in cache repository" {
   mkdir tmp && touch tmp/example.file
-  cache store --key test-storing --path tmp
+  ./cache store --key test-storing --path tmp
 
   run ./cache has_key test-storing
   assert_success
 
-  run bash -c './cache store --key test-storing --path tmp'
+  run ./cache store --key test-storing --path tmp
 
   assert_success
   assert_output --partial "Key 'test-storing' already present on remote."
@@ -55,7 +55,7 @@ teardown() {
 
 @test "restoring existing directory from cache and perserving the directory hierarchy" {
   mkdir tmp && mkdir tmp/first && mkdir tmp/first/second && touch tmp/first/second/example.file
-  cache store --key restore-dir-hierarchy --path tmp/first/second
+  ./cache store --key restore-dir-hierarchy --path tmp/first/second
   rm -rf tmp
 
   run ./cache has_key restore-dir-hierarchy
@@ -87,17 +87,19 @@ teardown() {
 
 @test "emptying cache repository when cache is not empty" {
   mkdir tmp && touch tmp/example.file
-  cache store --key test-emptying --path tmp
-  run bash -c './cache clear'
+  ./cache store --key test-emptying --path tmp
+  run ./cache clear
 
   assert_success
   assert_output --partial "Deleting all caches"
+  refute_output --partial "Usage: rm [-r] [-f] files..."
 }
 
 @test "emptying cache repository when cache is empty" {
-  run bash -c './cache clear'
+  run ./cache clear
 
   assert_success
+  refute_output --partial "Usage: rm [-r] [-f] files..."
 }
 
 ################################################################################
@@ -106,9 +108,9 @@ teardown() {
 
 @test "listing cache repository when it has cache keys" {
   mkdir tmp && touch tmp/example.file
-  cache store --key listing-v1 --path tmp
-  cache store --key listing-v2 --path tmp
-  run bash -c './cache list'
+  ./cache store --key listing-v1 --path tmp
+  ./cache store --key listing-v2 --path tmp
+  run ./cache list
 
   assert_success
   assert_output --partial "Listing available keys in cache repository"
@@ -118,7 +120,8 @@ teardown() {
 }
 
 @test "listing cache keys when cache is empty" {
-  run bash -c './cache clear'
+  ./cache clear
+  run ./cache list
 
   assert_success
 }
@@ -129,7 +132,7 @@ teardown() {
 
 @test "checking if existing key is present in cache repository" {
   mkdir tmp && touch tmp/example.file
-  cache store --key example-key --path tmp
+  ./cache store --key example-key --path tmp
   run ./cache has_key example-key
 
   assert_success
@@ -138,7 +141,7 @@ teardown() {
 
 @test "checking if nonexistent key is present in cache repository" {
   ./cache clear
-  cache store --key example-key --path tmp
+  ./cache store --key example-key --path tmp
   run ./cache has_key example-key
 
   assert_success
