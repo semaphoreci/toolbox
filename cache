@@ -139,9 +139,12 @@ cache::restore() {
 #   None
 ################################################################################
 cache::clear() {
+
   cache::log "\n### Deleting all caches ###"
 
-  cache::lftp "glob -a rm -r *"
+  cache::is_not_empty && echo "was true" || echo "was fales"
+  # cache::is_not_empty && cache::lftp "glob -a rm -r *" || echo "Nothing to delete"
+  # cache::lftp "glob -a rm -r *"
 
   cache::log "\n### Deleted all caches ###"
 }
@@ -242,6 +245,11 @@ cache::lftp() {
   command_log=$(echo -e "${lftp_command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
 
+  # is_not_empty
+  if [[ "${lftp_command}" == 'cls -l' ]]; then
+    [ "$command_log" ] && exit 0 || false
+  fi
+
   cache::log "\n$command_log"
 
   # Ignore the error when creating a directory which is already present
@@ -257,10 +265,11 @@ cache::lftp() {
     return
   fi
 
-  if [[ $command_status -ne 0 ]]; then
-    cache::log "Log:\n---\n${command_log}\n---\n"
-    cache::err "Error while executing LFTP command '$lftp_command'"
-   fi
+ # ignoring these lines in the output log until the debugging option is introduced
+ #  if [[ $command_status -ne 0 ]]; then
+ #    cache::log "Log:\n---\n${command_log}\n---\n"
+ #    cache::err "Error while executing LFTP command '$lftp_command'"
+ #   fi
 }
 
 ################################################################################
@@ -431,6 +440,19 @@ cache::file_is_present() {
 }
 
 ################################################################################
+# Helper function to check if file is present on cache directory
+# Globals:
+#   E_FLMSNG
+# Arguments:
+#   key (file name)
+# Returns:
+#   lists content or/
+################################################################################
+cache::is_not_empty() {
+  cache::lftp "cls -l"
+}
+
+################################################################################
 # Helper function to show error messages and to terminate execution on error
 # Globals:
 #   DATE_FORMAT
@@ -497,6 +519,11 @@ cache::main() {
       shift
 
       cache::has_key "$@"
+      ;;
+    "is_not_empty" )
+      shift
+
+      cache::is_not_empty "$@"
       ;;
     * )
       cache::print_usage
