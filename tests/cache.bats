@@ -9,6 +9,26 @@ teardown() {
 }
 
 ################################################################################
+# cache --verbose
+################################################################################
+
+@test "verbose flag logs detailed steps" {
+  skip
+  run ./cache --verbose
+
+  assert_success
+  assert_output --partial "Checking environment variables"
+}
+
+@test "default logs without verbose output" {
+  run ./cache
+
+  assert_success
+  refute_output --partial "Checking if LFPT is present"
+  refute_output --partial "Loading SSH key into the agent"
+  refute_output --partial "Checking environment variables"
+}
+################################################################################
 # cache store
 ################################################################################
 

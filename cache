@@ -4,6 +4,9 @@
 
 VERSION=0.3
 
+# Verbose output log
+VERBOSE_LOG=1
+
 # LFTP Errors
 E_NOSFL='Access failed: No such file'
 
@@ -13,6 +16,19 @@ E_FLAE=0 # file already exists
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
+
+################################################################################
+# Logs cache steps
+# Globals:
+#   VERBOSE_LOG
+# Arguments:
+#   None
+# Returns:
+#   None
+################################################################################
+cache::verbose() {
+  VERBOSE_LOG=0
+}
 
 ################################################################################
 # Send the files identified by the key, to the cache repository using LFTP
@@ -359,7 +375,10 @@ cache::check_ssh_key() {
 cache::load_ssh_key() {
   local ssh_agent_error_log
 
-  cache::log "Loading SSH key into the agent"
+  if [[ $VERBOSE_LOG == 0 ]]; then
+    cache::log "Loading SSH key into the agent"
+  fi
+
   ssh_agent_log=$(eval $(ssh-agent) 2>&1 && ssh-add <(cat ${SSH_PRIVATE_KEY_PATH}) 2>&1)
 
   if ! [[ $? = 0 ]]; then
@@ -378,7 +397,9 @@ cache::load_ssh_key() {
 #   none
 ################################################################################
 cache::check_lftp() {
-  cache::log "Checking if LFPT is present"
+  if [[ $VERBOSE_LOG == 0 ]]; then
+    cache::log "Checking if LFPT is present"
+  fi
 
   if which lftp &> /dev/null; then
     return 0;
@@ -400,7 +421,9 @@ cache::check_lftp() {
 #   none
 ################################################################################
 cache::check_env() {
-  cache::log "Checking environment variables"
+  if [[ $VERBOSE_LOG == 0 ]]; then
+    cache::log "Checking environment variables"
+  fi
 
   if [[ -z $SEMAPHORE_CACHE_URL ]]; then
     cache::err "'SEMAPHORE_CACHE_URL' environment variable not set!"
@@ -476,7 +499,11 @@ cache::err() {
 #   none
 ################################################################################
 cache::log() {
-  echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
+  if [[ $VERBOSE_LOG == 0 ]]; then
+    echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
+  else
+    echo -e "$@" >&2
+  fi
 }
 
 ################################################################################
@@ -495,6 +522,11 @@ cache::main() {
   cache::check_env
 
   case "$1" in
+    "--verbose" )
+      shift
+
+      cache::verbose "$@"
+      ;;
     "restore" )
       shift
 
