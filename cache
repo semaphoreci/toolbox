@@ -186,14 +186,15 @@ cache::has_key() {
 
   KEY=$1
 
-  if cache::file_is_present ${KEY}; then
+  if cache::file_is_present ${KEY}
+  then
     cache::log "Key ${KEY} exists in cache repository."
 
-    exit 0
+    return 0
   else
     cache::log "Key ${KEY} doesn't exist in cache repository."
 
-    exit 1
+    return 1
   fi
 }
 

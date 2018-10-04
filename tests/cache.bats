@@ -108,17 +108,26 @@ teardown() {
 @test "emptying cache repository when cache is not empty" {
   mkdir tmp && touch tmp/example.file
   ./cache store --key test-emptying --path tmp
+
+  run ./cache is_not_empty
+  assert_success
+
   run ./cache clear
 
   assert_success
-  assert_output --partial "Deleting all caches"
+  assert_output --partial "Cache repository is empty."
   refute_output --partial "Usage: rm [-r] [-f] files..."
+
 }
 
 @test "emptying cache repository when cache is empty" {
+  run ./cache is_not_empty
+  assert_failure
+
   run ./cache clear
 
   assert_success
+  assert_output --partial "Cache repository is empty."
   refute_output --partial "Usage: rm [-r] [-f] files..."
 }
 
@@ -126,23 +135,34 @@ teardown() {
 # cache list
 ################################################################################
 
-@test "listing cache repository when it has cache keys" {
+@test "listing cache repository when it has cached keys" {
   mkdir tmp && touch tmp/example.file
   ./cache store --key listing-v1 --path tmp
   ./cache store --key listing-v2 --path tmp
+
+  run ./cache is_not_empty
+  assert_success
+
+  run ./cache has_key listing-v1
+  assert_success
+
+  run ./cache has_key listing-v2
+  assert_success
+
   run ./cache list
 
   assert_success
-  assert_output --partial "Listing available keys in cache repository"
   assert_output --partial "listing-v1"
   assert_output --partial "listing-v2"
-  assert_output --partial "Listed available keys in cache repository"
 }
 
 @test "listing cache keys when cache is empty" {
   ./cache clear
-  run ./cache list
 
+  run ./cache is_not_empty
+  assert_failure
+
+  run ./cache list
   assert_success
 }
 
@@ -153,17 +173,26 @@ teardown() {
 @test "checking if existing key is present in cache repository" {
   mkdir tmp && touch tmp/example.file
   ./cache store --key example-key --path tmp
+
+  run ./cache is_not_empty
+  assert_success
+
   run ./cache has_key example-key
 
   assert_success
   assert_output --partial "Key example-key exists in cache repository."
 }
 
-@test "checking if nonexistent key is present in cache repository" {
-  ./cache clear
-  ./cache store --key example-key --path tmp
+@test "checking if nonexistent key is present in empty cache repository" {
+  run ./cache clear
+  assert_success
+
+  run ./cache is_not_empty
+  assert_failure
+
   run ./cache has_key example-key
 
-  assert_success
+  assert_failure
+  assert_output --partial "Checking if key example-key is present in cache repository"
   assert_output --partial "Key example-key doesn't exist in cache repository."
 }
