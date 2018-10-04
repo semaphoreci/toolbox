@@ -151,11 +151,12 @@ cache::restore() {
 #   None
 ################################################################################
 cache::clear() {
-  cache::is_not_empty && echo "was true" || echo "was fales"
-  # cache::is_not_empty && cache::lftp "glob -a rm -r *" || echo "Nothing to delete"
-  # cache::lftp "glob -a rm -r *"
+  if cache::is_not_empty
+  then
+    cache::lftp "glob -a rm -r *"
+  fi
 
-  cache::log "\n### Deleted all caches ###"
+  cache::log "Cache repository is empty."
 }
 
 ################################################################################
@@ -168,7 +169,7 @@ cache::clear() {
 #   None
 ################################################################################
 cache::list() {
-  cache::lftp "cls -l"
+  cache::lftp "cls"
 }
 
 ################################################################################
@@ -252,7 +253,7 @@ cache::lftp() {
 
   # is_not_empty
   if [[ "${lftp_command}" == 'cls -l' ]]; then
-    [ "$command_log" ] && exit 0 || false
+    [ "$command_log" ] && return 0 || return 1
   fi
 
   cache::log "\n$command_log"
@@ -458,10 +459,11 @@ cache::file_is_present() {
 # Arguments:
 #   key (file name)
 # Returns:
-#   lists content or/
+#   0 or 1
 ################################################################################
 cache::is_not_empty() {
   cache::lftp "cls -l"
+  return $?
 }
 
 ################################################################################
