@@ -41,8 +41,6 @@ cache::verbose() {
 #   None
 ################################################################################
 cache::store() {
-  cache::log "### Storing content on cache repository ###"
-
   if [[ $# -ne 4 ]]; then
     cache::err "Incorrect number of arguments!"
   fi
@@ -120,8 +118,6 @@ cache::lftp_put() {
 #   None
 ################################################################################
 cache::restore() {
-  cache::log "\n### Restoring content from cache repository ###"
-
   if [[ $# -ne 2 ]]; then
     cache::err "Incorrect number of arguments!"
   fi
@@ -155,9 +151,6 @@ cache::restore() {
 #   None
 ################################################################################
 cache::clear() {
-
-  cache::log "\n### Deleting all caches ###"
-
   cache::is_not_empty && echo "was true" || echo "was fales"
   # cache::is_not_empty && cache::lftp "glob -a rm -r *" || echo "Nothing to delete"
   # cache::lftp "glob -a rm -r *"
@@ -175,11 +168,7 @@ cache::clear() {
 #   None
 ################################################################################
 cache::list() {
-  cache::log "\n### Listing available keys in cache repository ###"
-
   cache::lftp "cls -l"
-
-  cache::log "\n### Listed available keys in cache repository ##"
 }
 
 ################################################################################
