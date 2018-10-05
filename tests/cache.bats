@@ -32,7 +32,7 @@ teardown() {
 # cache store
 ################################################################################
 
-@test "store local file to cache repository" {
+@test "save local file to cache store" {
   mkdir tmp && touch tmp/example.file
   run ./cache store --key test-storing --path tmp
 
@@ -44,7 +44,7 @@ teardown() {
   assert_success
 }
 
-@test "store nonexistent local file to cache repository" {
+@test "save nonexistent local file to cache store" {
   run ./cache store --key test-storing --path tmp
 
   assert_success
@@ -52,7 +52,7 @@ teardown() {
   assert_output --partial "'tmp' doesn't exist locally, skipping."
 }
 
-@test "store with key which is already present in cache repository" {
+@test "store with key which is already present in cache" {
   mkdir tmp && touch tmp/example.file
   ./cache store --key test-storing --path tmp
 
@@ -86,7 +86,7 @@ teardown() {
   assert_success
   assert [ -e "tmp/first/second/example.file" ]
   assert_output --partial "Using cache key: restore-dir-hierarchy."
-  assert_output --partial "Transferring from cache repository, using cache key: restore-dir-hierarchy."
+  assert_output --partial "Transferring from cache store, using cache key: restore-dir-hierarchy."
   assert_output --partial "Transfer completed."
 }
 
@@ -98,14 +98,14 @@ teardown() {
 
   assert_success
   assert_output --partial "Using cache key: test".
-  assert_output --partial "Key 'test' does not exist on cache repository, skipping restore."
+  assert_output --partial "Key 'test' does not exist in the cache store."
 }
 
 ################################################################################
 # cache clear
 ################################################################################
 
-@test "emptying cache repository when cache is not empty" {
+@test "emptying cache store when it isn't empty" {
   mkdir tmp && touch tmp/example.file
   ./cache store --key test-emptying --path tmp
 
@@ -115,19 +115,19 @@ teardown() {
   run ./cache clear
 
   assert_success
-  assert_output --partial "Cache repository is empty."
+  assert_output --partial "Cache is empty."
   refute_output --partial "Usage: rm [-r] [-f] files..."
 
 }
 
-@test "emptying cache repository when cache is empty" {
+@test "emptying cache store when cache is empty" {
   run ./cache is_not_empty
   assert_failure
 
   run ./cache clear
 
   assert_success
-  assert_output --partial "Cache repository is empty."
+  assert_output --partial "Cache is empty."
   refute_output --partial "Usage: rm [-r] [-f] files..."
 }
 
@@ -135,7 +135,7 @@ teardown() {
 # cache list
 ################################################################################
 
-@test "listing cache repository when it has cached keys" {
+@test "listing cache store when it has cached keys" {
   mkdir tmp && touch tmp/example.file
   ./cache store --key listing-v1 --path tmp
   ./cache store --key listing-v2 --path tmp
@@ -170,7 +170,7 @@ teardown() {
 # cache has_key
 ################################################################################
 
-@test "checking if existing key is present in cache repository" {
+@test "checking if an existing key is present in cache store" {
   mkdir tmp && touch tmp/example.file
   ./cache store --key example-key --path tmp
 
@@ -180,10 +180,10 @@ teardown() {
   run ./cache has_key example-key
 
   assert_success
-  assert_output --partial "Key example-key exists in cache repository."
+  assert_output --partial "Key example-key exists in the cache store."
 }
 
-@test "checking if nonexistent key is present in empty cache repository" {
+@test "checking if nonexistent key is present in empty cache store" {
   run ./cache clear
   assert_success
 
@@ -193,8 +193,8 @@ teardown() {
   run ./cache has_key example-key
 
   assert_failure
-  assert_output --partial "Checking if key example-key is present in cache repository"
-  assert_output --partial "Key example-key doesn't exist in cache repository."
+  assert_output --partial "Checking if key example-key is present in cache store."
+  assert_output --partial "Key example-key doesn't exist in the cache store."
 }
 
 ################################################################################

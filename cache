@@ -156,7 +156,7 @@ cache::clear() {
     cache::lftp "glob -a rm -r *"
   fi
 
-  cache::log "Cache repository is empty."
+  cache::log "Cache is empty."
 }
 
 ################################################################################
@@ -188,11 +188,11 @@ cache::has_key() {
 
   if cache::file_is_present ${KEY}
   then
-    cache::log "Key ${KEY} exists in cache repository."
+    cache::log "Key ${KEY} exists in the cache store."
 
     return 0
   else
-    cache::log "Key ${KEY} doesn't exist in cache repository."
+    cache::log "Key ${KEY} doesn't exist in the cache store."
 
     return 1
   fi
@@ -212,7 +212,7 @@ cache::lftp_get() {
   cache::log "Using cache key: ${SEMAPHORE_CACHE_KEY}."
 
   if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
-    cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
+    cache::log "Transferring from cache store, using cache key: ${SEMAPHORE_CACHE_KEY}."
     cd /tmp
     cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
     cd -
@@ -220,7 +220,7 @@ cache::lftp_get() {
     rm -rf /tmp/$SEMAPHORE_CACHE_KEY
     cache::log "Transfer completed."
   else
-    cache::log "Key '${SEMAPHORE_CACHE_KEY}' does not exist on cache repository, skipping restore."
+    cache::log "Key '${SEMAPHORE_CACHE_KEY}' does not exist in the cache store."
   fi
 }
 
@@ -443,7 +443,7 @@ cache::file_is_present() {
   local KEY
 
   KEY=$1
-  cache::log "Checking if key $KEY is present in cache repository"
+  cache::log "Checking if key $KEY is present in cache store."
   cache::lftp "cls ${KEY}"
 
   if [[ "$E_FLMSNG" == "1" ]]; then
