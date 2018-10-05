@@ -514,11 +514,6 @@ cache::main() {
   cache::check_env
 
   case "$1" in
-    "--verbose" )
-      shift
-
-      cache::verbose "$@"
-      ;;
     "restore" )
       shift
 
@@ -539,15 +534,15 @@ cache::main() {
 
       cache::list "$@"
       ;;
-    "has_key" )
-      shift
-
-      cache::has_key "$@"
-      ;;
     "is_not_empty" )
       shift
 
       cache::is_not_empty "$@"
+      ;;
+    "has_key" )
+      shift
+
+      cache::has_key "$@"
       ;;
     * )
       cache::print_usage

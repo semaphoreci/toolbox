@@ -13,7 +13,7 @@ teardown() {
 ################################################################################
 
 @test "verbose flag logs detailed steps" {
-  skip
+  skip "option is not public yet"
   run ./cache --verbose
 
   assert_success
@@ -195,4 +195,25 @@ teardown() {
   assert_failure
   assert_output --partial "Checking if key example-key is present in cache repository"
   assert_output --partial "Key example-key doesn't exist in cache repository."
+}
+
+################################################################################
+# cache is_not_empty
+################################################################################
+
+@test "is_not_empty should fail when cache store is empty" {
+  ./cache clear
+
+  run ./cache is_not_empty
+  assert_failure
+}
+
+@test "is_not_empty should not fail  when cache is not empty" {
+  ./cache store --key semaphore --path .semaphore
+
+  run ./cache list
+  assert_output --partial "semaphore"
+
+  run ./cache is_not_empty
+  assert_success
 }
