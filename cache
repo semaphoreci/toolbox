@@ -86,7 +86,7 @@ cache::store() {
 #   None
 ################################################################################
 cache::lftp_put() {
-  cache::log "Starting upload"
+  cache::log "Starting upload."
 
   for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
     if ! [[ -e $local_path ]]; then
@@ -96,7 +96,7 @@ cache::lftp_put() {
     fi
 
     if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
-      cache::log "Key '${SEMAPHORE_CACHE_KEY}' already present on remote. Removing it and adding a new one."
+      cache::log "Key '${SEMAPHORE_CACHE_KEY}' already present on remote, replacing it."
       cache::lftp "rm -r ${SEMAPHORE_CACHE_KEY}"
     fi
 
@@ -212,7 +212,6 @@ cache::lftp_get() {
   cache::log "Using cache key: ${SEMAPHORE_CACHE_KEY}."
 
   if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
-    cache::log "Transferring from cache store, using cache key: ${SEMAPHORE_CACHE_KEY}."
     cd /tmp
     cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
     cd -
@@ -257,10 +256,17 @@ cache::lftp() {
     [ "$command_log" ] && return 0 || return 1
   fi
 
-  # has_key
-  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'cls' ]]; then
-    E_FLMSNG=1
+  # has_key and file_is_present
+  if [[ "${lftp_command}" =~ 'cls' ]]; then
+    if [[ "${command_log}" =~ "${E_NOSFL}" ]]; then
+      E_FLMSNG=1
+    fi
+      ## skip log when cls is called
+      return
+  fi
 
+  # skip log when restoring from cache store
+  if [[ "${lftp_command}" =~ 'get1 -c' ]]; then
     return
   fi
 

@@ -37,8 +37,10 @@ teardown() {
   run ./cache store --key test-storing --path tmp
 
   assert_success
-  assert_output --partial "Uploading 'tmp' with cache key 'test-storing'"
-  assert_output --partial "Upload complete."
+  assert_line "Starting upload."
+  assert_line "Uploading 'tmp' with cache key 'test-storing'..."
+  assert_line "Upload complete."
+  refute_line "test-storing"
 
   run ./cache has_key test-storing
   assert_success
@@ -48,8 +50,8 @@ teardown() {
   run ./cache store --key test-storing --path tmp
 
   assert_success
-  assert_output --partial "Starting upload"
-  assert_output --partial "'tmp' doesn't exist locally."
+  assert_line "Starting upload."
+  assert_line "'tmp' doesn't exist locally."
 }
 
 @test "store with key which is already present in cache" {
@@ -62,8 +64,10 @@ teardown() {
   run ./cache store --key test-storing --path tmp
 
   assert_success
-  assert_output --partial "Key 'test-storing' already present on remote."
-  assert_output --partial "Upload complete."
+  assert_line "Starting upload."
+  assert_line "Key 'test-storing' already present on remote, replacing it."
+  assert_line "Upload complete."
+  refute_line "test-storing"
 
   run ./cache has_key test-storing
   assert_success
@@ -86,7 +90,6 @@ teardown() {
   assert_success
   assert [ -e "tmp/first/second/example.file" ]
   assert_output --partial "Using cache key: restore-dir-hierarchy."
-  assert_output --partial "Transferring from cache store, using cache key: restore-dir-hierarchy."
   assert_output --partial "Transfer completed."
   refute_output --partial "/home/semaphore/toolbox"
 }
