@@ -49,7 +49,7 @@ teardown() {
 
   assert_success
   assert_output --partial "Starting upload"
-  assert_output --partial "'tmp' doesn't exist locally, skipping."
+  assert_output --partial "'tmp' doesn't exist locally."
 }
 
 @test "store with key which is already present in cache" {
@@ -88,6 +88,7 @@ teardown() {
   assert_output --partial "Using cache key: restore-dir-hierarchy."
   assert_output --partial "Transferring from cache store, using cache key: restore-dir-hierarchy."
   assert_output --partial "Transfer completed."
+  refute_output --partial "/home/semaphore/toolbox"
 }
 
 @test "restoring nonexistent directory from cache" {
@@ -99,6 +100,7 @@ teardown() {
   assert_success
   assert_output --partial "Using cache key: test".
   assert_output --partial "Key 'test' does not exist in the cache store."
+  refute_output --partial "/home/semaphore/toolbox"
 }
 
 ################################################################################
@@ -193,7 +195,6 @@ teardown() {
   run ./cache has_key example-key
 
   assert_failure
-  assert_output --partial "Checking if key example-key is present in cache store."
   assert_output --partial "Key example-key doesn't exist in the cache store."
 }
 

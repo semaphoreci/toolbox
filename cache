@@ -90,7 +90,7 @@ cache::lftp_put() {
 
   for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
     if ! [[ -e $local_path ]]; then
-      cache::log "'${local_path}' doesn't exist locally, skipping."
+      cache::log "'${local_path}' doesn't exist locally."
 
       continue
     fi
@@ -257,17 +257,18 @@ cache::lftp() {
     [ "$command_log" ] && return 0 || return 1
   fi
 
+  # has_key
+  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'cls' ]]; then
+    E_FLMSNG=1
+
+    return
+  fi
+
   cache::log "\n$command_log"
 
   # Ignore the error when creating a directory which is already present
   if [[ "${command_log}" =~ 'File already exists' ]] && [[ "${lftp_command}" =~ 'mkdir' ]]; then
     W_FLAEX=1
-
-    return
-  fi
-
-  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'cls' ]]; then
-    E_FLMSNG=1
 
     return
   fi
@@ -443,7 +444,10 @@ cache::file_is_present() {
   local KEY
 
   KEY=$1
-  cache::log "Checking if key $KEY is present in cache store."
+  if [[ $VERBOSE_LOG == 0 ]]; then
+    cache::log "Checking if key $KEY is present in cache store."
+  fi
+
   cache::lftp "cls ${KEY}"
 
   if [[ "$E_FLMSNG" == "1" ]]; then
