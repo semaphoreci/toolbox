@@ -169,7 +169,7 @@ cache::clear() {
 #   None
 ################################################################################
 cache::list() {
-  cache::lftp "cls"
+  cache::lftp "cls" "with_logs"
 }
 
 ################################################################################
@@ -214,7 +214,7 @@ cache::lftp_get() {
   if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
     cd /tmp
     cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
-    cd -
+    cd - &>/dev/null
     tar xzf /tmp/$SEMAPHORE_CACHE_KEY -C .
     rm -rf /tmp/$SEMAPHORE_CACHE_KEY
     cache::log "Transfer completed."
@@ -234,15 +234,18 @@ cache::lftp_get() {
 #   SEMAPHORE_CACHE_USERNAME
 # Arguments:
 #   command
+#   log - when set to "with_logs" it prints command output log
 # Returns:
 #   None
 ################################################################################
 cache::lftp() {
   local lftp_command
+  local print_log
   local command_log
   local command_status
 
   lftp_command=$1
+  print_log=${2:-false}
 
   if [[ -z $lftp_command ]]; then
     cache::err "LFTP command can't be empty!"
@@ -251,26 +254,25 @@ cache::lftp() {
   command_log=$(echo -e "${lftp_command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
 
+  if [[ "${print_log}" == "with_logs" ]] && [ -n "$command_log" ]; then
+    cache::log "$command_log"
+  fi
+
   # is_not_empty
   if [[ "${lftp_command}" == 'cls -l' ]]; then
     [ "$command_log" ] && return 0 || return 1
   fi
 
-  # has_key and file_is_present
-  if [[ "${lftp_command}" =~ 'cls' ]]; then
-    if [[ "${command_log}" =~ "${E_NOSFL}" ]]; then
-      E_FLMSNG=1
-    fi
-      ## skip log when cls is called
-      return
+  if [[ "${lftp_command}" == 'cls' ]] && [ -z "$command_log" ]; then
+    echo "Cache is empty."
   fi
 
-  # skip log when restoring from cache store
-  if [[ "${lftp_command}" =~ 'get1 -c' ]]; then
+  # has_key and file_is_present
+  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'cls' ]]; then
+    E_FLMSNG=1
+
     return
   fi
-
-  cache::log "\n$command_log"
 
   # Ignore the error when creating a directory which is already present
   if [[ "${command_log}" =~ 'File already exists' ]] && [[ "${lftp_command}" =~ 'mkdir' ]]; then

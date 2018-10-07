@@ -28,6 +28,7 @@ teardown() {
   refute_output --partial "Loading SSH key into the agent"
   refute_output --partial "Checking environment variables"
 }
+
 ################################################################################
 # cache store
 ################################################################################
@@ -121,7 +122,7 @@ teardown() {
 
   assert_success
   assert_output --partial "Cache is empty."
-  refute_output --partial "Usage: rm [-r] [-f] files..."
+  refute_output --partial "Usage: rm [-r] [-f] files"
 
 }
 
@@ -132,8 +133,8 @@ teardown() {
   run ./cache clear
 
   assert_success
-  assert_output --partial "Cache is empty."
-  refute_output --partial "Usage: rm [-r] [-f] files..."
+  assert_line "Cache is empty."
+  refute_output --partial "Usage: rm [-r] [-f] files"
 }
 
 ################################################################################
@@ -157,8 +158,8 @@ teardown() {
   run ./cache list
 
   assert_success
-  assert_output --partial "listing-v1"
-  assert_output --partial "listing-v2"
+  assert_line "listing-v1"
+  assert_line "listing-v2"
 }
 
 @test "listing cache keys when cache is empty" {
@@ -169,6 +170,7 @@ teardown() {
 
   run ./cache list
   assert_success
+  assert_line "Cache is empty."
 }
 
 ################################################################################
@@ -212,7 +214,7 @@ teardown() {
   assert_failure
 }
 
-@test "is_not_empty should not fail  when cache is not empty" {
+@test "is_not_empty should not fail when cache is not empty" {
   ./cache store --key semaphore --path .semaphore
 
   run ./cache list
