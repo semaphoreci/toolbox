@@ -4,6 +4,9 @@
 
 VERSION=0.3
 
+# Verbose output log
+VERBOSE_LOG=1
+
 # LFTP Errors
 E_NOSFL='Access failed: No such file'
 
@@ -13,6 +16,19 @@ E_FLAE=0 # file already exists
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
+
+################################################################################
+# Logs cache steps
+# Globals:
+#   VERBOSE_LOG
+# Arguments:
+#   None
+# Returns:
+#   None
+################################################################################
+cache::verbose() {
+  VERBOSE_LOG=0
+}
 
 ################################################################################
 # Send the files identified by the key, to the cache repository using LFTP
@@ -25,8 +41,6 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 #   None
 ################################################################################
 cache::store() {
-  cache::log "### Storing content on cache repository ###"
-
   if [[ $# -ne 4 ]]; then
     cache::err "Incorrect number of arguments!"
   fi
@@ -62,7 +76,6 @@ cache::store() {
   cache::lftp_put
 }
 
-
 ################################################################################
 # Wrapper around LFTP 'put'
 # Globals:
@@ -73,19 +86,17 @@ cache::store() {
 #   None
 ################################################################################
 cache::lftp_put() {
-  cache::log "Starting upload"
+  cache::log "Starting upload."
 
   for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
     if ! [[ -e $local_path ]]; then
-      cache::log "'${local_path}' doesn't exist locally, skipping."
+      cache::log "'${local_path}' doesn't exist locally."
 
       continue
     fi
 
-    # checks if the key is present
-    cache::lftp "ls ${SEMAPHORE_CACHE_KEY}"
-    if [[ $E_FLMSNG != 1 ]]; then
-      cache::log "Key '${SEMAPHORE_CACHE_KEY}' already present on remote. Removing it and adding a new one."
+    if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
+      cache::log "Key '${SEMAPHORE_CACHE_KEY}' already present on remote, replacing it."
       cache::lftp "rm -r ${SEMAPHORE_CACHE_KEY}"
     fi
 
@@ -97,7 +108,6 @@ cache::lftp_put() {
   done
 }
 
-
 ################################################################################
 # Download the files identified by the key to the path
 # Globals:
@@ -108,8 +118,6 @@ cache::lftp_put() {
 #   None
 ################################################################################
 cache::restore() {
-  cache::log "\n### Restoring content from cache repository ###"
-
   if [[ $# -ne 2 ]]; then
     cache::err "Incorrect number of arguments!"
   fi
@@ -143,11 +151,51 @@ cache::restore() {
 #   None
 ################################################################################
 cache::clear() {
-  cache::log "\n### Deleting all caches ###"
+  if cache::is_not_empty
+  then
+    cache::lftp "glob -a rm -r *"
+  fi
 
-  cache::lftp "glob -a rm -r *"
+  cache::log "Cache is empty."
+}
 
-  cache::log "\n### Deleted all caches ###"
+################################################################################
+# Lists all files on cache server
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   None
+################################################################################
+cache::list() {
+  cache::lftp "cls" "with_logs"
+}
+
+################################################################################
+# Checks if a specified key is used in cache repository
+# Globals:
+#   None
+# Arguments:
+#   has_key
+# Returns:
+#   0 or 1
+################################################################################
+cache::has_key() {
+  local KEY
+
+  KEY=$1
+
+  if cache::file_is_present ${KEY}
+  then
+    cache::log "Key ${KEY} exists in the cache store."
+
+    return 0
+  else
+    cache::log "Key ${KEY} doesn't exist in the cache store."
+
+    return 1
+  fi
 }
 
 ################################################################################
@@ -161,14 +209,18 @@ cache::clear() {
 #   None
 ################################################################################
 cache::lftp_get() {
-  cache::log "Transferring from cache repository, using cache key: ${SEMAPHORE_CACHE_KEY}."
+  cache::log "Using cache key: ${SEMAPHORE_CACHE_KEY}."
 
-  cd /tmp
-  cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
-  cd -
-  tar xzf /tmp/$SEMAPHORE_CACHE_KEY -C .
-  rm -rf /tmp/$SEMAPHORE_CACHE_KEY
-  cache::log "Transfer completed."
+  if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
+    cd /tmp
+    cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
+    cd - &>/dev/null
+    tar xzf /tmp/$SEMAPHORE_CACHE_KEY -C .
+    rm -rf /tmp/$SEMAPHORE_CACHE_KEY
+    cache::log "Transfer completed."
+  else
+    cache::log "Key '${SEMAPHORE_CACHE_KEY}' does not exist in the cache store."
+  fi
 }
 
 
@@ -182,24 +234,45 @@ cache::lftp_get() {
 #   SEMAPHORE_CACHE_USERNAME
 # Arguments:
 #   command
+#   log - when set to "with_logs" it prints command output log
 # Returns:
 #   None
 ################################################################################
 cache::lftp() {
   local lftp_command
+  local print_log
   local command_log
   local command_status
 
   lftp_command=$1
+  print_log=${2:-false}
 
   if [[ -z $lftp_command ]]; then
     cache::err "LFTP command can't be empty!"
   fi
 
-  command_log=$(echo -e "$lftp_command" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
+  command_log=$(echo -e "${lftp_command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
 
-  echo $command_log
+  if [[ "${print_log}" == "with_logs" ]] && [ -n "$command_log" ]; then
+    cache::log "$command_log"
+  fi
+
+  # is_not_empty
+  if [[ "${lftp_command}" == 'cls -l' ]]; then
+    [ "$command_log" ] && return 0 || return 1
+  fi
+
+  if [[ "${lftp_command}" == 'cls' ]] && [ -z "$command_log" ]; then
+    echo "Cache is empty."
+  fi
+
+  # has_key and file_is_present
+  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'cls' ]]; then
+    E_FLMSNG=1
+
+    return
+  fi
 
   # Ignore the error when creating a directory which is already present
   if [[ "${command_log}" =~ 'File already exists' ]] && [[ "${lftp_command}" =~ 'mkdir' ]]; then
@@ -208,16 +281,11 @@ cache::lftp() {
     return
   fi
 
-  if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'ls' ]]; then
-    E_FLMSNG=1
-
-    return
-  fi
-
-  if [[ $command_status -ne 0 ]]; then
-    cache::log "Log:\n---\n${command_log}\n---\n"
-    cache::err "Error while executing LFTP command '$lftp_command'"
-  fi
+ # ignoring these lines in the output log until the debugging option is introduced
+ #  if [[ $command_status -ne 0 ]]; then
+ #    cache::log "Log:\n---\n${command_log}\n---\n"
+ #    cache::err "Error while executing LFTP command '$lftp_command'"
+ #   fi
 }
 
 ################################################################################
@@ -307,7 +375,10 @@ cache::check_ssh_key() {
 cache::load_ssh_key() {
   local ssh_agent_error_log
 
-  cache::log "Loading SSH key into the agent"
+  if [[ $VERBOSE_LOG == 0 ]]; then
+    cache::log "Loading SSH key into the agent"
+  fi
+
   ssh_agent_log=$(eval $(ssh-agent) 2>&1 && ssh-add <(cat ${SSH_PRIVATE_KEY_PATH}) 2>&1)
 
   if ! [[ $? = 0 ]]; then
@@ -326,7 +397,9 @@ cache::load_ssh_key() {
 #   none
 ################################################################################
 cache::check_lftp() {
-  cache::log "Checking if LFPT is present"
+  if [[ $VERBOSE_LOG == 0 ]]; then
+    cache::log "Checking if LFPT is present"
+  fi
 
   if which lftp &> /dev/null; then
     return 0;
@@ -348,7 +421,9 @@ cache::check_lftp() {
 #   none
 ################################################################################
 cache::check_env() {
-  cache::log "Checking environment variables"
+  if [[ $VERBOSE_LOG == 0 ]]; then
+    cache::log "Checking environment variables"
+  fi
 
   if [[ -z $SEMAPHORE_CACHE_URL ]]; then
     cache::err "'SEMAPHORE_CACHE_URL' environment variable not set!"
@@ -365,6 +440,46 @@ cache::check_env() {
 
 
 ################################################################################
+# Helper function to check if file is present on cache directory
+# Globals:
+#   E_FLMSNG
+# Arguments:
+#   key (file name)
+# Returns:
+#   true or false
+################################################################################
+cache::file_is_present() {
+  local KEY
+
+  KEY=$1
+  if [[ $VERBOSE_LOG == 0 ]]; then
+    cache::log "Checking if key $KEY is present in cache store."
+  fi
+
+  cache::lftp "cls ${KEY}"
+
+  if [[ "$E_FLMSNG" == "1" ]]; then
+    false
+  elif [[ "$E_FLMSNG" == "0" ]]; then
+    true
+  fi
+}
+
+################################################################################
+# Helper function to check if file is present on cache directory
+# Globals:
+#   E_FLMSNG
+# Arguments:
+#   key (file name)
+# Returns:
+#   0 or 1
+################################################################################
+cache::is_not_empty() {
+  cache::lftp "cls -l"
+  return $?
+}
+
+################################################################################
 # Helper function to show error messages and to terminate execution on error
 # Globals:
 #   DATE_FORMAT
@@ -375,8 +490,6 @@ cache::check_env() {
 ################################################################################
 cache::err() {
   echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
-
-  exit 1
 }
 
 
@@ -390,7 +503,11 @@ cache::err() {
 #   none
 ################################################################################
 cache::log() {
-  echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
+  if [[ $VERBOSE_LOG == 0 ]]; then
+    echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
+  else
+    echo -e "$@" >&2
+  fi
 }
 
 ################################################################################
@@ -408,7 +525,6 @@ cache::main() {
   cache::load_ssh_key
   cache::check_env
 
-
   case "$1" in
     "restore" )
       shift
@@ -424,6 +540,21 @@ cache::main() {
       shift
 
       cache::clear "$@"
+      ;;
+    "list" )
+      shift
+
+      cache::list "$@"
+      ;;
+    "is_not_empty" )
+      shift
+
+      cache::is_not_empty "$@"
+      ;;
+    "has_key" )
+      shift
+
+      cache::has_key "$@"
       ;;
     * )
       cache::print_usage
