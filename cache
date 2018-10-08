@@ -169,7 +169,7 @@ cache::clear() {
 #   None
 ################################################################################
 cache::list() {
-  cache::lftp "cls" "with_logs"
+  cache::lftp "cls --sort=date -l" "with_logs"
 }
 
 ################################################################################
@@ -263,7 +263,7 @@ cache::lftp() {
     [ "$command_log" ] && return 0 || return 1
   fi
 
-  if [[ "${lftp_command}" == 'cls' ]] && [ -z "$command_log" ]; then
+  if [[ "${lftp_command}" == 'cls --sort=date -l' ]] && [ -z "$command_log" ]; then
     echo "Cache is empty."
   fi
 

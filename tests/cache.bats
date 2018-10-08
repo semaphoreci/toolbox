@@ -158,8 +158,8 @@ teardown() {
   run ./cache list
 
   assert_success
-  assert_line "listing-v1"
-  assert_line "listing-v2"
+  assert_output --partial "listing-v1"
+  assert_output --partial "listing-v2"
 }
 
 @test "listing cache keys when cache is empty" {
