@@ -136,11 +136,11 @@ cache::restore() {
     esac
   done
 
-  cache::new_lftp "cls --sort=date"
+  cache::downlaod_keys /tmp/cache-keys
 
   for cache_key in ${SEMAPHORE_CACHE_KEYS//,/ }; do
 
-    match=$(grep -m 1 $cache_key /tmp/cache_list)
+    match=$(grep -m 1 $cache_key /tmp/cache-keys)
 
     if [[ ! -z "$match" ]]; then
       cache::log "HIT: ${cache_key}, using key ${match}"
@@ -151,7 +151,7 @@ cache::restore() {
     fi
   done
 
-  rm -f /tmp/cache_list
+  rm -f /tmp/cache-keys
 }
 
 ################################################################################
@@ -211,39 +211,16 @@ cache::has_key() {
   fi
 }
 
-################################################################################
-# Wrapper around LFTP
-# Globals:
-#   E_FLMSNG
-#   E_NOSFL
-#   W_FLAEX
-#   SEMAPHORE_CACHE_URL
-#   SEMAPHORE_CACHE_USERNAME
-# Arguments:
-#   command
-#   log - when set to "with_logs" it prints command output log
-# Returns:
-#   None
-################################################################################
-cache::new_lftp() {
-  local lftp_command
-  local print_log
-  local command_log
-  local command_status
+cache::downlaod_keys() {
+  local command
+  local output
+  local file
+  command="cls --sort=date"
+  file=$1
 
-  lftp_command=$1
-  print_log=${2:-false}
+  output=$(echo -e "${command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
 
-  if [[ -z $lftp_command ]]; then
-    cache::err "LFTP command can't be empty!"
-  fi
-
-  command_log=$(echo -e "${lftp_command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
-  command_status=$?
-
-  echo -e "$command_log" > /tmp/cache_list
-
-  return $command_status
+  echo -e "$output" > $file
 }
 
 ################################################################################
