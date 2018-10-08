@@ -138,14 +138,25 @@ cache::restore() {
     esac
   done
 
-  # looping and getting
-  for cache_key in ${SEMAPHORE_CACHE_KEYS//,/ }; do
-    echo "XXX KEY: ${cache_key}"
-    cache::key_matches_something ${cache_key} && echo "Postoji nesto" || echo "NE"
+  cache::new_lftp "cls --sort=date"
 
+  for cache_key in ${SEMAPHORE_CACHE_KEYS//,/ }; do
+    # cache::log "Trying to restore key ${cache_key}."
+
+    match=$(grep -m 1 $cache_key /tmp/cache_list)
+    # echo "xxx match: $match"
+
+    if [[ ! -z "$match" ]]; then
+      cache::log "HIT: ${cache_key}, using key ${match}"
+      cache::new_lftp_get $match
+      break
+    else
+      # cache::log "Key ${cache_key} not found in cache."
+      cache::log "MISS: ${cache_key}"
+    fi
   done
 
-  #cache::lftp_get
+  rm -f /tmp/cache_list
 }
 
 ################################################################################
@@ -206,31 +217,6 @@ cache::has_key() {
 }
 
 ################################################################################
-# Wrapper around LFTP 'get'
-# Globals:
-#   SEMAPHORE_CACHE_KEY_MD5
-#   E_FLMSNG
-# Arguments:
-#   None
-# Returns:
-#   None
-################################################################################
-cache::lftp_get() {
-  cache::log "Using cache key: ${SEMAPHORE_CACHE_KEY}."
-
-  if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
-    cd /tmp
-    cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
-    cd - &>/dev/null
-    tar xzf /tmp/$SEMAPHORE_CACHE_KEY -C .
-    rm -rf /tmp/$SEMAPHORE_CACHE_KEY
-    cache::log "Transfer completed."
-  else
-    cache::log "Key '${SEMAPHORE_CACHE_KEY}' does not exist in the cache store."
-  fi
-}
-
-################################################################################
 # Wrapper around LFTP
 # Globals:
 #   E_FLMSNG
@@ -262,10 +248,39 @@ cache::new_lftp() {
   command_log=$(echo -e "${lftp_command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
 
-  echo "COMMAND LOG: $command_log"
   echo "COMMAND STATUS: $command_status"
 
+  echo -e "$command_log" > /tmp/cache_list
+
   return $command_status
+}
+
+################################################################################
+# Wrapper around LFTP 'get'
+# Globals:
+#   SEMAPHORE_CACHE_KEY_MD5
+#   E_FLMSNG
+# Arguments:
+#   None
+# Returns:
+#   None
+################################################################################
+cache::new_lftp_get() {
+  local key
+
+  key=$1
+
+  if cache::file_is_present $key; then
+    cd /tmp
+    cache::lftp "get1 -c $key"
+    cd - &>/dev/null
+    restored_path=$(tar -ztvf /tmp/$key | head -1 | awk '{print $6}')
+    tar xzf /tmp/$key -C .
+    rm -rf /tmp/$key
+    cache::log "Restored: ${restored_path}"
+  else
+    cache::log "Key '$key' does not exist in the cache store."
+  fi
 }
 
 ################################################################################
@@ -528,7 +543,7 @@ cache::key_matches_something() {
     cache::log "Checking if key $KEY is present in cache store."
   fi
 
-  cache::new_lftp "glob --exist ${KEY}"
+  cache::new_lftp "cls --sort=date"
 }
 
 
