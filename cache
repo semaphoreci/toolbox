@@ -139,17 +139,14 @@ cache::restore() {
   cache::new_lftp "cls --sort=date"
 
   for cache_key in ${SEMAPHORE_CACHE_KEYS//,/ }; do
-    # cache::log "Trying to restore key ${cache_key}."
 
     match=$(grep -m 1 $cache_key /tmp/cache_list)
-    # echo "xxx match: $match"
 
     if [[ ! -z "$match" ]]; then
       cache::log "HIT: ${cache_key}, using key ${match}"
-      cache::new_lftp_get $match
+      cache::lftp_get $match
       break
     else
-      # cache::log "Key ${cache_key} not found in cache."
       cache::log "MISS: ${cache_key}"
     fi
   done
@@ -259,7 +256,7 @@ cache::new_lftp() {
 # Returns:
 #   None
 ################################################################################
-cache::new_lftp_get() {
+cache::lftp_get() {
   local key
 
   key=$1
@@ -516,28 +513,6 @@ cache::file_is_present() {
   elif [[ "$E_FLMSNG" == "0" ]]; then
     true
   fi
-}
-
-################################################################################
-# Helper function to check if file is present on cache directory
-# Globals:
-#   E_FLMSNG
-# Arguments:
-#   key (file name)
-# Returns:
-#   true or false
-################################################################################
-cache::key_matches_something() {
-  local KEY
-
-  KEY=$1
-
-  echo "KEY IS: $KEY"
-  if [[ $VERBOSE_LOG == 0 ]]; then
-    cache::log "Checking if key $KEY is present in cache store."
-  fi
-
-  cache::new_lftp "cls --sort=date"
 }
 
 
