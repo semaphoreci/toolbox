@@ -38,7 +38,6 @@ teardown() {
   run ./cache store --key test-storing --path tmp
 
   assert_success
-  assert_line "Starting upload."
   assert_line "Uploading 'tmp' with cache key 'test-storing'..."
   assert_line "Upload complete."
   refute_line "test-storing"
@@ -51,7 +50,6 @@ teardown() {
   run ./cache store --key test-storing --path tmp
 
   assert_success
-  assert_line "Starting upload."
   assert_line "'tmp' doesn't exist locally."
 }
 
@@ -65,9 +63,7 @@ teardown() {
   run ./cache store --key test-storing --path tmp
 
   assert_success
-  assert_line "Starting upload."
-  assert_line "Key 'test-storing' already present on remote, replacing it."
-  assert_line "Upload complete."
+  assert_line "Key 'test-storing' already exists."
   refute_line "test-storing"
 
   run ./cache has_key test-storing
@@ -90,8 +86,8 @@ teardown() {
 
   assert_success
   assert [ -e "tmp/first/second/example.file" ]
-  assert_output --partial "Using cache key: restore-dir-hierarchy."
-  assert_output --partial "Transfer completed."
+  assert_line "HIT: restore-dir-hierarchy, using key restore-dir-hierarchy"
+  assert_output --partial "Restored: tmp/first/second/"
   refute_output --partial "/home/semaphore/toolbox"
 }
 
@@ -102,8 +98,20 @@ teardown() {
   run ./cache restore --key test
 
   assert_success
-  assert_output --partial "Using cache key: test".
-  assert_output --partial "Key 'test' does not exist in the cache store."
+  assert_line "MISS: test"
+  refute_output --partial "/home/semaphore/toolbox"
+}
+
+@test "fallback key prototype" {
+  touch tmp.file
+  ./cache store --key v1-gems-master-p12q13r34 --path tmp.file
+
+  run ./cache restore --key v1-gems-master-2new99666,v1-gems-master-*
+
+  assert_success
+  assert_line "MISS: v1-gems-master-2new99666"
+  assert_line "HIT: v1-gems-master-*, using key v1-gems-master-p12q13r34"
+  assert_line "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
 }
 
@@ -158,8 +166,8 @@ teardown() {
   run ./cache list
 
   assert_success
-  assert_line "listing-v1"
-  assert_line "listing-v2"
+  assert_output --partial "listing-v1"
+  assert_output --partial "listing-v2"
 }
 
 @test "listing cache keys when cache is empty" {

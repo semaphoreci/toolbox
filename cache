@@ -86,8 +86,6 @@ cache::store() {
 #   None
 ################################################################################
 cache::lftp_put() {
-  cache::log "Starting upload."
-
   for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
     if ! [[ -e $local_path ]]; then
       cache::log "'${local_path}' doesn't exist locally."
@@ -96,15 +94,15 @@ cache::lftp_put() {
     fi
 
     if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
-      cache::log "Key '${SEMAPHORE_CACHE_KEY}' already present on remote, replacing it."
-      cache::lftp "rm -r ${SEMAPHORE_CACHE_KEY}"
+      cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
+    else
+      tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
+      cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
+      cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
+      rm -rf /tmp/$SEMAPHORE_CACHE_KEY
+      cache::log "Upload complete."
     fi
 
-    tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
-    cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
-    cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
-    rm -rf /tmp/$SEMAPHORE_CACHE_KEY
-    cache::log "Upload complete."
   done
 }
 
@@ -125,9 +123,9 @@ cache::restore() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
       "-k" | "--key")
-        SEMAPHORE_CACHE_KEY=$2
+        SEMAPHORE_CACHE_KEYS=$2
 
-        if [[ -z $SEMAPHORE_CACHE_KEY ]]; then
+        if [[ -z $SEMAPHORE_CACHE_KEYS ]]; then
           cache::err "Cache key can't be empty!"
         fi
 
@@ -138,7 +136,22 @@ cache::restore() {
     esac
   done
 
-  cache::lftp_get
+  cache::downlaod_keys /tmp/cache-keys
+
+  for cache_key in ${SEMAPHORE_CACHE_KEYS//,/ }; do
+
+    match=$(grep -m 1 $cache_key /tmp/cache-keys)
+
+    if [[ ! -z "$match" ]]; then
+      cache::log "HIT: ${cache_key}, using key ${match}"
+      cache::lftp_get $match
+      break
+    else
+      cache::log "MISS: ${cache_key}"
+    fi
+  done
+
+  rm -f /tmp/cache-keys
 }
 
 ################################################################################
@@ -169,7 +182,7 @@ cache::clear() {
 #   None
 ################################################################################
 cache::list() {
-  cache::lftp "cls" "with_logs"
+  cache::lftp "cls --sort=date -l" "with_logs"
 }
 
 ################################################################################
@@ -198,6 +211,18 @@ cache::has_key() {
   fi
 }
 
+cache::downlaod_keys() {
+  local command
+  local output
+  local file
+  command="cls --sort=date"
+  file=$1
+
+  output=$(echo -e "${command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
+
+  echo -e "$output" > $file
+}
+
 ################################################################################
 # Wrapper around LFTP 'get'
 # Globals:
@@ -209,20 +234,22 @@ cache::has_key() {
 #   None
 ################################################################################
 cache::lftp_get() {
-  cache::log "Using cache key: ${SEMAPHORE_CACHE_KEY}."
+  local key
 
-  if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
+  key=$1
+
+  if cache::file_is_present $key; then
     cd /tmp
-    cache::lftp "get1 -c ${SEMAPHORE_CACHE_KEY}"
+    cache::lftp "get1 -c $key"
     cd - &>/dev/null
-    tar xzf /tmp/$SEMAPHORE_CACHE_KEY -C .
-    rm -rf /tmp/$SEMAPHORE_CACHE_KEY
-    cache::log "Transfer completed."
+    restored_path=$(tar -ztvf /tmp/$key | head -1 | awk '{print $6}')
+    tar xzf /tmp/$key -C .
+    rm -rf /tmp/$key
+    cache::log "Restored: ${restored_path}"
   else
-    cache::log "Key '${SEMAPHORE_CACHE_KEY}' does not exist in the cache store."
+    cache::log "Key '$key' does not exist in the cache store."
   fi
 }
-
 
 ################################################################################
 # Wrapper around LFTP
@@ -263,7 +290,7 @@ cache::lftp() {
     [ "$command_log" ] && return 0 || return 1
   fi
 
-  if [[ "${lftp_command}" == 'cls' ]] && [ -z "$command_log" ]; then
+  if [[ "${lftp_command}" == 'cls --sort=date -l' ]] && [ -z "$command_log" ]; then
     echo "Cache is empty."
   fi
 
@@ -464,6 +491,7 @@ cache::file_is_present() {
     true
   fi
 }
+
 
 ################################################################################
 # Helper function to check if file is present on cache directory
