@@ -239,16 +239,12 @@ cache::new_lftp() {
   lftp_command=$1
   print_log=${2:-false}
 
-  echo "COMMAND: $lftp_command"
-
   if [[ -z $lftp_command ]]; then
     cache::err "LFTP command can't be empty!"
   fi
 
   command_log=$(echo -e "${lftp_command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
   command_status=$?
-
-  echo "COMMAND STATUS: $command_status"
 
   echo -e "$command_log" > /tmp/cache_list
 
