@@ -86,8 +86,6 @@ cache::store() {
 #   None
 ################################################################################
 cache::lftp_put() {
-  cache::log "Starting upload."
-
   for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
     if ! [[ -e $local_path ]]; then
       cache::log "'${local_path}' doesn't exist locally."
@@ -96,15 +94,15 @@ cache::lftp_put() {
     fi
 
     if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
-      cache::log "Key '${SEMAPHORE_CACHE_KEY}' already present on remote, replacing it."
-      cache::lftp "rm -r ${SEMAPHORE_CACHE_KEY}"
+      cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
+    else
+      tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
+      cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
+      cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
+      rm -rf /tmp/$SEMAPHORE_CACHE_KEY
+      cache::log "Upload complete."
     fi
 
-    tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
-    cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
-    cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
-    rm -rf /tmp/$SEMAPHORE_CACHE_KEY
-    cache::log "Upload complete."
   done
 }
 

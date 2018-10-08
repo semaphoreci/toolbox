@@ -38,7 +38,6 @@ teardown() {
   run ./cache store --key test-storing --path tmp
 
   assert_success
-  assert_line "Starting upload."
   assert_line "Uploading 'tmp' with cache key 'test-storing'..."
   assert_line "Upload complete."
   refute_line "test-storing"
@@ -51,7 +50,6 @@ teardown() {
   run ./cache store --key test-storing --path tmp
 
   assert_success
-  assert_line "Starting upload."
   assert_line "'tmp' doesn't exist locally."
 }
 
@@ -65,9 +63,7 @@ teardown() {
   run ./cache store --key test-storing --path tmp
 
   assert_success
-  assert_line "Starting upload."
-  assert_line "Key 'test-storing' already present on remote, replacing it."
-  assert_line "Upload complete."
+  assert_line "Key 'test-storing' already exists."
   refute_line "test-storing"
 
   run ./cache has_key test-storing
