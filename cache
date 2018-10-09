@@ -96,42 +96,34 @@ cache::lftp_put() {
 #   None
 ################################################################################
 cache::restore() {
-  if [[ $# -ne 2 ]]; then
+  local usage
+  local semaphore_cache_keys
+
+  usage="Usage: \n\t cache restore <comma-separated-keys>\nExample: \n\t cache restore bundle-develop-1234\nFallback example:\n\t cache restore bundle-develop-1234,bundle-develop,bundle-master"
+
+  if [[ $# -eq 0 ]]; then
+    cache::log "${usage}"
+  elif [[ $# -ne 1 ]]; then
     cache::err "Incorrect number of arguments!"
+  else
+    semaphore_cache_keys=$1
+
+    cache::download_keys /tmp/cache-keys
+
+    for cache_key in ${semaphore_cache_keys//,/ }; do
+      match=$(grep -m 1 $cache_key /tmp/cache-keys)
+
+      if [[ ! -z "$match" ]]; then
+        cache::log "HIT: ${cache_key}, using key ${match}"
+        cache::lftp_get $match
+        break
+      else
+        cache::log "MISS: ${cache_key}"
+      fi
+    done
+
+    rm -f /tmp/cache-keys
   fi
-
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-      "-k" | "--key")
-        SEMAPHORE_CACHE_KEYS=$2
-
-        if [[ -z $SEMAPHORE_CACHE_KEYS ]]; then
-          cache::err "Cache key can't be empty!"
-        fi
-
-        shift 2
-        ;;
-      *)
-        cache::err "Invalid argument!"
-    esac
-  done
-
-  cache::download_keys /tmp/cache-keys
-
-  for cache_key in ${SEMAPHORE_CACHE_KEYS//,/ }; do
-
-    match=$(grep -m 1 $cache_key /tmp/cache-keys)
-
-    if [[ ! -z "$match" ]]; then
-      cache::log "HIT: ${cache_key}, using key ${match}"
-      cache::lftp_get $match
-      break
-    else
-      cache::log "MISS: ${cache_key}"
-    fi
-  done
-
-  rm -f /tmp/cache-keys
 }
 
 ################################################################################

@@ -82,7 +82,7 @@ teardown() {
   run ./cache has_key restore-dir-hierarchy
   assert_success
 
-  run ./cache restore --key restore-dir-hierarchy
+  run ./cache restore restore-dir-hierarchy
 
   assert_success
   assert [ -e "tmp/first/second/example.file" ]
@@ -95,7 +95,7 @@ teardown() {
   run ./cache has_key test
   assert_failure
 
-  run ./cache restore --key test
+  run ./cache restore test
 
   assert_success
   assert_line "MISS: test"
@@ -106,7 +106,7 @@ teardown() {
   touch tmp.file
   ./cache store v1-gems-master-p12q13r34 tmp.file
 
-  run ./cache restore --key v1-gems-master-2new99666,v1-gems-master-*
+  run ./cache restore v1-gems-master-2new99666,v1-gems-master-*
 
   assert_success
   assert_line "MISS: v1-gems-master-2new99666"
