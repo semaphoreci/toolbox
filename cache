@@ -136,7 +136,7 @@ cache::restore() {
     esac
   done
 
-  cache::downlaod_keys /tmp/cache-keys
+  cache::download_keys /tmp/cache-keys
 
   for cache_key in ${SEMAPHORE_CACHE_KEYS//,/ }; do
 
@@ -211,7 +211,7 @@ cache::has_key() {
   fi
 }
 
-cache::downlaod_keys() {
+cache::download_keys() {
   local command
   local output
   local file
