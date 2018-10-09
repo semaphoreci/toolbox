@@ -34,46 +34,26 @@ cache::verbose() {
 # Send the files identified by the key, to the cache repository using LFTP
 # Globals:
 #   SEMAPHORE_CACHE_KEY
-#   SEMAPHORE_LOCAL_CACHE_PATHS
+#   SEMAPHORE_LOCAL_CACHE_PATH
 # Arguments:
 #   cache_key, path
 # Returns:
 #   None
 ################################################################################
 cache::store() {
-  if [[ $# -ne 4 ]]; then
+  local usage
+  usage="Usage: \n\t cache store <key> <local-path>\nExample: \n\t cache store v1-bundle-1234 vendor/bundle"
+
+  if [[ $# -eq 0 ]]; then
+    cache::log "${usage}"
+  elif [[ $# -ne 2 ]]; then
     cache::err "Incorrect number of arguments!"
+  else
+    SEMAPHORE_CACHE_KEY=$1
+    SEMAPHORE_LOCAL_CACHE_PATHS=$2
+
+    cache::lftp_put
   fi
-
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-      "-k" | "--key")
-        SEMAPHORE_CACHE_KEY=$2
-
-        if [[ -z $SEMAPHORE_CACHE_KEY ]]; then
-          cache::err "Cache key can't be empty!"
-        fi
-
-        shift 2
-        ;;
-      "-p" | "--path")
-        SEMAPHORE_LOCAL_CACHE_PATHS=$2
-
-        if [[ -z $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-          cache::err "Cache path can't be empty!"
-        fi
-
-        readonly SEMAPHORE_LOCAL_CACHE_PATHS
-        shift 2
-        ;;
-      *)
-        cache::print_usage
-        cache::err "Invalid arguments!"
-        ;;
-    esac
-  done
-
-  cache::lftp_put
 }
 
 ################################################################################

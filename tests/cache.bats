@@ -35,7 +35,7 @@ teardown() {
 
 @test "save local file to cache store" {
   mkdir tmp && touch tmp/example.file
-  run ./cache store --key test-storing --path tmp
+  run ./cache store test-storing tmp
 
   assert_success
   assert_line "Uploading 'tmp' with cache key 'test-storing'..."
@@ -47,7 +47,7 @@ teardown() {
 }
 
 @test "save nonexistent local file to cache store" {
-  run ./cache store --key test-storing --path tmp
+  run ./cache store test-storing tmp
 
   assert_success
   assert_line "'tmp' doesn't exist locally."
@@ -55,12 +55,12 @@ teardown() {
 
 @test "store with key which is already present in cache" {
   mkdir tmp && touch tmp/example.file
-  ./cache store --key test-storing --path tmp
+  ./cache store test-storing tmp
 
   run ./cache has_key test-storing
   assert_success
 
-  run ./cache store --key test-storing --path tmp
+  run ./cache store test-storing tmp
 
   assert_success
   assert_line "Key 'test-storing' already exists."
@@ -76,7 +76,7 @@ teardown() {
 
 @test "restoring existing directory from cache and perserving the directory hierarchy" {
   mkdir tmp && mkdir tmp/first && mkdir tmp/first/second && touch tmp/first/second/example.file
-  ./cache store --key restore-dir-hierarchy --path tmp/first/second
+  ./cache store restore-dir-hierarchy tmp/first/second
   rm -rf tmp
 
   run ./cache has_key restore-dir-hierarchy
@@ -104,7 +104,7 @@ teardown() {
 
 @test "fallback key prototype" {
   touch tmp.file
-  ./cache store --key v1-gems-master-p12q13r34 --path tmp.file
+  ./cache store v1-gems-master-p12q13r34 tmp.file
 
   run ./cache restore --key v1-gems-master-2new99666,v1-gems-master-*
 
@@ -121,7 +121,7 @@ teardown() {
 
 @test "emptying cache store when it isn't empty" {
   mkdir tmp && touch tmp/example.file
-  ./cache store --key test-emptying --path tmp
+  ./cache store test-emptying tmp
 
   run ./cache is_not_empty
   assert_success
@@ -151,8 +151,8 @@ teardown() {
 
 @test "listing cache store when it has cached keys" {
   mkdir tmp && touch tmp/example.file
-  ./cache store --key listing-v1 --path tmp
-  ./cache store --key listing-v2 --path tmp
+  ./cache store listing-v1 tmp
+  ./cache store listing-v2 tmp
 
   run ./cache is_not_empty
   assert_success
@@ -187,7 +187,7 @@ teardown() {
 
 @test "checking if an existing key is present in cache store" {
   mkdir tmp && touch tmp/example.file
-  ./cache store --key example-key --path tmp
+  ./cache store example-key tmp
 
   run ./cache is_not_empty
   assert_success
@@ -223,7 +223,7 @@ teardown() {
 }
 
 @test "is_not_empty should not fail when cache is not empty" {
-  ./cache store --key semaphore --path .semaphore
+  ./cache store semaphore .semaphore
 
   run ./cache list
   assert_output --partial "semaphore"
