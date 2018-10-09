@@ -91,6 +91,20 @@ teardown() {
   refute_output --partial "/home/semaphore/toolbox"
 }
 
+@test "restors the key if it is available" {
+  touch tmp.file
+  ./cache store tmp1 tmp.file
+  ./cache store tmp12 tmp.file
+
+  run ./cache restore tmp1
+
+  assert_success
+  assert_line "HIT: tmp1, using key tmp1"
+  refute_output --partial "HIT: tmp1, using key tmp12"
+  assert_output --partial "Restored: tmp.file"
+  refute_output --partial "/home/semaphore/toolbox"
+}
+
 @test "restoring nonexistent directory from cache" {
   run ./cache has_key test
   assert_failure
