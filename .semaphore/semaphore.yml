@@ -14,4 +14,5 @@ blocks:
           - checkout
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
+          - ssh-agent -k
           - bats tests
