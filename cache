@@ -196,7 +196,7 @@ cache::download_keys() {
   command="cls --sort=date"
   file=$1
 
-  output=$(echo -e "${command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
+  output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SSH_PRIVATE_KEY_PATH}"'"' 2>&1)
 
   echo -e "$output" > $file
 }
@@ -257,7 +257,7 @@ cache::lftp() {
     cache::err "LFTP command can't be empty!"
   fi
 
-  command_log=$(echo -e "${lftp_command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
+  command_log=$(echo -e "${lftp_command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SSH_PRIVATE_KEY_PATH}"'"' 2>&1)
   command_status=$?
 
   if [[ "${print_log}" == "with_logs" ]] && [ -n "$command_log" ]; then
