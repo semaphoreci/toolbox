@@ -229,7 +229,7 @@ teardown() {
 # cache delete
 ################################################################################
 
-@test "deletes an existing key" {
+@test "deletion of an existing key" {
   mkdir tmp && touch tmp/example.file
   ./cache store example-key tmp
   ./cache has_key example-key
@@ -237,10 +237,20 @@ teardown() {
   run ./cache delete example-key
 
   assert_success
-  assert_output --partial "Key example-key is removed"
+  assert_output --partial "Key example-key is deleted."
 
   run ./cache has_key example-key
   assert_failure
+}
+
+@test "deletion of a nonexistent key" {
+  run ./cache has_key example-key
+  assert_failure
+
+  run ./cache delete example-key
+
+  assert_success
+  assert_output --partial "Key example-key doesn't exist in the cache store."
 }
 
 ################################################################################

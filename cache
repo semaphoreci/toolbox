@@ -172,6 +172,24 @@ cache::list() {
 # Returns:
 #   0 or 1
 ################################################################################
+cache::delete() {
+  local key
+
+  key=$1
+
+  if cache::file_is_present ${key}; then
+    cache::lftp "glob rm -f $key"
+
+    if cache::file_is_present ${key}; then
+      cache::log "Failed to delete the key.."
+    else
+      cache::log "Key ${key} is deleted."
+    fi
+  else
+    cache::log "Key ${key} doesn't exist in the cache store."
+  fi
+}
+
 cache::has_key() {
   local KEY
 
@@ -339,10 +357,9 @@ cache::calculate_key_md5() {
 cache::print_usage() {
   echo -e "\n#####################################################################################################"
   echo -e "cache ${VERSION} | Utility for saving and fetching dependency caches"
-  echo -e "\ncache [store|restore|list|clear|has_key] opts"
+  echo -e "\ncache [store|restore|list|clear|delete|has_key] opts"
   echo -e "#####################################################################################################"
 }
-
 
 ################################################################################
 # Cheks the presence of the SSH key which is used to access the cache storage
@@ -552,6 +569,11 @@ cache::main() {
       shift
 
       cache::has_key "$@"
+      ;;
+    "delete" )
+      shift
+
+      cache::delete "$@"
       ;;
     * )
       cache::print_usage
