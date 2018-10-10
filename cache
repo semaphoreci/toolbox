@@ -339,17 +339,7 @@ cache::calculate_key_md5() {
 cache::print_usage() {
   echo -e "\n#####################################################################################################"
   echo -e "cache ${VERSION} | Utility for saving and fetching dependency caches"
-  echo -e "\ncache [store|restore] opts"
-  echo "store opts:"
-  echo -e "\t --key CACHE_KEY"
-  echo -e "\t --path LOCAL_PATH"
-  echo "restore opts:"
-  echo -e "\t --key CACHE_KEY"
-  echo -e "\nDetails:"
-  echo -e "\t --path, defines the local path(s), which should be uploaded to the cache storage"
-  echo -e "\t --key, defines the cache revision, where the files will be stored. The key can be a file or a string, from which and md5 will be calculated"
-  echo -e "\nTo access the storage with SFTP, run the following command in the SSH Semaphore environment:"
-  echo -e "\t sftp ${SEMAPHORE_CACHE_USERNAME}@${SEMAPHORE_CACHE_URL}"
+  echo -e "\ncache [store|restore|list|clear|has_key] opts"
   echo -e "#####################################################################################################"
 }
 
