@@ -226,6 +226,24 @@ teardown() {
 }
 
 ################################################################################
+# cache delete
+################################################################################
+
+@test "deletes an existing key" {
+  mkdir tmp && touch tmp/example.file
+  ./cache store example-key tmp
+  ./cache has_key example-key
+
+  run ./cache delete example-key
+
+  assert_success
+  assert_output --partial "Key example-key is removed"
+
+  run ./cache has_key example-key
+  assert_failure
+}
+
+################################################################################
 # cache is_not_empty
 ################################################################################
 
