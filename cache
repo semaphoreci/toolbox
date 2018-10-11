@@ -172,6 +172,24 @@ cache::list() {
 # Returns:
 #   0 or 1
 ################################################################################
+cache::delete() {
+  local key
+
+  key=$1
+
+  if cache::file_is_present ${key}; then
+    cache::lftp "glob rm -f $key"
+
+    if cache::file_is_present ${key}; then
+      cache::log "Failed to delete the key.."
+    else
+      cache::log "Key ${key} is deleted."
+    fi
+  else
+    cache::log "Key ${key} doesn't exist in the cache store."
+  fi
+}
+
 cache::has_key() {
   local KEY
 
@@ -196,7 +214,7 @@ cache::download_keys() {
   command="cls --sort=date"
   file=$1
 
-  output=$(echo -e "${command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
+  output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
 
   echo -e "$output" > $file
 }
@@ -257,7 +275,7 @@ cache::lftp() {
     cache::err "LFTP command can't be empty!"
   fi
 
-  command_log=$(echo -e "${lftp_command}" | lftp -u $SEMAPHORE_CACHE_USERNAME, sftp://$SEMAPHORE_CACHE_URL 2>&1)
+  command_log=$(echo -e "${lftp_command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
   command_status=$?
 
   if [[ "${print_log}" == "with_logs" ]] && [ -n "$command_log" ]; then
@@ -339,40 +357,29 @@ cache::calculate_key_md5() {
 cache::print_usage() {
   echo -e "\n#####################################################################################################"
   echo -e "cache ${VERSION} | Utility for saving and fetching dependency caches"
-  echo -e "\ncache [store|restore] opts"
-  echo "store opts:"
-  echo -e "\t --key CACHE_KEY"
-  echo -e "\t --path LOCAL_PATH"
-  echo "restore opts:"
-  echo -e "\t --key CACHE_KEY"
-  echo -e "\nDetails:"
-  echo -e "\t --path, defines the local path(s), which should be uploaded to the cache storage"
-  echo -e "\t --key, defines the cache revision, where the files will be stored. The key can be a file or a string, from which and md5 will be calculated"
-  echo -e "\nTo access the storage with SFTP, run the following command in the SSH Semaphore environment:"
-  echo -e "\t sftp ${SEMAPHORE_CACHE_USERNAME}@${SEMAPHORE_CACHE_URL}"
+  echo -e "\ncache [store|restore|list|clear|delete|has_key] opts"
   echo -e "#####################################################################################################"
 }
-
 
 ################################################################################
 # Cheks the presence of the SSH key which is used to access the cache storage
 # Globals:
-#   SSH_PRIVATE_KEY_PATH
+#   SEMAPHORE_CACHE_PRIVATE_KEY_PATH
 # Arguments:
 #   none
 # Returns:
 #   none
 ################################################################################
 cache::check_ssh_key() {
-  if ! [[ -e $SSH_PRIVATE_KEY_PATH ]]; then
-    cache::err "Private SSH key missing! (${SSH_PRIVATE_KEY_PATH})"
+  if ! [[ -e $SEMAPHORE_CACHE_PRIVATE_KEY_PATH ]]; then
+    cache::err "Private SSH key missing! (${SEMAPHORE_CACHE_PRIVATE_KEY_PATH})"
   fi
 }
 
 ################################################################################
 # Loads the private SSH key into the agent
 # Globals:
-#   SSH_PRIVATE_KEY_PATH
+#   SEMAPHORE_CACHE_PRIVATE_KEY_PATH
 # Arguments:
 #   none
 # Returns:
@@ -385,7 +392,7 @@ cache::load_ssh_key() {
     cache::log "Loading SSH key into the agent"
   fi
 
-  ssh_agent_log=$(eval $(ssh-agent) 2>&1 && ssh-add <(cat ${SSH_PRIVATE_KEY_PATH}) 2>&1)
+  ssh_agent_log=$(eval $(ssh-agent) 2>&1 && ssh-add <(cat ${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}) 2>&1)
 
   if ! [[ $? = 0 ]]; then
     cache::err "Error while configuring the SSH agent!\nLog: ${ssh_agent_log}"
@@ -420,7 +427,7 @@ cache::check_lftp() {
 # Globals:
 #   SEMAPHORE_CACHE_URL
 #   SEMAPHORE_CACHE_USERNAME
-#   SSH_PRIVATE_KEY_PATH
+#   SEMAPHORE_CACHE_PRIVATE_KEY_PATH
 # Arguments:
 #   none
 # Returns:
@@ -439,8 +446,8 @@ cache::check_env() {
     cache::err "'SEMAPHORE_CACHE_USERNAME' environment variable not set!"
   fi
 
-  if [[ -z $SSH_PRIVATE_KEY_PATH ]]; then
-    cache::err "'SSH_PRIVATE_KEY_PATH' environment variable not set!"
+  if [[ -z $SEMAPHORE_CACHE_PRIVATE_KEY_PATH ]]; then
+    cache::err "'SEMAPHORE_CACHE_PRIVATE_KEY_PATH' environment variable not set!"
   fi
 }
 
@@ -562,6 +569,11 @@ cache::main() {
       shift
 
       cache::has_key "$@"
+      ;;
+    "delete" )
+      shift
+
+      cache::delete "$@"
       ;;
     * )
       cache::print_usage
