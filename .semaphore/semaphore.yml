@@ -15,4 +15,5 @@ blocks:
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
           - ssh-agent -k
+          - export SEMAPHORE_CACHE_PRIVATE_KEY_PATH=$SSH_PRIVATE_KEY_PATH
           - bats tests
