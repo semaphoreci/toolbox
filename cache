@@ -30,6 +30,19 @@ cache::verbose() {
   VERBOSE_LOG=0
 }
 
+cache::normalize_string() {
+  local word
+  local result
+  word=$1
+
+  result=${word//\//-}
+  if [ "$result" != "$1" ]; then
+    cache::log "Key ${1} is normalized to ${result}."
+  fi
+
+  echo "$result"
+}
+
 ################################################################################
 # Send the files identified by the key, to the cache repository using LFTP
 # Globals:
@@ -49,8 +62,8 @@ cache::store() {
   elif [[ $# -ne 2 ]]; then
     cache::err "Incorrect number of arguments!"
   else
-    SEMAPHORE_CACHE_KEY=$1
     SEMAPHORE_LOCAL_CACHE_PATHS=$2
+    SEMAPHORE_CACHE_KEY=$(cache::normalize_string $1)
 
     cache::lftp_put
   fi
@@ -110,7 +123,9 @@ cache::restore() {
 
     cache::download_keys /tmp/cache-keys
 
-    for cache_key in ${semaphore_cache_keys//,/ }; do
+    for key in ${semaphore_cache_keys//,/ }; do
+      cache_key=$(cache::normalize_string $key)
+
       if cache::file_is_present $cache_key; then
         cache::log "HIT: ${cache_key}, using key ${cache_key}"
         cache::lftp_get $cache_key
@@ -175,7 +190,7 @@ cache::list() {
 cache::delete() {
   local key
 
-  key=$1
+  key=$(cache::normalize_string $1)
 
   if cache::file_is_present ${key}; then
     cache::lftp "glob rm -f $key"
@@ -191,17 +206,17 @@ cache::delete() {
 }
 
 cache::has_key() {
-  local KEY
+  local key
 
-  KEY=$1
+  key=$(cache::normalize_string $1)
 
-  if cache::file_is_present ${KEY}
+  if cache::file_is_present ${key}
   then
-    cache::log "Key ${KEY} exists in the cache store."
+    cache::log "Key ${key} exists in the cache store."
 
     return 0
   else
-    cache::log "Key ${KEY} doesn't exist in the cache store."
+    cache::log "Key ${key} doesn't exist in the cache store."
 
     return 1
   fi
@@ -462,14 +477,14 @@ cache::check_env() {
 #   true or false
 ################################################################################
 cache::file_is_present() {
-  local KEY
+  local key
 
-  KEY=$1
+  key=$1
   if [[ $VERBOSE_LOG == 0 ]]; then
-    cache::log "Checking if key $KEY is present in cache store."
+    cache::log "Checking if key $key is present in cache store."
   fi
 
-  cache::lftp "cls ${KEY}"
+  cache::lftp "cls ${key}"
 
   if [[ "$E_FLMSNG" == "1" ]]; then
     false

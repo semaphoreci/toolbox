@@ -46,6 +46,20 @@ teardown() {
   assert_success
 }
 
+@test "save local file to cache store with normalized key" {
+  mkdir tmp && touch tmp/example.file
+  run ./cache store test/storing tmp
+
+  assert_success
+  assert_line "Key test/storing is normalized to test-storing."
+  assert_line "Uploading 'tmp' with cache key 'test-storing'..."
+  assert_line "Upload complete."
+  refute_line "test-storing"
+
+  run ./cache has_key test-storing
+  assert_success
+}
+
 @test "save nonexistent local file to cache store" {
   run ./cache store test-storing tmp
 
@@ -56,7 +70,6 @@ teardown() {
 @test "store with key which is already present in cache" {
   mkdir tmp && touch tmp/example.file
   ./cache store test-storing tmp
-
   run ./cache has_key test-storing
   assert_success
 
@@ -129,6 +142,19 @@ teardown() {
   refute_output --partial "/home/semaphore/toolbox"
 }
 
+@test "fallback key prototype uses normalized keys" {
+  touch tmp.file
+  ./cache store modules-ms/quick-update tmp.file
+
+  run ./cache restore modules-master-1234,modules-ms/quick-update
+
+  assert_success
+  assert_line "Key modules-ms/quick-update is normalized to modules-ms-quick-update."
+  assert_line "HIT: modules-ms-quick-update, using key modules-ms-quick-update"
+  assert_output --partial "Restored: tmp.file"
+  refute_output --partial "/home/semaphore/toolbox"
+}
+
 ################################################################################
 # cache clear
 ################################################################################
@@ -165,13 +191,13 @@ teardown() {
 
 @test "listing cache store when it has cached keys" {
   mkdir tmp && touch tmp/example.file
-  ./cache store listing-v1 tmp
+  ./cache store ms/quick-update tmp
   ./cache store listing-v2 tmp
 
   run ./cache is_not_empty
   assert_success
 
-  run ./cache has_key listing-v1
+  run ./cache has_key ms/quick-update
   assert_success
 
   run ./cache has_key listing-v2
@@ -180,7 +206,7 @@ teardown() {
   run ./cache list
 
   assert_success
-  assert_output --partial "listing-v1"
+  assert_output --partial "ms-quick-update"
   assert_output --partial "listing-v2"
 }
 
@@ -212,6 +238,25 @@ teardown() {
   assert_output --partial "Key example-key exists in the cache store."
 }
 
+@test "checking if an existing key with / is present in cache store" {
+  mkdir tmp && touch tmp/example.file
+  ./cache store ek/quick-update tmp
+
+  run ./cache is_not_empty
+  assert_success
+
+  run ./cache has_key ek/quick-update
+
+  assert_success
+  assert_line "Key ek/quick-update is normalized to ek-quick-update."
+  assert_output --partial "Key ek-quick-update exists in the cache store."
+
+  run ./cache has_key ek-quick-update
+
+  assert_success
+  assert_output --partial "Key ek-quick-update exists in the cache store."
+}
+
 @test "checking if nonexistent key is present in empty cache store" {
   run ./cache clear
   assert_success
@@ -241,6 +286,26 @@ teardown() {
 
   run ./cache has_key example-key
   assert_failure
+}
+
+@test "delition of an existing key with /" {
+  mkdir tmp && touch tmp/example.file
+  ./cache store ek/quick-update tmp
+
+  run ./cache is_not_empty
+  assert_success
+
+  run ./cache delete ek/quick-update
+
+  assert_success
+  assert_line "Key ek/quick-update is normalized to ek-quick-update."
+  assert_output --partial "Key ek-quick-update is deleted."
+
+  run ./cache has_key ek/quick-update
+
+  assert_failure
+  assert_line "Key ek/quick-update is normalized to ek-quick-update."
+  assert_output --partial "Key ek-quick-update doesn't exist in the cache store."
 }
 
 @test "deletion of a nonexistent key" {
