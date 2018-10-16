@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Storing and fetching a Semaphore project's dependency cache files
+# Managing a Semaphore project's dependency cache files
 
 VERSION=0.3
 
@@ -17,15 +17,6 @@ E_FLAE=0 # file already exists
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
-################################################################################
-# Logs cache steps
-# Globals:
-#   VERBOSE_LOG
-# Arguments:
-#   None
-# Returns:
-#   None
-################################################################################
 cache::verbose() {
   VERBOSE_LOG=0
 }
@@ -69,15 +60,6 @@ cache::store() {
   fi
 }
 
-################################################################################
-# Wrapper around LFTP 'put'
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
-################################################################################
 cache::lftp_put() {
   for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
     if ! [[ -e $local_path ]]; then
@@ -147,15 +129,6 @@ cache::restore() {
   fi
 }
 
-################################################################################
-# Deletes all files on cache server
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
-################################################################################
 cache::clear() {
   if cache::is_not_empty
   then
@@ -165,28 +138,10 @@ cache::clear() {
   cache::log "Cache is empty."
 }
 
-################################################################################
-# Lists all files on cache server
-# Globals:
-#   None
-# Arguments:
-#   None
-# Returns:
-#   None
-################################################################################
 cache::list() {
   cache::lftp "cls --sort=date -l" "with_logs"
 }
 
-################################################################################
-# Checks if a specified key is used in cache repository
-# Globals:
-#   None
-# Arguments:
-#   has_key
-# Returns:
-#   0 or 1
-################################################################################
 cache::delete() {
   local key
 
@@ -357,18 +312,6 @@ cache::calculate_key_md5() {
   fi
 }
 
-
-################################################################################
-# Prints the program usage
-# Globals:
-#   VERSION
-#   SEMAPHORE_CACHE_USERNAME
-#   SEMAPHORE_CACHE_URL
-# Arguments:
-#   None
-# Returns:
-#   None
-################################################################################
 cache::print_usage() {
   echo -e "\n#####################################################################################################"
   echo -e "cache ${VERSION} | Utility for saving and fetching dependency caches"
@@ -436,7 +379,6 @@ cache::check_lftp() {
   fi
 }
 
-
 ################################################################################
 # Checks if the required environment variables are set
 # Globals:
@@ -465,7 +407,6 @@ cache::check_env() {
     cache::err "'SEMAPHORE_CACHE_PRIVATE_KEY_PATH' environment variable not set!"
   fi
 }
-
 
 ################################################################################
 # Helper function to check if file is present on cache directory
@@ -539,15 +480,6 @@ cache::log() {
   fi
 }
 
-################################################################################
-# The main entrypoint to the script. It initiates the store or restore actions.
-# Globals:
-#   none
-# Arguments:
-#   'restore', 'store'
-# Returns:
-#   none
-################################################################################
 cache::main() {
   cache::check_lftp
   cache::check_ssh_key
