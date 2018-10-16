@@ -34,6 +34,97 @@ service::pull_image() {
   service::run_cmd docker pull $image_name
 }
 
+service::start_mysql() {
+
+  docker run --net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql mysql:5.6
+
+  # run only if previous command exited successfully
+  dockerize -wait tcp://0.0.0.0:3306 -timeout 30s
+
+  # if not started in 30 seconds print logs and exit
+  echo "Started mysql"
+  echo "Use empty value for password"
+
+  exit 0
+}
+
+service::start_postgres() {
+
+  docker run --net=host --rm --name postgres -e POSTGRES_PASSWORD=semaphore -d postgres:9.6
+
+  # run only if previous command exited successfully
+  dockerize -wait tcp://0.0.0.0:5432 -timeout 30s
+
+  # if not started in 30 seconds print logs and exit
+  echo "Started postgres"
+  echo "Use 'semaphore' value for password"
+
+  exit 0
+}
+
+service::start_redis() {
+
+  docker run --net=host --rm --name redis -d redis:4
+
+  # run only if previous command exited successfully
+  dockerize -wait tcp://0.0.0.0:6379 -timeout 30s
+
+  # if not started in 30 seconds print logs and exit
+  echo "Started redis"
+
+  exit 0
+}
+
+service::start_memcached() {
+
+  docker run --net=host --rm --name memcached -d memcached:1.5
+
+  # run only if previous command exited successfully
+  dockerize -wait tcp://0.0.0.0:11211 -timeout 30s
+
+  # if not started in 30 seconds print logs and exit
+  echo "Started memcached"
+
+  exit 0
+}
+
+service::start() {
+  service_name=$1
+  if [ -z "$service_name" ]; then
+    service::print_usage
+    exit 1
+  fi
+
+  echo "SERVICE NAME $service_name"
+
+  case "$service_name" in
+    "mysql" )
+      shift
+
+      service::start_mysql "$@"
+      ;;
+    "postgres" )
+      shift
+
+      service::start_postgres "$@"
+      ;;
+    "redis" )
+      shift
+
+      service::start_redis "$@"
+      ;;
+    "memcached" )
+      shift
+
+      service::start_memcached "$@"
+      ;;
+    * )
+      service::print_usage
+      ;;
+  esac
+
+}
+
 
 ################################################################################
 # Start a service with the defined Docker image
@@ -45,7 +136,7 @@ service::pull_image() {
 #   0,1
 # TODO: wait for service
 ################################################################################
-service::start() {
+service::old_start() {
   local image_name
   local service_name
   local command_status
@@ -242,10 +333,13 @@ service::err() {
 #   None
 ################################################################################
 service::print_usage() {
-  echo -e "\n#####################################################################################################"
-  echo -e "service ${VERSION} | Utility for starting background services, listening on 0.0.0.0, using Docker"
-  echo -e "\nservice [start|stop|status] image_name"
-  echo -e "#####################################################################################################"
+  echo -e "\nsem-service [start|stop|status] [service]\n"
+
+  echo "Available services:"
+  echo "mysql"
+  echo "postgres"
+  echo "redis"
+  echo "memcached"
 }
 
 
