@@ -335,30 +335,6 @@ cache::check_ssh_key() {
 }
 
 ################################################################################
-# Loads the private SSH key into the agent
-# Globals:
-#   SEMAPHORE_CACHE_PRIVATE_KEY_PATH
-# Arguments:
-#   none
-# Returns:
-#   none
-################################################################################
-cache::load_ssh_key() {
-  local ssh_agent_error_log
-
-  if [[ $VERBOSE_LOG == 0 ]]; then
-    cache::log "Loading SSH key into the agent"
-  fi
-
-  ssh_agent_log=$(eval $(ssh-agent) 2>&1 && ssh-add <(cat ${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}) 2>&1)
-
-  if ! [[ $? = 0 ]]; then
-    cache::err "Error while configuring the SSH agent!\nLog: ${ssh_agent_log}"
-  fi
-}
-
-
-################################################################################
 # Checks if 'lftp' is available
 # Globals:
 #   none
@@ -483,7 +459,6 @@ cache::log() {
 cache::main() {
   cache::check_lftp
   cache::check_ssh_key
-  cache::load_ssh_key
   cache::check_env
 
   case "$1" in
