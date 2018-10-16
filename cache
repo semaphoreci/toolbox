@@ -4,6 +4,9 @@
 
 VERSION=0.3
 
+# Allocated disk space limit
+LIMIT=10000000
+
 # Verbose output log
 VERBOSE_LOG=1
 
@@ -142,6 +145,14 @@ cache::list() {
   cache::lftp "cls --sort=date -l" "with_logs"
 }
 
+cache::usage() {
+  local limit
+
+  limit=10000000
+
+  cache::calculate_usage
+}
+
 cache::delete() {
   local key
 
@@ -187,6 +198,53 @@ cache::download_keys() {
   output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
 
   echo -e "$output" > $file
+}
+
+cache::calculate_usage(){
+  local used_space
+  local free_space
+
+  cache::download_usage_data /tmp/usage_data
+  used_space=$(cache::used_space "/tmp/usage_data")
+  free_space=$(cache::free_space $used_space)
+
+  cache::log "FREE SPACE: ${free_space}"
+  cache::log "USED SPACE: ${used_space}"
+}
+
+cache::used_space(){
+  local file
+  local sum
+  file=$1
+
+  sum=0
+
+  while read line; do
+    sum=$((sum + $line))
+  done < $file
+
+  echo "$sum"
+}
+
+cache::free_space(){
+  local difference
+  used_space=$1
+
+  difference=$(($LIMIT - used_space))
+
+  echo "$difference"
+}
+
+cache::download_usage_data(){
+  local command
+  local output
+  local file
+  command="cls --sort=date -l"
+  file=$1
+
+  output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
+
+  echo -e "$output" | awk '{print $5}' > $file
 }
 
 ################################################################################
@@ -481,6 +539,11 @@ cache::main() {
       shift
 
       cache::list "$@"
+      ;;
+    "usage" )
+      shift
+
+      cache::usage "$@"
       ;;
     "is_not_empty" )
       shift

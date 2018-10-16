@@ -338,3 +338,19 @@ teardown() {
   run ./cache is_not_empty
   assert_success
 }
+
+################################################################################
+# cache usage
+################################################################################
+
+@test "communicates the correct cache usage" {
+  dd if=/dev/zero of=file.tmp bs=1M count=50
+  ./cache store tmp file.tmp
+  run ./cache usage
+
+  assert_success
+  assert_output --partial "FREE SPACE: 99"
+  assert_output --partial "USED SPACE: 5"
+
+  rm -f file.tmp
+}
