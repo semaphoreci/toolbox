@@ -88,6 +88,14 @@ service::start_memcached() {
   exit 0
 }
 
+service::install_dockerize() {
+  DOCKERIZE_VERSION="v0.6.1"
+
+  output=$(sudo rm -rf /usr/local/bin/dockerize && curl -L -o /tmp/dockerize.tar.gz -s https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-alpine-linux-amd64-v0.6.1.tar.gz && sudo tar -C /usr/local/bin -xzvf /tmp/dockerize.tar.gz)
+
+  echo "DONE"
+}
+
 service::start() {
   service_name=$1
   if [ -z "$service_name" ]; then
@@ -96,6 +104,7 @@ service::start() {
   fi
 
   echo "SERVICE NAME $service_name"
+  service::install_dockerize
 
   case "$service_name" in
     "mysql" )
