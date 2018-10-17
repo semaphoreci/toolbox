@@ -42,7 +42,7 @@ service::start_mysql() {
 
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "MySQL is running at 0.0.0.0:3306"
+  echo "MySQL 5.6 is running at 0.0.0.0:3306"
   echo "To access it use username 'root' and blank password."
 
   exit 0
@@ -57,7 +57,7 @@ service::start_postgres() {
 
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "PostgreSQL is running at 0.0.0.0:5432"
+  echo "PostgreSQL 9.6 is running at 0.0.0.0:5432"
   echo "To access it use username 'postgres' and blank password."
 
   exit 0
@@ -72,7 +72,7 @@ service::start_redis() {
 
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "Redis is running at 0.0.0.0:6379"
+  echo "Redis 4 is running at 0.0.0.0:6379"
 
   exit 0
 }
@@ -86,7 +86,7 @@ service::start_memcached() {
 
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "memcached is running at 0.0.0.0:11211"
+  echo "memcached 1.5 is running at 0.0.0.0:11211"
 
   exit 0
 }
