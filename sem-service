@@ -234,12 +234,11 @@ service::status() {
   local docker_ps
 
   service_name=$1
-  docker_ps=$( service::run_cmd docker ps | grep $service_name &>/dev/null )
+  docker_ps=$(docker ps | grep $service_name &>/dev/null )
   service_status=$?
 
   if [[ $service_status -eq 0 ]]; then
-    service::log "'${service_name}' running."
-    service::log $(service::port_info $service_name)
+    service::log "${service_name} running."
   else
     service::log "'${service_name}' not running."
   fi
