@@ -30,7 +30,6 @@ service::pull_image() {
     service::err "Invalid image name provided '${image_name}'"
   fi
 
-  service::log "Pulling service image for '${image_name}'"
   service::run_cmd docker pull $image_name
 }
 
@@ -266,7 +265,6 @@ service::run_cmd() {
     service::err "Failed to run command '${cmd}'\n\nReason:\n${out}"
   fi
 
-  echo "$out"
   return $status
 }
 
