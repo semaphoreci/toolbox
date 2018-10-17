@@ -145,12 +145,21 @@ cache::list() {
   cache::lftp "cls --sort=date -l" "with_logs"
 }
 
-cache::usage() {
-  local limit
+cache::usage(){
+  local used_space
+  local free_space
+  local hr_used_space
+  local hr_free_space
 
-  limit=10000000
+  cache::download_usage_data /tmp/usage_data
+  used_space=$(cache::used_space "/tmp/usage_data")
+  free_space=$(cache::free_space ${used_space})
 
-  cache::calculate_usage
+  hr_used_space=$(numfmt --to=iec ${used_space})
+  hr_free_space=$(numfmt --to=iec $free_space)
+
+  cache::log "FREE SPACE: ${hr_free_space}"
+  cache::log "USED SPACE: ${hr_used_space}"
 }
 
 cache::delete() {
@@ -200,18 +209,6 @@ cache::download_keys() {
   echo -e "$output" > $file
 }
 
-cache::calculate_usage(){
-  local used_space
-  local free_space
-
-  cache::download_usage_data /tmp/usage_data
-  used_space=$(cache::used_space "/tmp/usage_data")
-  free_space=$(cache::free_space $used_space)
-
-  cache::log "FREE SPACE: ${free_space}"
-  cache::log "USED SPACE: ${used_space}"
-}
-
 cache::used_space(){
   local file
   local sum
@@ -220,18 +217,19 @@ cache::used_space(){
   sum=0
 
   while read line; do
-    sum=$((sum + $line))
+    if [[ ! -z "$line" ]]; then sum=$((sum + $line)); fi
   done < $file
 
   echo "$sum"
 }
 
 cache::free_space(){
+  local limit
   local difference
+
   used_space=$1
-
-  difference=$(($LIMIT - used_space))
-
+  limit=$(numfmt --from-unit=1024 $LIMIT)
+  difference=$(($limit - $used_space))
   echo "$difference"
 }
 

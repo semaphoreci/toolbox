@@ -349,8 +349,8 @@ teardown() {
   run ./cache usage
 
   assert_success
-  assert_output --partial "FREE SPACE: 99"
-  assert_output --partial "USED SPACE: 5"
+  assert_line "FREE SPACE: 9.6G"
+  assert_line "USED SPACE: 50K"
 
   rm -f file.tmp
 }
