@@ -49,13 +49,13 @@ service::start_mysql() {
 
 service::start_postgres() {
 
-  docker run --net=host --rm --name postgres -e POSTGRES_PASSWORD=semaphore -d postgres:9.6
+  docker_output=$(docker run --net=host --rm --name postgres -e POSTGRES_PASSWORD=semaphore -d postgres:9.6)
 
   # run only if previous command exited successfully
-  dockerize -wait tcp://0.0.0.0:5432 -timeout 30s
+  dockerize_output=$(dockerize -wait tcp://0.0.0.0:5432 -timeout 30s)
 
   # if not started in 30 seconds print logs and exit
-  echo "Started postgres"
+  echo "done."
   echo "Use 'semaphore' value for password"
 
   exit 0
@@ -63,26 +63,26 @@ service::start_postgres() {
 
 service::start_redis() {
 
-  docker run --net=host --rm --name redis -d redis:4
+  docker_output=$(docker run --net=host --rm --name redis -d redis:4)
 
   # run only if previous command exited successfully
   dockerize -wait tcp://0.0.0.0:6379 -timeout 30s
 
   # if not started in 30 seconds print logs and exit
-  echo "Started redis"
+  echo "done."
 
   exit 0
 }
 
 service::start_memcached() {
 
-  docker run --net=host --rm --name memcached -d memcached:1.5
+  docker_output=$(docker run --net=host --rm --name memcached -d memcached:1.5)
 
   # run only if previous command exited successfully
-  dockerize -wait tcp://0.0.0.0:11211 -timeout 30s
+  dockerize_output=$(dockerize -wait tcp://0.0.0.0:11211 -timeout 30s)
 
   # if not started in 30 seconds print logs and exit
-  echo "Started memcached"
+  echo "done."
 
   exit 0
 }
