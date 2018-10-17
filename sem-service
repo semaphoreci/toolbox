@@ -36,14 +36,14 @@ service::pull_image() {
 
 service::start_mysql() {
 
-  docker run --net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql mysql:5.6
+  docker_output=$(docker run --net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql mysql:5.6)
 
   # run only if previous command exited successfully
-  dockerize -wait tcp://0.0.0.0:3306 -timeout 30s
+  dockerize_output=$(dockerize -wait tcp://0.0.0.0:3306 -timeout 30s 2>&1)
 
   # if not started in 30 seconds print logs and exit
-  echo "Started mysql"
-  echo "Use empty value for password"
+  echo "done."
+  echo "Use empty password to connect to MySQL instance."
 
   exit 0
 }
@@ -92,8 +92,6 @@ service::install_dockerize() {
   DOCKERIZE_VERSION="v0.6.1"
 
   output=$(sudo rm -rf /usr/local/bin/dockerize && curl -L -o /tmp/dockerize.tar.gz -s https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-alpine-linux-amd64-v0.6.1.tar.gz && sudo tar -C /usr/local/bin -xzvf /tmp/dockerize.tar.gz)
-
-  echo "DONE"
 }
 
 service::start() {
@@ -103,7 +101,7 @@ service::start() {
     exit 1
   fi
 
-  echo "SERVICE NAME $service_name"
+  echo -n "Starting $service_name..."
   service::install_dockerize
 
   case "$service_name" in
