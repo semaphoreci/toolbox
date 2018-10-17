@@ -169,7 +169,7 @@ teardown() {
   run ./cache clear
 
   assert_success
-  assert_output --partial "Cache is empty."
+  assert_output --partial "Deleted all caches."
   refute_output --partial "Usage: rm [-r] [-f] files"
 
 }
@@ -181,7 +181,7 @@ teardown() {
   run ./cache clear
 
   assert_success
-  assert_line "Cache is empty."
+  assert_line "Deleted all caches."
   refute_output --partial "Usage: rm [-r] [-f] files"
 }
 
