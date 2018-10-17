@@ -135,7 +135,7 @@ cache::clear() {
     cache::lftp "glob -a rm -r *"
   fi
 
-  cache::log "Cache is empty."
+  cache::log "Deleted all caches."
 }
 
 cache::list() {
