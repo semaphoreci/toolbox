@@ -42,7 +42,8 @@ service::start_mysql() {
 
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "Use empty password to connect to MySQL instance."
+  echo "MySQL is running at 0.0.0.0:3306"
+  echo "To access it use username 'root' and blank password."
 
   exit 0
 }
@@ -56,7 +57,8 @@ service::start_postgres() {
 
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "Use 'semaphore' value for password"
+  echo "PostgreSQL is running at 0.0.0.0:5432"
+  echo "To access it use username 'postgres' and blank password."
 
   exit 0
 }
@@ -70,6 +72,7 @@ service::start_redis() {
 
   # if not started in 30 seconds print logs and exit
   echo "done."
+  echo "Redis is running at 0.0.0.0:6379"
 
   exit 0
 }
@@ -83,6 +86,7 @@ service::start_memcached() {
 
   # if not started in 30 seconds print logs and exit
   echo "done."
+  echo "memcached is running at 0.0.0.0:11211"
 
   exit 0
 }
