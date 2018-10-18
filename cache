@@ -5,7 +5,8 @@
 VERSION=0.3
 
 # Allocated disk space limit
-LIMIT=10000000
+
+LIMIT=${CACHE_SIZE:-10000000}
 
 # Verbose output log
 VERBOSE_LOG=1
