@@ -142,7 +142,7 @@ cache::clear() {
   cache::log "Deleted all caches."
 }
 
-cache::new_list() {
+cache::list() {
   if cache::is_not_empty; then
     cache::download_list_data "/tmp/list_data"
     output=$(cat /tmp/list_data)
@@ -152,10 +152,6 @@ cache::new_list() {
   else
     cache::log "Cache is empty."
   fi
-}
-
-cache::list() {
-  cache::lftp "cls --sort=date -l" "with_logs"
 }
 
 cache::usage(){
@@ -233,7 +229,8 @@ cache::download_list_data(){
   output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
 
   printf "%-70s \t %10s \t %-10s\n" "KEY" "SIZE" "STORED AT" > $file
-  echo -e "$output" | awk '{ printf("%-70s \t %10s \t %-4s %2s %s\n", $9, $5, $6, $7, $8); }' | numfmt --field 2 --to=iec >> $file
+  echo -e "$output" | awk '{ printf("%-70s \t %10s \t %-4s %2s %s\n", $9, $5, $6, $7, $8); }' | numfmt --field 2 --to=iec > $file
+  awk -i inplace 'BEGINFILE{print "first line"}{print}' $file
 }
 
 cache::download_keys() {
@@ -566,11 +563,6 @@ cache::main() {
       shift
 
       cache::clear "$@"
-      ;;
-    "new_list" )
-      shift
-
-      cache::new_list "$@"
       ;;
     "list" )
       shift
