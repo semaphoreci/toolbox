@@ -143,7 +143,15 @@ cache::clear() {
 }
 
 cache::list() {
-  cache::lftp "cls --sort=date -l" "with_logs"
+  if cache::is_not_empty; then
+    cache::download_list_data "/tmp/list_data"
+    output=$(cat /tmp/list_data)
+
+    cache::log "${output}"
+    rm -f /tmp/list_data
+  else
+    cache::log "Cache is empty."
+  fi
 }
 
 cache::usage(){
@@ -151,9 +159,13 @@ cache::usage(){
   local free_space
   local hr_used_space
   local hr_free_space
+  local file
 
-  cache::download_usage_data /tmp/usage_data
-  used_space=$(cache::used_space "/tmp/usage_data")
+  file=/tmp/usage_data
+
+  cache::download_usage_data $file
+
+  used_space=$(cache::used_space $file)
   free_space=$(cache::free_space ${used_space})
 
   hr_used_space=$(numfmt --to=iec ${used_space})
@@ -161,6 +173,7 @@ cache::usage(){
 
   cache::log "FREE SPACE: ${hr_free_space}"
   cache::log "USED SPACE: ${hr_used_space}"
+  rm -f $f
 }
 
 cache::delete() {
@@ -198,12 +211,41 @@ cache::has_key() {
   fi
 }
 
-cache::download_keys() {
+cache::download_usage_data(){
+  local file
+  file=$1
+
+  cache::download_data "cls --sort=date -l" $file
+  echo $(cat $file | awk '{print $5}') > $file
+}
+
+cache::download_list_data(){
   local command
   local output
   local file
-  command="cls --sort=date"
+  command="cls --sort=date -l"
   file=$1
+
+  output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
+
+  printf "%-70s \t %10s \t %-10s\n" "KEY" "SIZE" "STORED AT" > $file
+  echo -e "$output" | awk '{ printf("%-70s \t %10s \t %-4s %2s %s\n", $9, $5, $6, $7, $8); }' | numfmt --field 2 --to=iec > $file
+  awk -i inplace 'BEGINFILE{print "first line"}{print}' $file
+}
+
+cache::download_keys() {
+  local file
+  file=$1
+
+  cache::download_data "cls --sort=date" $file
+}
+
+cache::download_data(){
+  local command
+  local output
+  local file
+  command=$1
+  file=$2
 
   output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
 
@@ -232,18 +274,6 @@ cache::free_space(){
   limit=$(numfmt --from-unit=1024 $LIMIT)
   difference=$(($limit - $used_space))
   echo "$difference"
-}
-
-cache::download_usage_data(){
-  local command
-  local output
-  local file
-  command="cls --sort=date -l"
-  file=$1
-
-  output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
-
-  echo -e "$output" | awk '{print $5}' > $file
 }
 
 ################################################################################
