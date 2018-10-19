@@ -104,7 +104,7 @@ teardown() {
   refute_output --partial "/home/semaphore/toolbox"
 }
 
-@test "restors the key if it is available" {
+@test "restores the key if it is available" {
   touch tmp.file
   ./cache store tmp1 tmp.file
   ./cache store tmp12 tmp.file
@@ -337,4 +337,39 @@ teardown() {
 
   run ./cache is_not_empty
   assert_success
+}
+
+################################################################################
+# cache usage
+################################################################################
+
+@test "usage for empty cache store" {
+  ./cache clear
+  run ./cache usage
+
+  assert_success
+  assert_line "FREE SPACE: 9.6G"
+  assert_line "USED SPACE: 0"
+
+  rm -f file.tmp
+}
+
+@test "communicates the correct cache usage" {
+  export CACHE_SIZE=100
+  run ./cache usage
+
+  assert_success
+  assert_line "FREE SPACE: 100K"
+  assert_line "USED SPACE: 0"
+
+  dd if=/dev/zero of=file.tmp bs=1M count=50
+  ./cache store tmp file.tmp
+  export CACHE_SIZE=100
+  run ./cache usage
+
+  assert_success
+  assert_line "FREE SPACE: 51K"
+  assert_line "USED SPACE: 50K"
+
+  rm -f file.tmp
 }
