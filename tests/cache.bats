@@ -4,8 +4,18 @@ load "support/bats-support/load"
 load "support/bats-assert/load"
 
 teardown() {
-  ./cache clear
   rm -rf tmp
+  ./cache delete bats-test-$SEMAPHORE_GIT_BRANCH
+  ./cache delete bats-test-$SEMAPHORE_GIT_BRANCH-1
+}
+
+normalize_key() {
+  local word
+  local result
+  word=$1
+
+  result=${word//\//-}
+  echo "$result"
 }
 
 ################################################################################
@@ -34,29 +44,36 @@ teardown() {
 ################################################################################
 
 @test "save local file to cache store" {
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
-  run ./cache store test-storing tmp
+
+  run ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp
 
   assert_success
-  assert_line "Uploading 'tmp' with cache key 'test-storing'..."
+  assert_line "Uploading 'tmp' with cache key '${test_key}'..."
   assert_line "Upload complete."
-  refute_line "test-storing"
+  refute_line ${test_key}
 
-  run ./cache has_key test-storing
+  run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
+
+  assert_line "Key ${test_key} exists in the cache store."
   assert_success
 }
 
 @test "save local file to cache store with normalized key" {
+  test_key=$(normalize_key bats/test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
-  run ./cache store test/storing tmp
+
+  run ./cache store bats/test-$SEMAPHORE_GIT_BRANCH tmp
 
   assert_success
-  assert_line "Key test/storing is normalized to test-storing."
-  assert_line "Uploading 'tmp' with cache key 'test-storing'..."
+  assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
+  assert_line "Uploading 'tmp' with cache key '${test_key}'..."
   assert_line "Upload complete."
-  refute_line "test-storing"
+  refute_line ${test_key}
 
-  run ./cache has_key test-storing
+  run ./cache has_key bats/test-$SEMAPHORE_GIT_BRANCH
+
   assert_success
 }
 
@@ -68,18 +85,20 @@ teardown() {
 }
 
 @test "store with key which is already present in cache" {
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
-  ./cache store test-storing tmp
-  run ./cache has_key test-storing
+  ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp
+
+  run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
   assert_success
 
-  run ./cache store test-storing tmp
+  run ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp
 
   assert_success
-  assert_line "Key 'test-storing' already exists."
-  refute_line "test-storing"
+  assert_line "Key '${test_key}' already exists."
+  refute_line ${test_key}
 
-  run ./cache has_key test-storing
+  run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
   assert_success
 }
 
@@ -88,69 +107,75 @@ teardown() {
 ################################################################################
 
 @test "restoring existing directory from cache and perserving the directory hierarchy" {
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && mkdir tmp/first && mkdir tmp/first/second && touch tmp/first/second/example.file
-  ./cache store restore-dir-hierarchy tmp/first/second
+  ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp/first/second
   rm -rf tmp
 
-  run ./cache has_key restore-dir-hierarchy
+  run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
   assert_success
 
-  run ./cache restore restore-dir-hierarchy
+  run ./cache restore bats-test-$SEMAPHORE_GIT_BRANCH
 
   assert_success
   assert [ -e "tmp/first/second/example.file" ]
-  assert_line "HIT: restore-dir-hierarchy, using key restore-dir-hierarchy"
+  assert_line "HIT: ${test_key}, using key ${test_key}"
   assert_output --partial "Restored: tmp/first/second/"
   refute_output --partial "/home/semaphore/toolbox"
 }
 
 @test "restores the key if it is available" {
+  test_key_1=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  test_key_2=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH-1)
   touch tmp.file
-  ./cache store tmp1 tmp.file
-  ./cache store tmp12 tmp.file
+  ./cache store $test_key_1 tmp.file
+  ./cache store $test_key_2 tmp.file
 
-  run ./cache restore tmp1
+  run ./cache restore $test_key_1
 
   assert_success
-  assert_line "HIT: tmp1, using key tmp1"
-  refute_output --partial "HIT: tmp1, using key tmp12"
+  assert_line "HIT: ${test_key_1}, using key ${test_key_1}"
+  refute_output --partial "HIT: ${test_key_1}, using key ${test_key_2}"
   assert_output --partial "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
 }
 
 @test "restoring nonexistent directory from cache" {
-  run ./cache has_key test
+  run ./cache has_key test-12123
   assert_failure
 
-  run ./cache restore test
+  run ./cache restore test-12123
 
   assert_success
-  assert_line "MISS: test"
+  assert_line "MISS: test-12123"
   refute_output --partial "/home/semaphore/toolbox"
 }
 
-@test "fallback key prototype" {
+@test "fallback key option" {
   touch tmp.file
-  ./cache store v1-gems-master-p12q13r34 tmp.file
+  test_key_1=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  test_key_2=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH-1)
+  ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp.file
 
-  run ./cache restore v1-gems-master-2new99666,v1-gems-master-*
+  run ./cache restore bats-test-$SEMAPHORE_GIT_BRANCH-1,bats-test
 
   assert_success
-  assert_line "MISS: v1-gems-master-2new99666"
-  assert_line "HIT: v1-gems-master-*, using key v1-gems-master-p12q13r34"
+  assert_line "MISS: ${test_key_2}"
+  assert_line "HIT: bats-test, using key ${test_key_1}"
   assert_line "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
 }
 
-@test "fallback key prototype uses normalized keys" {
+@test "fallback key option uses normalized keys" {
   touch tmp.file
-  ./cache store modules-ms/quick-update tmp.file
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  ./cache store bats/test-$SEMAPHORE_GIT_BRANCH tmp.file
 
-  run ./cache restore modules-master-1234,modules-ms/quick-update
+  run ./cache restore modules-master-1234,bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_success
-  assert_line "Key modules-ms/quick-update is normalized to modules-ms-quick-update."
-  assert_line "HIT: modules-ms-quick-update, using key modules-ms-quick-update"
+  assert_line "Key bats/test-$SEMAPHORE_GIT_BRANCH is normalized to ${test_key}."
+  assert_line "HIT: ${test_key}, using key ${test_key}"
   assert_output --partial "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
 }
@@ -160,6 +185,10 @@ teardown() {
 ################################################################################
 
 @test "emptying cache store when it isn't empty" {
+  if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
+    skip "avoiding cache clear on non master branch"
+  fi
+
   mkdir tmp && touch tmp/example.file
   ./cache store test-emptying tmp
 
@@ -175,6 +204,10 @@ teardown() {
 }
 
 @test "emptying cache store when cache is empty" {
+  if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
+    skip "avoiding cache clear on non master branch"
+  fi
+
   run ./cache is_not_empty
   assert_failure
 
@@ -190,27 +223,33 @@ teardown() {
 ################################################################################
 
 @test "listing cache store when it has cached keys" {
+  test_key_1=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  test_key_2=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH-1)
   mkdir tmp && touch tmp/example.file
-  ./cache store ms/quick-update tmp
-  ./cache store listing-v2 tmp
+  ./cache store $test_key_1 tmp
+  ./cache store ${test_key_2} tmp
 
   run ./cache is_not_empty
   assert_success
 
-  run ./cache has_key ms/quick-update
+  run ./cache has_key ${test_key_1}
   assert_success
 
-  run ./cache has_key listing-v2
+  run ./cache has_key ${test_key_2}
   assert_success
 
   run ./cache list
 
   assert_success
-  assert_output --partial "ms-quick-update"
-  assert_output --partial "listing-v2"
+  assert_output --partial $test_key_1
+  assert_output --partial $test_key_2
 }
 
 @test "listing cache keys when cache is empty" {
+  if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
+    skip "avoiding cache clear on non master branch"
+  fi
+
   ./cache clear
 
   run ./cache is_not_empty
@@ -226,38 +265,44 @@ teardown() {
 ################################################################################
 
 @test "checking if an existing key is present in cache store" {
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
-  ./cache store example-key tmp
+  ./cache store $test_key tmp
 
   run ./cache is_not_empty
   assert_success
 
-  run ./cache has_key example-key
+  run ./cache has_key $test_key
 
   assert_success
-  assert_output --partial "Key example-key exists in the cache store."
+  assert_output --partial "Key ${test_key} exists in the cache store."
 }
 
 @test "checking if an existing key with / is present in cache store" {
+  test_key=$(normalize_key bats/test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
-  ./cache store ek/quick-update tmp
+  ./cache store bats/test-$SEMAPHORE_GIT_BRANCH tmp
 
   run ./cache is_not_empty
   assert_success
 
-  run ./cache has_key ek/quick-update
+  run ./cache has_key bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_success
-  assert_line "Key ek/quick-update is normalized to ek-quick-update."
-  assert_output --partial "Key ek-quick-update exists in the cache store."
+  assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
+  assert_output --partial "Key ${test_key} exists in the cache store."
 
-  run ./cache has_key ek-quick-update
+  run ./cache has_key $test_key
 
   assert_success
-  assert_output --partial "Key ek-quick-update exists in the cache store."
+  assert_output --partial "Key ${test_key} exists in the cache store."
 }
 
 @test "checking if nonexistent key is present in empty cache store" {
+  if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
+    skip "avoiding cache clear on non master branch"
+  fi
+
   run ./cache clear
   assert_success
 
@@ -275,47 +320,49 @@ teardown() {
 ################################################################################
 
 @test "deletion of an existing key" {
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
-  ./cache store example-key tmp
-  ./cache has_key example-key
+  ./cache store $test_key tmp
+  ./cache has_key $test_key
 
-  run ./cache delete example-key
+  run ./cache delete $test_key
 
   assert_success
-  assert_output --partial "Key example-key is deleted."
+  assert_output --partial "Key ${test_key} is deleted."
 
-  run ./cache has_key example-key
+  run ./cache has_key $test_key
   assert_failure
 }
 
 @test "delition of an existing key with /" {
+  test_key=$(normalize_key bats/test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
-  ./cache store ek/quick-update tmp
+  ./cache store bats/test-$SEMAPHORE_GIT_BRANCH tmp
 
   run ./cache is_not_empty
   assert_success
 
-  run ./cache delete ek/quick-update
+  run ./cache delete bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_success
-  assert_line "Key ek/quick-update is normalized to ek-quick-update."
-  assert_output --partial "Key ek-quick-update is deleted."
+  assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
+  assert_output --partial "Key ${test_key} is deleted."
 
-  run ./cache has_key ek/quick-update
+  run ./cache has_key bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_failure
-  assert_line "Key ek/quick-update is normalized to ek-quick-update."
-  assert_output --partial "Key ek-quick-update doesn't exist in the cache store."
+  assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
+  assert_output --partial "Key ${test_key} doesn't exist in the cache store."
 }
 
 @test "deletion of a nonexistent key" {
-  run ./cache has_key example-key
+  run ./cache has_key example-nonexistent-key
   assert_failure
 
-  run ./cache delete example-key
+  run ./cache delete example-nonexistent-key
 
   assert_success
-  assert_output --partial "Key example-key doesn't exist in the cache store."
+  assert_output --partial "Key example-nonexistent-key doesn't exist in the cache store."
 }
 
 ################################################################################
@@ -323,6 +370,10 @@ teardown() {
 ################################################################################
 
 @test "is_not_empty should fail when cache store is empty" {
+  if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
+    skip "avoiding cache clear on non master branch"
+  fi
+
   ./cache clear
 
   run ./cache is_not_empty
@@ -330,10 +381,11 @@ teardown() {
 }
 
 @test "is_not_empty should not fail when cache is not empty" {
-  ./cache store semaphore .semaphore
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  ./cache store $test_key .semaphore
 
   run ./cache list
-  assert_output --partial "semaphore"
+  assert_output --partial "$test_key"
 
   run ./cache is_not_empty
   assert_success
@@ -344,6 +396,10 @@ teardown() {
 ################################################################################
 
 @test "usage for empty cache store" {
+  if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
+    skip "avoiding cache clear on non master branch"
+  fi
+
   ./cache clear
   run ./cache usage
 
@@ -355,15 +411,12 @@ teardown() {
 }
 
 @test "communicates the correct cache usage" {
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   export CACHE_SIZE=100
   run ./cache usage
 
-  assert_success
-  assert_line "FREE SPACE: 100K"
-  assert_line "USED SPACE: 0"
-
   dd if=/dev/zero of=file.tmp bs=1M count=50
-  ./cache store tmp file.tmp
+  ./cache store $test_key file.tmp
   export CACHE_SIZE=100
   run ./cache usage
 
