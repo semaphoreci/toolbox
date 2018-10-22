@@ -50,7 +50,7 @@ cache::normalize_string() {
 ################################################################################
 cache::store() {
   local usage
-  usage="Usage: \n\t cache store <key> <local-path>\nExample: \n\t cache store v1-bundle-1234 vendor/bundle"
+  usage='Usage: \n\t cache store [key] [local-path]\nExample: \n\t cache store bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock) vendor/bundle\n'
 
   if [[ $# -eq 0 ]]; then
     cache::log "${usage}"
@@ -98,7 +98,7 @@ cache::restore() {
   local usage
   local semaphore_cache_keys
 
-  usage="Usage: \n\t cache restore <comma-separated-keys>\nExample: \n\t cache restore bundle-develop-1234\nFallback example:\n\t cache restore bundle-develop-1234,bundle-develop,bundle-master"
+  usage='Usage: \n\tcache restore [key,key_1,key_2]\nExample: \n\tcache store bundle-$SEMAPHORE_GIT_BRANCH-$SEMAPHORE_GIT_SHA\nFallback example:\n\tcache restore bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock),bundle-$SEMAPHORE_GIT_BRANCH\n'
 
   if [[ $# -eq 0 ]]; then
     cache::log "${usage}"
@@ -178,35 +178,51 @@ cache::usage() {
 cache::delete() {
   local key
 
-  key=$(cache::normalize_string $1)
+  usage='Usage: \n\tcache delete [key]\nExample: \n\tcache delete bundle-$SEMAPHORE_GIT_BRANCH\n'
 
-  if cache::file_is_present ${key}; then
-    cache::lftp "glob rm -f $key"
+  if [[ $# -eq 0 ]]; then
+    cache::log "${usage}"
+  elif [[ $# -ne 1 ]]; then
+    cache::err "Incorrect number of arguments!"
+  else
+    key=$(cache::normalize_string $1)
 
     if cache::file_is_present ${key}; then
-      cache::log "Failed to delete the key.."
+      cache::lftp "glob rm -f $key"
+
+      if cache::file_is_present ${key}; then
+        cache::log "Failed to delete the key.."
+      else
+        cache::log "Key ${key} is deleted."
+      fi
     else
-      cache::log "Key ${key} is deleted."
+      cache::log "Key ${key} doesn't exist in the cache store."
     fi
-  else
-    cache::log "Key ${key} doesn't exist in the cache store."
   fi
 }
 
 cache::has_key() {
   local key
 
-  key=$(cache::normalize_string $1)
+  usage='Usage: \n\tcache has_key [key]\nExample: \n\tcache has_key bundle-$SEMAPHORE_GIT_BRANCH\n'
 
-  if cache::file_is_present ${key}
-  then
-    cache::log "Key ${key} exists in the cache store."
-
-    return 0
+  if [[ $# -eq 0 ]]; then
+    cache::log "${usage}"
+  elif [[ $# -ne 1 ]]; then
+    cache::err "Incorrect number of arguments!"
   else
-    cache::log "Key ${key} doesn't exist in the cache store."
+    key=$(cache::normalize_string $1)
 
-    return 1
+    if cache::file_is_present ${key}
+    then
+      cache::log "Key ${key} exists in the cache store."
+
+      return 0
+    else
+      cache::log "Key ${key} doesn't exist in the cache store."
+
+      return 1
+    fi
   fi
 }
 
@@ -406,10 +422,8 @@ cache::calculate_key_md5() {
 }
 
 cache::print_usage() {
-  echo -e "\n#####################################################################################################"
-  echo -e "cache ${VERSION} | Utility for saving and fetching dependency caches"
-  echo -e "\ncache [store|restore|list|clear|delete|has_key] opts"
-  echo -e "#####################################################################################################"
+  echo -e "cache ${VERSION} | Utility for managing dependency caches"
+  echo -e "cache [store|restore|list|clear|delete|has_key|usage] opts"
 }
 
 ################################################################################
