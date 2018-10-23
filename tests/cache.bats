@@ -439,7 +439,6 @@ normalize_key() {
   ./cache store $preexisting_key tmp.file
 
   run ./cache new_store $new_key tmp.file
-  assert_line "Not enough space in cache store.1"
   assert_line "Deleted key ${preexisting_key}."
 }
 ################################################################################

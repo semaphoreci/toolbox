@@ -49,7 +49,9 @@ cache::normalize_string() {
 #   None
 ################################################################################
 cache::new_store() {
+  local archive_size
   local usage
+
   usage='Usage: \n\t cache store [key] [local-path]\nExample: \n\t cache store bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock) vendor/bundle\n'
 
   if [[ $# -eq 0 ]]; then
@@ -60,8 +62,48 @@ cache::new_store() {
     SEMAPHORE_LOCAL_CACHE_PATHS=$2
     SEMAPHORE_CACHE_KEY=$(cache::normalize_string $1)
 
+    archive_size=$(tar czf - $SEMAPHORE_LOCAL_CACHE_PATHS | wc -c)
+
+    cache::allocate_space $archive_size
+
     cache::lftp_put
   fi
+}
+
+cache::allocate_space() {
+  local used_space
+  local free_space
+  local file
+  local archive_size
+
+  archive_size=$1
+  file="/tmp/usage_data"
+  echo $archive_size
+
+  cache::download_usage_data $file
+
+  used_space=$(cache::used_space $file)
+  free_space=$(cache::free_space ${used_space})
+
+  echo "comparing $free_space and $archive_size"
+
+  while [ $free_space -lt $archive_size ]; do
+    cache::delete_oldest_key
+  done
+
+  cat /tmp/cache_keys
+  rm -f /tmp/cache_keys
+
+  rm -f $file
+}
+
+cache::delete_oldest_key() {
+ local key
+
+ cache::download_keys "/tmp/cache_keys"
+ echo "trying to delete the oldest key"
+ key=$(cat "/tmp/cache_keys")
+ cache::delete $key
 }
 
 cache::store() {
