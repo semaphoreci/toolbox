@@ -50,7 +50,7 @@ cache::normalize_string() {
 ################################################################################
 cache::store() {
   local usage
-  usage="Usage: \n\t cache store <key> <local-path>\nExample: \n\t cache store v1-bundle-1234 vendor/bundle"
+  usage='Usage: \n\t cache store [key] [local-path]\nExample: \n\t cache store bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock) vendor/bundle\n'
 
   if [[ $# -eq 0 ]]; then
     cache::log "${usage}"
@@ -98,7 +98,7 @@ cache::restore() {
   local usage
   local semaphore_cache_keys
 
-  usage="Usage: \n\t cache restore <comma-separated-keys>\nExample: \n\t cache restore bundle-develop-1234\nFallback example:\n\t cache restore bundle-develop-1234,bundle-develop,bundle-master"
+  usage='Usage: \n\tcache restore [key,key_1,key_2]\nExample: \n\tcache store bundle-$SEMAPHORE_GIT_BRANCH-$SEMAPHORE_GIT_SHA\nFallback example:\n\tcache restore bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock),bundle-$SEMAPHORE_GIT_BRANCH\n'
 
   if [[ $# -eq 0 ]]; then
     cache::log "${usage}"
@@ -107,7 +107,7 @@ cache::restore() {
   else
     semaphore_cache_keys=$1
 
-    cache::download_keys /tmp/cache-keys
+    cache::download_keys "/tmp/cache_keys"
 
     for key in ${semaphore_cache_keys//,/ }; do
       cache_key=$(cache::normalize_string $key)
@@ -117,7 +117,7 @@ cache::restore() {
         cache::lftp_get $cache_key
         break
       else
-        match=$(grep -m 1 $cache_key /tmp/cache-keys)
+        match=$(grep -m 1 ${cache_key} /tmp/cache_keys)
 
         if [[ ! -z "$match" ]]; then
           cache::log "HIT: ${cache_key}, using key ${match}"
@@ -129,7 +129,7 @@ cache::restore() {
       fi
     done
 
-    rm -f /tmp/cache-keys
+    rm -f /tmp/cache_keys
   fi
 }
 
@@ -143,17 +143,27 @@ cache::clear() {
 }
 
 cache::list() {
-  cache::lftp "cls --sort=date -l" "with_logs"
+  if cache::is_not_empty; then
+    cache::download_list_data "/tmp/list_data"
+    output=$(cat /tmp/list_data)
+     cache::log "${output}"
+    rm -f /tmp/list_data
+  else
+    cache::log "Cache is empty."
+  fi
 }
 
-cache::usage(){
+cache::usage() {
   local used_space
   local free_space
   local hr_used_space
   local hr_free_space
+  local file
 
-  cache::download_usage_data /tmp/usage_data
-  used_space=$(cache::used_space "/tmp/usage_data")
+  file="/tmp/usage_data"
+  cache::download_usage_data $file
+
+  used_space=$(cache::used_space $file)
   free_space=$(cache::free_space ${used_space})
 
   hr_used_space=$(numfmt --to=iec ${used_space})
@@ -161,56 +171,110 @@ cache::usage(){
 
   cache::log "FREE SPACE: ${hr_free_space}"
   cache::log "USED SPACE: ${hr_used_space}"
+
+  rm -f $file
 }
 
 cache::delete() {
   local key
 
-  key=$(cache::normalize_string $1)
+  usage='Usage: \n\tcache delete [key]\nExample: \n\tcache delete bundle-$SEMAPHORE_GIT_BRANCH\n'
 
-  if cache::file_is_present ${key}; then
-    cache::lftp "glob rm -f $key"
+  if [[ $# -eq 0 ]]; then
+    cache::log "${usage}"
+  elif [[ $# -ne 1 ]]; then
+    cache::err "Incorrect number of arguments!"
+  else
+    key=$(cache::normalize_string $1)
 
     if cache::file_is_present ${key}; then
-      cache::log "Failed to delete the key.."
+      cache::lftp "glob rm -f $key"
+
+      if cache::file_is_present ${key}; then
+        cache::log "Failed to delete the key.."
+      else
+        cache::log "Key ${key} is deleted."
+      fi
     else
-      cache::log "Key ${key} is deleted."
+      cache::log "Key ${key} doesn't exist in the cache store."
     fi
-  else
-    cache::log "Key ${key} doesn't exist in the cache store."
   fi
 }
 
 cache::has_key() {
   local key
 
-  key=$(cache::normalize_string $1)
+  usage='Usage: \n\tcache has_key [key]\nExample: \n\tcache has_key bundle-$SEMAPHORE_GIT_BRANCH\n'
 
-  if cache::file_is_present ${key}
-  then
-    cache::log "Key ${key} exists in the cache store."
-
-    return 0
+  if [[ $# -eq 0 ]]; then
+    cache::log "${usage}"
+  elif [[ $# -ne 1 ]]; then
+    cache::err "Incorrect number of arguments!"
   else
-    cache::log "Key ${key} doesn't exist in the cache store."
+    key=$(cache::normalize_string $1)
 
-    return 1
+    if cache::file_is_present ${key}
+    then
+      cache::log "Key ${key} exists in the cache store."
+
+      return 0
+    else
+      cache::log "Key ${key} doesn't exist in the cache store."
+
+      return 1
+    fi
   fi
 }
 
-cache::download_keys() {
+cache::download_data() {
   local command
-  local output
   local file
-  command="cls --sort=date"
-  file=$1
+  local output
+
+  command=$1
+  file=$2
 
   output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
 
   echo -e "$output" > $file
 }
 
-cache::used_space(){
+cache::download_keys() {
+  local command
+  local file
+
+  file=$1
+  command="cls --sort=date"
+
+  cache::download_data "$command" $file
+}
+
+cache::download_usage_data(){
+  local command
+  local file
+
+  command="cls --sort=date -l"
+  file=$1
+
+  cache::download_data "${command}" $file
+  echo -e "$(cat $file | awk '{print $5}')" > $file
+}
+
+cache::download_list_data() {
+  local command
+  local file
+  local output
+
+  command="cls --sort=date -l"
+  file=$1
+
+  output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
+
+  printf "%-70s \t %10s \t %-10s\n" "KEY" "SIZE" "STORED AT" > $file
+  echo -e "$output" | awk '{ printf("%-70s \t %10s \t %-4s %2s %s\n", $9, $5, $6, $7, $8); }' | numfmt --field 2 --to=iec >> $file
+}
+
+cache::used_space() {
   local file
   local sum
   file=$1
@@ -224,7 +288,7 @@ cache::used_space(){
   echo "$sum"
 }
 
-cache::free_space(){
+cache::free_space() {
   local limit
   local difference
 
@@ -232,18 +296,6 @@ cache::free_space(){
   limit=$(numfmt --from-unit=1024 $LIMIT)
   difference=$(($limit - $used_space))
   echo "$difference"
-}
-
-cache::download_usage_data(){
-  local command
-  local output
-  local file
-  command="cls --sort=date -l"
-  file=$1
-
-  output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
-
-  echo -e "$output" | awk '{print $5}' > $file
 }
 
 ################################################################################
@@ -370,10 +422,8 @@ cache::calculate_key_md5() {
 }
 
 cache::print_usage() {
-  echo -e "\n#####################################################################################################"
-  echo -e "cache ${VERSION} | Utility for saving and fetching dependency caches"
-  echo -e "\ncache [store|restore|list|clear|delete|has_key] opts"
-  echo -e "#####################################################################################################"
+  echo -e "cache ${VERSION} | Utility for managing dependency caches"
+  echo -e "cache [store|restore|list|clear|delete|has_key|usage] opts"
 }
 
 ################################################################################
