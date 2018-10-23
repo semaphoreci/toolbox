@@ -407,7 +407,7 @@ normalize_key() {
   assert_line "FREE SPACE: 9.6G"
   assert_line "USED SPACE: 0"
 
-  rm -f file.tmp
+  rm -f tmp.file
 }
 
 @test "communicates the correct cache usage" {
@@ -415,8 +415,8 @@ normalize_key() {
   export CACHE_SIZE=100
   run ./cache usage
 
-  dd if=/dev/zero of=file.tmp bs=1M count=50
-  ./cache store $test_key file.tmp
+  dd if=/dev/zero of=tmp.file bs=1M count=50
+  ./cache store $test_key tmp.file
   export CACHE_SIZE=100
   run ./cache usage
 
@@ -424,5 +424,9 @@ normalize_key() {
   assert_line "FREE SPACE: 51K"
   assert_line "USED SPACE: 50K"
 
-  rm -f file.tmp
+  rm -f tmp.file
 }
+
+################################################################################
+# cache new_store
+################################################################################
