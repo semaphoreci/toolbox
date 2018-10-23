@@ -430,3 +430,16 @@ normalize_key() {
 ################################################################################
 # cache new_store
 ################################################################################
+
+@test "new_store makes enough room for new key by deleting existing one" {
+  preexisting_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  new_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH-1)
+  export CACHE_SIZE=60
+  dd if=/dev/zero of=tmp.file bs=1M count=50
+  ./cache store $preexisting_key tmp.file
+
+  run ./cache new_store $new_key tmp.file
+  assert_line "Not enough space in cache store.1"
+  assert_line "Deleted key ${preexisting_key}."
+}
+################################################################################
