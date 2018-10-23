@@ -186,7 +186,7 @@ normalize_key() {
 
 @test "emptying cache store when it isn't empty" {
   if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
-    skip "avoiding cache clear on non master branch"
+    skip "- - avoiding cache clear on non master branch"
   fi
 
   mkdir tmp && touch tmp/example.file
@@ -205,7 +205,7 @@ normalize_key() {
 
 @test "emptying cache store when cache is empty" {
   if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
-    skip "avoiding cache clear on non master branch"
+    skip "- - avoiding cache clear on non master branch"
   fi
 
   run ./cache is_not_empty
@@ -247,7 +247,7 @@ normalize_key() {
 
 @test "listing cache keys when cache is empty" {
   if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
-    skip "avoiding cache clear on non master branch"
+    skip "- avoiding cache clear on non master branch"
   fi
 
   ./cache clear
@@ -300,7 +300,7 @@ normalize_key() {
 
 @test "checking if nonexistent key is present in empty cache store" {
   if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
-    skip "avoiding cache clear on non master branch"
+    skip "- avoiding cache clear on non master branch"
   fi
 
   run ./cache clear
@@ -371,7 +371,7 @@ normalize_key() {
 
 @test "is_not_empty should fail when cache store is empty" {
   if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
-    skip "avoiding cache clear on non master branch"
+    skip "- avoiding cache clear on non master branch"
   fi
 
   ./cache clear
@@ -397,7 +397,7 @@ normalize_key() {
 
 @test "usage for empty cache store" {
   if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
-    skip "avoiding cache clear on non master branch"
+    skip "- avoiding cache clear on non master branch"
   fi
 
   ./cache clear
