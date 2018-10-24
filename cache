@@ -49,7 +49,6 @@ cache::normalize_string() {
 #   None
 ################################################################################
 cache::store() {
-  local archive_size
   local usage
 
   usage='Usage: \n\t cache store [key] [local-path]\nExample: \n\t cache store bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock) vendor/bundle\n'
@@ -62,9 +61,6 @@ cache::store() {
     SEMAPHORE_LOCAL_CACHE_PATHS=$2
     SEMAPHORE_CACHE_KEY=$(cache::normalize_string $1)
 
-    archive_size=$(tar czf - $SEMAPHORE_LOCAL_CACHE_PATHS | wc -c)
-
-    cache::allocate_space $archive_size
     cache::lftp_put
   fi
 }
@@ -106,12 +102,14 @@ cache::delete_oldest_key() {
 
  size=$(cat /tmp/size_key | tail -1 | awk '{ print $1 }')
  key=$(cat /tmp/size_key | tail -1 | awk '{ print $2 }')
- cache::delete $key
+ cache::delete ${key}
  sed -i '$d' $file
  echo $size
 }
 
 cache::lftp_put() {
+  local archive_size
+
   for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
     if ! [[ -e $local_path ]]; then
       cache::log "'${local_path}' doesn't exist locally."
@@ -122,6 +120,9 @@ cache::lftp_put() {
     if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
       cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
     else
+      archive_size=$(tar czf - $local_path | wc -c)
+      cache::allocate_space $archive_size
+
       tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
       cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
       cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
@@ -234,8 +235,10 @@ cache::delete() {
   else
     key=$(cache::normalize_string $1)
 
+    cache::log "key valude in delete"
+    cache::log  "${key}"
     if cache::file_is_present ${key}; then
-      cache::lftp "glob rm -f $key"
+      cache::lftp "glob rm -f ${key}"
 
       if cache::file_is_present ${key}; then
         cache::log "Failed to delete the key.."
@@ -419,6 +422,16 @@ cache::lftp() {
   fi
 
   # has_key and file_is_present
+  if [[ "${lftp_command}" =~ 'cls' ]]; then
+    if [[ "${command_log}" =~ "${E_NOSFL}" ]]; then
+      E_FLMSNG=1
+
+      return
+    else
+      E_FLMSNG=0
+    fi
+  fi
+
   if [[ "${command_log}" =~ "${E_NOSFL}" ]] && [[ "${lftp_command}" =~ 'cls' ]]; then
     E_FLMSNG=1
 

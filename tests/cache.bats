@@ -112,6 +112,7 @@ normalize_key() {
   export CACHE_SIZE=110
   ./cache store $preexisting_key tmp.file
   ./cache store tmp-key tmp.file
+  ./cache list
 
   run ./cache store $new_key tmp.larger_file
   assert_line "Not enough space, deleting the oldest keys."
@@ -127,7 +128,10 @@ normalize_key() {
 
   run ./cache has_key $new_key
   assert_success
+
+  ./cache delete tmp-key
 }
+
 ################################################################################
 # cache restore
 ################################################################################
