@@ -99,8 +99,12 @@ cache::allocate_space() {
 
 cache::delete_oldest_key() {
  local key
+ local file
 
- cache::download_keys "/tmp/cache_keys"
+ file=/tmp/key_size
+
+ cache::download_data "cls --sort=date -l" "$file"
+ cache::download_list_data "/tmp/list_data"
  echo "trying to delete the oldest key"
  key=$(cat "/tmp/cache_keys")
  cache::delete $key
@@ -204,7 +208,7 @@ cache::list() {
   if cache::is_not_empty; then
     cache::download_list_data "/tmp/list_data"
     output=$(cat /tmp/list_data)
-     cache::log "${output}"
+    cache::log "${output}"
     rm -f /tmp/list_data
   else
     cache::log "Cache is empty."
@@ -321,15 +325,16 @@ cache::download_usage_data(){
 cache::download_list_data() {
   local command
   local file
-  local output
 
-  command="cls --sort=date -l"
   file=$1
+  command="cls --sort=date -l"
 
-  output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
+  cache::download_data "$command" "${file}_tmp"
 
   printf "%-70s \t %10s \t %-10s\n" "KEY" "SIZE" "STORED AT" > $file
-  echo -e "$output" | awk '{ printf("%-70s \t %10s \t %-4s %2s %s\n", $9, $5, $6, $7, $8); }' | numfmt --field 2 --to=iec >> $file
+  echo -e "$(cat ${file}_tmp)" | awk '{ printf("%-70s \t %10s \t %-4s %2s %s\n", $9, $5, $6, $7, $8); }' | numfmt --field 2 --to=iec >> $file
+
+  rm -f ${file}_tmp
 }
 
 cache::used_space() {
