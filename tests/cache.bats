@@ -334,7 +334,7 @@ normalize_key() {
   assert_failure
 }
 
-@test "delition of an existing key with /" {
+@test "deletion of an existing key with /" {
   test_key=$(normalize_key bats/test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
   ./cache store bats/test-$SEMAPHORE_GIT_BRANCH tmp
