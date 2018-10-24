@@ -82,6 +82,7 @@ normalize_key() {
 
   assert_success
   assert_line "'tmp' doesn't exist locally."
+  refute_output --partial "Cannot stat: No such file or directory"
 }
 
 @test "store with key which is already present in cache" {
@@ -96,7 +97,7 @@ normalize_key() {
 
   assert_success
   assert_line "Key '${test_key}' already exists."
-  assert_line "Uploading 'tmp' with cache key '${tes_key}'..."
+  refute_line "Uploading 'tmp' with cache key '${tes_key}'..."
   refute_line ${test_key}
 
   run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
