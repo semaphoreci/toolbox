@@ -87,9 +87,9 @@ cache::allocate_space() {
 
   echo "comparing $free_space and $archive_size"
 
-  while [ $free_space -lt $archive_size ]; do
-    cache::delete_oldest_key
-  done
+  #while [ $free_space -lt $archive_size ]; do
+  #  cache::delete_oldest_key
+  #done
 
   cat /tmp/cache_keys
   rm -f /tmp/cache_keys

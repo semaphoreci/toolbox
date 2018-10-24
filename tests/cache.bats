@@ -440,5 +440,6 @@ normalize_key() {
 
   run ./cache new_store $new_key tmp.file
   assert_line "Deleted key ${preexisting_key}."
+
+  ./cache list
 }
-################################################################################
