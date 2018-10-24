@@ -102,6 +102,30 @@ normalize_key() {
   assert_success
 }
 
+@test "automatic key deletion in case of insufficient space" {
+  preexisting_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  new_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH-1)
+  dd if=/dev/zero of=tmp.file bs=1M count=50
+  dd if=/dev/zero of=tmp.larger_file bs=1M count=70
+  export CACHE_SIZE=110
+  ./cache store $preexisting_key tmp.file
+  ./cache store tmp-key tmp.file
+
+  run ./cache store $new_key tmp.larger_file
+  assert_line "Not enough space, deleting the oldest keys."
+  assert_line "Key ${preexisting_key} is deleted."
+  assert_line "Key tmp-key is deleted."
+  assert_line "Uploading 'tmp.larger_file' with cache key '${new_key}'..."
+
+  run ./cache has_key tmp-key
+  assert_failure
+
+  run ./cache has_key $preexisting_key
+  assert_failure
+
+  run ./cache has_key $new_key
+  assert_success
+}
 ################################################################################
 # cache restore
 ################################################################################
@@ -425,33 +449,4 @@ normalize_key() {
   assert_line "USED SPACE: 50K"
 
   rm -f tmp.file
-}
-
-################################################################################
-# cache new_store
-################################################################################
-
-@test "new_store makes enough room for new key by deleting existing one" {
-  preexisting_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
-  new_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH-1)
-  dd if=/dev/zero of=tmp.file bs=1M count=50
-  dd if=/dev/zero of=tmp.larger_file bs=1M count=70
-  export CACHE_SIZE=110
-  ./cache store $preexisting_key tmp.file
-  ./cache store tmp-key tmp.file
-
-  run ./cache new_store $new_key tmp.larger_file
-  assert_line "Not enough space, deleting the oldest keys."
-  assert_line "Key ${preexisting_key} is deleted."
-  assert_line "Key tmp-key is deleted."
-  assert_line "Uploading 'tmp.larger_file' with cache key '${new_key}'..."
-
-  run ./cache has_key tmp-key
-  assert_failure
-
-  run ./cache has_key $preexisting_key
-  assert_failure
-
-  run ./cache has_key $new_key
-  assert_success
 }

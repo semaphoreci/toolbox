@@ -48,7 +48,7 @@ cache::normalize_string() {
 # Returns:
 #   None
 ################################################################################
-cache::new_store() {
+cache::store() {
   local archive_size
   local usage
 
@@ -109,22 +109,6 @@ cache::delete_oldest_key() {
  cache::delete $key
  sed -i '$d' $file
  echo $size
-}
-
-cache::store() {
-  local usage
-  usage='Usage: \n\t cache store [key] [local-path]\nExample: \n\t cache store bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock) vendor/bundle\n'
-
-  if [[ $# -eq 0 ]]; then
-    cache::log "${usage}"
-  elif [[ $# -ne 2 ]]; then
-    cache::err "Incorrect number of arguments!"
-  else
-    SEMAPHORE_LOCAL_CACHE_PATHS=$2
-    SEMAPHORE_CACHE_KEY=$(cache::normalize_string $1)
-
-    cache::lftp_put
-  fi
 }
 
 cache::lftp_put() {
@@ -637,11 +621,6 @@ cache::main() {
       shift
 
       cache::restore "$@"
-      ;;
-    "new_store" )
-      shift
-
-      cache::new_store "$@"
       ;;
     "store" )
       shift
