@@ -87,7 +87,7 @@ cache::allocate_space() {
   rm -f "/tmp/usage_data"
 
   if [ $free_space -lt $archive_size ]; then
-    cache::log "Not enough space on cache store. Deleting the oldest keys."
+    cache::log "Not enough space, deleting the oldest keys."
     while [ $free_space -lt $archive_size ]; do
       deleted_key_size=$(cache::delete_oldest_key)
       free_space=$(($free_space + $deleted_key_size))
