@@ -96,6 +96,7 @@ normalize_key() {
 
   assert_success
   assert_line "Key '${test_key}' already exists."
+  assert_line "Uploading 'tmp' with cache key '${tes_key}'..."
   refute_line ${test_key}
 
   run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
