@@ -235,8 +235,6 @@ cache::delete() {
   else
     key=$(cache::normalize_string $1)
 
-    cache::log "key valude in delete"
-    cache::log  "${key}"
     if cache::file_is_present ${key}; then
       cache::lftp "glob rm -f ${key}"
 
@@ -363,7 +361,6 @@ cache::lftp_get() {
   local key
 
   key=$1
-  E_FLMSNG=0 # set global env var to zero before running file_is_present
 
   if cache::file_is_present $key; then
     cd /tmp

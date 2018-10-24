@@ -7,6 +7,7 @@ teardown() {
   rm -rf tmp
   ./cache delete bats-test-$SEMAPHORE_GIT_BRANCH
   ./cache delete bats-test-$SEMAPHORE_GIT_BRANCH-1
+  unset CACHE_SIZE
 }
 
 normalize_key() {
