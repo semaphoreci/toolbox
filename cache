@@ -65,7 +65,6 @@ cache::new_store() {
     archive_size=$(tar czf - $SEMAPHORE_LOCAL_CACHE_PATHS | wc -c)
 
     cache::allocate_space $archive_size
-
     cache::lftp_put
   fi
 }
@@ -77,37 +76,39 @@ cache::allocate_space() {
   local archive_size
 
   archive_size=$1
-  file="/tmp/usage_data"
-  echo $archive_size
 
-  cache::download_usage_data $file
+  file="/tmp/keys_data"
+  cache::download_data "cls --sort=date -l" $file
+  echo -e "$(cat $file | awk '{print $5}')" > "/tmp/usage_data"
+  echo -e "$(cat $file | awk '{print $5, $9}')" > "/tmp/size_key"
 
-  used_space=$(cache::used_space $file)
+  used_space=$(cache::used_space "/tmp/usage_data")
   free_space=$(cache::free_space ${used_space})
+  rm -f "/tmp/usage_data"
 
-  echo "comparing $free_space and $archive_size"
+  if [ $free_space -lt $archive_size ]; then
+    cache::log "Not enough space on cache store. Deleting the oldest keys."
+    while [ $free_space -lt $archive_size ]; do
+      deleted_key_size=$(cache::delete_oldest_key)
+      free_space=$(($free_space + $deleted_key_size))
+    done
+  fi
 
-  #while [ $free_space -lt $archive_size ]; do
-  #  cache::delete_oldest_key
-  #done
-
-  cat /tmp/cache_keys
-  rm -f /tmp/cache_keys
-
-  rm -f $file
+  rm -f /tmp/size_key
+  rm -f /tmp/keys_data
 }
 
 cache::delete_oldest_key() {
  local key
  local file
 
- file=/tmp/key_size
+ file=/tmp/size_key
 
- cache::download_data "cls --sort=date -l" "$file"
- cache::download_list_data "/tmp/list_data"
- echo "trying to delete the oldest key"
- key=$(cat "/tmp/cache_keys")
+ size=$(cat /tmp/size_key | tail -1 | awk '{ print $1 }')
+ key=$(cat /tmp/size_key | tail -1 | awk '{ print $2 }')
  cache::delete $key
+ sed -i '$d' $file
+ echo $size
 }
 
 cache::store() {
