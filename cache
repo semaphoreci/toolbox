@@ -74,7 +74,7 @@ cache::allocate_space() {
   archive_size=$1
 
   file="/tmp/keys_data"
-  cache::download_data "cls --sort=date -l" $file
+  cache::save_command_output "cls --sort=date -l" $file
   echo -e "$(cat $file | awk '{print $5}')" > "/tmp/usage_data"
   echo -e "$(cat $file | awk '{print $5, $9}')" > "/tmp/size_key"
 
@@ -274,7 +274,7 @@ cache::has_key() {
   fi
 }
 
-cache::download_data() {
+cache::save_command_output() {
   local command
   local file
   local output
@@ -294,7 +294,7 @@ cache::download_keys() {
   file=$1
   command="cls --sort=date"
 
-  cache::download_data "$command" $file
+  cache::save_command_output "$command" $file
 }
 
 cache::download_usage_data(){
@@ -304,7 +304,7 @@ cache::download_usage_data(){
   command="cls --sort=date -l"
   file=$1
 
-  cache::download_data "${command}" $file
+  cache::save_command_output "${command}" $file
   echo -e "$(cat $file | awk '{print $5}')" > $file
 }
 
@@ -315,7 +315,7 @@ cache::download_list_data() {
   file=$1
   command="cls --sort=date -l"
 
-  cache::download_data "$command" "${file}_tmp"
+  cache::save_command_output "$command" "${file}_tmp"
 
   printf "%-70s \t %10s \t %-10s\n" "KEY" "SIZE" "STORED AT" > $file
   echo -e "$(cat ${file}_tmp)" | awk '{ printf("%-70s \t %10s \t %-4s %2s %s\n", $9, $5, $6, $7, $8); }' | numfmt --field 2 --to=iec >> $file
