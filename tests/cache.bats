@@ -7,6 +7,7 @@ teardown() {
   rm -rf tmp
   ./cache delete bats-test-$SEMAPHORE_GIT_BRANCH
   ./cache delete bats-test-$SEMAPHORE_GIT_BRANCH-1
+  unset CACHE_SIZE
 }
 
 normalize_key() {
@@ -82,6 +83,7 @@ normalize_key() {
 
   assert_success
   assert_line "'tmp' doesn't exist locally."
+  refute_output --partial "Cannot stat: No such file or directory"
 }
 
 @test "store with key which is already present in cache" {
@@ -96,10 +98,39 @@ normalize_key() {
 
   assert_success
   assert_line "Key '${test_key}' already exists."
+  refute_line "Uploading 'tmp' with cache key '${tes_key}'..."
   refute_line ${test_key}
 
   run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
   assert_success
+}
+
+@test "automatic key deletion in case of insufficient space" {
+  preexisting_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  new_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH-1)
+  dd if=/dev/zero of=tmp.file bs=1M count=50
+  dd if=/dev/zero of=tmp.larger_file bs=1M count=70
+  export CACHE_SIZE=110
+  ./cache store $preexisting_key tmp.file
+  ./cache store tmp-key tmp.file
+  ./cache list
+
+  run ./cache store $new_key tmp.larger_file
+  assert_line "Not enough space, deleting the oldest keys."
+  assert_line "Key ${preexisting_key} is deleted."
+  assert_line "Key tmp-key is deleted."
+  assert_line "Uploading 'tmp.larger_file' with cache key '${new_key}'..."
+
+  run ./cache has_key tmp-key
+  assert_failure
+
+  run ./cache has_key $preexisting_key
+  assert_failure
+
+  run ./cache has_key $new_key
+  assert_success
+
+  ./cache delete tmp-key
 }
 
 ################################################################################
@@ -334,7 +365,7 @@ normalize_key() {
   assert_failure
 }
 
-@test "delition of an existing key with /" {
+@test "deletion of an existing key with /" {
   test_key=$(normalize_key bats/test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
   ./cache store bats/test-$SEMAPHORE_GIT_BRANCH tmp
@@ -407,7 +438,7 @@ normalize_key() {
   assert_line "FREE SPACE: 9.6G"
   assert_line "USED SPACE: 0"
 
-  rm -f file.tmp
+  rm -f tmp.file
 }
 
 @test "communicates the correct cache usage" {
@@ -415,8 +446,8 @@ normalize_key() {
   export CACHE_SIZE=100
   run ./cache usage
 
-  dd if=/dev/zero of=file.tmp bs=1M count=50
-  ./cache store $test_key file.tmp
+  dd if=/dev/zero of=tmp.file bs=1M count=50
+  ./cache store $test_key tmp.file
   export CACHE_SIZE=100
   run ./cache usage
 
@@ -424,5 +455,5 @@ normalize_key() {
   assert_line "FREE SPACE: 51K"
   assert_line "USED SPACE: 50K"
 
-  rm -f file.tmp
+  rm -f tmp.file
 }
