@@ -102,7 +102,9 @@ cache::delete_oldest_key() {
 
  size=$(cat /tmp/size_key | tail -1 | awk '{ print $1 }')
  key=$(cat /tmp/size_key | tail -1 | awk '{ print $2 }')
- cache::delete ${key}
+ cache::lftp "glob rm -f ${key}"
+
+ cache::log "Key ${key} is deleted."
  sed -i '$d' $file
  echo $size
 }
@@ -410,7 +412,7 @@ cache::lftp() {
   fi
 
   if [[ "${lftp_command}" == 'cls --sort=date -l' ]] && [ -z "$command_log" ]; then
-    echo "Cache is empty."
+    cache::log "Cache is empty."
   fi
 
   # has_key and file_is_present
