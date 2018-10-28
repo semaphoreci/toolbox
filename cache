@@ -182,10 +182,7 @@ cache::restore() {
 }
 
 cache::clear() {
-  if cache::is_not_empty
-  then
-    cache::lftp "glob -a rm -r *"
-  fi
+  cache::lftp "glob -a rm -r *"
 
   cache::log "Deleted all caches."
 }
