@@ -165,26 +165,27 @@ cache::restore() {
     cache::err "Incorrect number of arguments!"
   else
     semaphore_cache_keys=$1
-
     cache::download "keys" "/tmp/cache_keys"
 
     for key in ${semaphore_cache_keys//,/ }; do
       cache_key=$(cache::normalize_string $key)
+      match=$(grep -m 1 ${cache_key} /tmp/cache_keys)
 
-      if cache::file_is_present $cache_key; then
-        cache::log "HIT: ${cache_key}, using key ${cache_key}"
-        cache::lftp_get $cache_key
-        break
-      else
-        match=$(grep -m 1 ${cache_key} /tmp/cache_keys)
+      if [[ ! -z "${match}" ]]; then
+        exact_match=$(grep -x ${cache_key} /tmp/cache_keys)
 
-        if [[ ! -z "$match" ]]; then
+        if [[ "${exact_match}" == "${cache_key}" ]]; then
+          cache::log "HIT: ${cache_key}, using key ${cache_key}"
+          cache::lftp_get $cache_key
+          break
+        else
           cache::log "HIT: ${cache_key}, using key ${match}"
           cache::lftp_get $match
           break
-        else
-          cache::log "MISS: ${cache_key}"
         fi
+
+      else
+        cache::log "MISS: ${cache_key}"
       fi
     done
 
