@@ -74,7 +74,7 @@ cache::allocate_space() {
   archive_size=$1
 
   file="/tmp/keys_data"
-  cache::download_data "cls --sort=date -l" $file
+  cache::save_command_output "cls --sort=date -l" $file
   echo -e "$(cat $file | awk '{print $5}')" > "/tmp/usage_data"
   echo -e "$(cat $file | awk '{print $5, $9}')" > "/tmp/size_key"
 
@@ -102,13 +102,19 @@ cache::delete_oldest_key() {
 
  size=$(cat /tmp/size_key | tail -1 | awk '{ print $1 }')
  key=$(cat /tmp/size_key | tail -1 | awk '{ print $2 }')
- cache::delete ${key}
+ cache::lftp "glob rm -f ${key}"
+
+ cache::log "Key ${key} is deleted."
  sed -i '$d' $file
  echo $size
 }
 
 cache::lftp_put() {
   local archive_size
+  local limit
+  local allocated_space
+
+  limit=$(numfmt --from-unit=1024 $LIMIT)
 
   for local_path in ${SEMAPHORE_LOCAL_CACHE_PATHS//,/ }; do
     if ! [[ -e $local_path ]]; then
@@ -117,17 +123,22 @@ cache::lftp_put() {
       continue
     fi
 
-    if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
-      cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
+    archive_size=$(tar czf - $local_path | wc -c)
+    if [ "${archive_size}" -gt "${limit}" ]; then
+      allocated_space=$(numfmt --to=iec ${limit})
+      cache::log "Archive exceeds allocated ${allocated_space} for cache."
     else
-      archive_size=$(tar czf - $local_path | wc -c)
-      cache::allocate_space $archive_size
+      if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
+        cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
+      else
+        cache::allocate_space $archive_size
 
-      tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
-      cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
-      cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
-      rm -rf /tmp/$SEMAPHORE_CACHE_KEY
-      cache::log "Upload complete."
+        tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
+        cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
+        cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
+        rm -rf /tmp/$SEMAPHORE_CACHE_KEY
+        cache::log "Upload complete."
+      fi
     fi
 
   done
@@ -154,26 +165,27 @@ cache::restore() {
     cache::err "Incorrect number of arguments!"
   else
     semaphore_cache_keys=$1
-
-    cache::download_keys "/tmp/cache_keys"
+    cache::download "keys" "/tmp/cache_keys"
 
     for key in ${semaphore_cache_keys//,/ }; do
       cache_key=$(cache::normalize_string $key)
+      match=$(grep -m 1 ${cache_key} /tmp/cache_keys)
 
-      if cache::file_is_present $cache_key; then
-        cache::log "HIT: ${cache_key}, using key ${cache_key}"
-        cache::lftp_get $cache_key
-        break
-      else
-        match=$(grep -m 1 ${cache_key} /tmp/cache_keys)
+      if [[ ! -z "${match}" ]]; then
+        exact_match=$(grep -x ${cache_key} /tmp/cache_keys)
 
-        if [[ ! -z "$match" ]]; then
+        if [[ "${exact_match}" == "${cache_key}" ]]; then
+          cache::log "HIT: ${cache_key}, using key ${cache_key}"
+          cache::lftp_get $cache_key
+          break
+        else
           cache::log "HIT: ${cache_key}, using key ${match}"
           cache::lftp_get $match
           break
-        else
-          cache::log "MISS: ${cache_key}"
         fi
+
+      else
+        cache::log "MISS: ${cache_key}"
       fi
     done
 
@@ -182,17 +194,14 @@ cache::restore() {
 }
 
 cache::clear() {
-  if cache::is_not_empty
-  then
-    cache::lftp "glob -a rm -r *"
-  fi
+  cache::lftp "glob -a rm -r *"
 
   cache::log "Deleted all caches."
 }
 
 cache::list() {
   if cache::is_not_empty; then
-    cache::download_list_data "/tmp/list_data"
+    cache::download "list" "/tmp/list_data"
     output=$(cat /tmp/list_data)
     cache::log "${output}"
     rm -f /tmp/list_data
@@ -209,7 +218,7 @@ cache::usage() {
   local file
 
   file="/tmp/usage_data"
-  cache::download_usage_data $file
+  cache::download "usage" $file
 
   used_space=$(cache::used_space $file)
   free_space=$(cache::free_space ${used_space})
@@ -274,7 +283,7 @@ cache::has_key() {
   fi
 }
 
-cache::download_data() {
+cache::save_command_output() {
   local command
   local file
   local output
@@ -287,40 +296,38 @@ cache::download_data() {
   echo -e "$output" > $file
 }
 
-cache::download_keys() {
+cache::download() {
   local command
   local file
 
-  file=$1
-  command="cls --sort=date"
+  file=$2
 
-  cache::download_data "$command" $file
-}
+  case $1 in
+    "keys" )
+      command="cls --sort=date"
 
-cache::download_usage_data(){
-  local command
-  local file
+      cache::save_command_output "$command" $file
 
-  command="cls --sort=date -l"
-  file=$1
+      ;;
+    "usage" )
+      command="cls --sort=date -l"
 
-  cache::download_data "${command}" $file
-  echo -e "$(cat $file | awk '{print $5}')" > $file
-}
+      cache::save_command_output "${command}" $file
+      echo -e "$(cat $file | awk '{print $5}')" > $file
 
-cache::download_list_data() {
-  local command
-  local file
+      ;;
+    "list" )
+      command="cls --sort=date -l"
 
-  file=$1
-  command="cls --sort=date -l"
+      cache::save_command_output "$command" "${file}_tmp"
 
-  cache::download_data "$command" "${file}_tmp"
+      printf "%-70s \t %10s \t %-10s\n" "KEY" "SIZE" "STORED AT" > $file
+      echo -e "$(cat ${file}_tmp)" | awk '{ printf("%-70s \t %10s \t %-4s %2s %s\n", $9, $5, $6, $7, $8); }' | numfmt --field 2 --to=iec >> $file
 
-  printf "%-70s \t %10s \t %-10s\n" "KEY" "SIZE" "STORED AT" > $file
-  echo -e "$(cat ${file}_tmp)" | awk '{ printf("%-70s \t %10s \t %-4s %2s %s\n", $9, $5, $6, $7, $8); }' | numfmt --field 2 --to=iec >> $file
+      rm -f ${file}_tmp
 
-  rm -f ${file}_tmp
+      ;;
+  esac
 }
 
 cache::used_space() {
@@ -415,7 +422,7 @@ cache::lftp() {
   fi
 
   if [[ "${lftp_command}" == 'cls --sort=date -l' ]] && [ -z "$command_log" ]; then
-    echo "Cache is empty."
+    cache::log "Cache is empty."
   fi
 
   # has_key and file_is_present
