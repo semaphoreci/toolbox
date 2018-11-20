@@ -147,6 +147,11 @@ service::start() {
 
       service::start_memcached "$@"
       ;;
+    "mongodb" )
+      shift
+
+      service::start_mongodb "$@"
+      ;;
     * )
       service::print_usage
       ;;
@@ -367,6 +372,7 @@ service::print_usage() {
   echo "postgres"
   echo "redis"
   echo "memcached"
+  echo "mongodb"
 }
 
 
