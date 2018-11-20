@@ -9,9 +9,12 @@ blocks:
   - name: Run Tests
     task:
       jobs:
-      - name: Run Bats tests
+      - name: Run Manual tests
         commands:
           - checkout
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
-          - bats tests
+          - sem-service start mongodb 
+          - sem-service status mongodb 
+          - sem-service stop mongodb 
+          - sem-version php 7.0.32
+          - sem-version ruby 2.5.3
+          - sem-version ruby 2.5.9
