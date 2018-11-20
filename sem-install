@@ -1,75 +1,76 @@
 #!/bin/bash
-source ~/.toolbox/sem-install
 
 # Changing language versions
 
-VERSION="0.6"
-SUPPORTED_LANGUAGES=(elixir go java php ruby python node)
-
+VERSION="0.1"
+SUPPORTED_LANGUAGES=(go php ruby)
+GO_URL="https://storage.googleapis.com/golang"
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
 ################################################################################
-# Generic function which executes the passed 'command' to switch the version
+# Generic function which executes the passed 'command' to install the version
 # Globals:
 #   language, language_version
 # Arguments:
 #   command
 # Returns:
 #  0, 1-127 (exit status of the language manager command)
-version::change() {
+install::install() {
   command=$1
   version::log "Changing '${language}' to version ${language_version}"
-
-  eval $command $language_version
+  echo "Im here"
+  #eval $command $language_version
   ch_status=$?
 
   return $ch_status
 }
 
-version::change_ruby() {
-  version::change "rbenv global"
+install::install_ruby() {
+#  echo "138.201.33.90 packages.rt.com" | sudo tee -a /etc/hosts
+  response=$(curl -H "Host: packages.rt.com" --write-out %{http_code} --head --silent --output /dev/null http://138.201.33.90/ruby/${language_version}.tar.gz)
+  if [[ $response -ne 200 ]] ; then
+    rbenv install -s ${language_version}
+  else
+    curl -H "Host: packages.rt.com" --silent http://138.201.33.90/ruby/${language_version}.tar.gz --output ${language_version}.tar.gz
+    tar -zxf ${language_version}.tar.gz
+    mv ${language_version} ~/.rbenv/versions/
+  fi
+    rbenv rehash
+    rbenv global ${language_version}
 
   return $?
 }
 
-version::change_node() {
-  version::change "nvm use"
+install::install_go() {
+ wget $GO_URL/go${language_version}.linux-amd64.tar.gz -P /tmp
+ sudo mkdir -p /usr/local/golang/${language_version}
+ sudo tar -C /usr/local/golang/${language_version} -xzf /tmp/go${language_version}.linux-amd64.tar.gz
+ switch_go /usr/local/golang/{$language_version}/go
 
   return $?
 }
 
-version::change_elixir() {
-  version::change "kiex use"
 
+install::install_php() {
+  response=$(curl --write-out %{http_code} --head -H "Host: packages.rt.com" --silent --output /dev/null http://138.201.33.90/php/${language_version}.tar.gz)
+  if [[ $response -ne 200 ]] ; then
+    phpbrew install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
+    echo "date.timezone = UTC" >> "~/.phpbrew/php/php-${language_version}/etc/php.ini"
+    phpbrew ext install imap -- --with-kerberos --with-imap-ssl
+    phpbrew ext install gd -- --enable-gd-native-ttf --with-freetype-dir=/usr/lib/x86_64-linux-gnu
+  else
+    curl -H "Host: packages.rt.com" --silent http://138.201.33.90/php/${language_version}.tar.gz --output ${language_version}.tar.gz
+    tar -zxf ${language_version}.tar.gz 
+    mv php-${language_version} ~/.phpbrew/php/
+  fi
+
+  phpbrew switch {$language_version}
   return $?
 }
 
-version::change_go() {
-  version::change "change-go-version"
-
-  return $?
-}
-
-version::change_java() {
-  version::change "change-java-version"
-
-  return $?
-}
-
-version::change_php() {
-  version::change "phpbrew use"
-
-  return $?
-}
-
-version::change_python() {
-  version::change "change-python-version"
-
-  return $?
-}
 ################################################################################
-# End of language manager wrappers
+# End of language installer wrappers
 ################################################################################
 
 
@@ -81,13 +82,13 @@ version::change_python() {
 #   none
 # Returns:
 #   none
-version::usage() {
+install::usage() {
   echo -e "
 ################################################################################
-sem-version ${VERSION} | Utility to change a selected languages active version
+sem-install ${VERSION} | Utility to install a selected languages version and activate it
 
 Usage:
-  sem-version language version
+  sem-install language version
 ################################################################################"
 }
 
@@ -100,7 +101,7 @@ Usage:
 # Returns:
 #   none
 ################################################################################
-version::date() {
+install::date() {
   date +"${DATE_FORMAT}"
 }
 
@@ -113,7 +114,7 @@ version::date() {
 # Returns:
 #   none
 ################################################################################
-version::log() {
+install::log() {
   echo -e "\n[$(version::date)]: $@" >&2
 }
 
@@ -126,7 +127,7 @@ version::log() {
 # Returns:
 #   1
 ################################################################################
-version::err() {
+install::err() {
   echo -e "\n! [$(version::date)]: $@" >&2
 
   return 1
@@ -141,10 +142,10 @@ version::err() {
 # Returns:
 #   none
 ################################################################################
-version::main() {
+install::main() {
   if ! [[ $# -eq 2 ]]; then
-    version::usage
-    version::err "Unsupported number of arguments provided!"
+    install::usage
+    install::err "Unsupported number of arguments provided!"
 
     return $?
   fi
@@ -154,7 +155,7 @@ version::main() {
 
   for (( i=0; i < ${#SUPPORTED_LANGUAGES}; i++ )); do
     if [[ ${SUPPORTED_LANGUAGES[i]} -eq $laguage ]]; then
-      fn_name="version::change_${language}"
+      fn_name="install::install_${language}"
 
       if ! [[ $(type -t $fn_name) == function ]]; then
         version::err "Function '${fn_name}' not implemented. Language '${language}' might not be supported."
@@ -162,23 +163,23 @@ version::main() {
         return $?
       fi
 
-      version::change_${language} $language_version
+      install::install_${language} $language_version
       fn_status=$?
 
       if [[ fn_status -ne 0 ]]; then
-        echo "Installing $language version $language_version"
-        sem-install $language $language_version
+        install::err "Failed to switch version.\nLog:\n$log"
 
         return $?
       fi
 
-      version::log "Switch successful."
+      install::log "Install and switch successful."
 
       break
     fi
   done
 }
 
-sem-version() {
-  version::main "$@"
+sem-install() {
+  install::main "$@"
 }
+
