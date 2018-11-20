@@ -1,5 +1,5 @@
 #!/bin/bash
-source ~/.toolbox/sem-install
+
 # Changing language versions
 
 VERSION="0.6"
@@ -165,9 +165,7 @@ version::main() {
       fn_status=$?
 
       if [[ fn_status -ne 0 ]]; then
-        echo "Installing $language version $language_version"
-        sem-install $language $language_version
-
+        version::err "Failed to switch version.\nLog:\n$log"
 
         return $?
       fi
