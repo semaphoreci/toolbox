@@ -58,7 +58,7 @@ version::change_java() {
 }
 
 version::change_php() {
-  if ![ -d ~/.phpbrew/php/php-${language_version} ]; then
+  if ! [ -d ~/.phpbrew/php/php-${language_version} ]; then
     sem-install php ${language_version}
   fi
   version::change "phpbrew use"
