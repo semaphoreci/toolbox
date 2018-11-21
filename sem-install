@@ -27,7 +27,6 @@ install::install() {
 }
 
 install::install_ruby() {
-#  echo "138.201.33.90 packages.rt.com" | sudo tee -a /etc/hosts
   response=$(curl -H "Host: packages.rt.com" --write-out %{http_code} --head --silent --output /dev/null http://138.201.33.90/ruby/${language_version}.tar.gz)
   if [[ $response -ne 200 ]] ; then
     rbenv install -s ${language_version}
@@ -65,7 +64,7 @@ install::install_php() {
     mv php-${language_version} ~/.phpbrew/php/
   fi
 
-  phpbrew switch {$language_version}
+#  phpbrew switch {$language_version}
   return $?
 }
 
