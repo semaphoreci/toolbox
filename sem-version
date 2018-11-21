@@ -28,6 +28,9 @@ version::change() {
 }
 
 version::change_ruby() {
+  if ! [ -d ~/.rbenv/versions/${language_version} ]; then
+    sem-install ruby ${language_version}
+  fi
   version::change "rbenv global"
 
   return $?

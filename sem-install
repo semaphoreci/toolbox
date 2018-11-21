@@ -36,7 +36,7 @@ install::install_ruby() {
     mv ${language_version} ~/.rbenv/versions/
   fi
     rbenv rehash
-    rbenv global ${language_version}
+#    rbenv global ${language_version}
 
   return $?
 }
