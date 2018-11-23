@@ -8,19 +8,9 @@ GO_URL="https://storage.googleapis.com/golang"
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
-################################################################################
-# Generic function which executes the passed 'command' to install the version
-# Globals:
-#   language, language_version
-# Arguments:
-#   command
-# Returns:
-#  0, 1-127 (exit status of the language manager command)
 install::install() {
   command=$1
   version::log "Changing '${language}' to version ${language_version}"
-  echo "Im here"
-  #eval $command $language_version
   ch_status=$?
 
   return $ch_status
@@ -36,7 +26,6 @@ install::install_ruby() {
     mv ${language_version} ~/.rbenv/versions/
   fi
     rbenv rehash
-#    rbenv global ${language_version}
 
   return $?
 }
@@ -64,23 +53,9 @@ install::install_php() {
     mv php-${language_version} ~/.phpbrew/php/
   fi
 
-#  phpbrew switch {$language_version}
   return $?
 }
 
-################################################################################
-# End of language installer wrappers
-################################################################################
-
-
-################################################################################
-# Prints the usage
-# Globals:
-#   none
-# Arguments:
-#   none
-# Returns:
-#   none
 install::usage() {
   echo -e "
 ################################################################################
@@ -91,56 +66,20 @@ Usage:
 ################################################################################"
 }
 
-################################################################################
-# Helper to print date in the given format
-# Globals:
-#   DATE_FORMAT
-# Arguments:
-#   message
-# Returns:
-#   none
-################################################################################
 install::date() {
   date +"${DATE_FORMAT}"
 }
 
-################################################################################
-# Helper to display info messages
-# Globals:
-#   none
-# Arguments:
-#   message
-# Returns:
-#   none
-################################################################################
 install::log() {
   echo -e "\n[$(version::date)]: $@" >&2
 }
 
-################################################################################
-# Helper function to show error messages and to terminate execution on error
-# Globals:
-#   DATE_FORMAT
-# Arguments:
-#   message
-# Returns:
-#   1
-################################################################################
 install::err() {
   echo -e "\n! [$(version::date)]: $@" >&2
 
   return 1
 }
 
-################################################################################
-# The main entrypoint to the script. Holds the switching logic.
-# Globals:
-#   SUPPORTED_LANGUAGES
-# Arguments:
-#   'language', 'version'
-# Returns:
-#   none
-################################################################################
 install::main() {
   if ! [[ $# -eq 2 ]]; then
     install::usage
