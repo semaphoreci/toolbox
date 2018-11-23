@@ -1,27 +1,25 @@
 #!/bin/bash
-
-# Changing language versions
-
-VERSION="0.1"
-SUPPORTED_LANGUAGES=(go php ruby)
+VERSION="0.2"
+SUPPORTED_LANGUAGES=(php ruby)
 GO_URL="https://storage.googleapis.com/golang"
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
-install::install() {
-  command=$1
-  version::log "Changing '${language}' to version ${language_version}"
-  ch_status=$?
+install::check_precompiled() {
 
-  return $ch_status
+  return $(curl -H "Host: packages.rt.com" --write-out %{http_code} --head --silent --output /dev/null http://138.201.33.90/${language}/${language_version}.tar.gz)
+}
+
+install::dl_precompiled() {
+
+  curl -H "Host: packages.rt.com" --silent http://138.201.33.90/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
 }
 
 install::install_ruby() {
-  response=$(curl -H "Host: packages.rt.com" --write-out %{http_code} --head --silent --output /dev/null http://138.201.33.90/ruby/${language_version}.tar.gz)
-  if [[ $response -ne 200 ]] ; then
+  if [[ install::check_precompiled -ne 200 ]] ; then
     rbenv install -s ${language_version}
   else
-    curl -H "Host: packages.rt.com" --silent http://138.201.33.90/ruby/${language_version}.tar.gz --output ${language_version}.tar.gz
+    install::dl_precompiled
     tar -zxf ${language_version}.tar.gz
     mv ${language_version} ~/.rbenv/versions/
   fi
@@ -30,25 +28,14 @@ install::install_ruby() {
   return $?
 }
 
-install::install_go() {
- wget $GO_URL/go${language_version}.linux-amd64.tar.gz -P /tmp
- sudo mkdir -p /usr/local/golang/${language_version}
- sudo tar -C /usr/local/golang/${language_version} -xzf /tmp/go${language_version}.linux-amd64.tar.gz
- switch_go /usr/local/golang/{$language_version}/go
-
-  return $?
-}
-
-
 install::install_php() {
-  response=$(curl --write-out %{http_code} --head -H "Host: packages.rt.com" --silent --output /dev/null http://138.201.33.90/php/${language_version}.tar.gz)
-  if [[ $response -ne 200 ]] ; then
+  if [[ install::check_precompiled -ne 200 ]] ; then
     phpbrew install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
     echo "date.timezone = UTC" >> "~/.phpbrew/php/php-${language_version}/etc/php.ini"
     phpbrew ext install imap -- --with-kerberos --with-imap-ssl
     phpbrew ext install gd -- --enable-gd-native-ttf --with-freetype-dir=/usr/lib/x86_64-linux-gnu
   else
-    curl -H "Host: packages.rt.com" --silent http://138.201.33.90/php/${language_version}.tar.gz --output ${language_version}.tar.gz
+    install::dl_precomoiled
     tar -zxf ${language_version}.tar.gz 
     mv php-${language_version} ~/.phpbrew/php/
   fi
@@ -89,7 +76,6 @@ install::main() {
 
   case $language in
     php)
-      echo "case install php"
       install::install_php 
       ;;
     ruby)
@@ -100,32 +86,6 @@ install::main() {
       return 1;
       ;;
   esac
-
-
-#  for (( i=0; i < ${#SUPPORTED_LANGUAGES}; i++ )); do
-#    if [[ ${SUPPORTED_LANGUAGES[i]} -eq $laguage ]]; then
-#      fn_name="install::install_${language}"
-#
-#      if ! [[ $(type -t $fn_name) == function ]]; then
-#        version::err "Function '${fn_name}' not implemented. Language '${language}' might not be supported."
-#
-#        return $?
-#      fi
-#
-#      install::install_${language} $language_version
-#      fn_status=$?
-#
-#      if [[ fn_status -ne 0 ]]; then
-#        install::err "Failed to switch version.\nLog:\n$log"
-#
-#        return $?
-#      fi
-#
-#      install::log "Install and switch successful."
-#
-#      break
-#    fi
-#  done
 }
 
 sem-install() {
