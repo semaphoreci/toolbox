@@ -12,7 +12,7 @@ blocks:
       - name: Run Manual tests
         commands:
           - cd .toolbox
-          - git checkout nb
+          - git checkout sem-install
           - bash ~/.toolbox/install-toolbox
           - source ~/.toolbox/toolbox
           - sem-service start mongodb 
