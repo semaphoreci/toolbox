@@ -6,8 +6,8 @@ GO_URL="https://storage.googleapis.com/golang"
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
 install::check_precompiled() {
-
-  return $(curl -H "Host: packages.rt.com" --write-out %{http_code} --head --silent --output /dev/null http://138.201.33.90/${language}/${language_version}.tar.gz)
+  response=$(curl -H "Host: packages.rt.com" --write-out %{http_code} --head --silent --output /dev/null http://138.201.33.90/${language}/${language_version}.tar.gz)
+  return [ $response -e 200 ]
 }
 
 install::dl_precompiled() {
@@ -29,6 +29,8 @@ install::install_ruby() {
 }
 
 install::install_php() {
+  echo "test response" install::check_precompiled
+  return 0
   if [[ $(install::check_precompiled) -ne 200 ]] ; then
     phpbrew install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
     echo "date.timezone = UTC" >> "~/.phpbrew/php/php-${language_version}/etc/php.ini"
