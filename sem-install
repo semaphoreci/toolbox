@@ -90,10 +90,10 @@ install::main() {
   case $language in
     php)
       echo "case install php"
-      install:install_php 
+      install::install_php 
       ;;
     ruby)
-      install:install_ruby 
+      install::install_ruby 
       ;;
     *)
       install:err "Language '${language}' install not supported yet."
