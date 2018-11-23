@@ -8,7 +8,7 @@ HOST_HEADER="Host: packages.rt.com"
 PACKAGES_IP="138.201.33.90"
 
 install::check_precompiled() {
-  response=$(curl -H "$HOST_HEADER" --write-out %{http_code} --head --silent --output /dev/null http://$PAKCAGES_IP/${language}/${language_version}.tar.gz)
+  response=$(curl -H "$HOST_HEADER" --write-out %{http_code} --head --silent --output /dev/null http://$PACKAGES_IP/${language}/${language_version}.tar.gz)
   echo $response
 }
 
