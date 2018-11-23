@@ -23,3 +23,7 @@ blocks:
           - sem-version ruby 2.5.9
           - sem-version c 8
           - sem-version cpp 7
+          - echo 'Active php version'
+          - php -v
+          - sem-version php 7.0.32
+          - php -v
