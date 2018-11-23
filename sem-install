@@ -16,7 +16,7 @@ install::dl_precompiled() {
 }
 
 install::install_ruby() {
-  if [[ install::check_precompiled -ne 200 ]] ; then
+  if [[ $(install::check_precompiled) -ne 200 ]] ; then
     rbenv install -s ${language_version}
   else
     install::dl_precompiled
@@ -29,13 +29,13 @@ install::install_ruby() {
 }
 
 install::install_php() {
-  if [[ install::check_precompiled -ne 200 ]] ; then
+  if [[ $(install::check_precompiled) -ne 200 ]] ; then
     phpbrew install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
     echo "date.timezone = UTC" >> "~/.phpbrew/php/php-${language_version}/etc/php.ini"
     phpbrew ext install imap -- --with-kerberos --with-imap-ssl
     phpbrew ext install gd -- --enable-gd-native-ttf --with-freetype-dir=/usr/lib/x86_64-linux-gnu
   else
-    install::dl_precomoiled
+    install::dl_precompiled
     tar -zxf ${language_version}.tar.gz 
     mv php-${language_version} ~/.phpbrew/php/
   fi
