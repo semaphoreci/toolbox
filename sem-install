@@ -66,10 +66,6 @@ Usage:
 ################################################################################"
 }
 
-install::date() {
-  date +"${DATE_FORMAT}"
-}
-
 install::log() {
   echo -e "\n[$(version::date)]: $@" >&2
 }
@@ -91,30 +87,44 @@ install::main() {
   language=$1
   language_version=$2
 
-  for (( i=0; i < ${#SUPPORTED_LANGUAGES}; i++ )); do
-    if [[ ${SUPPORTED_LANGUAGES[i]} -eq $laguage ]]; then
-      fn_name="install::install_${language}"
+  case $language in
+    php)
+      install:install_php 
+      ;;
+    ruby)
+      install:install_ruby 
+      ;;
+    *)
+      install:err "Language '${language}' install not supported yet."
+      return 1;
+      ;;
+  esac
 
-      if ! [[ $(type -t $fn_name) == function ]]; then
-        version::err "Function '${fn_name}' not implemented. Language '${language}' might not be supported."
 
-        return $?
-      fi
-
-      install::install_${language} $language_version
-      fn_status=$?
-
-      if [[ fn_status -ne 0 ]]; then
-        install::err "Failed to switch version.\nLog:\n$log"
-
-        return $?
-      fi
-
-      install::log "Install and switch successful."
-
-      break
-    fi
-  done
+#  for (( i=0; i < ${#SUPPORTED_LANGUAGES}; i++ )); do
+#    if [[ ${SUPPORTED_LANGUAGES[i]} -eq $laguage ]]; then
+#      fn_name="install::install_${language}"
+#
+#      if ! [[ $(type -t $fn_name) == function ]]; then
+#        version::err "Function '${fn_name}' not implemented. Language '${language}' might not be supported."
+#
+#        return $?
+#      fi
+#
+#      install::install_${language} $language_version
+#      fn_status=$?
+#
+#      if [[ fn_status -ne 0 ]]; then
+#        install::err "Failed to switch version.\nLog:\n$log"
+#
+#        return $?
+#      fi
+#
+#      install::log "Install and switch successful."
+#
+#      break
+#    fi
+#  done
 }
 
 sem-install() {
