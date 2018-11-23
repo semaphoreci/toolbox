@@ -1,8 +1,8 @@
 #!/bin/bash
 VERSION="0.2"
 SUPPORTED_LANGUAGES=(php ruby)
-GO_URL="https://storage.googleapis.com/golang"
 # Misc
+GO_URL="https://storage.googleapis.com/golang"
 DATE_FORMAT='%H:%M %d/%m/%Y'
 HOST_HEADER="Host: packages.rt.com"
 PACKAGES_IP="138.201.33.90"
@@ -17,22 +17,21 @@ install::dl_precompiled() {
 }
 
 install::install_ruby() {
-  if [[ $(install::check_precompiled) -ne 200 ]] ; then
+  response=$(install::check_precompiled)
+  if [[ $response -ne 200 ]] ; then
     rbenv install -s ${language_version}
   else
     install::dl_precompiled
     tar -zxf ${language_version}.tar.gz
     mv ${language_version} ~/.rbenv/versions/
   fi
-    rbenv rehash
-
+  rbenv rehash
   return $?
 }
 
 install::install_php() {
   resp=$(install::check_precompiled)
   if [[ $resp -ne 200 ]] ; then
-    exit 1
     phpbrew install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
     echo "date.timezone = UTC" >> "~/.phpbrew/php/php-${language_version}/etc/php.ini"
     phpbrew ext install imap -- --with-kerberos --with-imap-ssl
@@ -42,7 +41,6 @@ install::install_php() {
     tar -zxf ${language_version}.tar.gz 
     mv php-${language_version} ~/.phpbrew/php/
   fi
-
   return $?
 }
 
