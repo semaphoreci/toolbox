@@ -89,6 +89,7 @@ install::main() {
 
   case $language in
     php)
+      echo "case install php"
       install:install_php 
       ;;
     ruby)
