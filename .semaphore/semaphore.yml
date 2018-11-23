@@ -30,4 +30,10 @@ blocks:
           - echo 'change version back'
           - sem-version php 7.2.10
           - php -v
-
+          - ruby --version
+          - sem-version ruby 2.5.2
+          - ruby --version
+          - sem-version ruby 2.5.3
+          - ruby --version
+          - sem-version ruby 2.3.7
+          - ruby --version
