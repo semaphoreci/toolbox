@@ -30,7 +30,9 @@ install::install_ruby() {
 }
 
 install::install_php() {
-  if [[ $(install::check_precompiled) -ne 200 ]] ; then
+  resp=$(install::check_precompiled)
+  if [[ $resp -ne 200 ]] ; then
+    exit 1
     phpbrew install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
     echo "date.timezone = UTC" >> "~/.phpbrew/php/php-${language_version}/etc/php.ini"
     phpbrew ext install imap -- --with-kerberos --with-imap-ssl
