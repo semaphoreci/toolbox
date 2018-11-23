@@ -19,3 +19,7 @@ blocks:
           - php -v
           - sem-version php 7.0.32
           - php -v
+          - echo 'change version back'
+          - sem-version php 7.2.10
+          - php -v
+
