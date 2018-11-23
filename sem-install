@@ -4,15 +4,16 @@ SUPPORTED_LANGUAGES=(php ruby)
 GO_URL="https://storage.googleapis.com/golang"
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
+HOST_HEADER="Host: packages.rt.com"
+PACKAGES_IP="138.201.33.90"
 
 install::check_precompiled() {
-  response=$(curl -H "Host: packages.rt.com" --write-out %{http_code} --head --silent --output /dev/null http://138.201.33.90/${language}/${language_version}.tar.gz)
-  return [ $response -e 200 ]
+  response=$(curl -H "$HOST_HEADER" --write-out %{http_code} --head --silent --output /dev/null http://$PAKCAGES_IP/${language}/${language_version}.tar.gz)
+  echo $response
 }
 
 install::dl_precompiled() {
-
-  curl -H "Host: packages.rt.com" --silent http://138.201.33.90/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
+  curl -H "$HOST_HEADER" --silent http://$PACKAGES_IP/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
 }
 
 install::install_ruby() {
@@ -29,15 +30,13 @@ install::install_ruby() {
 }
 
 install::install_php() {
-  echo "test response" $(install::check_precompiled)
-  return 0
   if [[ $(install::check_precompiled) -ne 200 ]] ; then
     phpbrew install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
     echo "date.timezone = UTC" >> "~/.phpbrew/php/php-${language_version}/etc/php.ini"
     phpbrew ext install imap -- --with-kerberos --with-imap-ssl
     phpbrew ext install gd -- --enable-gd-native-ttf --with-freetype-dir=/usr/lib/x86_64-linux-gnu
   else
-    install::dl_precompiled
+    echo $(install::dl_precompiled)
     tar -zxf ${language_version}.tar.gz 
     mv php-${language_version} ~/.phpbrew/php/
   fi
