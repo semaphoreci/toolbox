@@ -64,7 +64,7 @@ install::err() {
   return 1
 }
 
-install::main() {
+sem-install() { 
   if ! [[ $# -eq 2 ]]; then
     install::usage
     install::err "Unsupported number of arguments provided!"
@@ -87,9 +87,5 @@ install::main() {
       return 1;
       ;;
   esac
-}
-
-sem-install() {
-  install::main "$@"
 }
 
