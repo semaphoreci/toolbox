@@ -19,6 +19,6 @@ blocks:
           - sem-service start elasticsearch
           - docker ps
           - docker image ls
-          - sudo netstat -tuanp
+          - curl -XGET '0.0.0.0:9200/_cluster/health?pretty'
           - sem-service stop elasticsearch
           - sem-service stop mongodb
