@@ -11,8 +11,8 @@ blocks:
       jobs:
       - name: Run Manual tests
         commands:
-          - checkout
-          - mv toolbox .toolbox
+          - rm -rf .toolbox
+          - git clone -b sem-service --single-branch git@github.com:semaphoreci/toolbox.git .toolbox
           - bash ~/.toolbox/install-toolbox
           - source ~/.toolbox/toolbox
           - sem-service start mongodb
