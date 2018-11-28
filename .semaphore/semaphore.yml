@@ -11,8 +11,8 @@ blocks:
       jobs:
       - name: Run Manual tests
         commands:
-          - cd .toolbox
-          - git checkout -b sem-service
+          - checkout
+          - mv toolbox .toolbox
           - bash ~/.toolbox/install-toolbox
           - source ~/.toolbox/toolbox
           - sem-service start mongodb
