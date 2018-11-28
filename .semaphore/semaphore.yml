@@ -19,5 +19,6 @@ blocks:
           - sem-service start elasticsearch
           - docker ps
           - docker image ls
+          - sudo netstat -tuanp
           - sem-service stop elasticsearch
           - sem-service stop mongodb
