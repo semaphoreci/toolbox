@@ -12,20 +12,12 @@ blocks:
       - name: Run Manual tests
         commands:
           - cd .toolbox
-          - git checkout sem-install
+          - git checkout sem-service
           - bash ~/.toolbox/install-toolbox
           - source ~/.toolbox/toolbox
-          - echo 'Active php version'
-          - php -v
-          - sem-version php 7.0.32
-          - php -v
-          - echo 'change version back'
-          - sem-version php 7.2.10
-          - php -v
-          - ruby --version
-          - sem-version ruby 2.5.2
-          - ruby --version
-          - sem-version ruby 2.5.3
-          - ruby --version
-          - sem-version ruby 2.3.7
-          - ruby --version
+          - sem-service start mongodb
+          - sem-service start elasticsearch
+          - docker ps
+          - docker image ls
+          - sem-service stop elasticsearch
+          - sem-service stop mongodb
