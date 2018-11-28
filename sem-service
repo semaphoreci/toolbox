@@ -120,7 +120,7 @@ service::start_elasticsearch() {
   
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "elasticsearch 6.5.1 is accessibel at 0.0.0.0:9200 and 0.0.0.0:9300"
+  echo "elasticsearch 6.5.1 is accessible at 0.0.0.0:9200 and 0.0.0.0:9300"
 
   exit 0
 }
