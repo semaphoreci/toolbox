@@ -15,8 +15,8 @@ blocks:
 #          - sem-service start mongodb 
 #          - sem-service status mongodb 
 #          - sem-service stop mongodb 
-          - sem-version php 7.0.32
-          - sem-version ruby 2.5.3
-          - sem-version ruby 2.5.9
+#          - sem-version php 7.0.32
+#          - sem-version ruby 2.5.3
+#          - sem-version ruby 2.5.9
           - sem-version c 8
           - sem-version cpp 7
