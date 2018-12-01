@@ -3,7 +3,7 @@
 # Changing language versions
 
 VERSION="0.6"
-SUPPORTED_LANGUAGES=(elixir go java php ruby python node)
+SUPPORTED_LANGUAGES=(elixir go java php ruby python node c cpp)
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
@@ -64,6 +64,21 @@ version::change_php() {
 
 version::change_python() {
   version::change "change-python-version"
+
+  return $?
+}
+
+################################################################################
+# Added by Mihalis Tsoukalos
+################################################################################
+version::change_c() {
+  version::change "change-gcc-version"
+
+  return $?
+}
+
+version::change_cpp() {
+  version::change "change-gcc-version"
 
   return $?
 }
@@ -152,7 +167,7 @@ version::main() {
   language_version=$2
 
   for (( i=0; i < ${#SUPPORTED_LANGUAGES}; i++ )); do
-    if [[ ${SUPPORTED_LANGUAGES[i]} -eq $laguage ]]; then
+    if [[ ${SUPPORTED_LANGUAGES[i]} -eq $language ]]; then
       fn_name="version::change_${language}"
 
       if ! [[ $(type -t $fn_name) == function ]]; then
