@@ -12,6 +12,7 @@ blocks:
       - name: Run Manual tests
         commands:
           - checkout
+          - . sem-version
 #          - sem-service start mongodb 
 #          - sem-service status mongodb 
 #          - sem-service stop mongodb 
