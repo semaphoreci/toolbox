@@ -68,9 +68,6 @@ version::change_python() {
   return $?
 }
 
-################################################################################
-# Added by Mihalis Tsoukalos
-################################################################################
 version::change_c() {
   version::change "change-gcc-version"
 
