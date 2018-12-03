@@ -1,5 +1,5 @@
-version: "v1.0"
-name: First pipeline example
+version: v1.0
+name: Toolbox S2 project
 agent:
   machine:
     type: e1-standard-2
@@ -12,9 +12,12 @@ blocks:
       - name: Run Manual tests
         commands:
           - checkout
-          - sem-service start mongodb 
-          - sem-service status mongodb 
-          - sem-service stop mongodb 
-          - sem-version php 7.0.32
-          - sem-version ruby 2.5.3
-          - sem-version ruby 2.5.9
+          - . sem-version
+#          - sem-service start mongodb 
+#          - sem-service status mongodb 
+#          - sem-service stop mongodb 
+#          - sem-version php 7.0.32
+#          - sem-version ruby 2.5.3
+#          - sem-version ruby 2.5.9
+          - sem-version c 8
+          - sem-version cpp 7
