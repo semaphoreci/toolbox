@@ -46,7 +46,7 @@ service::start_mysql() {
   echo "MySQL 5.6 is running at 0.0.0.0:3306"
   echo "To access it use username 'root' and blank password."
 
-  exit 0
+  return 0
 }
 
 service::start_postgres() {
@@ -62,7 +62,7 @@ service::start_postgres() {
   echo "PostgreSQL 9.6 is running at 0.0.0.0:5432"
   echo "To access it use username 'postgres' and blank password."
 
-  exit 0
+  return 0
 }
 
 service::start_redis() {
@@ -77,7 +77,7 @@ service::start_redis() {
   echo "done."
   echo "Redis 4 is running at 0.0.0.0:6379"
 
-  exit 0
+  return 0
 }
 
 service::start_memcached() {
@@ -92,7 +92,7 @@ service::start_memcached() {
   echo "done."
   echo "memcached 1.5 is running at 0.0.0.0:11211"
 
-  exit 0
+  return 0
 }
 
 service::install_dockerize() {
@@ -115,22 +115,22 @@ service::start() {
     "mysql" )
       shift
 
-      service::start_mysql "$@"
+      service::duration service::start_mysql "$@"
       ;;
     "postgres" )
       shift
 
-      service::start_postgres "$@"
+      service::duration service::start_postgres "$@"
       ;;
     "redis" )
       shift
 
-      service::start_redis "$@"
+      service::duration service::start_redis "$@"
       ;;
     "memcached" )
       shift
 
-      service::start_memcached "$@"
+      service::duration service::start_memcached "$@"
       ;;
     * )
       service::print_usage
@@ -332,6 +332,31 @@ service::err() {
   echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
 
   exit 1
+}
+
+################################################################################
+# Helper function to show docker start duration
+# Globals:
+#   DATE_FORMAT
+# Arguments:
+#   message
+# Returns:
+#   0
+################################################################################
+service::duration() {
+  local cmd="$@"
+  local start
+  local end
+  local duration
+
+  start=$(date +%s%3N)
+  $cmd
+  end=$(date +%s%3N)
+  duration=$(( $end - $start ))
+
+  echo "docker_runtime: ${duration}|ms" >> stats.txt
+
+  exit 0
 }
 
 
