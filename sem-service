@@ -354,7 +354,7 @@ service::duration() {
   end=$(date +%s%3N)
   duration=$(( $end - $start ))
 
-  echo "docker_runtime: ${duration}|ms" >> stats.txt
+  echo "docker_runtime: ${duration}|ms" >> /tmp/stats.txt
 
   exit 0
 }
