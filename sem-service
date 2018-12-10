@@ -355,6 +355,7 @@ service::duration() {
   $cmd
   end=$(date +%s%3N)
   duration=$(( $end - $start ))
+  mkdir -p /var/log/semaphore
   echo "${env}.sem_service.${type}: ${duration}|ms" >> /var/log/semaphore/stats.txt
 
   return 0
