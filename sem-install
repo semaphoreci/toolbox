@@ -1,9 +1,4 @@
 #!/bin/bash
-VERSION="0.3"
-SUPPORTED_LANGUAGES=(php ruby)
-# Misc
-GO_URL="https://storage.googleapis.com/golang"
-DATE_FORMAT='%H:%M %d/%m/%Y'
 HOST="packages.semaphoreci.com"
 
 install::check_precompiled() {
@@ -84,4 +79,3 @@ sem-install() {
       ;;
   esac
 }
-
