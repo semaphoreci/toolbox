@@ -5,7 +5,6 @@ SUPPORTED_LANGUAGES=(php ruby)
 GO_URL="https://storage.googleapis.com/golang"
 DATE_FORMAT='%H:%M %d/%m/%Y'
 HOST="packages.semaphoreci.com"
-PACKAGES_IP="138.201.33.90"
 
 install::check_precompiled() {
   response=$(curl --write-out %{http_code} --head --silent --output /dev/null http://$HOST/${language}/${language_version}.tar.gz)
