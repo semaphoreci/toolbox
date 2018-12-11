@@ -19,21 +19,20 @@ blocks:
         commands:
           - checkout
           - sem-version php 7.0.32
+          - php -v | grep 7.0.32
           - sem-version ruby 2.5.3
+          - ruby --version | grep 2.5.3
           - sem-version ruby 2.5.9
+          - ruby --version | grep 2.5.9
           - sem-version c 8
           - sem-version cpp 7
           - echo 'Active php version'
-          - php -v
-          - sem-version php 7.0.32
-          - php -v
           - echo 'change version back'
           - sem-version php 7.2.10
-          - php -v
-          - ruby --version
+          - php -v | grep 7.2.10
           - sem-version ruby 2.5.2
-          - ruby --version
+          - ruby --version | grep 2.5.2
           - sem-version ruby 2.5.3
-          - ruby --version
+          - ruby --version | grep 2.5.3
           - sem-version ruby 2.3.7
-          - ruby --version
+          - ruby --version | grep 2.3.7
