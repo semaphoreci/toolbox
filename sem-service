@@ -95,6 +95,38 @@ service::start_memcached() {
   exit 0
 }
 
+service::start_mongodb() {
+  service::pull_image "mongo:4.1"
+
+  docker_output=$(docker run --net=host --rm --name mongodb -d mongo:4.1)
+
+  # run only if previous command exited successfully
+  dockerize_output=$(dockerize -wait tcp://0.0.0.0:27017 -timeout 30s 2>&1)
+  
+  # if not started in 30 seconds print logs and exit
+  echo "done."
+  echo "mongodb 4.1 is running at 0.0.0.0:27017"
+
+  exit 0
+}
+
+service::start_elasticsearch() {
+  service::pull_image "elasticsearch:6.5.1"
+
+  docker_output=$(docker run --net=host --rm --name elasticsearch -e "discovery.type=single-node" -d elasticsearch:6.5.1)
+
+  # run only if previous command exited successfully
+  dockerize_output=$(dockerize -wait tcp://0.0.0.0:9200 -timeout 30s 2>&1)
+  
+  # if not started in 30 seconds print logs and exit
+  echo "done."
+  echo "elasticsearch 6.5.1 is accessible at 0.0.0.0:9200 and 0.0.0.0:9300"
+
+  exit 0
+}
+
+
+
 service::install_dockerize() {
   DOCKERIZE_VERSION="v0.6.1"
 
@@ -131,6 +163,16 @@ service::start() {
       shift
 
       service::start_memcached "$@"
+      ;;
+    "mongodb" )
+      shift
+
+      service::start_mongodb "$@"
+      ;;
+    "elasticsearch" )
+      shift
+
+      service::start_elasticsearch "$@"
       ;;
 
     * )
@@ -335,23 +377,6 @@ service::err() {
   exit 1
 }
 
-service::duration() {
-  local cmd="$@"
-  local type=$(echo $4 | tr ":." "_")
-  local env="prod"
-  local start
-  local end
-  local duration
-
-  start=$(date +%s%3N)
-  $cmd
-  end=$(date +%s%3N)
-  duration=$(( $end - $start ))
-  echo "sem_service.${env}.${type}:${duration}|ms" >> /tmp/semaphore-stats.txt
-
-  return 0
-}
-
 
 ################################################################################
 # Prints the program usage
@@ -370,6 +395,8 @@ service::print_usage() {
   echo "postgres"
   echo "redis"
   echo "memcached"
+  echo "mongodb"
+  echo "elasticsearch"
 }
 
 
@@ -398,5 +425,20 @@ service::main () {
       ;;
   esac
 }
-
+service::duration() {	
+  local cmd="$@"	
+  local type=$(echo $4 | tr ":." "_")	
+  local env="prod"	
+  local start	
+  local end	
+  local duration	
+  
+  start=$(date +%s%3N)	
+  $cmd	
+  end=$(date +%s%3N)	
+  duration=$(( $end - $start ))	
+  echo "sem_service.${env}.${type}:${duration}|ms" >> /tmp/semaphore-stats.txt	
+  
+  return 0	
+}
 service::main "$@"

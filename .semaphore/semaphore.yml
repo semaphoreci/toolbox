@@ -8,6 +8,15 @@ agent:
 blocks:
   - name: Run Tests
     task:
+      prologue:
+        commands:
+          - checkout
+          - cd ../
+          - rm -rf .toolbox/
+          - mv toolbox/ .toolbox
+          - bash .toolbox/install-toolbox
+          - source .toolbox/toolbox          
+          - cd .toolbox
       jobs:
       - name: Cache tests
         commands:
@@ -17,12 +26,6 @@ blocks:
           - bats tests
       - name: Sem version tests
         commands:
-          - checkout
-          - cd
-          - rm -rf .toolbox/
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox          
           - sem-version ruby 2.5.3
           - ruby --version | grep 2.5.3
           - sem-version ruby 2.5.2
@@ -39,3 +42,39 @@ blocks:
           - php -v | grep 7.2.10
           - sem-version php 7.0.32
           - php -v | grep 7.0.32
+      - name: MySQL
+        commands:
+          - sem-service start mysql
+          - mysql --host=0.0.0.0 -uroot -e "create database fooo"
+          - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
+          - sem-service status mysql
+
+      - name: PostgreSQL
+        commands:
+          - sem-service start postgres
+          - createdb -U postgres -h 0.0.0.0 fooo
+          - psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+          - sem-service status postgres
+
+      - name: Redis
+        commands:
+          - sem-service start redis
+          - sem-service status redis
+
+      - name: Memcached
+        commands:
+          - sem-service start memcached
+          - sem-service status memcached
+      - name: mongodb
+        commands:
+          - sem-service start mongodb
+          - curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
+          - docker ps
+          - docker image ls
+          - sem-service stop mongodb
+      - name: elasticsearch
+        commands:
+          - sem-service start elasticsearch
+          - curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
+          - sem-service stop elasticsearch
+
