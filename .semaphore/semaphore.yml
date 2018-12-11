@@ -68,7 +68,7 @@ blocks:
       - name: mongodb
         commands:
           - sem-service start mongodb
-          - docker logs mongodb
+          - curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
           - docker ps
           - docker image ls
           - sem-service stop mongodb
