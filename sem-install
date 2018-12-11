@@ -42,7 +42,7 @@ install::install_php() {
     mv php-${language_version} ~/.phpbrew/php/
     if [ ! -d "~/.phpbrew/build/php-{$language_version}" ]; then
 	phpbrew download ${language_version}
-	tar -xjf ~/.phpbrew/distfiles/php-${language_varsion}.tar.bz2
+	tar -xjf ~/.phpbrew/distfiles/php-${language_version}.tar.bz2
 	mv php-${language_version} ~/.phpbrew/build/
     fi
   fi
