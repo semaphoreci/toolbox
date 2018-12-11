@@ -68,6 +68,7 @@ blocks:
       - name: mongodb
         commands:
           - sem-service start mongodb
+          - docker logs mongodb
           - docker ps
           - docker image ls
           - sem-service stop mongodb
