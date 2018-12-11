@@ -15,7 +15,7 @@ blocks:
           - rm -rf .toolbox/
           - mv toolbox/ .toolbox
           - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox          
+          - source .toolbox/toolbox
           - cd .toolbox
       jobs:
       - name: Cache tests
@@ -42,11 +42,19 @@ blocks:
           - php -v | grep 7.2.10
           - sem-version php 7.0.32
           - php -v | grep 7.0.32
+
       - name: MySQL
         commands:
           - sem-service start mysql
           - mysql --host=0.0.0.0 -uroot -e "create database fooo"
           - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
+          - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.6
+          - sem-service status mysql
+          - sem-service stop mysql
+          - sem-service start mysql 5.7
+          - mysql --host=0.0.0.0 -uroot -e "create database fooo"
+          - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
+          - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.7
           - sem-service status mysql
 
       - name: PostgreSQL
@@ -54,27 +62,49 @@ blocks:
           - sem-service start postgres
           - createdb -U postgres -h 0.0.0.0 fooo
           - psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+          - psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 9.6
+          - sem-service status postgres
+          - sem-service stop postgres
+          - sem-service start postgres 11
+          - createdb -U postgres -h 0.0.0.0 fooo
+          - psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+          - psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 11
           - sem-service status postgres
 
       - name: Redis
         commands:
           - sem-service start redis
           - sem-service status redis
+          - sem-service stop redis
+          - sem-service start redis 5
+          - sem-service status redis
 
       - name: Memcached
         commands:
           - sem-service start memcached
           - sem-service status memcached
+
       - name: mongodb
         commands:
           - sem-service start mongodb
           - curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
-          - docker ps
-          - docker image ls
+          - sem-service status mongodb
           - sem-service stop mongodb
+          - sem-service start mongodb 3.2
+          - curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
+          - sem-service status mongodb
+          - sem-service stop mongodb
+
       - name: elasticsearch
         commands:
           - sem-service start elasticsearch
           - curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
+          - sem-service status elasticsearch
+          - curl -XGET '0.0.0.0:9200' | grep 6.5.1
+          - sem-service stop elasticsearch
+          - sem-service start elasticsearch 6.5.2
+          - curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
+          - sem-service status elasticsearch
+          - curl -XGET '0.0.0.0:9200' | grep 6.5.2
           - sem-service stop elasticsearch
 
