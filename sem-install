@@ -1,13 +1,13 @@
 #!/bin/bash
-HOST="packages.semaphoreci.com"
+HOST="http://packages.semaphoreci.com"
 
 install::check_precompiled() {
-  response=$(curl --write-out %{http_code} --head --silent --output /dev/null http://$HOST/${language}/${language_version}.tar.gz)
+  response=$(curl --write-out %{http_code} --head --silent --output /dev/null $HOST/${language}/${language_version}.tar.gz)
   echo $response
 }
 
 install::dl_precompiled() {
-  curl --silent http://$HOST/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
+  curl --silent $HOST/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
 }
 
 install::install_ruby() {
