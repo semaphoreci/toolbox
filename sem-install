@@ -3,19 +3,22 @@ HOST="http://packages.semaphoreci.com"
 
 install::check_precompiled() {
   response=$(curl --write-out %{http_code} --head --silent --output /dev/null $HOST/${language}/${language_version}.tar.gz)
-  echo $response
+  if [[ $response -ne 200 ]]; then 
+    return 1
+  else
+    return 0
+  fi
 }
 
-install::dl_precompiled() {
+install::download() {
   curl --silent $HOST/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
 }
 
 install::install_ruby() {
-  response=$(install::check_precompiled)
-  if [[ $response -ne 200 ]] ; then
+  if [[ $(install::check_precompiled) -eq 1 ]] ; then
     rbenv install -s ${language_version}
   else
-    install::dl_precompiled
+    install::download
     tar -zxf ${language_version}.tar.gz
     mv ${language_version} ~/.rbenv/versions/
   fi
@@ -24,14 +27,13 @@ install::install_ruby() {
 }
 
 install::install_php() {
-  resp=$(install::check_precompiled)
-  if [[ $resp -ne 200 ]] ; then
+  if [[ $(install::check_precompiled) -eq 1 ]] ; then
     phpbrew install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
     echo "date.timezone = UTC" >> "~/.phpbrew/php/php-${language_version}/etc/php.ini"
     phpbrew ext install imap -- --with-kerberos --with-imap-ssl
     phpbrew ext install gd -- --enable-gd-native-ttf --with-freetype-dir=/usr/lib/x86_64-linux-gnu
   else
-    echo $(install::dl_precompiled)
+    install::download
     tar -zxf ${language_version}.tar.gz 
     mv php-${language_version} ~/.phpbrew/php/
     if [ ! -d "~/.phpbrew/build/php-{$language_version}" ]; then
