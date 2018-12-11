@@ -4,7 +4,7 @@ SUPPORTED_LANGUAGES=(php ruby)
 # Misc
 GO_URL="https://storage.googleapis.com/golang"
 DATE_FORMAT='%H:%M %d/%m/%Y'
-HOST="Host: packages.semaphoreci.com"
+HOST="packages.semaphoreci.com"
 PACKAGES_IP="138.201.33.90"
 
 install::check_precompiled() {
