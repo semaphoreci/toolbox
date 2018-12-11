@@ -18,6 +18,7 @@ blocks:
       - name: Sem version tests
         commands:
           - checkout
+          - cd
           - rm -rf .toolbox/
           - mv toolbox/ .toolbox
           - .toolbox/install-toolbox
