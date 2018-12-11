@@ -334,15 +334,6 @@ service::err() {
   exit 1
 }
 
-################################################################################
-# Helper function to show docker start duration
-# Globals:
-#   DATE_FORMAT
-# Arguments:
-#   message
-# Returns:
-#   0
-################################################################################
 service::duration() {
   local cmd="$@"
   local type=$(echo $4 | tr ":." "_")
