@@ -50,12 +50,8 @@ install::install_php() {
 
 install::usage() {
   echo -e "
-################################################################################
-sem-install ${VERSION} | Utility to install a selected languages version and activate it
-
 Usage:
-  sem-install language version
-################################################################################"
+  sem-install language version"
 }
 
 install::err() {
