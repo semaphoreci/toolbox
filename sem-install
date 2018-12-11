@@ -1,0 +1,86 @@
+#!/bin/bash
+HOST="http://packages.semaphoreci.com"
+
+install::available() {
+  response=$(curl --write-out %{http_code} --head --silent --output /dev/null $HOST/${language}/${language_version}.tar.gz)
+  if [[ $response -ne 200 ]]; then 
+    echo 1
+  else
+    echo 0
+  fi
+}
+
+install::download() {
+  curl --silent $HOST/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
+}
+
+install::install_ruby() {
+  if [[ $(install::available) -eq 1 ]] ; then
+    rbenv install -s ${language_version}
+  else
+    install::download
+    tar -zxf ${language_version}.tar.gz
+    rm -rf ${language_version}.tar.gz
+    mv ${language_version} ~/.rbenv/versions/
+  fi
+  rbenv rehash
+  return $?
+}
+
+install::install_php() {
+  if [[ $(install::available) -eq 1 ]] ; then
+    phpbrew install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
+    echo "date.timezone = UTC" >> "~/.phpbrew/php/php-${language_version}/etc/php.ini"
+    phpbrew ext install imap -- --with-kerberos --with-imap-ssl
+    phpbrew ext install gd -- --enable-gd-native-ttf --with-freetype-dir=/usr/lib/x86_64-linux-gnu
+  else
+    install::download
+    tar -zxf ${language_version}.tar.gz 
+    rm -rf ${language_version}.tar.gz 
+    mv php-${language_version} ~/.phpbrew/php/
+    if [ ! -d "~/.phpbrew/build/php-{$language_version}" ]; then
+	output=$(phpbrew download ${language_version})
+	tar -xjf ~/.phpbrew/distfiles/php-${language_version}.tar.bz2
+	rm -rf ~/.phpbrew/distfiles/php-${language_version}.tar.bz2
+	mv php-${language_version} ~/.phpbrew/build/
+    fi
+  fi
+  return $?
+}
+
+install::usage() {
+  echo -e "
+Usage:
+  sem-install [LANGUAGE] [VERSION]"
+}
+
+install::err() {
+  echo -e "\n! [$(version::date)]: $@" >&2
+
+  return 1
+}
+
+sem-install() { 
+  if ! [[ $# -eq 2 ]]; then
+    install::usage
+    install::err "Unsupported number of arguments provided!"
+
+    return $?
+  fi
+
+  language=$1
+  language_version=$2
+
+  case $language in
+    php)
+      install::install_php 
+      ;;
+    ruby)
+      install::install_ruby 
+      ;;
+    *)
+      install:err "Installation of '${language}' is not yet supported"
+      return 1;
+      ;;
+  esac
+}

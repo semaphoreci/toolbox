@@ -132,6 +132,7 @@ service::start() {
 
       service::start_memcached "$@"
       ;;
+
     * )
       service::print_usage
       ;;

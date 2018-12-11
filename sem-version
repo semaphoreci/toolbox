@@ -1,4 +1,5 @@
 #!/bin/bash
+source ~/.toolbox/sem-install
 
 # Changing language versions
 
@@ -27,6 +28,9 @@ version::change() {
 }
 
 version::change_ruby() {
+  if ! [ -d ~/.rbenv/versions/${language_version} ]; then
+    sem-install ruby ${language_version}
+  fi
   version::change "rbenv global"
 
   return $?
@@ -57,6 +61,9 @@ version::change_java() {
 }
 
 version::change_php() {
+  if ! [ -d ~/.phpbrew/php/php-${language_version} ]; then
+    sem-install php ${language_version}
+  fi
   version::change "phpbrew use"
 
   return $?
@@ -177,8 +184,7 @@ version::main() {
       fn_status=$?
 
       if [[ fn_status -ne 0 ]]; then
-        version::err "Failed to switch version.\nLog:\n$log"
-
+	version::err "Failed to switch version.\nLog:\n$log"
         return $?
       fi
 
