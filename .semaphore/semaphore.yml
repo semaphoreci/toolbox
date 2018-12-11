@@ -8,6 +8,13 @@ agent:
 blocks:
   - name: Run Tests
     task:
+      prologue:
+        commands:
+          - rm -rf .toolbox/
+          - mv toolbox/ .toolbox
+          - bash .toolbox/install-toolbox
+          - source .toolbox/toolbox          
+          - cd .toolbox
       jobs:
       - name: Cache tests
         commands:
@@ -17,12 +24,6 @@ blocks:
           - bats tests
       - name: Sem version tests
         commands:
-          - checkout
-          - cd
-          - rm -rf .toolbox/
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox          
           - sem-version ruby 2.5.3
           - ruby --version | grep 2.5.3
           - sem-version ruby 2.5.2
