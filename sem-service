@@ -432,11 +432,13 @@ service::duration() {
   local start	
   local end	
   local duration	
-   start=$(date +%s%3N)	
+  
+  start=$(date +%s%3N)	
   $cmd	
   end=$(date +%s%3N)	
   duration=$(( $end - $start ))	
   echo "sem_service.${env}.${type}:${duration}|ms" >> /tmp/semaphore-stats.txt	
-   return 0	
+  
+  return 0	
 }
 service::main "$@"
