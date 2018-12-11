@@ -425,5 +425,18 @@ service::main () {
       ;;
   esac
 }
-
+service::duration() {	
+  local cmd="$@"	
+  local type=$(echo $4 | tr ":." "_")	
+  local env="prod"	
+  local start	
+  local end	
+  local duration	
+   start=$(date +%s%3N)	
+  $cmd	
+  end=$(date +%s%3N)	
+  duration=$(( $end - $start ))	
+  echo "sem_service.${env}.${type}:${duration}|ms" >> /tmp/semaphore-stats.txt	
+   return 0	
+}
 service::main "$@"
