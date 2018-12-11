@@ -100,9 +100,11 @@ blocks:
           - sem-service start elasticsearch
           - curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
           - sem-service status elasticsearch
+          - curl -XGET '0.0.0.0:9200' | grep 6.5.1
           - sem-service stop elasticsearch
           - sem-service start elasticsearch 5.6
           - curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
           - sem-service status elasticsearch
+          - curl -XGET '0.0.0.0:9200' | grep 5.6
           - sem-service stop elasticsearch
 
