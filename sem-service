@@ -30,7 +30,7 @@ service::pull_image() {
     service::err "Invalid image name provided '${image_name}'"
   fi
 
-  service::run_cmd docker pull $image_name
+  service::duration service::run_cmd docker pull $image_name
 }
 
 service::start_mysql() {
