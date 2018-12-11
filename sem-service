@@ -30,7 +30,7 @@ service::pull_image() {
     service::err "Invalid image name provided '${image_name}'"
   fi
 
-  service::run_cmd docker pull $image_name
+  service::duration service::run_cmd docker pull $image_name
 }
 
 service::start_mysql() {
@@ -332,6 +332,23 @@ service::err() {
   echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
 
   exit 1
+}
+
+service::duration() {
+  local cmd="$@"
+  local type=$(echo $4 | tr ":." "_")
+  local env="prod"
+  local start
+  local end
+  local duration
+
+  start=$(date +%s%3N)
+  $cmd
+  end=$(date +%s%3N)
+  duration=$(( $end - $start ))
+  echo "sem_service.${env}.${type}:${duration}|ms" >> /tmp/semaphore-stats.txt
+
+  return 0
 }
 
 
