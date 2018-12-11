@@ -48,7 +48,7 @@ install::install_php() {
 install::usage() {
   echo -e "
 Usage:
-  sem-install language version"
+  sem-install [LANGUAGE] [VERSION]"
 }
 
 install::err() {
@@ -76,7 +76,7 @@ sem-install() {
       install::install_ruby 
       ;;
     *)
-      install:err "Language '${language}' install not supported yet."
+      install:err "Installation of '${language}' is not yet supported"
       return 1;
       ;;
   esac
