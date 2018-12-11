@@ -1,24 +1,8 @@
 #!/bin/bash
 
-# Thin wrapper around starting background services with Docker
-
-VERSION=0.6
-
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
-
-################################################################################
-# Pull the passed Docker image
-# Globals:
-#   none
-# Arguments:
-#   image_name
-# Returns:
-#   0,1,...,n
-#
-# TODO: support multiple images
-################################################################################
 service::pull_image() {
   local image_name=$1
 
@@ -34,145 +18,143 @@ service::pull_image() {
 }
 
 service::start_mysql() {
-  service::pull_image "mysql:5.6"
+  service_version="${1:-5.6}"
+  service::pull_image "mysql:$service_version"
 
-  docker_output=$(docker run --net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql mysql:5.6)
+  docker_output=$(docker run --net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql mysql:$service_version)
 
   # run only if previous command exited successfully
   dockerize_output=$(dockerize -wait tcp://0.0.0.0:3306 -timeout 30s 2>&1)
 
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "MySQL 5.6 is running at 0.0.0.0:3306"
+  echo "MySQL $service_version is running at 0.0.0.0:3306"
   echo "To access it use username 'root' and blank password."
 
   exit 0
 }
 
 service::start_postgres() {
-  service::pull_image "postgres:9.6"
+  service_version="${1:-9.6}"
+  service::pull_image "postgres:$service_version"
 
-  docker_output=$(docker run --net=host --rm --name postgres -e POSTGRES_PASSWORD=semaphore -d postgres:9.6)
+  docker_output=$(docker run --net=host --rm --name postgres -e POSTGRES_PASSWORD=semaphore -d postgres:$service_version)
 
   # run only if previous command exited successfully
   dockerize_output=$(dockerize -wait tcp://0.0.0.0:5432 -timeout 30s 2>&1)
 
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "PostgreSQL 9.6 is running at 0.0.0.0:5432"
+  echo "PostgreSQL $service_version is running at 0.0.0.0:5432"
   echo "To access it use username 'postgres' and blank password."
 
   exit 0
 }
 
 service::start_redis() {
-  service::pull_image "redis:4"
+  service_version="${1:-4}"
+  service::pull_image "redis:$service_version"
 
-  docker_output=$(docker run --net=host --rm --name redis -d redis:4)
+  docker_output=$(docker run --net=host --rm --name redis -d redis:$service_version)
 
   # run only if previous command exited successfully
   dockerize_output=$(dockerize -wait tcp://0.0.0.0:6379 -timeout 30s 2>&1)
 
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "Redis 4 is running at 0.0.0.0:6379"
+  echo "Redis $service_version is running at 0.0.0.0:6379"
 
   exit 0
 }
 
 service::start_memcached() {
-  service::pull_image "memcached:1.5"
+  service_version="${1:-1.5}"
+  service::pull_image "memcached:$service_version"
 
-  docker_output=$(docker run --net=host --rm --name memcached -d memcached:1.5)
+  docker_output=$(docker run --net=host --rm --name memcached -d memcached:$service_version)
 
   # run only if previous command exited successfully
   dockerize_output=$(dockerize -wait tcp://0.0.0.0:11211 -timeout 30s 2>&1)
 
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "memcached 1.5 is running at 0.0.0.0:11211"
+  echo "memcached $service_version is running at 0.0.0.0:11211"
 
   exit 0
 }
 
 service::start_mongodb() {
-  service::pull_image "mongo:4.1"
+  service_version="${1:-4.1}"
+  service::pull_image "mongo:$service_version"
 
-  docker_output=$(docker run --net=host --rm --name mongodb -d mongo:4.1)
+  docker_output=$(docker run --net=host --rm --name mongodb -d mongo:$service_version)
 
   # run only if previous command exited successfully
   dockerize_output=$(dockerize -wait tcp://0.0.0.0:27017 -timeout 30s 2>&1)
-  
+
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "mongodb 4.1 is running at 0.0.0.0:27017"
+  echo "mongodb $service_version is running at 0.0.0.0:27017"
 
   exit 0
 }
 
 service::start_elasticsearch() {
-  service::pull_image "elasticsearch:6.5.1"
+  service_version="${1:-6.5.1}"
+  service::pull_image "elasticsearch:$service_version"
 
-  docker_output=$(docker run --net=host --rm --name elasticsearch -e "discovery.type=single-node" -d elasticsearch:6.5.1)
+  docker_output=$(docker run --net=host --rm --name elasticsearch -e "discovery.type=single-node" -d elasticsearch:$service_version)
 
   # run only if previous command exited successfully
   dockerize_output=$(dockerize -wait tcp://0.0.0.0:9200 -timeout 30s 2>&1)
-  
+
   # if not started in 30 seconds print logs and exit
   echo "done."
-  echo "elasticsearch 6.5.1 is accessible at 0.0.0.0:9200 and 0.0.0.0:9300"
+  echo "elasticsearch $service_version is accessible at 0.0.0.0:9200 and 0.0.0.0:9300"
 
   exit 0
 }
 
-
-
-service::install_dockerize() {
-  DOCKERIZE_VERSION="v0.6.1"
-
-  output=$(sudo rm -rf /usr/local/bin/dockerize && curl -L -o /tmp/dockerize.tar.gz -s https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-alpine-linux-amd64-v0.6.1.tar.gz && sudo tar -C /usr/local/bin -xzvf /tmp/dockerize.tar.gz)
-}
-
 service::start() {
   service_name=$1
+  service_version=$2
   if [ -z "$service_name" ]; then
     service::print_usage
     exit 1
   fi
 
   echo -n "Starting $service_name..."
-  service::install_dockerize
 
   case "$service_name" in
     "mysql" )
       shift
 
-      service::start_mysql "$@"
+      service::start_mysql $service_version
       ;;
     "postgres" )
       shift
 
-      service::start_postgres "$@"
+      service::start_postgres $service_version
       ;;
     "redis" )
       shift
 
-      service::start_redis "$@"
+      service::start_redis $service_version
       ;;
     "memcached" )
       shift
 
-      service::start_memcached "$@"
+      service::start_memcached $service_version
       ;;
     "mongodb" )
       shift
 
-      service::start_mongodb "$@"
+      service::start_mongodb $service_version
       ;;
     "elasticsearch" )
       shift
 
-      service::start_elasticsearch "$@"
+      service::start_elasticsearch $service_version
       ;;
 
     * )
@@ -183,66 +165,6 @@ service::start() {
 }
 
 
-################################################################################
-# Start a service with the defined Docker image
-# Globals:
-#   none
-# Arguments:
-#   image_name
-# Returns:
-#   0,1
-# TODO: wait for service
-################################################################################
-service::old_start() {
-  local image_name
-  local service_name
-  local command_status
-  local command_log
-  local service_check_log
-  local pull_log
-
-  image_name=$1
-  service_name="${image_name%:*}"
-  command_log=""
-  command_status=""
-
-  service::log "Starting '${service_name}' ..."
-
-  service_check_log=$( service::status $service_name &>/dev/null )
-  service_status=$?
-
-  if [[ $service_status -eq 0 ]]; then
-    service::log "'${service_name}' already started. Skipping."
-  else
-    pull_log=$(service::pull_image $image_name)
-    pull_status=$?
-
-    if ! [[ $pull_status -eq 0 ]]; then
-      service::err "Failed to pull the image."
-    fi
-
-    command_log=$( service::run_cmd "docker run --net=host --rm -d $@ --name $service_name $image_name" )
-    command_status=$?
-
-    if ! [[ $command_status -eq 0 ]]; then
-      service::err "Failed to start '${service_name}'"
-    fi
-
-    service::log "'${service_name}' successfully started."
-    # the service needs a couple of secondns to become available
-  fi
-}
-
-
-################################################################################
-# Stop service if started
-# Globals:
-#   none
-# Arguments:
-#   service_name
-# Returns:
-#   0
-################################################################################
 service::stop() {
   local service_name
   local service_check_log
@@ -347,62 +269,45 @@ service::port_info() {
   return 0
 }
 
-
-################################################################################
-# Helper function to show log messages
-# Globals:
-#   DATE_FORMAT
-# Arguments:
-#   message
-# Returns:
-#   none
-################################################################################
 service::log() {
   echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
 }
 
-
-################################################################################
-# Helper function to show error messages and to terminate execution on error
-# Globals:
-#   DATE_FORMAT
-# Arguments:
-#   err, message
-# Returns:
-#   1
-################################################################################
 service::err() {
   echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
 
   exit 1
 }
 
-
-################################################################################
-# Prints the program usage
-# Globals:
-#   VERSION
-# Arguments:
-#   None
-# Returns:
-#   None
-################################################################################
 service::print_usage() {
-  echo -e "\nsem-service [start|stop|status] [service]\n"
+  echo -e "\nsem-service [start|stop|status] [service] [version]\n"
 
   echo "Available services:"
-  echo "mysql"
-  echo "postgres"
-  echo "redis"
-  echo "memcached"
-  echo "mongodb"
-  echo "elasticsearch"
+  echo "mysql (default: 5.6)"
+  echo "postgres (default: 9.6)"
+  echo "redis (default: 4)"
+  echo "memcached (default: 1.5)"
+  echo "mongodb (default: 4.5)"
+  echo "elasticsearch (default: 6.5.1)"
 }
 
+service::duration() {
+  local cmd="$@"
+  local type=$(echo $4 | tr ":." "_")
+  local env="prod"
+  local start
+  local end
+  local duration
 
-################################################################################
-# Entry point to the script
-################################################################################
+  start=$(date +%s%3N)
+  $cmd
+  end=$(date +%s%3N)
+  duration=$(( $end - $start ))
+  echo "sem_service.${env}.${type}:${duration}|ms" >> /tmp/semaphore-stats.txt
+
+  return 0
+}
+
 service::main () {
   case "$1" in
     "start" )
@@ -425,20 +330,5 @@ service::main () {
       ;;
   esac
 }
-service::duration() {	
-  local cmd="$@"	
-  local type=$(echo $4 | tr ":." "_")	
-  local env="prod"	
-  local start	
-  local end	
-  local duration	
-  
-  start=$(date +%s%3N)	
-  $cmd	
-  end=$(date +%s%3N)	
-  duration=$(( $end - $start ))	
-  echo "sem_service.${env}.${type}:${duration}|ms" >> /tmp/semaphore-stats.txt	
-  
-  return 0	
-}
+
 service::main "$@"
