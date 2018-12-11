@@ -4,9 +4,9 @@ HOST="http://packages.semaphoreci.com"
 install::check_precompiled() {
   response=$(curl --write-out %{http_code} --head --silent --output /dev/null $HOST/${language}/${language_version}.tar.gz)
   if [[ $response -ne 200 ]]; then 
-    return 1
+    echo 1
   else
-    return 0
+    echo 0
   fi
 }
 
