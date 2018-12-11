@@ -75,6 +75,6 @@ blocks:
       - name: elasticsearch
         commands:
           - sem-service start elasticsearch
-          - curl -XGET '0.0.0.0:9200/_cluster/health?pretty'
+          - curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
           - sem-service stop elasticsearch
 
