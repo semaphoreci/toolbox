@@ -39,3 +39,38 @@ blocks:
           - php -v | grep 7.2.10
           - sem-version php 7.0.32
           - php -v | grep 7.0.32
+      - name: MySQL
+        commands:
+          - sem-service start mysql
+          - mysql --host=0.0.0.0 -uroot -e "create database fooo"
+          - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
+          - sem-service status mysql
+
+      - name: PostgreSQL
+        commands:
+          - sem-service start postgres
+          - createdb -U postgres -h 0.0.0.0 fooo
+          - psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+          - sem-service status postgres
+
+      - name: Redis
+        commands:
+          - sem-service start redis
+          - sem-service status redis
+
+      - name: Memcached
+        commands:
+          - sem-service start memcached
+          - sem-service status memcached
+      - name: mongodb
+        commands:
+          - sem-service start mongodb
+          - docker ps
+          - docker image ls
+          - sem-service stop mongodb
+      - name: elasticsearch
+        commands:
+          - sem-service start elasticsearch
+          - curl -XGET '0.0.0.0:9200/_cluster/health?pretty'
+          - sem-service stop elasticsearch
+
