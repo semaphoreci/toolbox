@@ -18,9 +18,10 @@ blocks:
       - name: Sem version tests
         commands:
           - checkout
-          - bash ~/toolbox/install-toolbox
-          - source ~/toolbox/toolbox
-          - echo 'source ~/toolbox/toolbox' >> ~/.bash_profile
+          - rm -rf .toolbox/
+          - mv toolbox/ .toolbox
+          - .toolbox/install-toolbox
+          - source .toolbox/toolbox          
           - sem-version php 7.0.32
           - php -v | grep 7.0.32
           - sem-version ruby 2.5.3
