@@ -21,7 +21,7 @@ blocks:
           - cd
           - rm -rf .toolbox/
           - mv toolbox/ .toolbox
-          - .toolbox/install-toolbox
+          - bash .toolbox/install-toolbox
           - source .toolbox/toolbox          
           - sem-version php 7.0.32
           - php -v | grep 7.0.32
