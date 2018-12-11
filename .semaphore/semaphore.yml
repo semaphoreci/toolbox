@@ -10,6 +10,7 @@ blocks:
     task:
       prologue:
         commands:
+          - checkout
           - rm -rf .toolbox/
           - mv toolbox/ .toolbox
           - bash .toolbox/install-toolbox
