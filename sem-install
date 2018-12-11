@@ -1,19 +1,19 @@
 #!/bin/bash
-VERSION="0.2"
+VERSION="0.3"
 SUPPORTED_LANGUAGES=(php ruby)
 # Misc
 GO_URL="https://storage.googleapis.com/golang"
 DATE_FORMAT='%H:%M %d/%m/%Y'
-HOST_HEADER="Host: packages.rt.com"
+HOST="Host: packages.semaphoreci.com"
 PACKAGES_IP="138.201.33.90"
 
 install::check_precompiled() {
-  response=$(curl -H "$HOST_HEADER" --write-out %{http_code} --head --silent --output /dev/null http://$PACKAGES_IP/${language}/${language_version}.tar.gz)
+  response=$(curl --write-out %{http_code} --head --silent --output /dev/null http://$HOST/${language}/${language_version}.tar.gz)
   echo $response
 }
 
 install::dl_precompiled() {
-  curl -H "$HOST_HEADER" --silent http://$PACKAGES_IP/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
+  curl --silent http://$HOST/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
 }
 
 install::install_ruby() {
