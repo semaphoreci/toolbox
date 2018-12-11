@@ -11,6 +11,7 @@ blocks:
       prologue:
         commands:
           - checkout
+          - cd ../
           - rm -rf .toolbox/
           - mv toolbox/ .toolbox
           - bash .toolbox/install-toolbox
