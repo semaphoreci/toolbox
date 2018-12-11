@@ -123,17 +123,18 @@ cache::lftp_put() {
       continue
     fi
 
-    archive_size=$(tar czf - $local_path | wc -c)
-    if [ "${archive_size}" -gt "${limit}" ]; then
-      allocated_space=$(numfmt --to=iec ${limit})
-      cache::log "Archive exceeds allocated ${allocated_space} for cache."
+    if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
+      cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
     else
-      if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
-        cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
+      tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
+
+      archive_size=$(ls -l /tmp/$SEMAPHORE_CACHE_KEY | awk '{print $5}')
+      if [ "${archive_size}" -gt "${limit}" ]; then
+        allocated_space=$(numfmt --to=iec ${limit})
+        cache::log "Archive exceeds allocated ${allocated_space} for cache."
       else
         cache::allocate_space $archive_size
 
-        tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
         cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
         cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
         rm -rf /tmp/$SEMAPHORE_CACHE_KEY
