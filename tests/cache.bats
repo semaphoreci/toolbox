@@ -55,6 +55,9 @@ normalize_key() {
   assert_line "Upload complete."
   refute_line ${test_key}
 
+  run stat /tmp/semaphore-stats.txt
+  assert_success
+
   run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
 
   assert_line "Key ${test_key} exists in the cache store."
