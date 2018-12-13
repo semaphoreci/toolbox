@@ -1,36 +1,101 @@
 function checkout() {
   if [ -n "$SEMAPHORE_SNAPSHOT_ID" ]; then
-    echo SEMAPHORE_SNAPSHOT_ID: $SEMAPHORE_SNAPSHOT_ID
-
-    WORKDIR=snapshot
-    mkdir -p ~/$WORKDIR
-    cd ~/$WORKDIR
-
-    DOMAIN=snapshots.semaphoreci.com
-    URL="https://$DOMAIN/api/v1alpha/snapshots/$SEMAPHORE_SNAPSHOT_ID"
-    AUTH_HEADER="Authorization: Token omsAfx8Ly51RJ127xX6c"
-    curl $URL -H "$AUTH_HEADER" | tar xzf -
-
+    checkout::snapshot
     return 0
   fi
 
   if [ -z $SEMAPHORE_GIT_BRANCH ] || [ -z $SEMAPHORE_GIT_URL ] || [ -z $SEMAPHORE_GIT_DIR ] || [ -z $SEMAPHORE_GIT_SHA ]; then
-    echo "[CHECKOUT ERROR] Some of these variables are unset:"
-    echo "SEMAPHORE_GIT_URL=$SEMAPHORE_GIT_URL"
-    echo "SEMAPHORE_GIT_DIR=$SEMAPHORE_GIT_DIR"
-    echo "SEMAPHORE_GIT_BRANCH=$SEMAPHORE_GIT_BRANCH"
-    echo "SEMAPHORE_GIT_SHA=$SEMAPHORE_GIT_SHA"
-
+    checkout::validation_message
     return 1
   fi
 
-  git clone --depth 50 -b $SEMAPHORE_GIT_BRANCH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
-  cd $SEMAPHORE_GIT_DIR
-  git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
+  if [ "$1" = "--use-cache" ]; then
+    echo "[Experimental stability] Using cached Git repository."
+    checkout::use_cache
+  else
+    checkout::clone
+  fi
+}
 
-  if [ $? -ne 0 ]; then
-    git fetch --unshallow
-    git reset --hard $SEMAPHORE_GIT_SHA
+function checkout::validation_message() {
+  echo "[CHECKOUT ERROR] Some of these variables are unset:"
+  echo "SEMAPHORE_GIT_URL=$SEMAPHORE_GIT_URL"
+  echo "SEMAPHORE_GIT_DIR=$SEMAPHORE_GIT_DIR"
+  echo "SEMAPHORE_GIT_BRANCH=$SEMAPHORE_GIT_BRANCH"
+  echo "SEMAPHORE_GIT_SHA=$SEMAPHORE_GIT_SHA"
+}
+
+function checkout::snapshot() {
+  echo SEMAPHORE_SNAPSHOT_ID: $SEMAPHORE_SNAPSHOT_ID
+
+  WORKDIR=snapshot
+  mkdir -p ~/$WORKDIR
+  cd ~/$WORKDIR
+
+  DOMAIN=snapshots.semaphoreci.com
+  URL="https://$DOMAIN/api/v1alpha/snapshots/$SEMAPHORE_SNAPSHOT_ID"
+  AUTH_HEADER="Authorization: Token omsAfx8Ly51RJ127xX6c"
+  curl $URL -H "$AUTH_HEADER" | tar xzf -
+}
+
+function checkout::use_cache() {
+  cache restore git-cache-
+
+  if [ -d "$HOME/$SEMAPHORE_GIT_DIR" ]; then
+    checkout::fetch
+  else
+    checkout::clone
+  fi
+
+  checkout::cache_store
+}
+
+function checkout::fetch() {
+  local branch_ref="refs/heads/$SEMAPHORE_GIT_BRANCH"
+  local branch_origin="origin/$SEMAPHORE_GIT_BRANCH"
+
+  echo "Restored cache"
+  cd $HOME/$SEMAPHORE_GIT_DIR
+  git remote prune origin
+  git fetch --tags origin
+
+  if [[ -n $(git show-ref $branch_ref) ]]; then
+    git checkout $SEMAPHORE_GIT_BRANCH
+  else
+    git checkout -b $SEMAPHORE_GIT_BRANCH -t $branch_origin;
+  fi
+
+  git reset --hard $SEMAPHORE_GIT_SHA
+}
+
+function checkout::clone() {
+  git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
+  cd $SEMAPHORE_GIT_DIR
+  git checkout $SEMAPHORE_GIT_BRANCH
+  git reset --hard $SEMAPHORE_GIT_SHA
+}
+
+function checkout::cache_store() {
+  # store into cache if older then 72h
+  local cache_age=$(cache list | grep git-cache- | awk '{ print $1 }' | head -1 | cut -d'-' -f3)
+
+  if [[ ! -z "$cache_age" ]]; then
+    local now=$(date +%s)
+    local diff=$(expr $now - $cache_age)
+    echo "diff: $diff"
+    if (( diff > 10 )); then
+      echo "Wow this is old cache. Let's refresh it..."
+      cd ..
+      cache store git-cache-`date +%s` $SEMAPHORE_GIT_DIR
+      cd $SEMAPHORE_GIT_DIR
+    else
+      echo "Not creating new cache, this one is fresh enough"
+    fi
+  else
+    echo "No git cache... caching"
+    cd ..
+    cache store git-cache-`date +%s` $SEMAPHORE_GIT_DIR
+    cd $SEMAPHORE_GIT_DIR
   fi
 }
 

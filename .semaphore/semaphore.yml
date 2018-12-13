@@ -23,6 +23,7 @@ blocks:
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
           - bats tests
+
       - name: Sem version tests
         commands:
           - sem-version ruby 2.5.3
@@ -123,3 +124,15 @@ blocks:
           - sem-version scala 2.12
           - sem-version scala 2.30
 
+      - name: Clone with caching
+        commands:
+          - export SEMAPHORE_GIT_URL="https://github.com/rails/rails.git"
+          - export SEMAPHORE_GIT_BRANCH=master
+          - export SEMAPHORE_GIT_DIR=rails
+          - export SEMAPHORE_GIT_SHA=f907b418aecfb6dab4e30149b88a8593ddd321b9
+          - checkout
+          - cd
+          - export SEMAPHORE_GIT_BRANCH=5-0-stable
+          - cache list
+          - rm -rf rails
+          - checkout --use-cache
