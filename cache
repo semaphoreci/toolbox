@@ -38,6 +38,27 @@ cache::normalize_string() {
   echo "$result"
 }
 
+cache::speed() {
+
+  local lftp_cmd
+  local size
+  local start
+  local end
+  local duration
+
+  size=$1; shift
+  lftp_cmd=$1; shift
+  start=$(date +%s%3N)
+  $lftp_cmd "$@"
+  end=$(date +%s%3N)
+  duration=$(( $end - $start ))
+  transfer_speed=$($size/$duration)
+  # in kB/s
+  echo "cache.prod.speed:${transfer_speed}|c" >> /tmp/semaphore-stats.txt
+  return 0
+
+}
+
 ################################################################################
 # Send the files identified by the key, to the cache repository using LFTP
 # Globals:
