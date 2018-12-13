@@ -157,7 +157,7 @@ cache::lftp_put() {
         cache::allocate_space $archive_size
 
         cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
-        cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
+        cache::speed cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
         rm -rf /tmp/$SEMAPHORE_CACHE_KEY
         cache::log "Upload complete."
       fi
