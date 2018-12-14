@@ -38,23 +38,36 @@ cache::normalize_string() {
   echo "$result"
 }
 
-cache::speed() {
+cache::duration() {
 
   local lftp_cmd
-  local size
   local start
   local end
   local duration
 
-  size=$1; shift
   lftp_cmd=$1; shift
   start=$(date +%s%3N)
   $lftp_cmd "$@"
   end=$(date +%s%3N)
   duration=$(( $end - $start ))
-  transfer_speed=$(( $size/$duration ))
-  # in kB/s
-  echo "cache.prod.speed:${transfer_speed}|c" >> /tmp/semaphore-stats.txt
+
+  echo $duration > /tmp/duration
+
+  return 0
+}
+
+cache::speed() {
+  local duration
+  local size
+
+  duration=$1
+  size=$2
+
+  net_speed=$(( $size/$duration ))
+  if [ $net_speed > 0 ]; then
+    echo "cache.prod.speed:${net_speed}|c" >> /tmp/semaphore-stats.txt
+  fi
+
   return 0
 
 }
@@ -134,6 +147,7 @@ cache::lftp_put() {
   local archive_size
   local limit
   local allocated_space
+  local duration
 
   limit=$(numfmt --from-unit=1024 $LIMIT)
 
@@ -157,7 +171,12 @@ cache::lftp_put() {
         cache::allocate_space $archive_size
 
         cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
-        cache::speed $archive_size cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
+        cache::duration cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
+        if [ -f /tmp/duration ]; then
+          duration=$(cat /tmp/duration)
+          cache:speed $duration $archive_size
+          rm -rf /tmp/duration
+        fi
         rm -rf /tmp/$SEMAPHORE_CACHE_KEY
         cache::log "Upload complete."
       fi
@@ -388,15 +407,23 @@ cache::free_space() {
 ################################################################################
 cache::lftp_get() {
   local key
+  local size
+  local duration
 
   key=$1
 
   if cache::file_is_present $key; then
     cd /tmp
-    cache::lftp "get1 -c $key"
+    cache::duration cache::lftp "get1 -c $key"
     cd - &>/dev/null
     restored_path=$(tar -ztvf /tmp/$key | head -1 | awk '{print $6}')
     tar xzf /tmp/$key -C .
+    size=$(ls -l /tmp/$key | awk '{print $5}')
+    if [ -f /tmp/duration ]; then
+      duration=$(cat /tmp/duration)
+      cache:speed $duration $archive_size
+      rm -rf /tmp/duration
+    fi
     rm -rf /tmp/$key
     cache::log "Restored: ${restored_path}"
   else
