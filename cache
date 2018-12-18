@@ -65,7 +65,7 @@ cache::speed() {
 
   net_speed=$(( $size/$duration ))
   if [ $net_speed > 0 ]; then
-    echo "cache.prod.speed:${net_speed}|c" >> /tmp/semaphore-stats.txt
+    echo "cache.prod.speed:${net_speed}|ms" >> /tmp/semaphore-stats.txt
   fi
 
   return 0
