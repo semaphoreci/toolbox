@@ -28,4 +28,9 @@ function checkout() {
   cd $SEMAPHORE_GIT_DIR
   git checkout $SEMAPHORE_GIT_BRANCH
   git reset --hard $SEMAPHORE_GIT_SHA
+
+  if [ $? -ne 0 ]; then
+    git fetch --unshallow
+    git reset --hard $SEMAPHORE_GIT_SHA
+  fi
 }
