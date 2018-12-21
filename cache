@@ -69,7 +69,6 @@ cache::speed() {
   fi
 
   return 0
-
 }
 
 ################################################################################
@@ -421,7 +420,7 @@ cache::lftp_get() {
     size=$(ls -l /tmp/$key | awk '{print $5}')
     if [ -f /tmp/duration ]; then
       duration=$(cat /tmp/duration)
-      cache:speed $duration $archive_size
+      cache::speed $duration $archive_size
       rm -rf /tmp/duration
     fi
     rm -rf /tmp/$key
