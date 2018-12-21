@@ -406,7 +406,7 @@ cache::free_space() {
 ################################################################################
 cache::lftp_get() {
   local key
-  local size
+  local archive_size
   local duration
 
   key=$1
@@ -417,7 +417,7 @@ cache::lftp_get() {
     cd - &>/dev/null
     restored_path=$(tar -ztvf /tmp/$key | head -1 | awk '{print $6}')
     tar xzf /tmp/$key -C .
-    size=$(ls -l /tmp/$key | awk '{print $5}')
+    archive_size=$(ls -l /tmp/$key | awk '{print $5}')
     if [ -f /tmp/duration ]; then
       duration=$(cat /tmp/duration)
       cache::speed $duration $archive_size
