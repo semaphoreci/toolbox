@@ -29,3 +29,5 @@ function checkout() {
   git checkout $SEMAPHORE_GIT_BRANCH
   git reset --hard $SEMAPHORE_GIT_SHA
 }
+
+export -f checkout
