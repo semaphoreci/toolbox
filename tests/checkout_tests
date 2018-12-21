@@ -10,6 +10,7 @@ echo "Test checkout #1: without environment variables returns error"
 
 echo "Test checkout #2: clones the repo with variables set"
 
+base_dir=$PWD
 rm -rf /tmp/repo
 SEMAPHORE_GIT_URL=https://github.com/mojombo/grit.git \
 SEMAPHORE_GIT_BRANCH=master \
@@ -22,3 +23,22 @@ echo "Checking git repo..."
 git status
 echo "Checking git branch..."
 git branch | grep master
+cd $base_dir
+
+echo "Test checkout #3: Full clone with variable set"
+
+rm -rf /tmp/repo
+set +e
+SEMAPHORE_GIT_URL=https://github.com/mojombo/grit.git \
+SEMAPHORE_GIT_BRANCH=master \
+SEMAPHORE_GIT_DIR=/tmp/repo \
+SEMAPHORE_GIT_SHA=2e18031 \
+checkout
+set -e
+echo "Checking created dir..."
+cd /tmp/repo
+echo "Checking git repo..."
+git status
+echo "Checking git branch..."
+git branch | grep master
+git rev-parse HEAD | grep 2e18031
