@@ -24,8 +24,12 @@ function checkout() {
     return 1
   fi
 
-  git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
+  git clone --depth 50 -b $SEMAPHORE_GIT_BRANCH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
   cd $SEMAPHORE_GIT_DIR
-  git checkout $SEMAPHORE_GIT_BRANCH
-  git reset --hard $SEMAPHORE_GIT_SHA
+  git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
+
+  if [ $? -ne 0 ]; then
+    git fetch --unshallow
+    git reset --hard $SEMAPHORE_GIT_SHA
+  fi
 }
