@@ -446,7 +446,7 @@ normalize_key() {
   run ./cache usage
 
   assert_success
-  assert_line "FREE SPACE: 9.6G"
+  assert_line "FREE SPACE: 9.0G"
   assert_line "USED SPACE: 0"
 
   rm -f tmp.file
