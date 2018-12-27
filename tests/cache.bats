@@ -38,6 +38,7 @@ normalize_key() {
   refute_output --partial "Checking if LFPT is present"
   refute_output --partial "Loading SSH key into the agent"
   refute_output --partial "Checking environment variables"
+  refute_output --partial "command not found"
 }
 
 ################################################################################
@@ -54,11 +55,13 @@ normalize_key() {
   assert_line "Uploading 'tmp' with cache key '${test_key}'..."
   assert_line "Upload complete."
   refute_line ${test_key}
+  refute_output --partial "command not found"
 
   run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
 
   assert_line "Key ${test_key} exists in the cache store."
   assert_success
+  refute_output --partial "command not found"
 }
 
 @test "save local file to cache store with normalized key" {
@@ -72,10 +75,12 @@ normalize_key() {
   assert_line "Uploading 'tmp' with cache key '${test_key}'..."
   assert_line "Upload complete."
   refute_line ${test_key}
+  refute_output --partial "command not found"
 
   run ./cache has_key bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_success
+  refute_output --partial "command not found"
 }
 
 @test "save nonexistent local file to cache store" {
@@ -84,6 +89,7 @@ normalize_key() {
   assert_success
   assert_line "'tmp' doesn't exist locally."
   refute_output --partial "Cannot stat: No such file or directory"
+  refute_output --partial "command not found"
 }
 
 @test "store with key which is already present in cache" {
@@ -93,6 +99,7 @@ normalize_key() {
 
   run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
   assert_success
+  refute_output --partial "command not found"
 
   run ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp
 
@@ -100,9 +107,11 @@ normalize_key() {
   assert_line "Key '${test_key}' already exists."
   refute_line "Uploading 'tmp' with cache key '${tes_key}'..."
   refute_line ${test_key}
+  refute_output --partial "command not found"
 
   run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
   assert_success
+  refute_output --partial "command not found"
 }
 
 @test "automatic key deletion in case of insufficient space" {
@@ -120,15 +129,19 @@ normalize_key() {
   assert_line "Key ${preexisting_key} is deleted."
   assert_line "Key tmp-key is deleted."
   assert_line "Uploading 'tmp.larger_file' with cache key '${new_key}'..."
+  refute_output --partial "command not found"
 
   run ./cache has_key tmp-key
   assert_failure
+  refute_output --partial "command not found"
 
   run ./cache has_key $preexisting_key
   assert_failure
+  refute_output --partial "command not found"
 
   run ./cache has_key $new_key
   assert_success
+  refute_output --partial "command not found"
 
   ./cache delete tmp-key
 }
@@ -142,6 +155,7 @@ normalize_key() {
   run ./cache store $test_key tmp.file
   assert_success
   assert_line "Archive exceeds allocated 50K for cache."
+  refute_output --partial "command not found"
 }
 
 ################################################################################
@@ -156,6 +170,7 @@ normalize_key() {
 
   run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
   assert_success
+  refute_output --partial "command not found"
 
   run ./cache restore bats-test-$SEMAPHORE_GIT_BRANCH
 
@@ -164,6 +179,7 @@ normalize_key() {
   assert_line "HIT: ${test_key}, using key ${test_key}"
   assert_output --partial "Restored: tmp/first/second/"
   refute_output --partial "/home/semaphore/toolbox"
+  refute_output --partial "command not found"
 }
 
 @test "restores the key if it is available" {
@@ -172,6 +188,7 @@ normalize_key() {
   touch tmp.file
   ./cache store $test_key_1 tmp.file
   ./cache store $test_key_2 tmp.file
+  refute_output --partial "command not found"
 
   run ./cache restore $test_key_1
 
@@ -180,6 +197,7 @@ normalize_key() {
   refute_output --partial "HIT: ${test_key_1}, using key ${test_key_2}"
   assert_output --partial "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
+  refute_output --partial "command not found"
 }
 
 @test "restoring nonexistent directory from cache" {
@@ -191,6 +209,7 @@ normalize_key() {
   assert_success
   assert_line "MISS: test-12123"
   refute_output --partial "/home/semaphore/toolbox"
+  refute_output --partial "command not found"
 }
 
 @test "fallback key option" {
@@ -206,6 +225,7 @@ normalize_key() {
   assert_line "HIT: bats-test, using key ${test_key_1}"
   assert_line "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
+  refute_output --partial "command not found"
 }
 
 @test "fallback key option uses normalized keys" {
@@ -220,6 +240,7 @@ normalize_key() {
   assert_line "HIT: ${test_key}, using key ${test_key}"
   assert_output --partial "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
+  refute_output --partial "command not found"
 }
 
 ################################################################################
@@ -236,13 +257,14 @@ normalize_key() {
 
   run ./cache is_not_empty
   assert_success
+  refute_output --partial "command not found"
 
   run ./cache clear
 
   assert_success
   assert_output --partial "Deleted all caches."
   refute_output --partial "Usage: rm [-r] [-f] files"
-
+  refute_output --partial "command not found"
 }
 
 @test "emptying cache store when cache is empty" {
@@ -252,12 +274,14 @@ normalize_key() {
 
   run ./cache is_not_empty
   assert_failure
+  refute_output --partial "command not found"
 
   run ./cache clear
 
   assert_success
   assert_line "Deleted all caches."
   refute_output --partial "Usage: rm [-r] [-f] files"
+  refute_output --partial "command not found"
 }
 
 ################################################################################
@@ -273,18 +297,22 @@ normalize_key() {
 
   run ./cache is_not_empty
   assert_success
+  refute_output --partial "command not found"
 
   run ./cache has_key ${test_key_1}
   assert_success
+  refute_output --partial "command not found"
 
   run ./cache has_key ${test_key_2}
   assert_success
+  refute_output --partial "command not found"
 
   run ./cache list
 
   assert_success
   assert_output --partial $test_key_1
   assert_output --partial $test_key_2
+  refute_output --partial "command not found"
 }
 
 @test "listing cache keys when cache is empty" {
@@ -296,10 +324,12 @@ normalize_key() {
 
   run ./cache is_not_empty
   assert_failure
+  refute_output --partial "command not found"
 
   run ./cache list
   assert_success
   assert_line "Cache is empty."
+  refute_output --partial "command not found"
 }
 
 ################################################################################
@@ -313,11 +343,13 @@ normalize_key() {
 
   run ./cache is_not_empty
   assert_success
+  refute_output --partial "command not found"
 
   run ./cache has_key $test_key
 
   assert_success
   assert_output --partial "Key ${test_key} exists in the cache store."
+  refute_output --partial "command not found"
 }
 
 @test "checking if an existing key with / is present in cache store" {
@@ -327,17 +359,20 @@ normalize_key() {
 
   run ./cache is_not_empty
   assert_success
+  refute_output --partial "command not found"
 
   run ./cache has_key bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_success
   assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
   assert_output --partial "Key ${test_key} exists in the cache store."
+  refute_output --partial "command not found"
 
   run ./cache has_key $test_key
 
   assert_success
   assert_output --partial "Key ${test_key} exists in the cache store."
+  refute_output --partial "command not found"
 }
 
 @test "checking if nonexistent key is present in empty cache store" {
@@ -347,14 +382,17 @@ normalize_key() {
 
   run ./cache clear
   assert_success
+  refute_output --partial "command not found"
 
   run ./cache is_not_empty
   assert_failure
+  refute_output --partial "command not found"
 
   run ./cache has_key example-key
 
   assert_failure
   assert_output --partial "Key example-key doesn't exist in the cache store."
+  refute_output --partial "command not found"
 }
 
 ################################################################################
@@ -371,9 +409,11 @@ normalize_key() {
 
   assert_success
   assert_output --partial "Key ${test_key} is deleted."
+  refute_output --partial "command not found"
 
   run ./cache has_key $test_key
   assert_failure
+  refute_output --partial "command not found"
 }
 
 @test "deletion of an existing key with /" {
@@ -383,28 +423,33 @@ normalize_key() {
 
   run ./cache is_not_empty
   assert_success
+  refute_output --partial "command not found"
 
   run ./cache delete bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_success
   assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
   assert_output --partial "Key ${test_key} is deleted."
+  refute_output --partial "command not found"
 
   run ./cache has_key bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_failure
   assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
   assert_output --partial "Key ${test_key} doesn't exist in the cache store."
+  refute_output --partial "command not found"
 }
 
 @test "deletion of a nonexistent key" {
   run ./cache has_key example-nonexistent-key
   assert_failure
+  refute_output --partial "command not found"
 
   run ./cache delete example-nonexistent-key
 
   assert_success
   assert_output --partial "Key example-nonexistent-key doesn't exist in the cache store."
+  refute_output --partial "command not found"
 }
 
 ################################################################################
@@ -420,6 +465,7 @@ normalize_key() {
 
   run ./cache is_not_empty
   assert_failure
+  refute_output --partial "command not found"
 }
 
 @test "is_not_empty should not fail when cache is not empty" {
@@ -428,9 +474,11 @@ normalize_key() {
 
   run ./cache list
   assert_output --partial "$test_key"
+  refute_output --partial "command not found"
 
   run ./cache is_not_empty
   assert_success
+  refute_output --partial "command not found"
 }
 
 ################################################################################
@@ -448,6 +496,7 @@ normalize_key() {
   assert_success
   assert_line "FREE SPACE: 9.0G"
   assert_line "USED SPACE: 0"
+  refute_output --partial "command not found"
 
   rm -f tmp.file
 }
@@ -465,6 +514,7 @@ normalize_key() {
   assert_success
   assert_line "FREE SPACE: 51K"
   assert_line "USED SPACE: 50K"
+  refute_output --partial "command not found"
 
   rm -f tmp.file
 }
