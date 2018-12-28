@@ -173,7 +173,7 @@ cache::lftp_put() {
         cache::duration cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
         if [ -f /tmp/duration ]; then
           duration=$(cat /tmp/duration)
-          cache:speed $duration $archive_size
+          cache::speed $duration $archive_size
           rm -rf /tmp/duration
         fi
         rm -rf /tmp/$SEMAPHORE_CACHE_KEY
