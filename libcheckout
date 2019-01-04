@@ -13,7 +13,7 @@ function checkout() {
     echo "[Experimental stability] Using cached Git repository."
     checkout::use_cache
   else
-    checkout::clone
+    checkout::shallow
   fi
 }
 
@@ -100,10 +100,12 @@ function checkout::cache_store() {
 }
 
 function checkout::shallow() {
-  git clone --depth 50 -b $SEMAPHORE_GIT_BRANCH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
+  if [ -z ${SEMAPHORE_GIT_DEPTH} ]; then
+    SEMAPHORE_GIT_DEPTH=50
+  fi
+  git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_BRANCH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
   cd $SEMAPHORE_GIT_DIR
   git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
-
   if [ $? -ne 0 ]; then
     git fetch --unshallow
     git reset --hard $SEMAPHORE_GIT_SHA
