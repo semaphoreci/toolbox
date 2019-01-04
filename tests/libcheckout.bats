@@ -17,7 +17,7 @@ teardown() {
   rm -rf $SEMAPHORE_GIT_DIR
 }
 
-@test "Checkout repository" {
+@test "libcheckout - Checkout repository" {
   run checkout
   assert_success
 
@@ -29,7 +29,7 @@ teardown() {
   assert_success
 }
 
-@test "Checkout old revision" {
+@test "libcheckout - Checkout old revision" {
   export SEMAPHORE_GIT_BRANCH=patch-id
   export SEMAPHORE_GIT_SHA=da70719
 
@@ -44,9 +44,18 @@ teardown() {
   assert_success
 }
 
-@test "Checkout nonexisting SHA" {
+@test "libcheckout - Checkout nonexisting SHA" {
   export SEMAPHORE_GIT_SHA=1234567
 
   run checkout
   assert_failure
+}
+
+@test "libcheckout - Checkout use cache" {
+
+  run checkout --use-cache
+  assert_success
+  assert_output --partial "MISS: git-cache-"
+  assert_output --partial "No git cache... caching"
+
 }
