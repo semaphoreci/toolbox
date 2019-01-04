@@ -41,6 +41,7 @@ teardown() {
 }
 
 @test "libcheckout - Checkout use cache" {
+  ./cache delete $(cache list 2>&1 | grep git-cache- | awk '{ print $1 }')
 
   run checkout --use-cache
   assert_success
@@ -70,5 +71,7 @@ teardown() {
   assert_output --partial "Git cache outdated, refreshing..."
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   refute_output --partial "MISS: git-cache-"
+
+  ./cache delete $(cache list 2>&1 | grep git-cache- | awk '{ print $1 }')
 
 }
