@@ -3,8 +3,8 @@ source ~/.toolbox/sem-install
 
 # Changing language versions
 
-VERSION="0.6"
-SUPPORTED_LANGUAGES=(elixir go java php ruby python node c cpp)
+VERSION="0.7"
+SUPPORTED_LANGUAGES=(elixir go java php ruby python node c cpp erlang scala)
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
@@ -83,6 +83,16 @@ version::change_c() {
 
 version::change_cpp() {
   version::change "change-gcc-version"
+
+  return $?
+}
+version::change_scala() {
+  version::change "change-scala-version"
+
+  return $?
+}
+version::change_erlang() {
+  version::change "change-erlang-version"
 
   return $?
 }
