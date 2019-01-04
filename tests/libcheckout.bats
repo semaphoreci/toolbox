@@ -20,13 +20,7 @@ teardown() {
 @test "libcheckout - Checkout repository" {
   run checkout
   assert_success
-
-  cd $SEMAPHORE_GIT_DIR
-  run bash -c "git branch | grep ${SEMAPHORE_GIT_BRANCH}"
-  assert_success
-
-  run bash -c "git rev-parse HEAD | grep ${SEMAPHORE_GIT_SHA}"
-  assert_success
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
 }
 
 @test "libcheckout - Checkout old revision" {
@@ -35,13 +29,8 @@ teardown() {
 
   run checkout
   assert_success
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
 
-  cd $SEMAPHORE_GIT_DIR
-  run bash -c "git branch | grep ${SEMAPHORE_GIT_BRANCH}"
-  assert_success
-
-  run bash -c "git rev-parse HEAD | grep ${SEMAPHORE_GIT_SHA}"
-  assert_success
 }
 
 @test "libcheckout - Checkout nonexisting SHA" {
@@ -56,6 +45,30 @@ teardown() {
   run checkout --use-cache
   assert_success
   assert_output --partial "MISS: git-cache-"
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   assert_output --partial "No git cache... caching"
+  refute_output --partial "HIT: git-cache-"
+
+}
+
+@test "libcheckout - Checkout restore from cache" {
+
+  run checkout --use-cache
+  assert_success
+  assert_output --partial "HIT: git-cache-"
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+  refute_output --partial "MISS: git-cache-"
+
+}
+
+@test "libcheckout - Checkout cache outdated" {
+  export SEMAPHORE_GIT_CACHE_AGE=1
+
+  run checkout --use-cache
+  assert_success
+  assert_output --partial "HIT: git-cache-"
+  assert_output --partial "Git cache outdated, refreshing..."
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+  refute_output --partial "MISS: git-cache-"
 
 }

@@ -76,16 +76,22 @@ function checkout::clone() {
 }
 
 function checkout::cache_store() {
-  # store into cache if older then 72h
-  local cache_age=$(cache list 2>&1 | grep git-cache- | awk '{ print $1 }' | head -1 | cut -d'-' -f3)
+  # update cache if older then 72h -> 25920s
+  if [ -z ${SEMAPHORE_GIT_CACHE_AGE} ]; then
+    SEMAPHORE_GIT_CACHE_AGE=259200
+  fi
+
+  local cache_key=$(cache list 2>&1 | grep git-cache- | awk '{ print $1 }')
+  local cache_age=$(echo $cache_key | head -1 | cut -d'-' -f3)
 
   if [[ ! -z "$cache_age" ]]; then
     local now=$(date +%s)
     local diff=$(expr $now - $cache_age)
     echo "diff: $diff"
-    if (( diff > 259200 )); then
+    if (( diff > $SEMAPHORE_GIT_CACHE_AGE )); then
       echo "Git cache outdated, refreshing..."
       cd ..
+      cache delete $cache_key
       cache store git-cache-`date +%s` $SEMAPHORE_GIT_DIR
       cd $SEMAPHORE_GIT_DIR
     else
