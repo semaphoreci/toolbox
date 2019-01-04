@@ -77,19 +77,19 @@ function checkout::clone() {
 
 function checkout::cache_store() {
   # store into cache if older then 72h
-  local cache_age=$(cache list | grep git-cache- | awk '{ print $1 }' | head -1 | cut -d'-' -f3)
+  local cache_age=$(cache list 2>&1 | grep git-cache- | awk '{ print $1 }' | head -1 | cut -d'-' -f3)
 
   if [[ ! -z "$cache_age" ]]; then
     local now=$(date +%s)
     local diff=$(expr $now - $cache_age)
     echo "diff: $diff"
-    if (( diff > 10 )); then
-      echo "Wow this is old cache. Let's refresh it..."
+    if (( diff > 259200 )); then
+      echo "Git cache outdated, refreshing..."
       cd ..
       cache store git-cache-`date +%s` $SEMAPHORE_GIT_DIR
       cd $SEMAPHORE_GIT_DIR
     else
-      echo "Not creating new cache, this one is fresh enough"
+      echo "Git cache up-to-data."
     fi
   else
     echo "No git cache... caching"
