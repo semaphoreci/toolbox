@@ -64,6 +64,32 @@ normalize_key() {
   refute_output --partial "command not found"
 }
 
+@test "writing the same archive in parallel processes" {
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  dd if=/dev/zero of=tmp bs=1M count=70
+
+  run ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp &
+  run ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp
+  echo "Waiting 20 secs"
+  sleep 10
+
+  assert_success
+  assert_line "Uploading 'tmp' with cache key '${test_key}'..."
+  assert_line "Upload complete."
+  assert_line "Archive '${test_key} is being created from another job. Skipping"
+  refute_line ${test_key}
+  refute_output --partial "command not found"
+
+  run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
+
+  assert_line "Key ${test_key} exists in the cache store."
+  assert_success
+  refute_output --partial "command not found"
+
+  run ./cache restore bats-test-$SEMAPHORE_GIT_BRANCH
+  refute_output --partial "corrupted"
+}
+
 @test "save local file to cache store with normalized key" {
   test_key=$(normalize_key bats/test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
