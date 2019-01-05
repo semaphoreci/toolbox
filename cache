@@ -147,6 +147,7 @@ cache::lftp_put() {
   local limit
   local allocated_space
   local duration
+  local lockfile_name
 
   limit=$(numfmt --from-unit=1024 $LIMIT)
 
@@ -160,11 +161,12 @@ cache::lftp_put() {
     if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
       cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
     else
-      if cache::file_is_present ${SEMAPHORE_CACHE_KEY}.lock; then
+      lockfile_name=$(echo ${SEMAPHORE_CACHE_KEY} | md5sum |  awk '{print $1}').lockfile
+      if cache::file_is_present ${lockfile_name}; then
         cache::log "Archive '${SEMAPHORE_CACHE_KEY}' is being created from another job. Skipping..."
       else
-        touch /tmp/$SEMAPHORE_CACHE_KEY.lock
-        cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}.lock"
+        touch /tmp/${lockfile_name}
+        cache::lftp "put -c /tmp/${lockfile_name}"
 
         tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
 
@@ -185,8 +187,8 @@ cache::lftp_put() {
           cache::log "Upload complete."
 
           rm -rf /tmp/$SEMAPHORE_CACHE_KEY
-          rm -rf /tmp/$SEMAPHORE_CACHE_KEY.lock
-          cache::lftp "glob rm -f '${SEMAPHORE_CACHE_KEY}'.lock"
+          rm -rf /tmp/${lockfile_name}
+          cache::lftp "glob rm -f '${lockfile_name}'"
         fi
       fi
     fi
