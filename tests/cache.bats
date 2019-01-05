@@ -66,17 +66,18 @@ normalize_key() {
 
 @test "writing the same archive in parallel processes" {
   test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
-  dd if=/dev/zero of=tmp bs=1M count=70
+  dd if=/dev/zero of=tmp bs=1M count=1000
+  echo "Starting upload"
 
   run ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp &
+  sleep 1
   run ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp
-  echo "Waiting 20 secs"
-  sleep 10
+  wait
 
   assert_success
   assert_line "Uploading 'tmp' with cache key '${test_key}'..."
   assert_line "Upload complete."
-  assert_line "Archive '${test_key} is being created from another job. Skipping"
+  assert_line "Archive '${test_key}' is being created from another job. Skipping..."
   refute_line ${test_key}
   refute_output --partial "command not found"
 

@@ -160,24 +160,34 @@ cache::lftp_put() {
     if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
       cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
     else
-      tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
-
-      archive_size=$(ls -l /tmp/$SEMAPHORE_CACHE_KEY | awk '{print $5}')
-      if [ "${archive_size}" -gt "${limit}" ]; then
-        allocated_space=$(numfmt --to=iec ${limit})
-        cache::log "Archive exceeds allocated ${allocated_space} for cache."
+      if cache::file_is_present ${SEMAPHORE_CACHE_KEY}.lock; then
+        cache::log "Archive '${SEMAPHORE_CACHE_KEY}' is being created from another job. Skipping..."
       else
-        cache::allocate_space $archive_size
+        touch /tmp/$SEMAPHORE_CACHE_KEY.lock
+        cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}.lock"
 
-        cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
-        cache::duration cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
-        if [ -f /tmp/duration ]; then
-          duration=$(cat /tmp/duration)
-          cache::speed $duration $archive_size
-          rm -rf /tmp/duration
+        tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
+
+        archive_size=$(ls -l /tmp/$SEMAPHORE_CACHE_KEY | awk '{print $5}')
+        if [ "${archive_size}" -gt "${limit}" ]; then
+          allocated_space=$(numfmt --to=iec ${limit})
+          cache::log "Archive exceeds allocated ${allocated_space} for cache."
+        else
+          cache::allocate_space $archive_size
+
+          cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
+          cache::duration cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
+          if [ -f /tmp/duration ]; then
+            duration=$(cat /tmp/duration)
+            cache::speed $duration $archive_size
+            rm -rf /tmp/duration
+          fi
+          cache::log "Upload complete."
+
+          rm -rf /tmp/$SEMAPHORE_CACHE_KEY
+          rm -rf /tmp/$SEMAPHORE_CACHE_KEY.lock
+          cache::lftp "glob rm -f '${SEMAPHORE_CACHE_KEY}'.lock"
         fi
-        rm -rf /tmp/$SEMAPHORE_CACHE_KEY
-        cache::log "Upload complete."
       fi
     fi
 
