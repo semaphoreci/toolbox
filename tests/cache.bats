@@ -75,8 +75,6 @@ normalize_key() {
   wait
 
   assert_success
-  assert_line "Uploading 'tmp' with cache key '${test_key}'..."
-  assert_line "Upload complete."
   assert_line "Archive '${test_key}' is being created from another job. Skipping..."
   refute_line ${test_key}
   refute_output --partial "command not found"
