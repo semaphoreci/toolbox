@@ -67,10 +67,9 @@ normalize_key() {
 @test "writing the same archive in parallel processes" {
   test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   dd if=/dev/zero of=tmp bs=1M count=1000
-  echo "Starting upload"
 
   run ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp &
-  sleep 1
+  sleep 2
   run ./cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp
   wait
 
@@ -87,6 +86,13 @@ normalize_key() {
 
   run ./cache restore bats-test-$SEMAPHORE_GIT_BRANCH
   refute_output --partial "corrupted"
+  refute_output --partial "command not found"
+
+  lockfile=$(echo ${test_key} | md5sum |  awk '{print $1}').lockfile
+  run ./cache has_key $lockfile
+
+  assert_failure
+  refute_output --partial "command not found"
 }
 
 @test "save local file to cache store with normalized key" {
