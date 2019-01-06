@@ -162,7 +162,7 @@ cache::lftp_put() {
     if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
       cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
     else
-      lockfile_name=$(echo ${SEMAPHORE_CACHE_KEY} | md5sum |  awk '{print $1}').lockfile
+      lockfile_name=$(cache::generate_lockfile_name ${SEMAPHORE_CACHE_KEY})
       if cache::file_is_present ${lockfile_name}; then
         cache::lftp "get1 -c ${lockfile_name}"
         job_id=$(cat ${lockfile_name})
@@ -413,7 +413,6 @@ cache::free_space() {
 ################################################################################
 # Wrapper around LFTP 'get'
 # Globals:
-#   SEMAPHORE_CACHE_KEY_MD5
 #   E_FLMSNG
 # Arguments:
 #   None
@@ -520,34 +519,13 @@ cache::lftp() {
  #   fi
 }
 
-################################################################################
-# Calculates the md5 sum for the cache key (string, file)
-# Globals:
-#   SEMAPHORE_CACHE_KEY
-#   SEMAPHORE_CACHE_KEY_MD5
-# Arguments:
-#   command
-# Returns:
-#   None
-################################################################################
+cache::generate_lockfile_name() {
+  local md5_key
+  local string
 
-cache::calculate_key_md5() {
-  if [[ -f $SEMAPHORE_CACHE_KEY ]]; then
-    cache::log "Cache key is a file. Calculating md5 hash..."
-    SEMAPHORE_CACHE_KEY_MD5=$(md5sum ${SEMAPHORE_CACHE_KEY})
-  else
-    cache::log "Cache key is a string. Calculating md5 hash..."
-    SEMAPHORE_CACHE_KEY_MD5=$(echo ${SEMAPHORE_CACHE_KEY} | md5sum)
-  fi
-
-
-  if [[ $? -ne 0 ]]; then
-    cache::err "Failed to generate md5 sum for the provided key. (${SEMAPHORE_CACHE_KEY})"
-  else
-    SEMAPHORE_CACHE_KEY_MD5=$(echo $SEMAPHORE_CACHE_KEY_MD5 | cut -d' ' -f1)
-
-    cache::log "md5 hash: ${SEMAPHORE_CACHE_KEY_MD5}"
-  fi
+  string=$1
+  md5_key=$(echo ${string} | md5sum | awk '{print $1}').lockfile
+  echo $md5_key
 }
 
 cache::print_usage() {
