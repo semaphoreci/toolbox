@@ -74,7 +74,7 @@ normalize_key() {
   wait
 
   assert_success
-  assert_line "Archive '${test_key}' is being created from another job. Skipping..."
+  assert_output --partial "Archive '${test_key}' is simultaneously being created from job with id"
   refute_line ${test_key}
   refute_output --partial "command not found"
 

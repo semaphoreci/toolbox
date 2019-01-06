@@ -148,6 +148,7 @@ cache::lftp_put() {
   local allocated_space
   local duration
   local lockfile_name
+  local job_id
 
   limit=$(numfmt --from-unit=1024 $LIMIT)
 
@@ -163,9 +164,11 @@ cache::lftp_put() {
     else
       lockfile_name=$(echo ${SEMAPHORE_CACHE_KEY} | md5sum |  awk '{print $1}').lockfile
       if cache::file_is_present ${lockfile_name}; then
-        cache::log "Archive '${SEMAPHORE_CACHE_KEY}' is being created from another job. Skipping..."
+        cache::lftp "get1 -c ${lockfile_name}"
+        job_id=$(cat ${lockfile_name})
+        cache::log "Archive '${SEMAPHORE_CACHE_KEY}' is simultaneously being created from job with id '${job_id}'. Skipping..."
       else
-        touch /tmp/${lockfile_name}
+        echo $SEMAPHORE_JOB_ID > /tmp/${lockfile_name}
         cache::lftp "put -c /tmp/${lockfile_name}"
 
         tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
