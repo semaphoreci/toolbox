@@ -81,7 +81,7 @@ function checkout::cache_store() {
     SEMAPHORE_GIT_CACHE_AGE=259200
   fi
 
-  local cache_key=$(cache list 2>&1 | grep git-cache- | awk '{ print $1 }') | head -1
+  local cache_key=$(cache list 2>&1 | grep git-cache- | awk '{ print $1 }' | head -1)
   local cache_age=$(echo $cache_key | cut -d'-' -f3)
 
   if [[ ! -z "$cache_age" ]]; then
@@ -91,7 +91,7 @@ function checkout::cache_store() {
     if (( diff > $SEMAPHORE_GIT_CACHE_AGE )); then
       echo "Git cache outdated, refreshing..."
       cd ..
-      cache delete $cache_key
+      checkout::cleanupcache
       cache store git-cache-`date +%s` $SEMAPHORE_GIT_DIR
       cd $SEMAPHORE_GIT_DIR
     else
@@ -103,6 +103,19 @@ function checkout::cache_store() {
     cache store git-cache-`date +%s` $SEMAPHORE_GIT_DIR
     cd $SEMAPHORE_GIT_DIR
   fi
+}
+
+function checkout::cleanupcache {
+  if [ -z ${SEMAPHORE_GIT_CACHE_KEEP} ]; then
+    SEMAPHORE_GIT_CACHE_KEEP=0
+  fi
+  local k=$SEMAPHORE_GIT_CACHE_KEEP
+  local list=($(cache list 2>&1 | grep git-cache- | awk '{ print $1 }' | xargs))
+
+  for i in ${list[@]:$k}; do
+    cache delete $i
+  done
+
 }
 
 function checkout::shallow() {

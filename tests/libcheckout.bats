@@ -41,7 +41,11 @@ teardown() {
 }
 
 @test "libcheckout - Checkout use cache" {
-  cache delete $(cache list 2>&1 | grep git-cache- | awk '{ print $1 }')
+
+  list=($(cache list 2>&1 | grep git-cache- | awk '{ print $1 }' | xargs))
+  for i in ${list[@]}; do
+    cache delete $i
+  done
 
   run checkout --use-cache
   assert_success
