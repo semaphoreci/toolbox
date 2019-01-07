@@ -64,7 +64,7 @@ cache::speed() {
   size=$2
 
   net_speed=$(( $size/$duration ))
-  if [ $net_speed > 0 ]; then
+  if [[ $net_speed > 0 ]]; then
     echo "cache.prod.speed:${net_speed}|ms" >> /tmp/semaphore-stats.txt
   fi
 
@@ -171,7 +171,7 @@ cache::lftp_put() {
 
         cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
         cache::duration cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
-        if [ -f /tmp/duration ]; then
+        if [[ -f /tmp/duration ]]; then
           duration=$(cat /tmp/duration)
           cache::speed $duration $archive_size
           rm -rf /tmp/duration
@@ -418,7 +418,7 @@ cache::lftp_get() {
     restored_path=$(tar -ztvf /tmp/$key | head -1 | awk '{print $6}')
     tar xzf /tmp/$key -C .
     archive_size=$(ls -l /tmp/$key | awk '{print $5}')
-    if [ -f /tmp/duration ]; then
+    if [[ -f /tmp/duration ]]; then
       duration=$(cat /tmp/duration)
       cache::speed $duration $archive_size
       rm -rf /tmp/duration
