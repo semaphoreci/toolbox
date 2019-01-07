@@ -18,7 +18,7 @@ blocks:
           - source .toolbox/toolbox
           - cd .toolbox
       jobs:
-      - name: Cache tests
+      - name: Bats tests
         commands:
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
@@ -107,6 +107,7 @@ blocks:
           - sem-service status elasticsearch
           - curl -XGET '0.0.0.0:9200' | grep 6.5.2
           - sem-service stop elasticsearch
+
       - name: Erlang change test
         commands:
           - echo "Erlang version"
@@ -116,6 +117,7 @@ blocks:
           - sem-version erlang 21
           - erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
           - sem-version erlang 22
+
       - name: scala change test
         commands:
           - echo "actual scala version"
@@ -123,16 +125,3 @@ blocks:
           - sem-version scala 2.11
           - sem-version scala 2.12
           - sem-version scala 2.30
-
-      - name: Clone with caching
-        commands:
-          - export SEMAPHORE_GIT_URL="https://github.com/rails/rails.git"
-          - export SEMAPHORE_GIT_BRANCH=master
-          - export SEMAPHORE_GIT_DIR=rails
-          - export SEMAPHORE_GIT_SHA=f907b418aecfb6dab4e30149b88a8593ddd321b9
-          - checkout
-          - cd
-          - export SEMAPHORE_GIT_BRANCH=5-0-stable
-          - cache list
-          - rm -rf rails
-          - checkout --use-cache

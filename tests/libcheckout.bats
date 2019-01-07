@@ -75,3 +75,27 @@ teardown() {
   ./cache delete $(cache list 2>&1 | grep git-cache- | awk '{ print $1 }')
 
 }
+
+
+@test "libcheckout - Checkout and use cache" {
+
+  export SEMAPHORE_GIT_URL="https://github.com/rails/rails.git"
+  export SEMAPHORE_GIT_BRANCH=master
+  export SEMAPHORE_GIT_DIR=rails
+  export SEMAPHORE_GIT_SHA=f907b418aecfb6dab4e30149b88a8593ddd321b9
+
+  run checkout
+  assert_success
+
+  export SEMAPHORE_GIT_BRANCH=5-0-stable
+  cd ~
+  cache list
+  rm -rf $SEMAPHORE_GIT_DIR
+
+  run checkout --use-cache
+  assert_success
+  assert_output --partial "MISS: git-cache-"
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+  assert_output --partial "No git cache... caching"
+  refute_output --partial "HIT: git-cache-"
+}
