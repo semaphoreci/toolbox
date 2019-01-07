@@ -81,8 +81,8 @@ function checkout::cache_store() {
     SEMAPHORE_GIT_CACHE_AGE=259200
   fi
 
-  local cache_key=$(cache list 2>&1 | grep git-cache- | awk '{ print $1 }')
-  local cache_age=$(echo $cache_key | head -1 | cut -d'-' -f3)
+  local cache_key=$(cache list 2>&1 | grep git-cache- | awk '{ print $1 }') | head -1
+  local cache_age=$(echo $cache_key | cut -d'-' -f3)
 
   if [[ ! -z "$cache_age" ]]; then
     local now=$(date +%s)
