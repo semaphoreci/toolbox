@@ -73,7 +73,6 @@ teardown() {
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   refute_output --partial "MISS: git-cache-"
 
-  cache clear
 
 }
 
@@ -84,6 +83,7 @@ teardown() {
   export SEMAPHORE_GIT_BRANCH=master
   export SEMAPHORE_GIT_DIR=rails
   export SEMAPHORE_GIT_SHA=f907b418aecfb6dab4e30149b88a8593ddd321b9
+  cache clear
 
   run checkout
   assert_success
