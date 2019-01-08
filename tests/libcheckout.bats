@@ -42,10 +42,7 @@ teardown() {
 
 @test "libcheckout - Checkout use cache" {
 
-  list=($(cache list 2>&1 | grep git-cache- | awk '{ print $1 }' | xargs))
-  for i in ${list[@]}; do
-    cache delete $i
-  done
+  cache clear
 
   run checkout --use-cache
   assert_success
@@ -76,10 +73,7 @@ teardown() {
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   refute_output --partial "MISS: git-cache-"
 
-  list=($(cache list 2>&1 | grep git-cache- | awk '{ print $1 }' | xargs))
-  for i in ${list[@]}; do
-    cache delete $i
-  done
+  cache clear
 
 }
 
@@ -105,8 +99,5 @@ teardown() {
   assert_output --partial "No git cache... caching"
   refute_output --partial "HIT: git-cache-"
 
-  list=($(cache list 2>&1 | grep git-cache- | awk '{ print $1 }' | xargs))
-  for i in ${list[@]}; do
-    cache delete $i
-  done
+  cache clear
 }
