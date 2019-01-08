@@ -82,7 +82,7 @@ function checkout::cache_store() {
   fi
 
   local cache_key=$(cache list 2>&1 | grep git-cache- | awk '{ print $1 }' | head -1)
-  local cache_age=$(echo $cache_key | cut -d'-' -f3)
+  local cache_age=$(echo $cache_key | cut -d'-' -f4)
 
   if [[ ! -z "$cache_age" ]] && [[ $cache_age =~ ^-?[0-9]+$ ]]; then
     local now=$(date +%s)
@@ -92,7 +92,7 @@ function checkout::cache_store() {
       echo "Git cache outdated, refreshing..."
       cd ..
       checkout::cleanupcache
-      cache store git-cache-`date +%s` $SEMAPHORE_GIT_DIR
+      cache store git-cache-$SEMAPHORE_$SEMAPHORE_JOB_ID-`date +%s` $SEMAPHORE_GIT_DIR
       cd $SEMAPHORE_GIT_DIR
     else
       echo "Git cache up-to-data."
