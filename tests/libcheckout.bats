@@ -8,7 +8,6 @@ setup() {
   export SEMAPHORE_GIT_BRANCH=master
   export SEMAPHORE_GIT_DIR="repo"
   export SEMAPHORE_GIT_SHA=5608567
-  export SEMAPHORE_JOB_ID="254338c7-19cf-4da0-939a-97a80e59d634"
 
   source ~/.toolbox/libcheckout
   rm -rf $SEMAPHORE_GIT_DIR
