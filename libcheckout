@@ -92,7 +92,7 @@ function checkout::cache_store() {
       echo "Git cache outdated, refreshing..."
       cd ..
       checkout::cleanupcache
-      cache store git-cache-$SEMAPHORE_JOB_ID-`date +%s` $SEMAPHORE_GIT_DIR
+      cache store git-cache-${SEMAPHORE_JOB_ID}-`date +%s` $SEMAPHORE_GIT_DIR
       cd $SEMAPHORE_GIT_DIR
     else
       echo "Git cache up-to-data."
