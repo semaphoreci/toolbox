@@ -33,6 +33,29 @@ teardown() {
 
 }
 
+@test "libcheckout - Checkout Tag" {
+  export SEMAPHORE_GIT_BRANCH='v2.5.0'
+  export SEMAPHORE_GIT_SHA=7219ef6
+
+  run checkout
+  assert_success
+  assert_output --partial "Performin shallow clone with depth: 50"
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+  refute_output --partial "SHA: $SEMAPHORE_GIT_SHA not found perfoming full clone: command not found"
+
+}
+
+@test "libcheckout - Checkout refs/tags" {
+  export SEMAPHORE_GIT_BRANCH='refs/tags/v2.5.0'
+  export SEMAPHORE_GIT_SHA=7219ef6
+
+  run checkout
+  assert_success
+  assert_output --partial "Performin shallow clone with depth: 50"
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+  
+}
+
 @test "libcheckout - Checkout nonexisting SHA" {
   export SEMAPHORE_GIT_SHA=1234567
 
