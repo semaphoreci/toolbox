@@ -39,7 +39,7 @@ teardown() {
 
   run checkout
   assert_success
-  assert_output --partial "Performin shallow clone with depth: 50"
+  assert_output --partial "Performing shallow clone with depth: 50"
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   refute_output --partial "SHA: $SEMAPHORE_GIT_SHA not found perfoming full clone: command not found"
 
@@ -51,7 +51,7 @@ teardown() {
 
   run checkout
   assert_success
-  assert_output --partial "Performin shallow clone with depth: 50"
+  assert_output --partial "Performing shallow clone with depth: 50"
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   
 }
