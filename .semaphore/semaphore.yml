@@ -22,7 +22,6 @@ blocks:
         commands:
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
-          - rm ~/.ssh/known_hosts # tests should pass even with an empty known_hosts file
           - bats tests
 
       - name: Sem version tests

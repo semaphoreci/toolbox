@@ -457,7 +457,7 @@ cache::lftp() {
     cache::err "LFTP command can't be empty!"
   fi
 
-  command_log=$(echo -e "${lftp_command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -o StrictHostKeyChecking=no -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
+  command_log=$(echo -e "${lftp_command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
   command_status=$?
 
   if [[ "${print_log}" == "with_logs" ]] && [ -n "$command_log" ]; then
