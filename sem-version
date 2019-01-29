@@ -64,9 +64,14 @@ version::change_php() {
   if ! [ -d ~/.phpbrew/php/php-${language_version} ]; then
     sem-install php ${language_version}
   fi
+  before=$(php -v | head -n 1)
   version::change "phpbrew use"
-
-  return $?
+  status=$?
+  after=$(php -v | head -n 1)
+  if [ "$before" == "$after" ]; then
+    status=1
+  fi
+  return $status
 }
 
 version::change_python() {
