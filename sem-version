@@ -68,9 +68,8 @@ version::change_php() {
   version::change "phpbrew use"
   status=$?
   after=$(php -v | head -n 1)
-  if [ "$before" == "$after" ]; then
-    if ! [[ $after == *"$language_version"* ]]; then
-    status=1
+  if [ "$before" == "$after" ] && ! [[ $after == *"$language_version"* ]]; then
+      status=1
   fi
   return $status
 }
