@@ -122,6 +122,7 @@ sem-version ${VERSION} | Utility to change a selected languages active version
 Usage:
   sem-version language version
 ################################################################################"
+  return 1
 }
 
 ################################################################################
