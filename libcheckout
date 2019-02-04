@@ -122,7 +122,7 @@ function checkout::shallow() {
   if [ -z ${SEMAPHORE_GIT_DEPTH} ]; then
     SEMAPHORE_GIT_DEPTH=50
   fi
-  echo "Performin shallow clone with depth: $SEMAPHORE_GIT_DEPTH"
+  echo "Performing shallow clone with depth: $SEMAPHORE_GIT_DEPTH"
   git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_BRANCH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>/dev/null
   if [ $? -ne 0 ]; then
     echo "Branch not found perfoming full clone"
