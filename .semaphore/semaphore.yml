@@ -116,7 +116,6 @@ blocks:
           - erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
           - sem-version erlang 21
           - erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-          - sem-version erlang 22 || true
 
       - name: scala change test
         commands:
@@ -124,4 +123,3 @@ blocks:
           - scala -version
           - sem-version scala 2.11
           - sem-version scala 2.12
-          - sem-version scala 2.30 || true
