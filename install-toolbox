@@ -3,14 +3,29 @@
 set -eo pipefail
 IFS=$'\n\t'
 
-sudo ln -sf ~/.toolbox/retry /usr/bin/retry
-sudo chmod +x /usr/bin/retry
+DIST=$(uname)
 
-sudo ln -sf ~/.toolbox/ssh-session-cli /usr/bin/semaphore
-sudo chmod +x /usr/bin/semaphore
+case $DIST in
+  Darwin)
+    INSTALL_PATH='/usr/local/bin'
+    ;;
+  Linux)
+    INSTALL_PATH='/usr/bin'
+   ;;
+  *)
+    echo "Unsupported distro $DIST"
+    exit 1
+  ;;
+esac
 
-sudo ln -sf ~/.toolbox/cache /usr/bin/cache
-sudo chmod +x /usr/bin/cache
+sudo ln -sf ~/.toolbox/retry $INSTALL_PATH/retry
+sudo chmod +x $INSTALL_PATH/retry
 
-sudo ln -sf ~/.toolbox/sem-service /usr/bin/sem-service
-sudo chmod +x /usr/bin/sem-service
+sudo ln -sf ~/.toolbox/ssh-session-cli $INSTALL_PATH/semaphore
+sudo chmod +x $INSTALL_PATH/semaphore
+
+sudo ln -sf ~/.toolbox/cache $INSTALL_PATH/cache
+sudo chmod +x $INSTALL_PATH/cache
+
+sudo ln -sf ~/.toolbox/sem-service $INSTALL_PATH/sem-service
+sudo chmod +x $INSTALL_PATH/sem-service
