@@ -159,6 +159,7 @@ service::start() {
 
     * )
       service::print_usage
+      exit 1
       ;;
   esac
 
