@@ -3,7 +3,7 @@ HOST="http://packages.semaphoreci.com"
 
 install::available() {
   response=$(curl --write-out %{http_code} --head --silent --output /dev/null $HOST/${language}/${language_version}.tar.gz)
-  if [[ $response -ne 200 ]]; then 
+  if [[ $response -ne 200 ]]; then
     echo 1
   else
     echo 0
@@ -30,15 +30,15 @@ install::install_ruby() {
 install::install_php() {
   if [[ $(install::available) -eq 1 ]] ; then
     phpbrew known -u
-    phpbrew install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
+    phpbrew -q install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
     phpbrew switch ${language_version}
     echo "date.timezone = UTC" >> "~/.phpbrew/php/php-${language_version}/etc/php.ini"
     phpbrew ext install imap -- --with-kerberos --with-imap-ssl
     phpbrew ext install gd -- --enable-gd-native-ttf --with-freetype-dir=/usr/lib/x86_64-linux-gnu
   else
     install::download
-    tar -zxf ${language_version}.tar.gz 
-    rm -rf ${language_version}.tar.gz 
+    tar -zxf ${language_version}.tar.gz
+    rm -rf ${language_version}.tar.gz
     mv php-${language_version} ~/.phpbrew/php/
     if [ ! -d "~/.phpbrew/build/php-{$language_version}" ]; then
 	output=$(phpbrew -q download ${language_version})
@@ -62,7 +62,7 @@ install::err() {
   return 1
 }
 
-sem-install() { 
+sem-install() {
   if ! [[ $# -eq 2 ]]; then
     install::usage
     install::err "Unsupported number of arguments provided!"
@@ -75,10 +75,10 @@ sem-install() {
 
   case $language in
     php)
-      install::install_php 
+      install::install_php
       ;;
     ruby)
-      install::install_ruby 
+      install::install_ruby
       ;;
     *)
       install:err "Installation of '${language}' is not yet supported"
