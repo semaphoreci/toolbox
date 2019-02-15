@@ -38,6 +38,23 @@ cache::normalize_string() {
   echo "$result"
 }
 
+cache::current_timestamp_in_milis() {
+  DIST=$(uname)
+
+  case $DIST in
+    Darwin)
+      gdate +%s%3N
+      ;;
+    Linux)
+      date +%s%3N
+     ;;
+    *)
+      echo "Unsupported distro $DIST"
+      exit 1
+    ;;
+  esac
+}
+
 cache::duration() {
 
   local lftp_cmd
@@ -46,9 +63,9 @@ cache::duration() {
   local duration
 
   lftp_cmd=$1; shift
-  start=$(date +%s%3N)
+  start=$(cache::current_timestamp_in_milis)
   $lftp_cmd "$@"
-  end=$(date +%s%3N)
+  end=$(cache::current_timestamp_in_milis)
   duration=$(( $end - $start ))
 
   echo $duration > /tmp/duration
