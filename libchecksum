@@ -3,7 +3,7 @@ DIST=$(uname)
 
 case $DIST in
   Darwin)
-    md5 $2 | tr -d " " | awk -F= {'print $2'}
+    md5 $1 | tr -d " " | awk -F= {'print $2'}
     ;;
   Linux)
     md5sum $1 | awk '{ print $1 }'
