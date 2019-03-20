@@ -43,6 +43,10 @@ version::change_node() {
 }
 
 version::change_elixir() {
+  if [ -z $(kiex list | grep ${language_version}) ];then 
+    kiex install ${language_version} 
+  fi
+
   version::change "kiex use"
 
   return $?
