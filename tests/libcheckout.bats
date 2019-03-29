@@ -133,5 +133,5 @@ teardown() {
 
   run checkout --use-cache
   assert_failure
-  assert_output --partial "Rev: $SEMAPHORE_GIT_SHA not found"
+  assert_output --partial "Revision: $SEMAPHORE_GIT_SHA not found"
 }
