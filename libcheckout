@@ -64,7 +64,7 @@ function checkout::fetch() {
   else
     git checkout -b $SEMAPHORE_GIT_BRANCH -t $branch_origin;
   fi
-
+  checkout::checkrev
   git reset --hard $SEMAPHORE_GIT_SHA
 }
 
@@ -72,6 +72,7 @@ function checkout::clone() {
   git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
   cd $SEMAPHORE_GIT_DIR
   git checkout $SEMAPHORE_GIT_BRANCH
+  checkout::checkrev
   git reset --hard $SEMAPHORE_GIT_SHA
 }
 
@@ -118,6 +119,14 @@ function checkout::cleanupcache {
 
 }
 
+function checkout::checkrev {
+  git rev-list HEAD..$SEMAPHORE_GIT_SHA 2>/dev/null
+  if [ $? -ne 0 ]; then
+    echo "Rev: ${SEMAPHORE_GIT_SHA} not found"
+    exit 1
+  fi
+}
+
 function checkout::shallow() {
   if [ -z ${SEMAPHORE_GIT_DEPTH} ]; then
     SEMAPHORE_GIT_DEPTH=50
@@ -128,6 +137,7 @@ function checkout::shallow() {
     echo "Branch not found performing full clone"
     git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
     cd $SEMAPHORE_GIT_DIR
+    checkout::checkrev
     git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
   else
     cd $SEMAPHORE_GIT_DIR
@@ -135,6 +145,7 @@ function checkout::shallow() {
     if [ $? -ne 0 ]; then
       "SHA: $SEMAPHORE_GIT_SHA not found performing full clone"
       git fetch --unshallow
+      checkout::checkrev
       git reset --hard $SEMAPHORE_GIT_SHA
     fi
   fi
