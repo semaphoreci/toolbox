@@ -124,3 +124,14 @@ teardown() {
 
   cache clear
 }
+
+@test "libcheckout - Checkout and use-cache nonexisting SHA" {
+  export SEMAPHORE_GIT_SHA=1234567
+  export SEMAPHORE_GIT_BRANCH=master
+  cd ~
+  rm -rf $SEMAPHORE_GIT_DIR
+
+  run checkout --use-cache
+  assert_failure
+  assert_output --partial "Revision: $SEMAPHORE_GIT_SHA not found"
+}
