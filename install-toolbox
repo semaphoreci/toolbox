@@ -18,6 +18,12 @@ case $DIST in
   ;;
 esac
 
+cat << EOF >> ~/.ssh/config
+Host github.com bitbucket.org
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+EOF
+
 sudo ln -sf ~/.toolbox/retry $INSTALL_PATH/retry
 sudo chmod +x $INSTALL_PATH/retry
 
