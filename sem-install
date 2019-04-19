@@ -1,8 +1,8 @@
 #!/bin/bash
-HOST="http://packages.semaphoreci.com"
+SEMAPHORE_PACKAGE_REPOSITORY="http://packages.semaphoreci.com"
 
 install::available() {
-  response=$(curl --write-out %{http_code} --head --silent --output /dev/null $HOST/${language}/${language_version}.tar.gz)
+  response=$(curl --write-out %{http_code} --head --silent --output /dev/null $SEMAPHORE_PACKAGE_REPOSITORY/${language}/${language_version}.tar.gz)
   if [[ $response -ne 200 ]]; then
     echo 1
   else
@@ -11,7 +11,7 @@ install::available() {
 }
 
 install::download() {
-  curl --silent $HOST/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
+  curl --silent $SEMAPHORE_PACKAGE_REPOSITORY/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
 }
 
 install::install_ruby() {
