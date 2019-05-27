@@ -125,13 +125,13 @@ blocks:
           - sem-version scala 2.12
 
   - name: Run tests in Docker env
-     task:
-        agent:
-            machine:
-              type: e1-standard-2
-            containers:
-              - name: main
-                image: semaphoreci/ruby:2.6.2
+    task:
+      agent:
+          machine:
+            type: e1-standard-2
+          containers:
+            - name: main
+              image: semaphoreci/ruby:2.6.2
       jobs:
       - name: Bats tests
         commands:
