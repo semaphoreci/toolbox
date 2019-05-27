@@ -37,7 +37,7 @@ blocks:
           - sem-version c 8
           - gcc --version | grep 8.3.0
           - sem-version cpp 7
-          - gcc --version | grep 7.3.0
+          - gcc --version | grep 7.4.0
           - sem-version php 7.2.10
           - php -v | grep 7.2.10
           - sem-version php 7.0.32
