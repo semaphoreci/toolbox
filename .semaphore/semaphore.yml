@@ -149,32 +149,6 @@ blocks:
           - ./tests/support/bats-core/install.sh /usr/local
           - bats tests
 
-  - name: Run tests in Docker minimal image
-    dependencies:
-      - "Run tests in Semaphoreci Docker container"
-    task:
-      agent:
-          machine:
-            type: e1-standard-2
-          containers:
-            - name: main
-              image: ubuntu:latest
-      jobs:
-      - name: Bats tests
-        commands:
-          - apt-get update
-          - apt-get install -y git lftp
-          - checkout
-          - cd ../
-          - rm -rf .toolbox/
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox
-          - cd .toolbox
-          - git submodule init && git submodule update
-          - ./tests/support/bats-core/install.sh /usr/local
-          - bats tests
-
   - name: Run tests in MacOS env
     dependencies: []
     task:
