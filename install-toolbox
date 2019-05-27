@@ -24,14 +24,23 @@ Host github.com bitbucket.org
   UserKnownHostsFile=/dev/null
 EOF
 
-sudo ln -sf ~/.toolbox/retry $INSTALL_PATH/retry
-sudo chmod +x $INSTALL_PATH/retry
+install_cmd() {
+  local cmd=$@
+  if [ `whoami` == 'root' ]; then
+    `$@`
+  else
+    `sudo $@`
+  fi
+}
 
-sudo ln -sf ~/.toolbox/ssh-session-cli $INSTALL_PATH/semaphore
-sudo chmod +x $INSTALL_PATH/semaphore
+install_cmd ln -sf ~/.toolbox/retry $INSTALL_PATH/retry
+install_cmd chmod +x $INSTALL_PATH/retry
 
-sudo ln -sf ~/.toolbox/cache $INSTALL_PATH/cache
-sudo chmod +x $INSTALL_PATH/cache
+install_cmd ln -sf ~/.toolbox/ssh-session-cli $INSTALL_PATH/semaphore
+install_cmd chmod +x $INSTALL_PATH/semaphore
 
-sudo ln -sf ~/.toolbox/sem-service $INSTALL_PATH/sem-service
-sudo chmod +x $INSTALL_PATH/sem-service
+install_cmd ln -sf ~/.toolbox/cache $INSTALL_PATH/cache
+install_cmd chmod +x $INSTALL_PATH/cache
+
+install_cmd ln -sf ~/.toolbox/sem-service $INSTALL_PATH/sem-service
+install_cmd chmod +x $INSTALL_PATH/sem-service
