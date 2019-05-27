@@ -7,6 +7,7 @@ agent:
 
 blocks:
   - name: Run Tests
+    dependencies: []
     task:
       prologue:
         commands:
@@ -125,6 +126,8 @@ blocks:
           - sem-version scala 2.12
 
   - name: Run tests in Docker env
+    dependencies:
+      - "Run Tests"
     task:
       agent:
           machine:
@@ -147,6 +150,7 @@ blocks:
           - bats tests
 
   - name: Run tests in MacOS env
+    dependencies: []
     task:
       agent:
           machine:
@@ -164,4 +168,4 @@ blocks:
           - cd .toolbox
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
-          - bats tests
+          - bats tests/libcheckout.bats
