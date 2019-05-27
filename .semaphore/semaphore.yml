@@ -35,7 +35,7 @@ blocks:
           - sem-version ruby 2.3.7
           - ruby --version | grep 2.3.7
           - sem-version c 8
-          - gcc --version | grep 8.2.0
+          - gcc --version | grep 8.3.0
           - sem-version cpp 7
           - gcc --version | grep 7.3.0
           - sem-version php 7.2.10
