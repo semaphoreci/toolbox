@@ -135,6 +135,13 @@ blocks:
       jobs:
       - name: Bats tests
         commands:
+          - checkout
+          - cd ../
+          - rm -rf .toolbox/
+          - mv toolbox/ .toolbox
+          - bash .toolbox/install-toolbox
+          - source .toolbox/toolbox
+          - cd .toolbox
           - git submodule init && git submodule update
           - ./tests/support/bats-core/install.sh /usr/local
           - bats tests
