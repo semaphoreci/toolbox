@@ -163,5 +163,5 @@ blocks:
           - source .toolbox/toolbox
           - cd .toolbox
           - git submodule init && git submodule update
-          - ./tests/support/bats-core/install.sh /usr/local
+          - sudo ./tests/support/bats-core/install.sh /usr/local
           - bats tests
