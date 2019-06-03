@@ -7,7 +7,6 @@ agent:
 
 blocks:
   - name: Run Tests
-    dependencies: []
     task:
       prologue:
         commands:
@@ -126,8 +125,6 @@ blocks:
           - sem-version scala 2.12
 
   - name: Run tests in Semaphoreci Docker container
-    dependencies:
-      - "Run Tests"
     task:
       agent:
           machine:
@@ -136,7 +133,29 @@ blocks:
             - name: main
               image: semaphoreci/ruby:2.6.2
       jobs:
-      - name: Bats tests
+      - name: Test Docker Image
+        commands:
+          - checkout
+          - cd ../
+          - rm -rf .toolbox/
+          - mv toolbox/ .toolbox
+          - bash .toolbox/install-toolbox
+          - source .toolbox/toolbox
+          - cd .toolbox
+          - git submodule init && git submodule update
+          - ./tests/support/bats-core/install.sh /usr/local
+          - bats tests
+
+  - name: Run tests in Docker container
+    task:
+      agent:
+          machine:
+            type: e1-standard-2
+          containers:
+            - name: main
+              image: semaphoreci/alpine:3.9
+      jobs:
+      - name: Test Alpine Image
         commands:
           - checkout
           - cd ../
@@ -150,7 +169,6 @@ blocks:
           - bats tests
 
   - name: Run tests in MacOS env
-    dependencies: []
     task:
       agent:
           machine:
