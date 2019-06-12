@@ -695,7 +695,7 @@ cache::log() {
 
 cache::main() {
   cache::check_lftp
-  cache::check_ssh_key
+  # cache::check_ssh_key
   cache::check_env
 
   case "$1" in
