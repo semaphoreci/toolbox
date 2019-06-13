@@ -55,39 +55,6 @@ cache::current_timestamp_in_milis() {
   esac
 }
 
-cache::duration() {
-
-  local lftp_cmd
-  local start
-  local end
-  local duration
-
-  lftp_cmd=$1; shift
-  start=$(cache::current_timestamp_in_milis)
-  $lftp_cmd "$@"
-  end=$(cache::current_timestamp_in_milis)
-  duration=$(( $end - $start ))
-
-  echo $duration > /tmp/duration
-
-  return 0
-}
-
-cache::speed() {
-  local duration
-  local size
-
-  duration=$1
-  size=$2
-
-  net_speed=$(( $size/$duration ))
-  if [[ $net_speed > 0 ]]; then
-    echo "cache.prod.speed:${net_speed}|ms" >> /tmp/semaphore-stats.txt
-  fi
-
-  return 0
-}
-
 ################################################################################
 # Send the files identified by the key, to the cache repository using LFTP
 # Globals:
@@ -187,12 +154,7 @@ cache::lftp_put() {
         cache::allocate_space $archive_size
 
         cache::log "Uploading '${local_path}' with cache key '${SEMAPHORE_CACHE_KEY}'..."
-        cache::duration cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
-        if [[ -f /tmp/duration ]]; then
-          duration=$(cat /tmp/duration)
-          cache::speed $duration $archive_size
-          rm -rf /tmp/duration
-        fi
+        cache::lftp "put -c /tmp/${SEMAPHORE_CACHE_KEY}"
         rm -rf /tmp/$SEMAPHORE_CACHE_KEY
         cache::log "Upload complete."
       fi
@@ -430,16 +392,11 @@ cache::lftp_get() {
 
   if cache::file_is_present $key; then
     cd /tmp
-    cache::duration cache::lftp "get1 -c $key"
+    cache::lftp "get1 -c $key"
     cd - &>/dev/null
     restored_path=$(tar -ztvf /tmp/$key | head -1 | awk '{print $6}')
     tar xzf /tmp/$key -C .
     archive_size=$(ls -l /tmp/$key | awk '{print $5}')
-    if [[ -f /tmp/duration ]]; then
-      duration=$(cat /tmp/duration)
-      cache::speed $duration $archive_size
-      rm -rf /tmp/duration
-    fi
     rm -rf /tmp/$key
     cache::log "Restored: ${restored_path}"
   else
