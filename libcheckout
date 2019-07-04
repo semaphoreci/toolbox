@@ -161,7 +161,7 @@ function checkout::refbased() {
     SEMAPHORE_GIT_DEPTH=50
   fi
 
-  if [ $SEMAPHORE_GIT_REF_TYPE = "pull-request"]; then
+  if [ $SEMAPHORE_GIT_REF_TYPE = "pull-request" ]; then
     git clone --depth $SEMAPHORE_GIT_DEPTH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>/dev/null
     cd $SEMAPHORE_GIT_DIR
     git fetch origin +$SEMAPHORE_GIT_REF:
@@ -170,7 +170,7 @@ function checkout::refbased() {
     exit 0
   fi
 
-  if [ $SEMAPHORE_GIT_REF_TYPE = "tag"]; then
+  if [ $SEMAPHORE_GIT_REF_TYPE = "tag" ]; then
     git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_TAG_NAME $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "Tag $SEMAPHORE_GIT_TAG_NAME not found"
