@@ -25,9 +25,58 @@ teardown() {
   rm -rf $SEMAPHORE_GIT_DIR
 }
 
+# Push
+
+@test "libcheckout - [Push]" {
+  export SEMAPHORE_GIT_REF_TYPE="push"
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+
+  run checkout
+  assert_success
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+}
+
+@test "libcheckout - [Push] missing sha" {
+  export SEMAPHORE_GIT_REF_TYPE="push"
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a4
+
+  run checkout
+  assert_failure
+}
+
+@test "libcheckout - [Push] missing branch" {
+  export SEMAPHORE_GIT_REF_TYPE="push"
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+
+  run checkout
+  assert_success
+}
+
+# Tag
+
+@test "libcheckout - [Tag]" {
+  export SEMAPHORE_GIT_REF_TYPE="tag"
+  export SEMAPHORE_GIT_TAG_NAME='v2.4.1'
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+
+  run checkout
+  assert_success
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA Release $SEMAPHORE_GIT_TAG_NAME"
+}
+
+@test "libcheckout - [Tag] missing tag" {
+  export SEMAPHORE_GIT_REF_TYPE="tag"
+  export SEMAPHORE_GIT_TAG_NAME='v9.4.1'
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+
+  run checkout
+  assert_failure
+  assert_output --partial "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
+}
+
 # PR
 
-@test "libcheckout - PR Checkout repository" {
+@test "libcheckout - [PR]" {
   export SEMAPHORE_GIT_REF_TYPE="pull-request"
   export SEMAPHORE_GIT_REF="refs/pull/186/merge"
   export SEMAPHORE_GIT_SHA=30774365e11f2b1e18706c9ed0920369f6d7c205
@@ -37,7 +86,7 @@ teardown() {
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
 }
 
-@test "libcheckout - PR Checkout repository no ref" {
+@test "libcheckout - [PR] no ref" {
   export SEMAPHORE_GIT_REF_TYPE="pull-request"
   export SEMAPHORE_GIT_REF="refs/pull/1111/merg"
 
@@ -46,6 +95,8 @@ teardown() {
   assert_output --partial "Revision: $SEMAPHORE_GIT_SHA not found .... Exiting"
   assert_output --partial "Please contact support."
 }
+
+# noRefType
 
 @test "libcheckout - [noRef] Checkout repository" {
   run checkout
