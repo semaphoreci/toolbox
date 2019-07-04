@@ -156,7 +156,7 @@ function checkout::shallow() {
   fi
 }
 
-function checout::refbased() {
+function checkout::refbased() {
   if [ -z ${SEMAPHORE_GIT_DEPTH} ]; then
     SEMAPHORE_GIT_DEPTH=50
   fi
