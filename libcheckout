@@ -9,16 +9,15 @@ function checkout() {
     return 1
   fi
 
-  if [ -n "$SEMAPHORE_GIT_REF_TYPE" ]; then
-    checkout::refbased
-    return 0
-  fi
-
   if [ "$1" = "--use-cache" ]; then
     echo "[Experimental stability] Using cached Git repository."
     checkout::use_cache
   else
-    checkout::shallow
+    if [ -n "$SEMAPHORE_GIT_REF_TYPE" ]; then
+      checkout::refbased
+    else
+      checkout::shallow
+    fi
   fi
 }
 
