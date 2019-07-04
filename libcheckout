@@ -143,6 +143,7 @@ function checkout::shallow() {
     cd $SEMAPHORE_GIT_DIR
     checkout::checkrevision
     git checkout -qf $SEMAPHORE_GIT_SHA 2>/dev/null
+    echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
   else
     cd $SEMAPHORE_GIT_DIR
     git checkout -qf $SEMAPHORE_GIT_SHA 2>/dev/null
@@ -151,6 +152,9 @@ function checkout::shallow() {
       git fetch --unshallow
       checkout::checkrevision
       git checkout -qf $SEMAPHORE_GIT_SHA 2>/dev/null
+      echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
+    else
+      echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
     fi
   fi
 }
@@ -171,7 +175,7 @@ function checkout::refbased() {
       exit 1
     else
       git checkout -qf FETCH_HEAD
-      echo "HEAD is now at $SEMAPHORE_GIT_SHA"
+      echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
 
       exit 0
     fi
