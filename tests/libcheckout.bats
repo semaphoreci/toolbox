@@ -4,10 +4,18 @@ load "support/bats-support/load"
 load "support/bats-assert/load"
 
 setup() {
+  unset SEMAPHORE_GIT_REF_TYPE
+  unset SEMAPHORE_GIT_TAG_NAME
+  unset SEMAPHORE_GIT_PR_SLUG
+  unset SEMAPHORE_GIT_PR_NAME
+  unset SEMAPHORE_GIT_PR_NUMBER
+
   export SEMAPHORE_GIT_URL="https://github.com/mojombo/grit.git"
   export SEMAPHORE_GIT_BRANCH=master
   export SEMAPHORE_GIT_DIR="repo"
   export SEMAPHORE_GIT_SHA=5608567
+  export SEMAPHORE_GIT_REPO_SLUG="mojombo/grit"
+  export SEMAPHORE_GIT_REF="refs/heads/master"
 
   source ~/.toolbox/libcheckout
   rm -rf $SEMAPHORE_GIT_DIR
@@ -17,13 +25,35 @@ teardown() {
   rm -rf $SEMAPHORE_GIT_DIR
 }
 
-@test "libcheckout - Checkout repository" {
+# PR
+
+@test "libcheckout - PR Checkout repository" {
+  export SEMAPHORE_GIT_REF_TYPE="pull-request"
+  export SEMAPHORE_GIT_REF="refs/pull/186/merge"
+  export SEMAPHORE_GIT_SHA=30774365e11f2b1e18706c9ed0920369f6d7c205
+
   run checkout
   assert_success
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
 }
 
-@test "libcheckout - Checkout old revision" {
+@test "libcheckout - PR Checkout repository no ref" {
+  export SEMAPHORE_GIT_REF_TYPE="pull-request"
+  export SEMAPHORE_GIT_REF="refs/pull/1111/merg"
+
+  run checkout
+  assert_failure
+  assert_output --partial "Revision: $SEMAPHORE_GIT_SHA not found .... Exiting"
+  assert_output --partial "Please contact support."
+}
+
+@test "libcheckout - [noRef] Checkout repository" {
+  run checkout
+  assert_success
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+}
+
+@test "libcheckout - [noRef] Checkout old revision" {
   export SEMAPHORE_GIT_BRANCH=patch-id
   export SEMAPHORE_GIT_SHA=da70719
 
@@ -32,7 +62,7 @@ teardown() {
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
 }
 
-@test "libcheckout - Checkout Tag" {
+@test "libcheckout - [noRef] Checkout Tag" {
   export SEMAPHORE_GIT_BRANCH='v2.5.0'
   export SEMAPHORE_GIT_SHA=7219ef6
 
@@ -43,7 +73,7 @@ teardown() {
   refute_output --partial "SHA: $SEMAPHORE_GIT_SHA not found performing full clone: command not found"
 }
 
-@test "libcheckout - Checkout refs/tags" {
+@test "libcheckout - [noRef] Checkout refs/tags" {
   export SEMAPHORE_GIT_BRANCH='refs/tags/v2.5.0'
   export SEMAPHORE_GIT_SHA=7219ef6
 
@@ -53,14 +83,14 @@ teardown() {
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
 }
 
-@test "libcheckout - Checkout nonexisting SHA" {
+@test "libcheckout - [noRef] Checkout nonexisting SHA" {
   export SEMAPHORE_GIT_SHA=1234567
 
   run checkout
   assert_failure
 }
 
-@test "libcheckout - Checkout use cache" {
+@test "libcheckout - [noRef] Checkout use cache" {
 
   cache clear
 

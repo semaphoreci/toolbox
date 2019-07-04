@@ -163,10 +163,17 @@ function checkout::refbased() {
   if [ $SEMAPHORE_GIT_REF_TYPE = "pull-request" ]; then
     git clone --depth $SEMAPHORE_GIT_DEPTH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>/dev/null
     cd $SEMAPHORE_GIT_DIR
-    git fetch origin +$SEMAPHORE_GIT_REF:
-    git checkout -qf FETCH_HEAD
+    git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
+    if [ $? -ne 0 ]; then
+      echo "Revision: ${SEMAPHORE_GIT_SHA} not found .... Exiting"
+      echo "Please contact support."
 
-    exit 0
+      exit 1
+    else
+      git checkout -qf FETCH_HEAD
+      echo "HEAD is now at $SEMAPHORE_GIT_SHA"
+      exit 0
+    fi
   fi
 
   if [ $SEMAPHORE_GIT_REF_TYPE = "tag" ]; then
