@@ -30,7 +30,6 @@ teardown() {
   run checkout
   assert_success
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
-
 }
 
 @test "libcheckout - Checkout Tag" {
@@ -42,7 +41,6 @@ teardown() {
   assert_output --partial "Performing shallow clone with depth: 50"
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   refute_output --partial "SHA: $SEMAPHORE_GIT_SHA not found performing full clone: command not found"
-
 }
 
 @test "libcheckout - Checkout refs/tags" {
@@ -53,7 +51,6 @@ teardown() {
   assert_success
   assert_output --partial "Performing shallow clone with depth: 50"
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
-
 }
 
 @test "libcheckout - Checkout nonexisting SHA" {
@@ -73,7 +70,6 @@ teardown() {
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   assert_output --partial "No git cache... caching"
   refute_output --partial "HIT: git-cache-"
-
 }
 
 @test "libcheckout - Checkout restore from cache" {
@@ -83,7 +79,6 @@ teardown() {
   assert_output --partial "HIT: git-cache-"
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   refute_output --partial "MISS: git-cache-"
-
 }
 
 @test "libcheckout - Checkout cache outdated" {
@@ -95,10 +90,7 @@ teardown() {
   assert_output --partial "Git cache outdated, refreshing..."
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   refute_output --partial "MISS: git-cache-"
-
-
 }
-
 
 @test "libcheckout - Checkout and use cache" {
 
