@@ -13,7 +13,11 @@ function checkout() {
     echo "[Experimental stability] Using cached Git repository."
     checkout::use_cache
   else
-    checkout::shallow
+    if [ -n "$SEMAPHORE_GIT_REF_TYPE" ]; then
+      checkout::refbased
+    else
+      checkout::shallow
+    fi
   fi
 }
 
@@ -138,17 +142,61 @@ function checkout::shallow() {
     git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
     cd $SEMAPHORE_GIT_DIR
     checkout::checkrevision
-    git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
+    git checkout -qf $SEMAPHORE_GIT_SHA 2>/dev/null
+    echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
   else
     cd $SEMAPHORE_GIT_DIR
-    git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
+    git checkout -qf $SEMAPHORE_GIT_SHA 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "SHA: $SEMAPHORE_GIT_SHA not found performing full clone"
       git fetch --unshallow
       checkout::checkrevision
-      git reset --hard $SEMAPHORE_GIT_SHA
+      git checkout -qf $SEMAPHORE_GIT_SHA 2>/dev/null
+      echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
+    else
+      echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
     fi
   fi
+}
+
+function checkout::refbased() {
+  if [ -z ${SEMAPHORE_GIT_DEPTH} ]; then
+    SEMAPHORE_GIT_DEPTH=50
+  fi
+
+  if [ $SEMAPHORE_GIT_REF_TYPE = "pull-request" ]; then
+    git clone --depth $SEMAPHORE_GIT_DEPTH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>/dev/null
+    cd $SEMAPHORE_GIT_DIR
+    git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
+    if [ $? -ne 0 ]; then
+      echo "Revision: ${SEMAPHORE_GIT_SHA} not found .... Exiting"
+      echo "Please contact support."
+
+      exit 1
+    else
+      git checkout -qf FETCH_HEAD
+      echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
+
+      exit 0
+    fi
+  fi
+
+  if [ $SEMAPHORE_GIT_REF_TYPE = "tag" ]; then
+    git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_TAG_NAME $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>/dev/null
+    if [ $? -ne 0 ]; then
+      echo "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
+
+      exit 1
+    else
+      cd $SEMAPHORE_GIT_DIR
+      git checkout -qf $SEMAPHORE_GIT_TAG_NAME
+      echo "HEAD is now at ${SEMAPHORE_GIT_SHA} Release ${SEMAPHORE_GIT_TAG_NAME}"
+
+      exit 0
+    fi
+  fi
+
+  checkout::shallow
 }
 
 export -f checkout
