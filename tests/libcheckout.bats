@@ -33,7 +33,7 @@ teardown() {
 
   run checkout
   assert_success
-  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+  assert_output --partial "HEAD is now at 91940c2"
 }
 
 @test "libcheckout - [Push] missing sha" {
