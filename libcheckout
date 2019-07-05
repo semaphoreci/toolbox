@@ -177,7 +177,7 @@ function checkout::refbased() {
       git checkout -qf FETCH_HEAD
       echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
 
-      exit 0
+      return 0
     fi
   fi
 
@@ -192,7 +192,7 @@ function checkout::refbased() {
       git checkout -qf $SEMAPHORE_GIT_TAG_NAME
       echo "HEAD is now at ${SEMAPHORE_GIT_SHA} Release ${SEMAPHORE_GIT_TAG_NAME}"
 
-      exit 0
+      return 0
     fi
   fi
 
