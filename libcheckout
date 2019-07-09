@@ -142,19 +142,15 @@ function checkout::shallow() {
     git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
     cd $SEMAPHORE_GIT_DIR
     checkout::checkrevision
-    git checkout -qf $SEMAPHORE_GIT_SHA 2>/dev/null
-    echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
+    git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
   else
     cd $SEMAPHORE_GIT_DIR
-    git checkout -qf $SEMAPHORE_GIT_SHA 2>/dev/null
+    git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "SHA: $SEMAPHORE_GIT_SHA not found performing full clone"
       git fetch --unshallow
       checkout::checkrevision
-      git checkout -qf $SEMAPHORE_GIT_SHA 2>/dev/null
-      echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
-    else
-      echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
+      git reset --hard $SEMAPHORE_GIT_SHA
     fi
   fi
 }
