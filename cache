@@ -22,7 +22,7 @@ E_FLAE=0 # file already exists
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
 # Lockfiles to lookup for autostore and autoresotre
-LOCKFILES=('Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt')
+LOCKFILES=('Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock')
 
 cache::verbose() {
   VERBOSE_LOG=0
@@ -135,6 +135,17 @@ cache::autostore() {
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to sotre in cache."
             fi
             ;;
+          "composer.lock")
+            cache::log "* Detected $lockfile."
+            SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
+            cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
+            if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
+              SEMAPHORE_CACHE_KEY=$(cache::normalize_string composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock))
+              cache::lftp_put
+            else
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to sotre in cache."
+            fi
+            ;;
           *)
             cache::log "* Nothing to sotre in Cache";;
         esac
@@ -182,6 +193,12 @@ cache::autorestore() {
             cache::log "* Fetching '.pip_cache' directory with cache keys 'requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),requirements-$SEMAPHORE_GIT_BRANCH-,requirements-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor/bundle"
             cache::restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),requirements-$SEMAPHORE_GIT_BRANCH,requirements-master
+            ;;
+          "composer.lock")
+            cache::log "* Detected $lockfile."
+            cache::log "* Fetching 'vendor' directory with cache keys 'composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH-,composer-master-'."
+            SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
+            cache::restore composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH,composers-master
             ;;
           *)
             cache::log "* Nothing to fetch from cache";;
