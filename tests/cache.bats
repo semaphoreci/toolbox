@@ -5,8 +5,6 @@ load "support/bats-assert/load"
 
 teardown() {
   rm -rf tmp
-  rm -rf semaphore-demo-ruby-rails
-  rm -rf semaphore-demo-python-django
   ./cache delete bats-test-$SEMAPHORE_GIT_BRANCH
   ./cache delete bats-test-$SEMAPHORE_GIT_BRANCH-1
   unset CACHE_SIZE
