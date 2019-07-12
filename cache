@@ -65,6 +65,7 @@ cache::autostore() {
     if [[ -f $lockfile ]]; then
         case $lockfile in
           "Gemfile.lock")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor/bundle"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
@@ -76,6 +77,7 @@ cache::autostore() {
             fi
             ;;
           "package-lock.json")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
@@ -87,6 +89,7 @@ cache::autostore() {
             fi
             ;;
           "yarn.lock")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.cache/yarn"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
@@ -106,6 +109,7 @@ cache::autostore() {
             fi
             ;;
           "mix.lock")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             SEMAPHORE_LOCAL_CACHE_PATHS="deps"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
@@ -125,6 +129,7 @@ cache::autostore() {
             fi
             ;;
           "requirements.txt")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             SEMAPHORE_LOCAL_CACHE_PATHS=".pip_cache"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
@@ -147,6 +152,7 @@ cache::autostore() {
             fi
             ;;
           "pom.xml")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             SEMAPHORE_LOCAL_CACHE_PATHS=".m2"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
@@ -171,18 +177,21 @@ cache::autorestore() {
     if [[ -f $lockfile ]]; then
         case $lockfile in
           "Gemfile.lock")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'vendor/bundle' directory with cache keys 'gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock),gems-$SEMAPHORE_GIT_BRANCH-,gems-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor/bundle"
             cache::restore gems-${SEMAPHORE_GIT_BRANCH}-$(checksum Gemfile.lock),gems-${SEMAPHORE_GIT_BRANCH},gems-master
             ;;
           "package-lock.json")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'node_modules' directory with cache keys 'node-mdoules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json),node-mdoules-$SEMAPHORE_GIT_BRANCH-,node-mdoules-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
             cache::restore node-mdoules-${SEMAPHORE_GIT_BRANCH}-$(checksum package-lock.json),node-mdoules-${SEMAPHORE_GIT_BRANCH}-,node-mdoules-master-
             ;;
           "yarn.lock")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'semaphore/.cache/yarn' directory with cache keys 'yarn-cache-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock),yarn-cache-$SEMAPHORE_GIT_BRANCH-,yarn-cache-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.cache/yarn"
@@ -193,6 +202,7 @@ cache::autorestore() {
             cache::restore node-mdoules-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),node-mdoules-${SEMAPHORE_GIT_BRANCH}-,node-mdoules-master-
             ;;
           "mix.lock")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'deps' directory with cache keys mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-deps-$SEMAPHORE_GIT_BRANCH,mix-deps-master"
             cache restore mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-deps-$SEMAPHORE_GIT_BRANCH,mix-deps-master
@@ -200,20 +210,23 @@ cache::autorestore() {
             cache restore mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-build-$SEMAPHORE_GIT_BRANCH,mix-build-master
             ;;
           "requirements.txt")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             cache::log "* Fetching '.pip_cache' directory with cache keys 'requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),requirements-$SEMAPHORE_GIT_BRANCH-,requirements-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor/bundle"
             cache::restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),requirements-$SEMAPHORE_GIT_BRANCH,requirements-master
             ;;
           "composer.lock")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'vendor' directory with cache keys 'composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH-,composer-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
             cache::restore composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH,composers-master
             ;;
           "pom.xml")
+            cache::log "\n"
             cache::log "* Detected $lockfile."
-            cache::log "* Fetching 'vendor' directory with cache keys 'cache restore maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master'."
+            cache::log "* Fetching '.m2' directory with cache keys 'cache restore maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master'."
             SEMAPHORE_LOCAL_CACHE_PATHS=".m2"
             cache::restore maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master
             ;;
