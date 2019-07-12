@@ -60,9 +60,9 @@ cache::current_timestamp_in_milis() {
 
 cache::autostore() {
 
+  cache::log "==> Detecting project structure and storing into cache."
   for lockfile in ${LOCKFILES[@]}; do
     if [[ -f $lockfile ]]; then
-        cache::log "==> Detecting project structure and storing into cache."
         case $lockfile in
           "Gemfile.lock")
             cache::log "* Detected $lockfile."
@@ -166,9 +166,9 @@ cache::autostore() {
 
 cache::autorestore() {
 
+  cache::log "==> Detecting project structure and fetching cache."
   for lockfile in ${LOCKFILES[@]}; do
     if [[ -f $lockfile ]]; then
-        cache::log "==> Detecting project structure and fetching cache."
         case $lockfile in
           "Gemfile.lock")
             cache::log "* Detected $lockfile."
@@ -365,6 +365,7 @@ Fallback example:
   if [[ $# -eq 0 ]]; then
     cache::autorestore
   elif [[ $# -ne 1 ]]; then
+    cache::log "${usage}"
     cache::err "Incorrect number of arguments!"
   else
     semaphore_cache_keys=$1
