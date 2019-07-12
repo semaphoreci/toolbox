@@ -72,7 +72,7 @@ cache::autostore() {
               SEMAPHORE_CACHE_KEY=$(cache::normalize_string gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock))
               cache::lftp_put
             else
-              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to sotre in cache."
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
             ;;
           "package-lock.json")
@@ -83,7 +83,7 @@ cache::autostore() {
               SEMAPHORE_CACHE_KEY=$(cache::normalize_string node-mdoules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json))
               cache::lftp_put
             else
-              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to sotre in cache."
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
             ;;
           "yarn.lock")
@@ -94,7 +94,7 @@ cache::autostore() {
               SEMAPHORE_CACHE_KEY=$(cache::normalize_string yarn-cache-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock))
               cache::lftp_put
             else
-              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to sotre in cache."
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
@@ -102,7 +102,7 @@ cache::autostore() {
               SEMAPHORE_CACHE_KEY=$(cache::normalize_string node-mdoules-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock))
               cache::lftp_put
             else
-              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to sotre in cache."
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
             ;;
           "mix.lock")
@@ -113,7 +113,7 @@ cache::autostore() {
               SEMAPHORE_CACHE_KEY=$(cache::normalize_string mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock))
               cache::lftp_put
             else
-              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to sotre in cache."
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
             SEMAPHORE_LOCAL_CACHE_PATHS="_build"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
@@ -121,7 +121,7 @@ cache::autostore() {
               SEMAPHORE_CACHE_KEY=$(cache::normalize_string mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock))
               cache::lftp_put
             else
-              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to sotre in cache."
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
             ;;
           "requirements.txt")
@@ -132,7 +132,7 @@ cache::autostore() {
               SEMAPHORE_CACHE_KEY=$(cache::normalize_string requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt))
               cache::lftp_put
             else
-              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to sotre in cache."
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
             ;;
           "composer.lock")
@@ -143,7 +143,18 @@ cache::autostore() {
               SEMAPHORE_CACHE_KEY=$(cache::normalize_string composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock))
               cache::lftp_put
             else
-              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to sotre in cache."
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
+            fi
+            ;;
+          "pom.xml")
+            cache::log "* Detected $lockfile."
+            SEMAPHORE_LOCAL_CACHE_PATHS=".m2"
+            cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
+            if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
+              SEMAPHORE_CACHE_KEY=$(cache::normalize_string maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml))
+              cache::lftp_put
+            else
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
             ;;
           *)
@@ -200,6 +211,12 @@ cache::autorestore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
             cache::restore composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH,composers-master
             ;;
+          "pom.xml")
+            cache::log "* Detected $lockfile."
+            cache::log "* Fetching 'vendor' directory with cache keys 'cache restore maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master'."
+            SEMAPHORE_LOCAL_CACHE_PATHS=".m2"
+            cache::restore maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master
+            ;;
           *)
             cache::log "* Nothing to fetch from cache";;
         esac
@@ -220,7 +237,13 @@ cache::autorestore() {
 cache::store() {
   local usage
 
-  usage='Usage: \n\t cache store [key] [local-path]\nExample: \n\t cache store bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock) vendor/bundle\n'
+  usage='
+Usage:
+      cache store (lookup cachable elements in the project and cache them e.g vendor/bundle)
+      cache store [key] [local-path]
+Example:
+      cache store bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock) vendor/bundle
+'
 
   if [[ $# -eq 0 ]]; then
     cache::autostore
@@ -329,7 +352,15 @@ cache::restore() {
   local usage
   local semaphore_cache_keys
 
-  usage='Usage: \n\tcache restore [key,key_1,key_2]\nExample: \n\tcache store bundle-$SEMAPHORE_GIT_BRANCH-$SEMAPHORE_GIT_SHA\nFallback example:\n\tcache restore bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock),bundle-$SEMAPHORE_GIT_BRANCH\n'
+  usage='
+Usage:
+    cache restore (lookup cachable elements and try to fetch them from cache)
+    cache restore [key,key_1,key_2]
+Example:
+    cache store bundle-$SEMAPHORE_GIT_BRANCH-$SEMAPHORE_GIT_SHA
+Fallback example:
+    cache restore bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock),bundle-$SEMAPHORE_GIT_BRANCH
+'
 
   if [[ $# -eq 0 ]]; then
     cache::autorestore
