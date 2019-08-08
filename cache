@@ -334,7 +334,11 @@ cache::lftp_put() {
     if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
       cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
     else
-      tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
+      if [[ "$local_path" = /* ]]; then
+        tar czPf /tmp/$SEMAPHORE_CACHE_KEY $local_path
+      else
+        tar czf /tmp/$SEMAPHORE_CACHE_KEY $local_path
+      fi
 
       archive_size=$(ls -l /tmp/$SEMAPHORE_CACHE_KEY | awk '{print $5}')
       if [ "${archive_size}" -gt "${limit}" ]; then
@@ -594,7 +598,11 @@ cache::lftp_get() {
     cache::lftp "get1 -c $key"
     cd - &>/dev/null
     restored_path=$(tar -ztvf /tmp/$key | head -1 | awk '{print $6}')
-    tar xzf /tmp/$key -C .
+    if [[ "$restored_path" = /* ]]; then
+      tar xzPf /tmp/$key -C .
+    else
+      tar xzf /tmp/$key -C .
+    fi
     archive_size=$(ls -l /tmp/$key | awk '{print $5}')
     rm -rf /tmp/$key
     cache::log "Restored: ${restored_path}"

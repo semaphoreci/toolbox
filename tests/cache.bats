@@ -5,6 +5,7 @@ load "support/bats-assert/load"
 
 teardown() {
   rm -rf tmp
+  rm -rf /home/semaphore/tmp
   ./cache delete bats-test-$SEMAPHORE_GIT_BRANCH
   ./cache delete bats-test-$SEMAPHORE_GIT_BRANCH-1
   unset CACHE_SIZE
@@ -53,6 +54,31 @@ normalize_key() {
 
   assert_success
   assert_line "Uploading 'tmp' with cache key '${test_key}'..."
+  assert_line "Upload complete."
+  refute_line ${test_key}
+  refute_output --partial "command not found"
+
+  run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
+
+  assert_line "Key ${test_key} exists in the cache store."
+  assert_success
+  refute_output --partial "command not found"
+
+  # retry and ssh-session-cli are changed by setup commands in the job environment
+  git checkout retry ssh-session-cli
+  run git status
+
+  assert_output --partial "nothing to commit"
+}
+
+@test "save local file to cache store - absolute path" {
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  mkdir -p /home/semaphore/tmp && touch /home/semaphore/tmp/example.file
+
+  run ./cache store bats-test-$SEMAPHORE_GIT_BRANCH /home/semaphore/tmp
+
+  assert_success
+  assert_line "Uploading '/home/semaphore/tmp' with cache key '${test_key}'..."
   assert_line "Upload complete."
   refute_line ${test_key}
   refute_output --partial "command not found"
@@ -164,6 +190,8 @@ normalize_key() {
   refute_output --partial "command not found"
 }
 
+
+
 ################################################################################
 # cache restore
 ################################################################################
@@ -184,6 +212,32 @@ normalize_key() {
   assert [ -e "tmp/first/second/example.file" ]
   assert_line "HIT: ${test_key}, using key ${test_key}"
   assert_output --partial "Restored: tmp/first/second/"
+  refute_output --partial "/home/semaphore/toolbox"
+  refute_output --partial "command not found"
+
+  # retry and ssh-session-cli are changed by setup commands in the job environment
+  git checkout retry ssh-session-cli
+  run git status
+
+  assert_output --partial "nothing to commit"
+}
+
+@test "restoring existing directory from the cache and preserving the absolute path" {
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  mkdir -p /home/semaphore/tmp/first/second && touch /home/semaphore/tmp/first/second/example.file
+  ./cache store bats-test-$SEMAPHORE_GIT_BRANCH /home/semaphore/tmp/first/second
+  rm -rf /home/semaphore/tmp
+
+  run ./cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
+  assert_success
+  refute_output --partial "command not found"
+
+  run ./cache restore bats-test-$SEMAPHORE_GIT_BRANCH
+
+  assert_success
+  assert [ -e "/home/semaphore/tmp/first/second/example.file" ]
+  assert_line "HIT: ${test_key}, using key ${test_key}"
+  assert_output --partial "Restored: /home/semaphore/tmp/first/second/"
   refute_output --partial "/home/semaphore/toolbox"
   refute_output --partial "command not found"
 
