@@ -197,7 +197,6 @@ cache::autorestore() {
             cache::log "* Fetching 'semaphore/.cache/yarn' directory with cache keys 'yarn-cache-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock),yarn-cache-$SEMAPHORE_GIT_BRANCH-,yarn-cache-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.cache/yarn"
             cache::restore yarn-cache-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),yarn-cache-${SEMAPHORE_GIT_BRANCH}-,yarn-cache-master-
-            mv home/semaphore/.cache/yarn $HOME/.cache/
             cache::log "* Fetching 'node_modules' directory with cache keys 'node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock),node-modules-$SEMAPHORE_GIT_BRANCH-,node-modules-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
             cache::restore node-mdoules-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),node-mdoules-${SEMAPHORE_GIT_BRANCH}-,node-mdoules-master-
@@ -597,7 +596,7 @@ cache::lftp_get() {
     cd /tmp
     cache::lftp "get1 -c $key"
     cd - &>/dev/null
-    restored_path=$(tar -ztvf /tmp/$key | head -1 | awk '{print $6}')
+    restored_path=$(tar -ztvf /tmp/$key 2>/dev/null | head -1 | awk '{print $6}')
     if [[ "$restored_path" = /* ]]; then
       tar xzPf /tmp/$key -C .
     else
