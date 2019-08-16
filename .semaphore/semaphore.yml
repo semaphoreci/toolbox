@@ -189,3 +189,4 @@ blocks:
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
           - bats tests/libcheckout.bats
+          - bats tests/cache.bats
