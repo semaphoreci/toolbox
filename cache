@@ -311,7 +311,20 @@ cache::delete_oldest_key() {
  cache::lftp "glob rm -f ${key}"
 
  cache::log "Key ${key} is deleted."
- sed -i '$d' $file
+ DIST=$(uname)
+ case $DIST in
+   Darwin)
+     sed -i "" '$d' $file
+     ;;
+   Linux)
+     sed -i '$d' $file
+    ;;
+   *)
+     echo "Unsupported distro $DIST"
+     exit 1
+   ;;
+ esac
+
  echo $size
 }
 
