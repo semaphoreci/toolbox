@@ -18,6 +18,10 @@ blocks:
           - source .toolbox/toolbox
           - cd .toolbox
       jobs:
+      - name: Test artifact CLI installation
+        commands:
+          - artifact | grep "Available Commands"
+
       - name: Bats tests
         commands:
           - git submodule init && git submodule update
