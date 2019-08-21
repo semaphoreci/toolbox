@@ -20,6 +20,7 @@ blocks:
       jobs:
       - name: Test artifact CLI installation
         commands:
+          - ls artifact.tar.gz || true
           - artifact | grep "Semaphore 2.0 Artifact CLI"
 
       - name: Bats tests

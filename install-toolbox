@@ -55,5 +55,6 @@ case $DIST in
     install_cmd tar xzf artifact.tar.gz
     install_cmd mv artifact $INSTALL_PATH/artifact
     install_cmd chmod +x $INSTALL_PATH/artifact
+    install_cmd rm -f artifact.tar.gz
    ;;
 esac
