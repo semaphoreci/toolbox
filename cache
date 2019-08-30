@@ -82,7 +82,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::normalize_string node-mdoules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json))
+              SEMAPHORE_CACHE_KEY=$(cache::normalize_string node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json))
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -102,7 +102,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::normalize_string node-mdoules-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock))
+              SEMAPHORE_CACHE_KEY=$(cache::normalize_string node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock))
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -187,9 +187,9 @@ cache::autorestore() {
           "package-lock.json")
             cache::log
             cache::log "* Detected $lockfile."
-            cache::log "* Fetching 'node_modules' directory with cache keys 'node-mdoules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json),node-mdoules-$SEMAPHORE_GIT_BRANCH-,node-mdoules-master-'."
+            cache::log "* Fetching 'node_modules' directory with cache keys 'node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json),node-modules-$SEMAPHORE_GIT_BRANCH-,node-modules-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
-            cache::restore node-mdoules-${SEMAPHORE_GIT_BRANCH}-$(checksum package-lock.json),node-mdoules-${SEMAPHORE_GIT_BRANCH}-,node-mdoules-master-
+            cache::restore node-modules-${SEMAPHORE_GIT_BRANCH}-$(checksum package-lock.json),node-modules-${SEMAPHORE_GIT_BRANCH}-,node-modules-master-
             ;;
           "yarn.lock")
             cache::log "\n"
@@ -199,7 +199,7 @@ cache::autorestore() {
             cache::restore yarn-cache-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),yarn-cache-${SEMAPHORE_GIT_BRANCH}-,yarn-cache-master-
             cache::log "* Fetching 'node_modules' directory with cache keys 'node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock),node-modules-$SEMAPHORE_GIT_BRANCH-,node-modules-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
-            cache::restore node-mdoules-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),node-mdoules-${SEMAPHORE_GIT_BRANCH}-,node-mdoules-master-
+            cache::restore node-modules-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),node-modules-${SEMAPHORE_GIT_BRANCH}-,node-modules-master-
             ;;
           "mix.lock")
             cache::log
