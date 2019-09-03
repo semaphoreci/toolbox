@@ -154,5 +154,5 @@ teardown() {
 
   run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
   cd ../
-  rm -rf semaphore-demo-php-laravel
+  rm -rf maven-simple
 }
