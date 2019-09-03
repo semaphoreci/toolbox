@@ -132,3 +132,27 @@ teardown() {
   cd ../
   rm -rf semaphore-demo-php-laravel
 }
+
+@test "cache - autostore/autorestore [mvn]" {
+
+  git clone git@github.com:jitpack/maven-simple.git
+  cd maven-simple
+  mvn -Dmaven.repo.local=".m2" test-compile
+
+  run cache store
+
+  assert_success
+  assert_output --partial "* Detected pom.xml"
+  assert_output --partial "Upload complete."
+
+  sudo rm -rf .m2
+
+  run cache restore
+  assert_success
+  assert_output --partial "* Fetching '.m2' directory with cache keys"
+  assert_output --partial "Restored: .m2"
+
+  run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
+  cd ../
+  rm -rf semaphore-demo-php-laravel
+}
