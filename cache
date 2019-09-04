@@ -163,6 +163,14 @@ cache::autostore() {
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
+            SEMAPHORE_LOCAL_CACHE_PATHS="target"
+            cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
+            if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
+              SEMAPHORE_CACHE_KEY=$(cache::normalize_string maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml))
+              cache::lftp_put
+            else
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
+            fi
             ;;
           *)
             cache::log "* Nothing to sotre in Cache";;
@@ -205,9 +213,9 @@ cache::autorestore() {
             cache::log
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'deps' directory with cache keys mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-deps-$SEMAPHORE_GIT_BRANCH,mix-deps-master"
-            cache restore mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-deps-$SEMAPHORE_GIT_BRANCH,mix-deps-master
+            cache::restore mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-deps-$SEMAPHORE_GIT_BRANCH,mix-deps-master
             cache::log "* Fetching '_build' directory with cache keys mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-build-$SEMAPHORE_GIT_BRANCH,mix-build-master"
-            cache restore mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-build-$SEMAPHORE_GIT_BRANCH,mix-build-master
+            cache::restore mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-build-$SEMAPHORE_GIT_BRANCH,mix-build-master
             ;;
           "requirements.txt")
             cache::log
@@ -229,6 +237,8 @@ cache::autorestore() {
             cache::log "* Fetching '.m2' directory with cache keys 'cache restore maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master'."
             SEMAPHORE_LOCAL_CACHE_PATHS=".m2"
             cache::restore maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master
+            cache::log "* Fetching 'target' directory with cache keys maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-target-$SEMAPHORE_GIT_BRANCH,maven-target-master"
+            cache::restore maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-target-$SEMAPHORE_GIT_BRANCH,maven-target-master
             ;;
           *)
             cache::log "* Nothing to fetch from cache";;
