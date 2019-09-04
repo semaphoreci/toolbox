@@ -143,16 +143,22 @@ teardown() {
 
   assert_success
   assert_output --partial "* Detected pom.xml"
+  assert_output --partial "* Using default cache path '.m2'."
+  assert_output --partial "Upload complete."
+  assert_output --partial "* Using default cache path 'target'."
   assert_output --partial "Upload complete."
 
-  sudo rm -rf .m2
+  sudo rm -rf .m2 target
 
   run cache restore
   assert_success
   assert_output --partial "* Fetching '.m2' directory with cache keys"
   assert_output --partial "Restored: .m2"
+  assert_output --partial "* Fetching 'target' directory with cache keys"
+  assert_output --partial "Restored: target"
 
-  run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
+  run cache delete maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
+  run cache delete maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
   cd ../
   rm -rf maven-simple
 }
