@@ -24,6 +24,9 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 # Lockfiles to lookup for autostore and autoresotre
 LOCKFILES=('Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock' 'pom.xml')
 
+# Dist
+DIST=$(uname)
+
 cache::verbose() {
   VERBOSE_LOG=0
 }
@@ -42,8 +45,6 @@ cache::normalize_string() {
 }
 
 cache::current_timestamp_in_milis() {
-  DIST=$(uname)
-
   case $DIST in
     Darwin)
       gdate +%s%3N
@@ -321,7 +322,6 @@ cache::delete_oldest_key() {
  cache::lftp "glob rm -f ${key}"
 
  cache::log "Key ${key} is deleted."
- DIST=$(uname)
  case $DIST in
    Darwin)
      sed -i "" '$d' $file
@@ -619,7 +619,20 @@ cache::lftp_get() {
     cd /tmp
     cache::lftp "get1 -c $key"
     cd - &>/dev/null
-    restored_path=$(tar -ztvf /tmp/$key 2>/dev/null | head -1 | awk '{print $6}')
+
+    case $DIST in
+      Darwin)
+        restored_path=$(tar -ztvf /tmp/$key 2>/dev/null | head -1 | awk '{print $9}')
+        ;;
+      Linux)
+        restored_path=$(tar -ztvf /tmp/$key 2>/dev/null | head -1 | awk '{print $6}')
+       ;;
+      *)
+        echo "Unsupported distro $DIST"
+        exit 1
+      ;;
+    esac
+
     if [[ "$restored_path" = /* ]]; then
       tar xzPf /tmp/$key -C .
     else
