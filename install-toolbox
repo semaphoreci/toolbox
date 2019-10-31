@@ -28,6 +28,10 @@ install_cmd() {
   local cmd=$@
   if [ `whoami` == 'root' ]; then
     `$@`
+  elif [[ $SEMAPHORE_AGENT_MACHINE_ENVIRONMENT_TYPE == "container" ]]; then
+    INSTALL_PATH="$HOME/.semaphoreci_bin"
+    mkdir -p $INSTALL_PATH
+    echo "export PATH=\"\$PATH:$INSTALL_PATH\"" >> ~/.semaphoreci_profile
   else
     `sudo $@`
   fi
@@ -45,16 +49,16 @@ install_cmd chmod +x $INSTALL_PATH/cache
 install_cmd ln -sf ~/.toolbox/sem-service $INSTALL_PATH/sem-service
 install_cmd chmod +x $INSTALL_PATH/sem-service
 
-
 case $DIST in
   Darwin)
     echo ""
     ;;
   Linux)
-    install_cmd curl -s -L --retry 5 -o artifact.tar.gz https://github.com/semaphoreci/artifact/releases/download/v0.2.5/artifact_Linux_x86_64.tar.gz
-    install_cmd tar xzf artifact.tar.gz
-    install_cmd mv artifact $INSTALL_PATH/artifact
-    install_cmd chmod +x $INSTALL_PATH/artifact
-    install_cmd rm -f artifact.tar.gz LICENSE README.md
+  ARTIFCAT_RELEASE=$(curl -s "https://api.github.com/repos/semaphoreci/artifact/releases/latest" | grep "browser_download_url" | grep $DIST | cut -d : -f 2,3 | tr -d '"' | tr -d " ")
+  install_cmd curl -s -L --retry 5 -o artifact.tar.gz $ARTIFCAT_RELEASE
+  install_cmd tar xzf artifact.tar.gz
+  install_cmd mv artifact $INSTALL_PATH/artifact
+  install_cmd chmod +x $INSTALL_PATH/artifact
+  install_cmd rm -f artifact.tar.gz LICENSE README.md
    ;;
 esac
