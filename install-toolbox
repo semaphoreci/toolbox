@@ -18,11 +18,6 @@ case $DIST in
   ;;
 esac
 
-if [ $SEMAPHORE_AGENT_MACHINE_ENVIRONMENT_TYPE == "container" ]; then
-  INSTALL_PATH="$HOME/.semaphoreci_bin"
-  mkdir -p $INSTALL_PATH
-fi
-
 cat << EOF >> ~/.ssh/config
 Host github.com bitbucket.org
   StrictHostKeyChecking no
@@ -32,10 +27,6 @@ EOF
 install_cmd() {
   local cmd=$@
   if [ `whoami` == 'root' ]; then
-    `$@`
-  elif [[ $SEMAPHORE_AGENT_MACHINE_ENVIRONMENT_TYPE == "container" ]]; then
-    touch ~/.semaphoreci_profile
-    [ "`grep -c semaphoreci ~/.semaphoreci_profile`" -eq 0 ] && echo "export PATH=\"\$PATH:$INSTALL_PATH\"" >> ~/.semaphoreci_profile
     `$@`
   else
     `sudo $@`
