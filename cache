@@ -636,9 +636,9 @@ cache::lftp_get() {
     esac
 
     if [[ "$restored_path" = /* ]]; then
-      tar xzPf /tmp/$key -C .
+      tar xzPf /tmp/$key -C . || echo "cache_corruption_rate 1" >> /tmp/toolbox_metrics
     else
-      tar xzf /tmp/$key -C .
+      tar xzf /tmp/$key -C . || echo "cache_corruption_rate 1" >> /tmp/toolbox_metrics
     fi
     archive_size=$(ls -l /tmp/$key | awk '{print $5}')
     rm -rf /tmp/$key
