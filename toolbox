@@ -1,6 +1,3 @@
 source ~/.toolbox/sem-version
 source ~/.toolbox/libcheckout
 source ~/.toolbox/libchecksum
-if [[ -f ~/.semaphoreci_profile ]]; then
-   source ~/.semaphoreci_profile
- fi
