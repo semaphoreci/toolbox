@@ -14,7 +14,7 @@ service::pull_image() {
     service::err "Invalid image name provided '${image_name}'"
   fi
 
-  service::duration service::run_cmd docker pull $image_name
+  service::duration service::run_cmd docker pull $image_name download $(echo ${image_name%%:*})
 }
 
 service::start_mysql() {
@@ -24,14 +24,13 @@ service::start_mysql() {
   docker_output=$(docker run --net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql mysql:$service_version)
 
   # run only if previous command exited successfully
-  dockerize_output=$(dockerize -wait tcp://0.0.0.0:3306 -timeout 30s 2>&1)
+  service::duration dockerize -wait tcp://0.0.0.0:3306 -timeout 30s 2>/dev/null boot postgress
 
   # if not started in 30 seconds print logs and exit
   echo "done."
   echo "MySQL $service_version is running at 0.0.0.0:3306"
   echo "To access it use username 'root' and blank password."
 
-  exit 0
 }
 
 service::start_postgres() {
@@ -41,14 +40,13 @@ service::start_postgres() {
   docker_output=$(docker run --net=host --rm --name postgres -e POSTGRES_PASSWORD=semaphore -d postgres:$service_version)
 
   # run only if previous command exited successfully
-  dockerize_output=$(dockerize -wait tcp://0.0.0.0:5432 -timeout 30s 2>&1)
+  service::duration dockerize -wait tcp://0.0.0.0:5432 -timeout 30s 2>/dev/null boot postgress
 
   # if not started in 30 seconds print logs and exit
   echo "done."
   echo "PostgreSQL $service_version is running at 0.0.0.0:5432"
   echo "To access it use username 'postgres' and blank password."
 
-  exit 0
 }
 
 service::start_redis() {
@@ -58,13 +56,12 @@ service::start_redis() {
   docker_output=$(docker run --net=host --rm --name redis -d redis:$service_version)
 
   # run only if previous command exited successfully
-  dockerize_output=$(dockerize -wait tcp://0.0.0.0:6379 -timeout 30s 2>&1)
+  service::duration dockerize -wait tcp://0.0.0.0:6379 -timeout 30s 2>/dev/null boot postgress
 
   # if not started in 30 seconds print logs and exit
   echo "done."
   echo "Redis $service_version is running at 0.0.0.0:6379"
 
-  exit 0
 }
 
 service::start_memcached() {
@@ -74,13 +71,12 @@ service::start_memcached() {
   docker_output=$(docker run --net=host --rm --name memcached -d memcached:$service_version)
 
   # run only if previous command exited successfully
-  dockerize_output=$(dockerize -wait tcp://0.0.0.0:11211 -timeout 30s 2>&1)
+  service::duration dockerize -wait tcp://0.0.0.0:11211 -timeout 30s 2>/dev/null boot postgress
 
   # if not started in 30 seconds print logs and exit
   echo "done."
   echo "memcached $service_version is running at 0.0.0.0:11211"
 
-  exit 0
 }
 
 service::start_mongodb() {
@@ -90,13 +86,12 @@ service::start_mongodb() {
   docker_output=$(docker run --net=host --rm --name mongodb -d mongo:$service_version)
 
   # run only if previous command exited successfully
-  dockerize_output=$(dockerize -wait tcp://0.0.0.0:27017 -timeout 30s 2>&1)
+  service::duration dockerize -wait tcp://0.0.0.0:27017 -timeout 30s 2>/dev/null boot postgress
 
   # if not started in 30 seconds print logs and exit
   echo "done."
   echo "mongodb $service_version is running at 0.0.0.0:27017"
 
-  exit 0
 }
 
 service::start_elasticsearch() {
@@ -106,13 +101,12 @@ service::start_elasticsearch() {
   docker_output=$(docker run --net=host --rm --name elasticsearch -e "discovery.type=single-node" -d elasticsearch:$service_version)
 
   # run only if previous command exited successfully
-  dockerize_output=$(dockerize -wait tcp://0.0.0.0:9200 -timeout 30s 2>&1)
+  service::duration dockerize -wait tcp://0.0.0.0:9200 -timeout 30s 2>/dev/null boot postgress
 
   # if not started in 30 seconds print logs and exit
   echo "done."
   echo "elasticsearch $service_version is accessible at 0.0.0.0:9200 and 0.0.0.0:9300"
 
-  exit 0
 }
 
 service::start() {
@@ -129,32 +123,38 @@ service::start() {
     "mysql" )
       shift
 
-      service::start_mysql $service_version
+      service::duration service::start_mysql $service_version total $service_name
+      exit 0
       ;;
     "postgres" )
       shift
 
-      service::start_postgres $service_version
+      service::duration service::start_postgres $service_version total $service_name
+      exit 0
       ;;
     "redis" )
       shift
 
-      service::start_redis $service_version
+      service::duration service::start_redis $service_version total $service_name
+      exit 0
       ;;
     "memcached" )
       shift
 
-      service::start_memcached $service_version
+      service::duration service::start_memcached $service_version total $service_name
+      exit 0
       ;;
     "mongodb" )
       shift
 
-      service::start_mongodb $service_version
+      service::duration service::start_mongodb $service_version total $service_name
+      exit 0
       ;;
     "elasticsearch" )
       shift
 
-      service::start_elasticsearch $service_version
+      service::duration service::start_elasticsearch $service_version total elasticsearch
+      exit 0
       ;;
 
     * )
@@ -162,7 +162,6 @@ service::start() {
       exit 1
       ;;
   esac
-
 }
 
 
@@ -293,18 +292,17 @@ service::print_usage() {
 }
 
 service::duration() {
-  local cmd="$@"
-  local type=$(echo $4 | tr ":." "_")
-  local env="prod"
+  local cmd=${@:1:$#-2}
+  local service=$(echo "${@: -1}")
+  local type=$(echo "${@: -2:1}")
   local start
   local end
   local duration
-
   start=$(date +%s%3N)
   $cmd
   end=$(date +%s%3N)
   duration=$(( $end - $start ))
-  echo "sem_service.${env}.${type}:${duration}|ms" >> /tmp/semaphore-stats.txt
+  echo "toolbox_sem_service_${type}_${service} ${duration}" >> /tmp/toolbox_metrics #in ms
 
   return 0
 }
