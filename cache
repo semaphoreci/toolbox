@@ -65,6 +65,17 @@ cache::autostore() {
   for lockfile in ${LOCKFILES[@]}; do
     if [[ -f $lockfile ]]; then
         case $lockfile in
+          ".nvmrc")
+            cache::log
+            cache::log "* Detected $lockfile."
+            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.nvm"
+            cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
+            if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
+              SEMAPHORE_CACHE_KEY=$(cache::normalize_string nvm-$SEMAPHORE_GIT_BRANCH-$(checksum .nvmrc))
+              cache::lftp_put
+            else
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
+            fi
           "Gemfile.lock")
             cache::log
             cache::log "* Detected $lockfile."
