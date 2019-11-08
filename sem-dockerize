@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+run::dockerize(){
+
+  local port=$1
+  local service=$(echo "${@: -1}")
+
+  dockerize -wait tcp://0.0.0.0:${port} -timeout 30s 2>/dev/null
+
+  if [[ $? -ne 0 ]]; then
+    echo "Failed to start service $service on port $port"
+    echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
+    exit 1
+  fi
+}
+
+run::dockerize $@
