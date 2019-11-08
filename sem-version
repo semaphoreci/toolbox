@@ -17,6 +17,24 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 #   command
 # Returns:
 #  0, 1-127 (exit status of the language manager command)
+
+version::metrics() {
+  local cmd=$@
+  local language=${1#"version::change_"}
+  local version=$2
+  local start
+  local end
+  local duration
+  start=$(date +%s%3N)
+  $cmd
+  end=$(date +%s%3N)
+  duration=$(( $end - $start ))
+  echo "toolbox_sem_version_${language}_${version}_duration ${duration}" >> /tmp/toolbox_metrics #in ms
+  echo "toolbox_sem_version_${language}_${version}_count 1" >> /tmp/toolbox_metrics #in ms
+
+  return 0
+}
+
 version::change() {
   command=$1
   version::log "Changing '${language}' to version ${language_version}"
@@ -43,8 +61,8 @@ version::change_node() {
 }
 
 version::change_elixir() {
-  if [ -z $(kiex list | grep ${language_version}) ];then 
-    kiex install ${language_version} 
+  if [ -z $(kiex list | grep ${language_version}) ];then
+    kiex install ${language_version}
   fi
 
   version::change "kiex use"
@@ -194,11 +212,12 @@ version::main() {
         return $?
       fi
 
-      version::change_${language} $language_version
+      version::metrics version::change_${language} $language_version
       fn_status=$?
 
       if [[ fn_status -ne 0 ]]; then
-	version::err "Failed to switch version.\nLog:\n$log"
+        version::err "Failed to switch version.\nLog:\n$log"
+        echo "toolbox_sem_version_${language}_${version}_failure_rate 1" >> /tmp/toolbox_metrics
         return $?
       fi
 
