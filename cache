@@ -22,7 +22,7 @@ E_FLAE=0 # file already exists
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
 # Lockfiles to lookup for autostore and autoresotre
-LOCKFILES=('.nvmrc', 'Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock' 'pom.xml')
+LOCKFILES=('.nvmrc' 'Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock' 'pom.xml')
 
 # Dist
 DIST=$(uname)
