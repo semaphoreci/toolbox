@@ -24,7 +24,7 @@ service::start_mysql() {
   docker_output=$(docker run --net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql mysql:$service_version)
 
   # run only if previous command exited successfully
-  service::duration dockerize -wait tcp://0.0.0.0:3306 -timeout 30s 2>/dev/null boot postgress
+  service::duration sem-dockerize 3306 boot mysql
 
   # if not started in 30 seconds print logs and exit
   echo "done."
@@ -40,7 +40,7 @@ service::start_postgres() {
   docker_output=$(docker run --net=host --rm --name postgres -e POSTGRES_PASSWORD=semaphore -d postgres:$service_version)
 
   # run only if previous command exited successfully
-  service::duration dockerize -wait tcp://0.0.0.0:5432 -timeout 30s 2>/dev/null boot postgress
+  service::duration sem-dockerize 5432 boot postgress
 
   # if not started in 30 seconds print logs and exit
   echo "done."
@@ -56,7 +56,7 @@ service::start_redis() {
   docker_output=$(docker run --net=host --rm --name redis -d redis:$service_version)
 
   # run only if previous command exited successfully
-  service::duration dockerize -wait tcp://0.0.0.0:6379 -timeout 30s 2>/dev/null boot postgress
+  service::duration sem-dockerize 6379 boot redis
 
   # if not started in 30 seconds print logs and exit
   echo "done."
@@ -71,7 +71,7 @@ service::start_memcached() {
   docker_output=$(docker run --net=host --rm --name memcached -d memcached:$service_version)
 
   # run only if previous command exited successfully
-  service::duration dockerize -wait tcp://0.0.0.0:11211 -timeout 30s 2>/dev/null boot postgress
+  service::duration sem-dockerize 11211 boot memcached
 
   # if not started in 30 seconds print logs and exit
   echo "done."
@@ -86,7 +86,7 @@ service::start_mongodb() {
   docker_output=$(docker run --net=host --rm --name mongodb -d mongo:$service_version)
 
   # run only if previous command exited successfully
-  service::duration dockerize -wait tcp://0.0.0.0:27017 -timeout 30s 2>/dev/null boot postgress
+  service::duration sem-dockerize 27017 -timeout 30s 2>/dev/null boot mongodb
 
   # if not started in 30 seconds print logs and exit
   echo "done."
@@ -101,7 +101,7 @@ service::start_elasticsearch() {
   docker_output=$(docker run --net=host --rm --name elasticsearch -e "discovery.type=single-node" -d elasticsearch:$service_version)
 
   # run only if previous command exited successfully
-  service::duration dockerize -wait tcp://0.0.0.0:9200 -timeout 30s 2>/dev/null boot postgress
+  service::duration sem-dockerize 9200 boot elasticseach
 
   # if not started in 30 seconds print logs and exit
   echo "done."
@@ -153,7 +153,7 @@ service::start() {
     "elasticsearch" )
       shift
 
-      service::duration service::start_elasticsearch $service_version total elasticsearch
+      service::duration service::start_elasticsearch $service_version total $service_name
       exit 0
       ;;
 

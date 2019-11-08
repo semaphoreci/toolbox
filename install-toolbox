@@ -45,6 +45,9 @@ install_cmd chmod +x $INSTALL_PATH/cache
 install_cmd ln -sf ~/.toolbox/sem-service $INSTALL_PATH/sem-service
 install_cmd chmod +x $INSTALL_PATH/sem-service
 
+install_cmd ln -sf ~/.toolbox/sem-dockerize $INSTALL_PATH/sem-dockerize
+install_cmd chmod +x $INSTALL_PATH/sem-dockerize
+
 
 case $DIST in
   Darwin)
