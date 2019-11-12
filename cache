@@ -22,7 +22,7 @@ E_FLAE=0 # file already exists
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
 # Lockfiles to lookup for autostore and autoresotre
-LOCKFILES=('Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock' 'pom.xml')
+LOCKFILES=('.nvmrc' 'Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock' 'pom.xml')
 
 # Dist
 DIST=$(uname)
@@ -65,6 +65,18 @@ cache::autostore() {
   for lockfile in ${LOCKFILES[@]}; do
     if [[ -f $lockfile ]]; then
         case $lockfile in
+          ".nvmrc")
+            cache::log
+            cache::log "* Detected $lockfile."
+            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.nvm"
+            cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
+            if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
+              SEMAPHORE_CACHE_KEY=$(cache::normalize_string nvm-$SEMAPHORE_GIT_BRANCH-$(checksum .nvmrc))
+              cache::lftp_put
+            else
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
+            fi
+            ;;
           "Gemfile.lock")
             cache::log
             cache::log "* Detected $lockfile."
@@ -186,6 +198,13 @@ cache::autorestore() {
   for lockfile in ${LOCKFILES[@]}; do
     if [[ -f $lockfile ]]; then
         case $lockfile in
+          ".nvmrc")
+            cache::log
+            cache::log "* Detected $lockfile."
+            cache::log "* Fetching '~/.nvm' directory with cache keys 'nvm-${SEMAPHORE_GIT_BRANCH}-$(checksum .nvmrc),nvm-${SEMAPHORE_GIT_BRANCH},nvm-master'."
+            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.nvm"
+            cache::restore nvm-${SEMAPHORE_GIT_BRANCH}-$(checksum .nvmrc),nvm-${SEMAPHORE_GIT_BRANCH},nvm-master
+            ;;
           "Gemfile.lock")
             cache::log
             cache::log "* Detected $lockfile."
