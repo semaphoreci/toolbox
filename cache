@@ -76,6 +76,7 @@ cache::autostore() {
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
+            ;;
           "Gemfile.lock")
             cache::log
             cache::log "* Detected $lockfile."
@@ -203,6 +204,7 @@ cache::autorestore() {
             cache::log "* Fetching '~/.nvm' directory with cache keys 'nvm-${SEMAPHORE_GIT_BRANCH}-$(checksum .nvmrc),nvm-${SEMAPHORE_GIT_BRANCH},nvm-master'."
             SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.nvm"
             cache::restore nvm-${SEMAPHORE_GIT_BRANCH}-$(checksum .nvmrc),nvm-${SEMAPHORE_GIT_BRANCH},nvm-master
+            ;;
           "Gemfile.lock")
             cache::log
             cache::log "* Detected $lockfile."
