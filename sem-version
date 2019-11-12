@@ -29,8 +29,8 @@ version::metrics() {
   $cmd
   end=$(date +%s%3N)
   duration=$(( $end - $start ))
-  echo "toolbox_sem_version_${language}_${version}_duration ${duration}" >> /tmp/toolbox_metrics #in ms
-  echo "toolbox_sem_version_${language}_${version}_count 1" >> /tmp/toolbox_metrics #in ms
+  echo "toolbox_sem_version_duration_${language}{version=\"${version}\"} ${duration}" >> /tmp/toolbox_metrics #in ms
+  echo "toolbox_sem_version_count_${language}{version=\"${version}\"} 1" >> /tmp/toolbox_metrics
 
   return 0
 }
@@ -217,7 +217,7 @@ version::main() {
 
       if [[ fn_status -ne 0 ]]; then
         version::err "Failed to switch version.\nLog:\n$log"
-        echo "toolbox_sem_version_${language}_${version}_failure_rate 1" >> /tmp/toolbox_metrics
+        echo "toolbox_sem_version_failure_rate_${language}{version=\"${version}\"} 1" >> /tmp/toolbox_metrics
         return $?
       fi
 
