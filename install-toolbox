@@ -54,7 +54,7 @@ case $DIST in
     echo ""
     ;;
   Linux)
-    install_cmd curl -s -L --retry 5 -o artifact.tar.gz https://github.com/semaphoreci/artifact/releases/download/v0.2.5/artifact_Linux_x86_64.tar.gz
+    install_cmd curl -s -L --retry 5 -o artifact.tar.gz https://github.com/semaphoreci/artifact/releases/download/v0.2.7/artifact_Linux_x86_64.tar.gz
     install_cmd tar xzf artifact.tar.gz
     install_cmd mv artifact $INSTALL_PATH/artifact
     install_cmd chmod +x $INSTALL_PATH/artifact
