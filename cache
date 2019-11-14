@@ -22,7 +22,7 @@ E_FLAE=0 # file already exists
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
 # Lockfiles to lookup for autostore and autoresotre
-LOCKFILES=('.nvmrc' 'Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock' 'pom.xml')
+LOCKFILES=('.ruby-version' '.nvmrc' 'Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock' 'pom.xml')
 
 # Dist
 DIST=$(uname)
@@ -65,6 +65,18 @@ cache::autostore() {
   for lockfile in ${LOCKFILES[@]}; do
     if [[ -f $lockfile ]]; then
         case $lockfile in
+          ".ruby-version")
+            cache::log
+            cache::log "* Detected $lockfile."
+            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.ruby-version"
+            cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
+            if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
+              SEMAPHORE_CACHE_KEY=$(cache::normalize_string rbenv-$SEMAPHORE_GIT_BRANCH-$(checksum .ruby-version))
+              cache::lftp_put
+            else
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
+            fi
+            ;;
           ".nvmrc")
             cache::log
             cache::log "* Detected $lockfile."
@@ -198,6 +210,13 @@ cache::autorestore() {
   for lockfile in ${LOCKFILES[@]}; do
     if [[ -f $lockfile ]]; then
         case $lockfile in
+          ".ruby-version")
+            cache::log
+            cache::log "* Detected $lockfile."
+            cache::log "* Fetching '~/.ruby-version' directory with cache keys 'rbenv-${SEMAPHORE_GIT_BRANCH}-$(checksum .ruby-version),rbenv-${SEMAPHORE_GIT_BRANCH},rbenv-master'."
+            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.ruby-version"
+            cache::restore rbenv-${SEMAPHORE_GIT_BRANCH}-$(checksum .ruby-version),rbenv-${SEMAPHORE_GIT_BRANCH},rbenv-master
+            ;;
           ".nvmrc")
             cache::log
             cache::log "* Detected $lockfile."
