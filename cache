@@ -68,7 +68,7 @@ cache::autostore() {
           ".ruby-version")
             cache::log
             cache::log "* Detected $lockfile."
-            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.ruby-version"
+            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.rbenv/versions"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
               SEMAPHORE_CACHE_KEY=$(cache::normalize_string rbenv-$SEMAPHORE_GIT_BRANCH-$(checksum .ruby-version))
@@ -213,8 +213,8 @@ cache::autorestore() {
           ".ruby-version")
             cache::log
             cache::log "* Detected $lockfile."
-            cache::log "* Fetching '~/.ruby-version' directory with cache keys 'rbenv-${SEMAPHORE_GIT_BRANCH}-$(checksum .ruby-version),rbenv-${SEMAPHORE_GIT_BRANCH},rbenv-master'."
-            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.ruby-version"
+            cache::log "* Fetching '~/.rbenv/versions' directory with cache keys 'rbenv-${SEMAPHORE_GIT_BRANCH}-$(checksum .ruby-version),rbenv-${SEMAPHORE_GIT_BRANCH},rbenv-master'."
+            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.rbenv/versions"
             cache::restore rbenv-${SEMAPHORE_GIT_BRANCH}-$(checksum .ruby-version),rbenv-${SEMAPHORE_GIT_BRANCH},rbenv-master
             ;;
           ".nvmrc")
