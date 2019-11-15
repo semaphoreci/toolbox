@@ -70,6 +70,7 @@ function checkout::fetch() {
   fi
   checkout::checkrevision
   git reset --hard $SEMAPHORE_GIT_SHA
+  echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
 }
 
 function checkout::clone() {
@@ -78,6 +79,7 @@ function checkout::clone() {
   git checkout $SEMAPHORE_GIT_BRANCH
   checkout::checkrevision
   git reset --hard $SEMAPHORE_GIT_SHA
+  echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
 }
 
 function checkout::cache_store() {
@@ -153,6 +155,7 @@ function checkout::shallow() {
       git reset --hard $SEMAPHORE_GIT_SHA
     fi
   fi
+  echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
 }
 
 function checkout::refbased() {
