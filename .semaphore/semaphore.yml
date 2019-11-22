@@ -152,6 +152,17 @@ blocks:
           - bats tests/macos_cache.bats
           - bats tests/macos_autocache.bats
           - bats tests/libcheckout.bats
+      - name: Test artifact CLI installation macOS
+        commands:
+          - checkout
+          - cd ../
+          - rm -rf .toolbox/
+          - mv toolbox/ .toolbox
+          - bash .toolbox/install-toolbox
+          - source .toolbox/toolbox
+          - cd .toolbox
+          - ls artifact.tar.gz || true
+          - artifact | grep "Semaphore 2.0 Artifact CLI"
 
   - name: Run tests in Semaphoreci Docker container
     task:

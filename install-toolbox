@@ -4,6 +4,7 @@ set -eo pipefail
 IFS=$'\n\t'
 
 DIST=$(uname)
+ARTIFACT_CLI_VERSION="v0.2.8"
 
 case $DIST in
   Darwin)
@@ -48,16 +49,9 @@ install_cmd chmod +x $INSTALL_PATH/sem-service
 install_cmd ln -sf ~/.toolbox/sem-dockerize $INSTALL_PATH/sem-dockerize
 install_cmd chmod +x $INSTALL_PATH/sem-dockerize
 
-
-case $DIST in
-  Darwin)
-    echo ""
-    ;;
-  Linux)
-    install_cmd curl -s -L --retry 5 -o artifact.tar.gz https://github.com/semaphoreci/artifact/releases/download/v0.2.7/artifact_Linux_x86_64.tar.gz
-    install_cmd tar xzf artifact.tar.gz
-    install_cmd mv artifact $INSTALL_PATH/artifact
-    install_cmd chmod +x $INSTALL_PATH/artifact
-    install_cmd rm -f artifact.tar.gz LICENSE README.md
-   ;;
-esac
+# Install Artifact Cli
+install_cmd curl -s -L --retry 5 -o artifact.tar.gz https://github.com/semaphoreci/artifact/releases/download/${ARTIFACT_CLI_VERSION}/artifact_${DIST}_x86_64.tar.gz
+install_cmd tar xzf artifact.tar.gz
+install_cmd mv artifact $INSTALL_PATH/artifact
+install_cmd chmod +x $INSTALL_PATH/artifact
+install_cmd rm -f artifact.tar.gz LICENSE README.md
