@@ -22,7 +22,7 @@ E_FLAE=0 # file already exists
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
 # Lockfiles to lookup for autostore and autoresotre
-LOCKFILES=('.nvmrc' 'Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock' 'pom.xml')
+LOCKFILES=('.nvmrc' 'Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock' 'pom.xml' 'Podfile.lock')
 
 # Dist
 DIST=$(uname)
@@ -185,6 +185,18 @@ cache::autostore() {
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
             ;;
+          "Podfile.lock")
+            cache::log
+            cache::log "* Detected $lockfile."
+            SEMAPHORE_LOCAL_CACHE_PATHS="Pods"
+            cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
+            if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
+              SEMAPHORE_CACHE_KEY=$(cache::normalize_string pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock))
+              cache::lftp_put
+            else
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
+            fi
+            ;;
           *)
             cache::log "* Nothing to sotre in Cache";;
         esac
@@ -259,6 +271,13 @@ cache::autorestore() {
             cache::restore maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master
             cache::log "* Fetching 'target' directory with cache keys maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-target-$SEMAPHORE_GIT_BRANCH,maven-target-master"
             cache::restore maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-target-$SEMAPHORE_GIT_BRANCH,maven-target-master
+            ;;
+          "Podfile.lock")
+            cache::log
+            cache::log "* Detected $lockfile."
+            cache::log "* Fetching 'Pods' directory with cache keys 'composer-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),pods-$SEMAPHORE_GIT_BRANCH-,pods-master-'."
+            SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
+            cache::restore composer-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),pods-$SEMAPHORE_GIT_BRANCH-,pods-master-
             ;;
           *)
             cache::log "* Nothing to fetch from cache";;
