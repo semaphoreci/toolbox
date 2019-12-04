@@ -907,9 +907,9 @@ cache::err() {
 ################################################################################
 cache::log() {
   if [[ $VERBOSE_LOG == 0 ]]; then
-    echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
+    echo -e "[$(date +"${DATE_FORMAT}")]: $@"
   else
-    echo -e "$@" >&2
+    echo -e "$@"
   fi
 }
 
