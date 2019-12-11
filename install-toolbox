@@ -11,7 +11,7 @@ case $DIST in
     INSTALL_PATH='/usr/local/bin'
     ;;
   Linux)
-    sudo rm -f /etc/apt/sources.list.d/python_2.7-source.list
+    [[ -f /usr/bin/sudo ]] && sudo rm -f /etc/apt/sources.list.d/python_2.7-source.list
     INSTALL_PATH='/usr/bin'
    ;;
   *)
