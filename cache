@@ -827,7 +827,7 @@ cache::check_lftp() {
   if which lftp &> /dev/null; then
     return 0;
   else
-    cache::err "The 'lftp' executable is missing or not in the \$PATH"
+    cache::fatal "The 'lftp' executable is missing or not in the \$PATH"
   fi
 }
 
@@ -914,6 +914,10 @@ cache::err() {
   echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
 }
 
+cache::fatal() {
+  echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
+  exit 1
+}
 
 ################################################################################
 # Helper function to show log messages

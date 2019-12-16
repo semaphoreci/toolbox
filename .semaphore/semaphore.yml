@@ -30,6 +30,7 @@ blocks:
           - bats tests/autocache.bats
           - bats tests/cache.bats
           - bats tests/libcheckout.bats
+          - bats tests/base.bats
 
       - name: Sem version tests
         commands:
