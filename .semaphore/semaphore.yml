@@ -91,6 +91,12 @@ blocks:
           - sem-service start memcached
           - sem-service status memcached
 
+      - name: RabbitMQ
+        commands:
+          - sem-service start rabbitmq
+          - sem-service status rabbitmq
+
+
       - name: mongodb
         commands:
           - sem-service start mongodb
