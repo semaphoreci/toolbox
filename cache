@@ -38,7 +38,7 @@ cache::normalize_string() {
 
   result=${word//\//-}
   if [ "$result" != "$1" ]; then
-    cache::log "Key ${1} is normalized to ${result}."
+    cache::warn "Key ${1} is normalized to ${result}."
   fi
 
   echo "$result"
@@ -359,7 +359,7 @@ cache::delete_oldest_key() {
  key=$(cat /tmp/size_key | tail -1 | awk '{ print $2 }')
  cache::lftp "glob rm -f ${key}"
 
- cache::log "Key ${key} is deleted."
+ cache::warn "Key ${key} is deleted."
  case $DIST in
    Darwin)
      sed -i "" '$d' $file
@@ -914,6 +914,10 @@ cache::err() {
   echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
 }
 
+cache::warn() {
+  echo -e "$@" >&2
+}
+
 cache::fatal() {
   echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
   exit 1
@@ -930,9 +934,9 @@ cache::fatal() {
 ################################################################################
 cache::log() {
   if [[ $VERBOSE_LOG == 0 ]]; then
-    echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
+    echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&1
   else
-    echo -e "$@" >&2
+    echo -e "$@" >&1
   fi
 }
 
