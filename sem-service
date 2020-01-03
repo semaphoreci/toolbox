@@ -14,7 +14,11 @@ service::pull_image() {
     service::err "Invalid image name provided '${image_name}'"
   fi
 
-  service::duration service::run_cmd docker pull $image_name download $(echo ${image_name%%:*})
+  local name="$(echo $image_name | cut -d':' -f1)"
+  local  tag="$(echo $image_name | cut -d':' -f2)"
+  if [ "$(docker image ls | grep $image | awk '{print $2}')" != "$tag" ]; then  
+    service::duration service::run_cmd docker pull $image_name download $(echo ${image_name%%:*})
+  fi
 }
 
 service::start_mysql() {
