@@ -21,18 +21,18 @@ blocks:
 
       - name: MySQL
         commands:
-          - sem-service start mysql
-          - mysql --host=0.0.0.0 -uroot -e "create database fooo"
-          - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
-          - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.6
-          - sem-service status mysql
-          - sem-service stop mysql
-          - sem-service start mysql 5.7
-          - mysql --host=0.0.0.0 -uroot -e "create database fooo"
-          - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
-          - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.7
-          - sem-service status mysql
-          - sem-service stop mysql
+#          - sem-service start mysql
+#          - mysql --host=0.0.0.0 -uroot -e "create database fooo"
+#          - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
+#          - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.6
+#          - sem-service status mysql
+#          - sem-service stop mysql
+#          - sem-service start mysql 5.7
+#          - mysql --host=0.0.0.0 -uroot -e "create database fooo"
+#          - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
+#          - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.7
+#          - sem-service status mysql
+#          - sem-service stop mysql
           - sem-service start mysql 5.7 --username=test --password=test --port=4000
           - mysql --host=0.0.0.0 --port=4000 -utest -ptest -e "create database fooo"
           - mysql --host=0.0.0.0 --port=4000 -utest -ptest -e "show databases" | grep fooo
