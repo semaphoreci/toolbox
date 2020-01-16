@@ -128,7 +128,7 @@ service::start_rabbitmq() {
 
 service::start() {
   service_name=$1
-  #service_version=$2
+  service_version=$2
   if [ -z "$service_name" ]; then
     service::print_usage
     exit 1
