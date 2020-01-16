@@ -40,7 +40,7 @@ params-check::main () {
   case "$1" in
     "mysql" )
       #shift
-      echo $2; exit 0
+      echo "_$@."; exit 0
       params-check::mysql $2
       ;;
     * )
