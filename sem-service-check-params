@@ -12,7 +12,7 @@ params-check::mysql () {
     params="${tmp:-$default_params}"
   fi
   if [ "$default_params" != "$params" ];then
-    username=""; password=""; db=""; dbname="";
+    username=""; password=""; db=" -e MYSQL_DATABASE="; dbname="";
     for words in $params; do
       case $words in
        --username=* )
@@ -23,7 +23,6 @@ params-check::mysql () {
        ;;
        --db=* )
          dbname=$(echo $words|cut -d'=' -f2)
-         db=" -e MYSQL_DATABASE="
        ;;
        *)
          ##>&2 echo "Unknown parameter $words"
@@ -31,7 +30,7 @@ params-check::mysql () {
       esac
     done
     dbname=${dbname:-'test'}
-    [ "$username$password" ] && default_params="$default_params$username$password$port$db$dbname "
+    [ "$username$password" ] && default_params="$default_params$username$password$db$dbname "
   fi
   echo "$service_version $default_params"
 }
