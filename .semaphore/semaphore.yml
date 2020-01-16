@@ -45,6 +45,6 @@ blocks:
           - sem-service start postgres 9.5 --username=xxx --password=xxx --db=xxx --garbage else
           - createdb -U xxx  -h 0.0.0.0 fooo
           - psql -h 0.0.0.0 -U xxx -c "\l" 
-          - psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 9.6
+          - psql -h 0.0.0.0 -U xxx -c "SELECT version()" | grep 9.6
           - sem-service status postgres
 
