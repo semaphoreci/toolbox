@@ -18,7 +18,6 @@ service::pull_image() {
 }
 
 service::start_mysql() {
-  echo "params : $@"
   service_version=$1
   shift
   docker_params="$@"
@@ -142,6 +141,7 @@ service::start() {
       shift
 
       service_version=$(sem-service-check-params "mysql $@")
+      echo "$service_version"
       service::duration service::start_mysql $service_version total $service_name
       exit 0
       ;;
