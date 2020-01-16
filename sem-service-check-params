@@ -12,7 +12,7 @@ params-check::mysql () {
     params="${tmp:-$default_params}"
   fi
   if [ "$default_params" != "$params" ];then
-    username=""; password=""; db=""; port=""; dbname="";
+    username=""; password=""; db=""; dbname="";
     for words in $params; do
       case $words in
        --username=* )
@@ -31,7 +31,7 @@ params-check::mysql () {
       esac
     done
     dbname=${dbname:-'test'}
-    default_params="$default_params$username$password$port$db$dbname "
+    [ "$username$password" ] && default_params="$default_params$username$password$port$db$dbname "
   fi
   echo "$service_version $default_params"
 }
