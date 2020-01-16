@@ -45,8 +45,7 @@ blocks:
           - mysql --host=0.0.0.0 -utest -ptest -e 'SHOW VARIABLES like "version";' 
           - sem-service status mysql
           - sem-service stop mysql
-          - sem-service start mysql 8.0.19 --username=test --password=test --db=fooo
-          - mysql --host=0.0.0.0 -utest -ptest -e "show databases" | grep fooo
+          - sem-service start mysql 8.0.19 --username=test --password=test --garbage
           - mysql --host=0.0.0.0 -utest -ptest -e "show databases" 
           - mysql --host=0.0.0.0 -utest -ptest -e 'SHOW VARIABLES like "version";' 
           - sem-service status mysql
