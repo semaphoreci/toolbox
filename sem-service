@@ -42,7 +42,6 @@ service::start_postgres() {
 
   service::pull_image "postgres:$service_version"
 
-#  docker_output=$(docker run --net=host --rm --name postgres -e POSTGRES_PASSWORD=semaphore -d postgres:$service_version)
   docker_output=$(docker run $docker_params postgres:$service_version)
   # run only if previous command exited successfully
   service::duration sem-dockerize 5432 boot postgress
@@ -59,10 +58,8 @@ service::start_redis() {
   shift
   docker_params="$@"
 
-#  service_version="${1:-4}"
   service::pull_image "redis:$service_version"
 
-#  docker_output=$(docker run --net=host --rm --name redis -d redis:$service_version)
   docker_output=$(docker run $docker_params redis:$service_version)
 
   # run only if previous command exited successfully
