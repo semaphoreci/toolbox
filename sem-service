@@ -36,11 +36,14 @@ service::start_mysql() {
 }
 
 service::start_postgres() {
-  service_version="${1:-9.6}"
+  service_version=$1
+  shift
+  docker_params="$@"
+
   service::pull_image "postgres:$service_version"
 
-  docker_output=$(docker run --net=host --rm --name postgres -e POSTGRES_PASSWORD=semaphore -d postgres:$service_version)
-
+#  docker_output=$(docker run --net=host --rm --name postgres -e POSTGRES_PASSWORD=semaphore -d postgres:$service_version)
+  docker_output=$(docker run $docker_params postgres:$service_version)
   # run only if previous command exited successfully
   service::duration sem-dockerize 5432 boot postgress
 
@@ -146,7 +149,7 @@ service::start() {
       ;;
     "postgres" )
       shift
-
+      service_version=$(sem-service-check-params postgres $@)
       service::duration service::start_postgres $service_version total $service_name
       exit 0
       ;;
