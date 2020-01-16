@@ -4,6 +4,8 @@ params-check::mysql () {
   default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql'
   service_version="5.6"
   params=""
+  echo $@
+  exit 0
   if [ "${1:0:1}" == "-" ];then
     params="$@"
   else
@@ -15,16 +17,16 @@ params-check::mysql () {
     username=""; password=""; db=""; port="";
     for words in $params; do
       case $words in
-       --username=*)
+       --username=* )
          username=" -e MYSQL_USER=$(echo $words|cut -d'=' -f2) "
        ;;
-       --password=*)
+       --password=* )
          password=" -e MYSQL_PASSWORD=$(echo $words|cut -d'=' -f2) "
        ;;
-       --db=*)
+       --db=* )
          db=" -e MYSQL_DATABASE=$(echo $words|cut -d'=' -f2) "
        ;;
-       --port=*)
+       --port=* )
          port=" -p $(echo $words|cut -d'=' -f2):3306 "
        ;;
        *)
