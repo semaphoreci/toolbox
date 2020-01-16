@@ -3,7 +3,7 @@
 params-check::mysql () {
   default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql'
   service_version="5.6"
-  final_param=""  
+
   if [ "${1:0:1}" == "-" ];then
     params="$@"
   else
@@ -32,9 +32,9 @@ params-check::mysql () {
        ;;
       esac
     done
-    default_param="$default_param$username$password$port$db"
+    default_params="$default_params$username$password$port$db"
   fi
-  echo "$service_version $default_param"
+  echo "$service_version $default_params"
 }
 params-check::main () {
   case "$1" in
