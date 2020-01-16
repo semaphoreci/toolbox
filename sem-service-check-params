@@ -3,6 +3,7 @@
 params-check::mysql () {
   default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql'
   service_version="5.6"
+  params=""
 
   if [ "${1:0:1}" == "-" ];then
     params="$@"
@@ -41,7 +42,8 @@ params-check::main () {
   case "$1" in
     "mysql" )
       shift
-      params-check::mysql "$@"
+      test_intern=$(params-check::mysql "$@")
+      echo "return of mysql params contruct: $test_intern"
       ;;
     * )
       shift
