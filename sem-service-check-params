@@ -4,8 +4,6 @@ params-check::mysql () {
   default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql'
   service_version="5.6"
   params=""
-  echo "$service_version $default_params" 
-  exit 0
   if [ "${1:0:1}" == "-" ];then
     params="$@"
   else
