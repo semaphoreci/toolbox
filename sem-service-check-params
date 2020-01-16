@@ -24,9 +24,6 @@ params-check::mysql () {
        --db=* )
          db=" -e MYSQL_DATABASE=$(echo $words|cut -d'=' -f2) "
        ;;
-       --port=* )
-         port=" -p $(echo $words|cut -d'=' -f2):3306 "
-       ;;
        *)
          ##>&2 echo "Unknown parameter $words"
        ;;
