@@ -40,7 +40,7 @@ params-check::mysql () {
 }
 params-check::main () {
   check_name=$1
- echo "_$check_name_"
+ echo "_$@."
   case "$check_name" in
     "mysql" )
       #shift
