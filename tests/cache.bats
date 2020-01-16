@@ -65,7 +65,7 @@ normalize_key() {
   refute_output --partial "command not found"
 
   # retry and ssh-session-cli sem-dockerize are changed by setup commands in the job environment
-  git checkout retry ssh-session-cli sem-dockerize
+  git checkout retry ssh-session-cli sem-dockerize sem-service-check-params
   run git status
 
   assert_output --partial "nothing to commit"
@@ -90,7 +90,7 @@ normalize_key() {
   refute_output --partial "command not found"
 
   # retry and ssh-session-cli are changed by setup commands in the job environment
-  git checkout retry ssh-session-cli sem-dockerize
+  git checkout retry ssh-session-cli sem-dockerize sem-service-check-params
   run git status
 
   assert_output --partial "nothing to commit"
@@ -216,7 +216,7 @@ normalize_key() {
   refute_output --partial "command not found"
 
   # retry and ssh-session-cli are changed by setup commands in the job environment
-  git checkout retry ssh-session-cli sem-dockerize
+  git checkout retry ssh-session-cli sem-dockerize sem-service-check-params
   run git status
 
   assert_output --partial "nothing to commit"
@@ -242,7 +242,7 @@ normalize_key() {
   refute_output --partial "command not found"
 
   # retry and ssh-session-cli are changed by setup commands in the job environment
-  git checkout retry ssh-session-cli sem-dockerize
+  git checkout retry ssh-session-cli sem-dockerize sem-service-check-params
   run git status
 
   assert_output --partial "nothing to commit"
