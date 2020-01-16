@@ -39,8 +39,8 @@ params-check::mysql () {
 params-check::main () {
   case "$1" in
     "mysql" )
-      #shift
-      params-check::mysql ${@:1}
+      shift
+      params-check::mysql $@
       ;;
     * )
       shift
