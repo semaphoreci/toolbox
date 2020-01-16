@@ -18,6 +18,7 @@ service::pull_image() {
 }
 
 service::start_mysql() {
+  echo "params : $@"
   service_version=$1
   shift
   docker_params="$@"
