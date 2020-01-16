@@ -5,7 +5,7 @@ params-check::mysql () {
   service_version="5.6"
   params=""
   echo "$service_version $default_params" 
-  return 0
+  exit 0
   if [ "${1:0:1}" == "-" ];then
     params="$@"
   else
@@ -42,7 +42,7 @@ params-check::main () {
   case "$1" in
     "mysql" )
       shift
-      test_intern=$(params-check::mysql "$@")
+      test_intern=$(params-check::mysql $@)
       echo "return of mysql params contruct: $test_intern"
       ;;
     * )
