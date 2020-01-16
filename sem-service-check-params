@@ -39,7 +39,8 @@ params-check::mysql () {
   echo "$service_version $default_params"
 }
 params-check::main () {
-  case $1 in
+  check_name=$1
+  case "$check_name" in
     "mysql" )
       #shift
       echo "$@"
