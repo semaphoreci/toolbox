@@ -39,15 +39,10 @@ params-check::mysql () {
   echo "$service_version $default_params"
 }
 params-check::main () {
-  check_name=$1
- echo "_$@."
-  case "$check_name" in
+  case "$1" in
     "mysql" )
       #shift
-      echo "$@"
-      test_intern=$(params-check::mysql $@)
-      echo "return of mysql params contruct: $test_intern"
-      exit 0
+      params-check::mysql $2
       ;;
     * )
       shift
