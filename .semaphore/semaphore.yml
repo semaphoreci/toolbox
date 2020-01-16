@@ -21,7 +21,7 @@ blocks:
 
       - name: MySQL
         commands:
-          - sem-service start mysql 5.7 --username=test --password=test --garbage else
+          - sem-service start mysql 8.0.19 --username=test --password=test --garbage else
           - mysql --host=0.0.0.0 -utest -ptest -e "show databases" 
           - mysql --host=0.0.0.0 -utest -ptest -e 'SHOW VARIABLES like "version";' 
           - sem-service status mysql
