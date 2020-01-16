@@ -141,7 +141,7 @@ service::start() {
       shift
 
       service_version=$(sem-service-check-params "mysql $@")
-      echo "$service_version"
+      echo "service_version: $service_version"
       service::duration service::start_mysql $service_version total $service_name
       exit 0
       ;;
