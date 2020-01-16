@@ -55,10 +55,15 @@ service::start_postgres() {
 }
 
 service::start_redis() {
-  service_version="${1:-4}"
+  service_version=$1
+  shift
+  docker_params="$@"
+
+#  service_version="${1:-4}"
   service::pull_image "redis:$service_version"
 
-  docker_output=$(docker run --net=host --rm --name redis -d redis:$service_version)
+#  docker_output=$(docker run --net=host --rm --name redis -d redis:$service_version)
+  docker_output=$(docker run $docker_params redis:$service_version)
 
   # run only if previous command exited successfully
   service::duration sem-dockerize 6379 boot redis
@@ -142,7 +147,6 @@ service::start() {
   case "$service_name" in
     "mysql" )
       shift
-
       service_version=$(sem-service-check-params mysql $@)
       service::duration service::start_mysql $service_version total $service_name
       exit 0
@@ -155,7 +159,7 @@ service::start() {
       ;;
     "redis" )
       shift
-
+      service_version=$(sem-service-check-params redis $@)
       service::duration service::start_redis $service_version total $service_name
       exit 0
       ;;

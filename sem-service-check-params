@@ -71,6 +71,20 @@ params-check::postgres () {
   echo "$service_version $default_params"
 }
 
+params-check::redis () {
+  default_params='--net=host --rm --name redis -d'
+  service_version="4"
+  params=""
+  if [ "${1:0:1}" == "-" ];then
+    params="$@"
+  else
+    service_version="${1:-$service_version}"
+    tmp="${@:2}"
+    params="${tmp:-$default_params}"
+  fi
+  echo "$service_version $default_params"
+}
+
 
 params-check::main () {
   case "$1" in
@@ -81,6 +95,10 @@ params-check::main () {
     "postgres" )
       shift
       params-check::postgres $@
+      ;;
+    "redis" )
+      shift
+      params-check::redis $@
       ;;
 
     * )

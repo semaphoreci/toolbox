@@ -48,3 +48,10 @@ blocks:
           - psql -h 0.0.0.0 -U xxx -c "SELECT version()" | grep 11
           - sem-service status postgres
 
+      - name: Redis
+        commands:
+          - sem-service start redis
+          - sem-service status redis
+          - sem-service stop redis
+          - sem-service start redis 5
+          - sem-service status redis
