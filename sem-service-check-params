@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+params-check::mysql () {
+  default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql'
+  service_version="5.6"
+  final_param=""  
+  if [ "${1:0:1}" == "-" ];then
+    params="$@"
+  else
+    service_version="${1:-$service_version}"
+    tmp="${@:2}"
+    params="${tmp:-$default_params}"
+  fi
+  if [ "$default_params" != "$params" ];then
+    username=""; password=""; db=""; port="";
+    for words in $params; do
+      case $words in
+       --username=*)
+         username=" -e MYSQL_USER=$(echo $words|cut -d'=' -f2) "
+       ;;
+       --password=*)
+         password=" -e MYSQL_PASSWORD=$(echo $words|cut -d'=' -f2) "
+       ;;
+       --db=*)
+         db=" -e MYSQL_DATABASE=$(echo $words|cut -d'=' -f2) "
+       ;;
+       --port=*)
+         port=" -p $(echo $words|cut -d'=' -f2):3306 "
+       ;;
+       *)
+         ##>&2 echo "Unknown parameter $words"
+       ;;
+      esac
+    done
+    default_param="$default_param$username$password$port$db"
+  fi
+  echo "$service_version $default_param"
+}
+params-check::main () {
+  case "$1" in
+    "mysql" )
+      shift
+      params-check::mysql "$@"
+      ;;
+    * )
+      shift
+      echo "$@"
+      ##params error##
+      ;;
+  esac
+}
+
+params-check::main "$@"

@@ -18,10 +18,12 @@ service::pull_image() {
 }
 
 service::start_mysql() {
-  service_version="${1:-5.6}"
+  service_version=$1
+  shift
+  docker_params="$@"
   service::pull_image "mysql:$service_version"
 
-  docker_output=$(docker run --net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql mysql:$service_version)
+  docker_output=$(docker run $docker_params mysql:$service_version)
 
   # run only if previous command exited successfully
   service::duration sem-dockerize 3306 boot mysql
@@ -126,7 +128,7 @@ service::start_rabbitmq() {
 
 service::start() {
   service_name=$1
-  service_version=$2
+  #service_version=$2
   if [ -z "$service_name" ]; then
     service::print_usage
     exit 1
@@ -138,6 +140,7 @@ service::start() {
     "mysql" )
       shift
 
+      service_version=$(sem-service-check-params "mysql $@")
       service::duration service::start_mysql $service_version total $service_name
       exit 0
       ;;
