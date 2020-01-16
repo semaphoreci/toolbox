@@ -22,7 +22,8 @@ params-check::mysql () {
          password=" -e MYSQL_PASSWORD=$(echo $words|cut -d'=' -f2) "
        ;;
        --db=* )
-         db=" -e MYSQL_DATABASE=$(echo $words|cut -d'=' -f2) "
+         dbname=${(echo $words|cut -d'=' -f2):-'test'}
+         db=" -e MYSQL_DATABASE=$dbname "
        ;;
        *)
          ##>&2 echo "Unknown parameter $words"
