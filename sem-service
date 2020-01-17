@@ -91,7 +91,7 @@ service::start_mongodb() {
   shift
   docker_params="$@"
 
-  service::pull_image "mongodb:$service_version"
+  service::pull_image "mongo:$service_version"
 
   docker_output=$(docker run $docker_params mongo:$service_version)
 
