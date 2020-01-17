@@ -91,7 +91,7 @@ service::start_mongodb() {
   shift
   docker_params="$@"
 
-  service::pull_image "redis:$service_version"
+  service::pull_image "mongodb:$service_version"
 
   docker_output=$(docker run $docker_params mongo:$service_version)
 
@@ -171,7 +171,7 @@ service::start() {
       ;;
     "mongodb" )
       shift
-
+      service_version=$(sem-service-check-params mongodb $@)
       service::duration service::start_mongodb $service_version total $service_name
       exit 0
       ;;
