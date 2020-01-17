@@ -55,3 +55,14 @@ blocks:
           - sem-service stop redis
           - sem-service start redis 5
           - sem-service status redis
+
+      - name: mongodb
+        commands:
+          - sem-service start mongodb
+          - curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
+          - sem-service status mongodb
+          - sem-service stop mongodb
+          - sem-service start mongodb 3.2
+          - curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
+          - sem-service status mongodb
+          - sem-service stop mongodb

@@ -82,6 +82,43 @@ params-check::redis () {
     tmp="${@:2}"
     params="${tmp:-$default_params}"
   fi
+
+  echo "$service_version $default_params"
+}
+
+params-check::mongodb () {
+  default_params='--net=host --rm --name mongodb -d'
+  service_version="4.1"
+  params=""
+  if [ "${1:0:1}" == "-" ];then
+    params="$@"
+  else
+    service_version="${1:-$service_version}"
+    tmp="${@:2}"
+    params="${tmp:-$default_params}"
+  fi
+  if [ "$default_params" != "$params" ];then
+    username=""; password=""; db=""; dbname="";
+    for words in $params; do
+      case $words in
+       --username=* )
+         username=" -e MONGO_INITDB_ROOT_USERNAME=$(echo $words|cut -d'=' -f2) "
+       ;;
+       --password=* )
+         password=$(echo $words|cut -d'=' -f2) 
+         password=" -e MONGO_INITDB_ROOT_PASSWORD=${password:-'postgres'}"
+       ;;
+       --db=* )
+         dbname=$(echo $words|cut -d'=' -f2)
+       ;;
+       *)
+         ##>&2 echo "Unknown parameter $words"
+       ;;
+      esac
+    done
+    [ "$dbname" ] && db=" -e MONGO_INITDB_DATABASE=$dbname"
+    default_params="$default_params$username$password$db "
+  fi
   echo "$service_version $default_params"
 }
 
@@ -99,6 +136,10 @@ params-check::main () {
     "redis" )
       shift
       params-check::redis $@
+      ;;
+    "mongodb" )
+      shift
+      params-check::mongodb $@
       ;;
 
     * )

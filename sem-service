@@ -87,10 +87,13 @@ service::start_memcached() {
 }
 
 service::start_mongodb() {
-  service_version="${1:-4.1}"
-  service::pull_image "mongo:$service_version"
+  service_version=$1
+  shift
+  docker_params="$@"
 
-  docker_output=$(docker run --net=host --rm --name mongodb -d mongo:$service_version)
+  service::pull_image "redis:$service_version"
+
+  docker_output=$(docker run $docker_params mongo:$service_version)
 
   # run only if previous command exited successfully
   service::duration sem-dockerize 27017 -timeout 30s 2>/dev/null boot mongodb
