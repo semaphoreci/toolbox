@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 params-check::mysql () {
-  default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql -v /var/run:/var/run '
+  default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql -v /var/run/mysqld:/var/run/mysqld '
   service_version="5.6"
+  sudo mkdir -p /var/run/mysqld ; sudo chmod -R 0777 /var/run/mysqld
   params=""
   if [ "${1:0:1}" == "-" ];then
     params="$@"
