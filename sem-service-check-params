@@ -108,16 +108,12 @@ params-check::mongodb () {
          password=$(echo $words|cut -d'=' -f2) 
          password=" -e MONGO_INITDB_ROOT_PASSWORD=${password:-'postgres'}"
        ;;
-       --db=* )
-         dbname=$(echo $words|cut -d'=' -f2)
-       ;;
        *)
          ##>&2 echo "Unknown parameter $words"
        ;;
       esac
     done
-    [ "$dbname" ] && db=" -e MONGO_INITDB_DATABASE=$dbname"
-    default_params="$default_params$username$password$db "
+    default_params="$default_params$username$password "
   fi
   echo "$service_version $default_params"
 }
