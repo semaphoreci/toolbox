@@ -100,12 +100,12 @@ params-check::mongodb () {
     params="${tmp:-$default_params}"
   fi
   if [ "$default_params" != "$params" ];then
-    username=""; password=""; db=""; dbname="";
+    username=""; password="" 
     for words in $params; do
       case $words in
        --username=* )
          username=$(echo $words|cut -d'=' -f2)
-         [ "$username" ]username=" -e MONGO_INITDB_ROOT_USERNAME=$username "
+         [ "$username" ] && username=" -e MONGO_INITDB_ROOT_USERNAME=$username "
        ;;
        --password=* )
          password=$(echo $words|cut -d'=' -f2)
