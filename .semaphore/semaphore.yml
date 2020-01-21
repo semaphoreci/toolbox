@@ -111,6 +111,7 @@ blocks:
 
       - name: mongodb
         commands:
+          - sudo apt-get install -y mongodb-clients
           - sem-service start mongodb
           - curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
           - sem-service status mongodb
