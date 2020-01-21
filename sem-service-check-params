@@ -104,11 +104,12 @@ params-check::mongodb () {
     for words in $params; do
       case $words in
        --username=* )
-         username=" -e MONGO_INITDB_ROOT_USERNAME=$(echo $words|cut -d'=' -f2) "
+         username=$(echo $words|cut -d'=' -f2)
+         [ "$username" ]username=" -e MONGO_INITDB_ROOT_USERNAME=$username "
        ;;
        --password=* )
-         password=$(echo $words|cut -d'=' -f2) 
-         password=" -e MONGO_INITDB_ROOT_PASSWORD=${password:-'postgres'}"
+         password=$(echo $words|cut -d'=' -f2)
+         [ "$password" ] && password=" -e MONGO_INITDB_ROOT_PASSWORD=$password "
        ;;
        *)
          ##>&2 echo "Unknown parameter $words"
