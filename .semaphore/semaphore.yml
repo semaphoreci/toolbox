@@ -29,9 +29,13 @@ blocks:
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
           - bats tests/autocache.bats
+          - ls -lah
           - bats tests/cache.bats
+          - ls -lah
           - bats tests/libcheckout.bats
+          - ls -lah
           - bats tests/base.bats
+          - ls -lah
 
       - name: Sem version tests
         commands:
