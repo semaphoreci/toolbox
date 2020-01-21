@@ -37,8 +37,9 @@ params-check::mysql () {
 }
 
 params-check::postgres () {
-  default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgres'
+  default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgres -v /var/run/postgresql:/var/run/postgresql'
   service_version="9.6"
+  sudo mkdir -p /var/run/postgresql ; sudo chmod -R 0777 /var/run/postgresql
   params=""
   if [ "${1:0:1}" == "-" ];then
     params="$@"
