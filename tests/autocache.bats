@@ -40,7 +40,7 @@ teardown() {
 
   git clone git@github.com:semaphoreci-demos/semaphore-demo-python-django.git
   cd semaphore-demo-python-django
-  sudo pip install -r requirements.txt --cache-dir .pip_cache > /dev/null
+  pip install -r requirements.txt --cache-dir .pip_cache > /dev/null
 
   run cache store
 
@@ -48,7 +48,7 @@ teardown() {
   assert_output --partial "* Detected requirements.txt"
   assert_output --partial "Upload complete."
 
-  sudo rm -rf .pip_cache
+  rm -rf .pip_cache
 
   run cache restore
   assert_success

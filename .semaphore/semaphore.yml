@@ -26,7 +26,6 @@ blocks:
       - name: Bats tests
         commands:
           - sem-version python 3.7
-          - sem-version python 2.7
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
           - bats tests/autocache.bats
