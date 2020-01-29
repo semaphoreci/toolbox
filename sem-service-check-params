@@ -118,38 +118,6 @@ params-check::mongodb () {
   echo "$service_version $default_params"
 }
 
-params-check::mongodb () {
-  default_params='--net=host --rm --name mongodb -d'
-  service_version="4.1"
-  params=""
-  if [ "${1:0:1}" == "-" ];then
-    params="$@"
-  else
-    service_version="${1:-$service_version}"
-    tmp="${@:2}"
-    params="${tmp:-$default_params}"
-  fi
-  if [ "$default_params" != "$params" ];then
-    username=""; password="" 
-    for words in $params; do
-      case $words in
-       --username=* )
-         username=$(echo $words|cut -d'=' -f2)
-         [ "$username" ] && username=" -e MONGO_INITDB_ROOT_USERNAME=$username "
-       ;;
-       --password=* )
-         password=$(echo $words|cut -d'=' -f2)
-         [ "$password" ] && password=" -e MONGO_INITDB_ROOT_PASSWORD=$password "
-       ;;
-       *)
-       ;;
-      esac
-    done
-    default_params="$default_params$username$password "
-  fi
-  echo "$service_version $default_params"
-}
-
 params-check::main () {
   case "$1" in
     "mysql" )
