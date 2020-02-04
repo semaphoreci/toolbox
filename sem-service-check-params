@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+
+params-check::mysql () {
+  default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql -v /var/run/mysqld:/var/run/mysqld '
+  service_version="5.6"
+  sudo mkdir -p /var/run/mysqld ; sudo chmod -R 0777 /var/run/mysqld
+  params=""
+  if [ "${1:0:1}" == "-" ];then
+    params="$@"
+  else
+    service_version="${1:-$service_version}"
+    tmp="${@:2}"
+    params="${tmp:-$default_params}"
+  fi
+  if [ "$default_params" != "$params" ];then
+    username=""; password=""; db=" -e MYSQL_DATABASE="; dbname="";
+    for words in $params; do
+      case $words in
+       --username=* )
+         username=" -e MYSQL_USER=$(echo $words|cut -d'=' -f2) "
+       ;;
+       --password=* )
+         password=" -e MYSQL_PASSWORD=$(echo $words|cut -d'=' -f2) "
+       ;;
+       --db=* )
+         dbname=$(echo $words|cut -d'=' -f2)
+       ;;
+       *)
+       ;;
+      esac
+    done
+    dbname=${dbname:-'test'}
+    [ "$username$password" ] && default_params="$default_params$username$password$db$dbname "
+  fi
+  echo "$service_version $default_params"
+}
+
+params-check::postgres () {
+  default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgres -v /var/run/postgresql:/var/run/postgresql'
+  service_version="9.6"
+  sudo mkdir -p /var/run/postgresql ; sudo chmod -R 0777 /var/run/postgresql
+  params=""
+  if [ "${1:0:1}" == "-" ];then
+    params="$@"
+  else
+    service_version="${1:-$service_version}"
+    tmp="${@:2}"
+    params="${tmp:-$default_params}"
+  fi
+  if [ "$default_params" != "$params" ];then
+    username=""; password=""; db=""; dbname="";
+    for words in $params; do
+      case $words in
+       --username=* )
+         username=" -e POSTGRES_USER=$(echo $words|cut -d'=' -f2) "
+       ;;
+       --password=* )
+         password=$(echo $words|cut -d'=' -f2) 
+         password=" -e POSTGRES_PASSWORD=${password:-'postgres'}"
+       ;;
+       --db=* )
+         dbname=$(echo $words|cut -d'=' -f2)
+       ;;
+       *)
+       ;;
+      esac
+    done
+    [ "$dbname" ] && db=" -e POSTGRES_DB=$dbname"
+    [ "$username$password" ] && default_params="$default_params$username$password$db "
+  fi
+  echo "$service_version $default_params"
+}
+
+params-check::redis () {
+  default_params='--net=host --rm --name redis -d'
+  service_version="4"
+  params=""
+  if [ "${1:0:1}" == "-" ];then
+    params="$@"
+  else
+    service_version="${1:-$service_version}"
+    tmp="${@:2}"
+    params="${tmp:-$default_params}"
+  fi
+
+  echo "$service_version $default_params"
+}
+
+params-check::mongodb () {
+  default_params='--net=host --rm --name mongodb -d'
+  service_version="4.1"
+  params=""
+  if [ "${1:0:1}" == "-" ];then
+    params="$@"
+  else
+    service_version="${1:-$service_version}"
+    tmp="${@:2}"
+    params="${tmp:-$default_params}"
+  fi
+  if [ "$default_params" != "$params" ];then
+    username=""; password="" 
+    for words in $params; do
+      case $words in
+       --username=* )
+         username=$(echo $words|cut -d'=' -f2)
+         [ "$username" ] && username=" -e MONGO_INITDB_ROOT_USERNAME=$username "
+       ;;
+       --password=* )
+         password=$(echo $words|cut -d'=' -f2)
+         [ "$password" ] && password=" -e MONGO_INITDB_ROOT_PASSWORD=$password "
+       ;;
+       *)
+       ;;
+      esac
+    done
+    default_params="$default_params$username$password "
+  fi
+  echo "$service_version $default_params"
+}
+
+params-check::main () {
+  case "$1" in
+    "mysql" )
+      shift
+      params-check::mysql $@
+      ;;
+    "postgres" )
+      shift
+      params-check::postgres $@
+      ;;
+    "redis" )
+      shift
+      params-check::redis $@
+      ;;
+    "mongodb" )
+      shift
+      params-check::mongodb $@
+      ;;
+    * )
+      shift
+      echo "$@"
+      ;;
+  esac
+}
+
+params-check::main "$@"

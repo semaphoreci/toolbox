@@ -18,11 +18,12 @@ service::pull_image() {
 }
 
 service::start_mysql() {
-  service_version="${1:-5.6}"
+  service_version=$1
+  shift
+  docker_params="$@"
+
   service::pull_image "mysql:$service_version"
-
-  docker_output=$(docker run --net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql mysql:$service_version)
-
+  docker_output=$(docker run $docker_params mysql:$service_version)
   # run only if previous command exited successfully
   service::duration sem-dockerize 3306 boot mysql
 
@@ -34,11 +35,12 @@ service::start_mysql() {
 }
 
 service::start_postgres() {
-  service_version="${1:-9.6}"
+  service_version=$1
+  shift
+  docker_params="$@"
+
   service::pull_image "postgres:$service_version"
-
-  docker_output=$(docker run --net=host --rm --name postgres -e POSTGRES_PASSWORD=semaphore -d postgres:$service_version)
-
+  docker_output=$(docker run $docker_params postgres:$service_version)
   # run only if previous command exited successfully
   service::duration sem-dockerize 5432 boot postgress
 
@@ -50,11 +52,11 @@ service::start_postgres() {
 }
 
 service::start_redis() {
-  service_version="${1:-4}"
+  service_version=$1
+  shift
+  docker_params="$@"
   service::pull_image "redis:$service_version"
-
-  docker_output=$(docker run --net=host --rm --name redis -d redis:$service_version)
-
+  docker_output=$(docker run $docker_params redis:$service_version)
   # run only if previous command exited successfully
   service::duration sem-dockerize 6379 boot redis
 
@@ -69,7 +71,6 @@ service::start_memcached() {
   service::pull_image "memcached:$service_version"
 
   docker_output=$(docker run --net=host --rm --name memcached -d memcached:$service_version)
-
   # run only if previous command exited successfully
   service::duration sem-dockerize 11211 boot memcached
 
@@ -80,11 +81,12 @@ service::start_memcached() {
 }
 
 service::start_mongodb() {
-  service_version="${1:-4.1}"
+  service_version=$1
+  shift
+  docker_params="$@"
+
   service::pull_image "mongo:$service_version"
-
-  docker_output=$(docker run --net=host --rm --name mongodb -d mongo:$service_version)
-
+  docker_output=$(docker run $docker_params mongo:$service_version)
   # run only if previous command exited successfully
   service::duration sem-dockerize 27017 -timeout 30s 2>/dev/null boot mongodb
 
@@ -137,19 +139,19 @@ service::start() {
   case "$service_name" in
     "mysql" )
       shift
-
+      service_version=$(sem-service-check-params mysql $@)
       service::duration service::start_mysql $service_version total $service_name
       exit 0
       ;;
     "postgres" )
       shift
-
+      service_version=$(sem-service-check-params postgres $@)
       service::duration service::start_postgres $service_version total $service_name
       exit 0
       ;;
     "redis" )
       shift
-
+      service_version=$(sem-service-check-params redis $@)
       service::duration service::start_redis $service_version total $service_name
       exit 0
       ;;
@@ -161,7 +163,7 @@ service::start() {
       ;;
     "mongodb" )
       shift
-
+      service_version=$(sem-service-check-params mongodb $@)
       service::duration service::start_mongodb $service_version total $service_name
       exit 0
       ;;

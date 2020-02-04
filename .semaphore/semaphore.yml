@@ -25,6 +25,9 @@ blocks:
 
       - name: Bats tests
         commands:
+          - cache clear
+          - sudo apt-get install -y python3.8-dev
+          - sem-version python 3.8
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
           - bats tests/autocache.bats
@@ -64,6 +67,11 @@ blocks:
           - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
           - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.7
           - sem-service status mysql
+          - sem-service stop mysql
+          - sem-service start mysql 8.0.19 --username=test --password=test --garbage else
+          - mysql  -utest -ptest -e "show databases"
+          - mysql  -utest -ptest -e 'SHOW VARIABLES like "version";'
+          - sem-service stop mysql
 
       - name: PostgreSQL
         commands:
@@ -77,6 +85,12 @@ blocks:
           - createdb -U postgres -h 0.0.0.0 fooo
           - psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
           - psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 11
+          - sem-service status postgres
+          - sem-service stop postgres
+          - sem-service start postgres 11 --username=xxx --password=xxx --db=xxx --garbage else
+          - createdb -U xxx  -h 0.0.0.0 fooo
+          - psql -h 0.0.0.0 -U xxx -c "\l"
+          - psql -U xxx -c "SELECT version()" | grep 11
           - sem-service status postgres
 
       - name: Redis
@@ -97,9 +111,9 @@ blocks:
           - sem-service start rabbitmq
           - sem-service status rabbitmq
 
-
       - name: mongodb
         commands:
+          - sudo apt-get install -y mongodb-clients
           - sem-service start mongodb
           - curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
           - sem-service status mongodb
@@ -108,6 +122,9 @@ blocks:
           - curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
           - sem-service status mongodb
           - sem-service stop mongodb
+          - sem-service stop mongodb
+          - sem-service start mongodb 4.2 --username=xxx --password=xxx
+          - echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
       - name: elasticsearch
         commands:
