@@ -37,28 +37,63 @@ install_cmd() {
 
 install_cmd ln -sf ~/.toolbox/retry $INSTALL_PATH/retry
 install_cmd chmod +x $INSTALL_PATH/retry
-[[ $? -eq 0 ]] && echo "retry installed"
+if [[ $? -eq 0 ]];then 
+  echo "retry installed"
+  echo "toolbox_toolbox_install_error_rate_retry 0" >> /tmp/toolbox_metrics
+else
+  echo "toolbox_toolbox_install_error_rate_retry 1" >> /tmp/toolbox_metrics
+fi
 
 install_cmd ln -sf ~/.toolbox/ssh-session-cli $INSTALL_PATH/semaphore
 install_cmd chmod +x $INSTALL_PATH/semaphore
-[[ $? -eq 0 ]] && echo "ssh-session-cli installed"
+if [[ $? -eq 0 ]];then 
+  echo "ssh-session-cli installed"
+  echo "toolbox_toolbox_install_error_rate_ssh-session-cli 0" >> /tmp/toolbox_metrics
+else
+  echo "toolbox_toolbox_install_error_rate_ssh-session-cli 1" >> /tmp/toolbox_metrics
+fi
+
 
 
 install_cmd ln -sf ~/.toolbox/cache $INSTALL_PATH/cache
 install_cmd chmod +x $INSTALL_PATH/cache
-[[ $? -eq 0 ]] && echo "cache installed"
+if [[ $? -eq 0 ]];then 
+  echo "cache installed"
+  echo "toolbox_toolbox_install_error_rate_cache 0" >> /tmp/toolbox_metrics
+else
+  echo "toolbox_toolbox_install_error_rate_cache 1" >> /tmp/toolbox_metrics
+fi
+
 
 install_cmd ln -sf ~/.toolbox/sem-service $INSTALL_PATH/sem-service
 install_cmd chmod +x $INSTALL_PATH/sem-service
-[[ $? -eq 0 ]] && echo "sem-service installed"
+if [[ $? -eq 0 ]];then 
+  echo "sem-service installed"
+  echo "toolbox_toolbox_install_error_rate_sem-service 0" >> /tmp/toolbox_metrics
+else
+  echo "toolbox_toolbox_install_error_rate_sem-service 1" >> /tmp/toolbox_metrics
+fi
+
 
 install_cmd ln -sf ~/.toolbox/sem-dockerize $INSTALL_PATH/sem-dockerize
 install_cmd chmod +x $INSTALL_PATH/sem-dockerize
-[[ $? -eq 0 ]] && echo "sem-dockerize installed"
+if [[ $? -eq 0 ]];then 
+  echo "sem-dockerize installed"
+  echo "toolbox_toolbox_install_error_rate_sem-dockerize 0" >> /tmp/toolbox_metrics
+else
+  echo "toolbox_toolbox_install_error_rate_sem-dockerize 1" >> /tmp/toolbox_metrics
+fi
+
 
 install_cmd ln -sf ~/.toolbox/sem-service-check-params $INSTALL_PATH/sem-service-check-params
 install_cmd chmod +x $INSTALL_PATH/sem-service-check-params
-[[ $? -eq 0 ]] && echo "sem-service-check-params installed"
+if [[ $? -eq 0 ]];then 
+  echo "sem-service-check-params installed"
+  echo "toolbox_toolbox_install_error_rate_sem-service-check-params 0" >> /tmp/toolbox_metrics
+else
+  echo "toolbox_toolbox_install_error_rate_sem-service-check-params 1" >> /tmp/toolbox_metrics
+fi
+
 
 # Install Artifact Cli
 install_cmd curl -s -L --retry 5 -o artifact.tar.gz https://github.com/semaphoreci/artifact/releases/download/${ARTIFACT_CLI_VERSION}/artifact_${DIST}_x86_64.tar.gz
@@ -66,5 +101,12 @@ install_cmd tar xzf artifact.tar.gz
 install_cmd mv artifact $INSTALL_PATH/artifact
 install_cmd chmod +x $INSTALL_PATH/artifact
 install_cmd rm -f artifact.tar.gz LICENSE README.md
-[[ $? -eq 0 ]] && echo "artifacts installed"
+if [[ $? -eq 0 ]];then 
+  echo "artifacts installed"
+  echo "toolbox_toolbox_install_error_rate_artifacts 0" >> /tmp/toolbox_metrics
+else
+  echo "toolbox_toolbox_install_error_rate_artifacts 1" >> /tmp/toolbox_metrics
+fi
+
+
 
