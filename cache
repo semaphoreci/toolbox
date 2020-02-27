@@ -449,14 +449,14 @@ Fallback example:
     cache::err "Incorrect number of arguments!"
   else
     semaphore_cache_keys=$1
-    cache::download "keys" "/tmp/cache_keys"
+    cache::download "keys" "/tmp/cache_keys_$$"
 
     for key in ${semaphore_cache_keys//,/ }; do
       cache_key=$(cache::normalize_string $key)
-      match=$(grep -m 1 ${cache_key} /tmp/cache_keys)
+      match=$(grep -m 1 ${cache_key} /tmp/cache_keys_$$)
 
       if [[ ! -z "${match}" ]]; then
-        exact_match=$(grep -x ${cache_key} /tmp/cache_keys)
+        exact_match=$(grep -x ${cache_key} /tmp/cache_keys_$$)
 
         if [[ "${exact_match}" == "${cache_key}" ]]; then
           cache::log "HIT: ${cache_key}, using key ${cache_key}"
@@ -473,7 +473,7 @@ Fallback example:
       fi
     done
 
-    rm -f /tmp/cache_keys
+    rm -f /tmp/cache_keys_$$
   fi
 }
 
