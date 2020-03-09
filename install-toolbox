@@ -1,9 +1,30 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -o pipefail
 IFS=$'\n\t'
 
-INSTALL_PATH='/usr/bin'
+DIST=$(uname)
+ARTIFACT_CLI_VERSION="v0.2.8"
+
+case $DIST in
+  Darwin)
+    INSTALL_PATH='/usr/local/bin'
+    ;;
+  Linux)
+    [[ -f /usr/bin/sudo ]] && sudo rm -f /etc/apt/sources.list.d/python_2.7-source.list
+    INSTALL_PATH='/usr/bin'
+   ;;
+  *)
+    echo "Unsupported distro $DIST"
+    exit 1
+  ;;
+esac
+
+cat << EOF >> ~/.ssh/config
+Host github.com bitbucket.org
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+EOF
 
 install_cmd() {
   local cmd=$@
@@ -16,10 +37,36 @@ install_cmd() {
 
 install_cmd ln -sf ~/.toolbox/retry $INSTALL_PATH/retry
 install_cmd chmod +x $INSTALL_PATH/retry
+if [[ $? -eq 0 ]];then 
+  echo "retry installed"
+else
+  echo "toolbox_install_error{module='retry'} 1" >> /tmp/toolbox_metrics
+fi
 
 install_cmd ln -sf ~/.toolbox/sem-service $INSTALL_PATH/sem-service
 install_cmd chmod +x $INSTALL_PATH/sem-service
+if [[ $? -eq 0 ]];then 
+  echo "sem-service installed"
+else
+  echo "toolbox_install_error{module='sem-service'} 1" >> /tmp/toolbox_metrics
+fi
+
 
 install_cmd ln -sf ~/.toolbox/sem-dockerize $INSTALL_PATH/sem-dockerize
 install_cmd chmod +x $INSTALL_PATH/sem-dockerize
+if [[ $? -eq 0 ]];then 
+  echo "sem-dockerize installed"
+else
+  echo "toolbox_install_error{module='sem-dockerize'} 1" >> /tmp/toolbox_metrics
+fi
+
+
+install_cmd ln -sf ~/.toolbox/sem-service-check-params $INSTALL_PATH/sem-service-check-params
+install_cmd chmod +x $INSTALL_PATH/sem-service-check-params
+if [[ $? -eq 0 ]];then 
+  echo "sem-service-check-params installed"
+else
+  echo "toolbox_install_error{module='sem-service-check-params'} 1" >> /tmp/toolbox_metrics
+fi
+
 

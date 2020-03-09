@@ -65,7 +65,7 @@ normalize_key() {
   refute_output --partial "command not found"
 
   # retry and ssh-session-cli sem-dockerize are changed by setup commands in the job environment
-  git checkout retry ssh-session-cli sem-dockerize
+  git checkout retry ssh-session-cli sem-dockerize sem-service-check-params
   run git status
 
   assert_output --partial "nothing to commit"
@@ -90,7 +90,7 @@ normalize_key() {
   refute_output --partial "command not found"
 
   # retry and ssh-session-cli are changed by setup commands in the job environment
-  git checkout retry ssh-session-cli sem-dockerize
+  git checkout retry ssh-session-cli sem-dockerize sem-service-check-params
   run git status
 
   assert_output --partial "nothing to commit"
@@ -103,9 +103,9 @@ normalize_key() {
   run ./cache store bats/test-$SEMAPHORE_GIT_BRANCH tmp
 
   assert_success
-  assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
-  assert_line "Uploading 'tmp' with cache key '${test_key}'..."
-  assert_line "Upload complete."
+  assert_line --partial "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
+  assert_line --partial "Uploading 'tmp' with cache key '${test_key}'..."
+  assert_line --partial "Upload complete."
   refute_line ${test_key}
   refute_output --partial "command not found"
 
@@ -216,7 +216,7 @@ normalize_key() {
   refute_output --partial "command not found"
 
   # retry and ssh-session-cli are changed by setup commands in the job environment
-  git checkout retry ssh-session-cli sem-dockerize
+  git checkout retry ssh-session-cli sem-dockerize sem-service-check-params
   run git status
 
   assert_output --partial "nothing to commit"
@@ -242,7 +242,7 @@ normalize_key() {
   refute_output --partial "command not found"
 
   # retry and ssh-session-cli are changed by setup commands in the job environment
-  git checkout retry ssh-session-cli sem-dockerize
+  git checkout retry ssh-session-cli sem-dockerize sem-service-check-params
   run git status
 
   assert_output --partial "nothing to commit"

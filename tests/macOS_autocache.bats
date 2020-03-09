@@ -61,3 +61,30 @@ teardown() {
   cd ../../../
   rm -rf semaphore-demo-javascript
 }
+
+@test "[macOS] cache - autostore/autorestore [Pods]" {
+
+  git clone https://github.com/particle-iot/example-app-ios.git
+  cd example-app-ios
+
+  export LANG=en_US.UTF-8
+
+  pod install 1>/dev/null 2>&1
+
+  run cache store
+
+  assert_success
+  assert_output --partial "* Detected Podfile.lock"
+  assert_output --partial "Upload complete."
+
+  rm -rf Pods
+
+  run cache restore
+  assert_success
+  assert_output --partial "* Fetching 'Pods' directory with cache keys"
+  assert_output --partial "Restored: Pods/"
+
+  run cache delete pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock)
+  cd ../../../
+  rm -rf example-app-ios.git
+}
