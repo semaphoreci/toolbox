@@ -139,6 +139,17 @@ blocks:
           - curl -XGET '0.0.0.0:9200' | grep 6.5.2
           - sem-service stop elasticsearch
 
+      - name: cassandra
+        commands:
+          - sem-service start cassandra
+          - docker ps -a
+
+
+      - name: rethinkdb
+        commands:
+          - sem-service start rethinkdb
+          - docekr ps -a
+
       - name: Erlang change test
         commands:
           - echo "Erlang version"

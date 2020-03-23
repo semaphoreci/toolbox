@@ -126,6 +126,38 @@ service::start_rabbitmq() {
 
 }
 
+service::start_cassandra() {
+  service_version="${1:-3.11.3}"
+  service::pull_image "cassandra:$service_version"
+
+  docker_output=$(docker run --net=host --rm --name cassandra -d cassandra:$service_version)
+
+  # run only if previous command exited successfully
+  service::duration sem-dockerize 9042 boot cassandra
+
+  # if not started in 30 seconds print logs and exit
+  echo "done."
+  echo "cassandra $service_version is accessible at 0.0.0.0:9042"
+
+}
+
+service::start_rethinkdb() {
+  service_version="${1:-2.3.6}"
+  service::pull_image "rethinkdb:$service_version"
+
+  docker_output=$(docker run --net=host --rm --name rethinkdb -d rethinkdb:$service_version)
+
+  # run only if previous command exited successfully
+  service::duration sem-dockerize 28015 boot rethinkdb
+
+  # if not started in 30 seconds print logs and exit
+  echo "done."
+  echo "rethinkdb $service_version is accessible at 0.0.0.0:28015"
+
+}
+
+
+
 service::start() {
   service_name=$1
   service_version=$2
@@ -177,6 +209,18 @@ service::start() {
       shift
 
       service::duration service::start_rabbitmq $service_version total $service_name
+      exit 0
+      ;;
+    "cassandra" )
+      shift
+
+      service::duration service::start_cassandra $service_version total $service_name
+      exit 0
+      ;;
+    "rethinkdb" )
+      shift
+
+      service::duration service::start_rethinkdb $service_version total $service_name
       exit 0
       ;;
 
@@ -312,6 +356,8 @@ service::print_usage() {
   echo "memcached (default: 1.5)"
   echo "mongodb (default: 4.5)"
   echo "elasticsearch (default: 6.5.1)"
+  echo "cassandra (default: 3.11.3)"
+  echo "rethinkdb (default: 2.3.6)"
 }
 
 service::duration() {
