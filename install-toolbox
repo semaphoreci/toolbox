@@ -87,9 +87,9 @@ else
   echo "toolbox_install_error{module='sem-service-check-params'} 1" >> /tmp/toolbox_metrics
 fi
 
-
-# Install Artifact Cli
-install_cmd curl -s -L --retry 5 -o artifact.tar.gz https://github.com/semaphoreci/artifact/releases/download/${ARTIFACT_CLI_VERSION}/artifact_${DIST}_x86_64.tar.gz
+echo "Installing the artifacts CLI"
+echo "Using http://packages.semaphoreci.com/${ARTIFACT_CLI_VERSION}/artifact_${DIST}_x86_64.tar.gz"
+install_cmd curl -s -L --retry 5 -o artifact.tar.gz http://packages.semaphoreci.com/${ARTIFACT_CLI_VERSION}/artifact_${DIST}_x86_64.tar.gz
 install_cmd tar xzf artifact.tar.gz
 install_cmd mv artifact $INSTALL_PATH/artifact
 install_cmd chmod +x $INSTALL_PATH/artifact
