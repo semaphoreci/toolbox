@@ -48,7 +48,7 @@ blocks:
           - sem-version c 8
           - gcc --version | grep 8.3.0
           - sem-version cpp 7
-          - gcc --version | grep 7.4.0
+          - gcc --version | grep 7.5
           - sem-version php 7.2.10
           - php -v | grep 7.2.10
           - sem-version php 7.0.32
@@ -138,6 +138,17 @@ blocks:
           - sem-service status elasticsearch
           - curl -XGET '0.0.0.0:9200' | grep 6.5.2
           - sem-service stop elasticsearch
+
+      - name: cassandra
+        commands:
+          - sem-service start cassandra
+          - docker ps -a | grep cassandra
+
+
+      - name: rethinkdb
+        commands:
+          - sem-service start rethinkdb
+          - docker ps -a | grep rethinkdb 
 
       - name: Erlang change test
         commands:
