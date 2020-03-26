@@ -22,7 +22,7 @@ E_FLAE=0 # file already exists
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
 # Lockfiles to lookup for autostore and autoresotre
-LOCKFILES=('.nvmrc' 'Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock' 'pom.xml' 'Podfile.lock')
+LOCKFILES=('.nvmrc' 'Gemfile.lock' 'package-lock.json' 'yarn.lock' 'mix.lock' 'requirements.txt' 'composer.lock' 'pom.xml' 'Podfile.lock' 'go.sum')
 
 # Dist
 DIST=$(uname)
@@ -197,6 +197,18 @@ cache::autostore() {
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
             fi
             ;;
+          "go.sum")
+            cache::log
+            cache::log "* Detected $lockfile."
+            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/go/pkg/mod"
+            cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
+            if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
+              SEMAPHORE_CACHE_KEY=$(cache::normalize_string go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum))
+              cache::lftp_put
+            else
+              cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
+            fi
+            ;;
           *)
             cache::log "* Nothing to sotre in Cache";;
         esac
@@ -275,9 +287,16 @@ cache::autorestore() {
           "Podfile.lock")
             cache::log
             cache::log "* Detected $lockfile."
-            cache::log "* Fetching 'Pods' directory with cache keys 'composer-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),pods-$SEMAPHORE_GIT_BRANCH-,pods-master-'."
+            cache::log "* Fetching 'Pods' directory with cache keys 'pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),pods-$SEMAPHORE_GIT_BRANCH-,pods-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
-            cache::restore composer-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),pods-$SEMAPHORE_GIT_BRANCH-,pods-master-
+            cache::restore pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),pods-$SEMAPHORE_GIT_BRANCH-,pods-master-
+            ;;
+          "go.sum")
+            cache::log
+            cache::log "* Detected $lockfile."
+            cache::log "* Fetching 'Pods' directory with cache keys 'go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum),go-$SEMAPHORE_GIT_BRANCH-,go-master-'."
+            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/go/pkg/mod"
+            cache::restore go-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),go-$SEMAPHORE_GIT_BRANCH-,go-master-
             ;;
           *)
             cache::log "* Nothing to fetch from cache";;
