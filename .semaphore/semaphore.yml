@@ -28,6 +28,7 @@ blocks:
           - cache clear
           - sudo apt-get install -y python3.8-dev
           - sem-version python 3.8
+          - sem-version go 1.12
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
           - bats tests/autocache.bats

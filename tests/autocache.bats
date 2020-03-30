@@ -11,6 +11,28 @@ teardown() {
 ################################################################################
 # cache autostore/autorestore
 ################################################################################
+@test "cache - autostore/autorestore [go]" {
+
+  git clone git@github.com:eddycjy/go-gin-example.git
+  cd go-gin-example
+  
+  go get ./...
+  run cache store
+
+  assert_success
+  assert_output --partial "* Detected go.sum."
+  assert_output --partial "Upload complete."
+
+  sudo rm -rf $HOME/go/*
+
+  run cache restore
+  assert_success
+
+  run cache delete go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum)
+  cd ../
+  rm -rf go-gin-example
+}
+
 
 @test "cache - autostore/autorestore [bundle]" {
 
