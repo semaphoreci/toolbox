@@ -129,7 +129,7 @@ function checkout::checkrevision {
   git rev-list HEAD..$SEMAPHORE_GIT_SHA 2>/dev/null
   if [ $? -ne 0 ]; then
     echo "Revision: ${SEMAPHORE_GIT_SHA} not found .... Exiting"
-    exit 1
+    return 1
   fi
 }
 
@@ -171,7 +171,7 @@ function checkout::refbased() {
       echo "Revision: ${SEMAPHORE_GIT_SHA} not found .... Exiting"
       echo "Please contact support."
 
-      exit 1
+      return 1
     else
       git checkout -qf FETCH_HEAD
       echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
@@ -185,7 +185,7 @@ function checkout::refbased() {
     if [ $? -ne 0 ]; then
       echo "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
 
-      exit 1
+      return 1
     else
       cd $SEMAPHORE_GIT_DIR
       git checkout -qf $SEMAPHORE_GIT_TAG_NAME
