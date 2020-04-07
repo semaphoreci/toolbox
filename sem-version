@@ -55,7 +55,7 @@ version::change_ruby() {
 }
 
 version::change_node() {
-  version::change "nvm use"
+  version::change "sem-install node"
 
   return $?
 }
