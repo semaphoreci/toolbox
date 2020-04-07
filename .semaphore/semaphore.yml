@@ -47,13 +47,15 @@ blocks:
           - sem-version ruby 2.3.7
           - ruby --version | grep 2.3.7
           - sem-version c 8
-          - gcc --version | grep 8.3.0
+          - gcc --version | grep " 8."
           - sem-version cpp 7
-          - gcc --version | grep 7.5
+          - gcc --version | grep " 7."
           - sem-version php 7.2.10
           - php -v | grep 7.2.10
           - sem-version php 7.0.32
           - php -v | grep 7.0.32
+          - time sem-version node 12.16.1
+          - node --version | grep 12.16.1
 
       - name: MySQL
         commands:
