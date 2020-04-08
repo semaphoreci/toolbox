@@ -69,8 +69,12 @@ function checkout::fetch() {
     git checkout -b $SEMAPHORE_GIT_BRANCH -t $branch_origin;
   fi
   checkout::checkrevision
+  if [ "$?" -eq "0" ]; then
   git reset --hard $SEMAPHORE_GIT_SHA
   echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
+  else
+    return 1
+  fi
 }
 
 function checkout::clone() {
@@ -78,8 +82,12 @@ function checkout::clone() {
   cd $SEMAPHORE_GIT_DIR
   git checkout $SEMAPHORE_GIT_BRANCH
   checkout::checkrevision
-  git reset --hard $SEMAPHORE_GIT_SHA
-  echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
+  if [ "$?" -eq "0" ]; then
+    git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
+    echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
+  else
+    return 1
+  fi
 }
 
 function checkout::cache_store() {
@@ -144,7 +152,11 @@ function checkout::shallow() {
     git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
     cd $SEMAPHORE_GIT_DIR
     checkout::checkrevision
-    git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
+    if [ "$?" -eq "0" ]; then
+      git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
+    else
+      return 1
+    fi
   else
     cd $SEMAPHORE_GIT_DIR
     git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
@@ -152,7 +164,11 @@ function checkout::shallow() {
       echo "SHA: $SEMAPHORE_GIT_SHA not found performing full clone"
       git fetch --unshallow
       checkout::checkrevision
-      git reset --hard $SEMAPHORE_GIT_SHA
+      if [ "$?" -eq "0" ]; then
+        git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
+      else
+        return 1
+      fi
     fi
   fi
   echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
