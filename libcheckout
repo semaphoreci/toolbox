@@ -50,8 +50,12 @@ function checkout::use_cache() {
   else
     checkout::clone
   fi
-
-  checkout::cache_store
+  
+  if [ "$?" -eq "0" ]; then
+    checkout::cache_store
+  else
+    return 1
+  fi
 }
 
 function checkout::fetch() {
