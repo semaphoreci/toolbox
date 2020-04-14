@@ -26,6 +26,9 @@ install::install_node() {
 install::install_ruby() {
   if [[ $(install::available) -eq 1 ]] ; then
     rbenv install -s ${language_version}
+    rbenv global ${language_version}
+    gem update system
+    gem install bundler:2.0.1 --no-document
   else
     install::download
     tar -zxf ${language_version}.tar.gz
