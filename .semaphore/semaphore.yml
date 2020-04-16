@@ -60,6 +60,12 @@ blocks:
           - sem-version ruby 2.6.5
           - ruby --version | grep 2.6.5
           - bundler --version | grep 2
+          - sem-version php 7.3.14
+          - php -m | grep intl
+          - php -m | grep magick
+          - php -m | grep gd
+          - php -m | grep imap
+          - which composer | grep 7.3.14
 
       - name: MySQL
         commands:
