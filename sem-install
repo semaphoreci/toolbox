@@ -51,7 +51,7 @@ install::install_php() {
     phpbrew ext install intl
     wget https://getcomposer.org/composer-stable.phar -O ~/.phpbrew/php/php-${language_version}/bin/composer.phar
     echo '#!/usr/bin/env bash' >> ~/.phpbrew/php/php-${language_version}/bin/composer
-    echo "~/.phpbrew/php/php-${language_version}/bin/php ~/.phpbrew/php/php-${language_version}/bin/composer.phar" >> ~/.phpbrew/php/php-${language_version}/bin/composer
+    echo "~/.phpbrew/php/php-${language_version}/bin/php ~/.phpbrew/php/php-${language_version}/bin/composer.phar \$@" >> ~/.phpbrew/php/php-${language_version}/bin/composer
     chmod +x ~/.phpbrew/php/php-${language_version}/bin/composer
   else
     install::download
