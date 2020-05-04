@@ -189,7 +189,6 @@ function checkout::refbased() {
     git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "Revision: ${SEMAPHORE_GIT_SHA} not found .... Exiting"
-      echo "Please contact support."
 
       return 1
     else
