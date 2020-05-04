@@ -93,7 +93,6 @@ teardown() {
   run checkout
   assert_failure
   assert_output --partial "Revision: $SEMAPHORE_GIT_SHA not found .... Exiting"
-  assert_output --partial "Please contact support."
 }
 
 # noRefType
