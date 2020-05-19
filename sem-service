@@ -25,7 +25,7 @@ service::start_mysql() {
   service::pull_image "mysql:$service_version"
   docker_output=$(docker run $docker_params mysql:$service_version)
   # run only if previous command exited successfully
-  docker_staus=$(sem-dockerize 3306 boot mysql)
+  docker_staus=$(sem-dockerize 3306 mysql)
   if [ $docker_status ]; then
     # if not started in 30 seconds print logs and exit
     echo "done."
@@ -44,7 +44,7 @@ service::start_postgres() {
   service::pull_image "postgres:$service_version"
   docker_output=$(docker run $docker_params postgres:$service_version)
   # run only if previous command exited successfully
-  docker_status=$(sem-dockerize 5432 boot postgress)
+  docker_status=$(sem-dockerize 5432 postgres)
   if [ $docker_status ]; then
     # if not started in 30 seconds print logs and exit
     echo "done."
@@ -62,7 +62,7 @@ service::start_redis() {
   service::pull_image "redis:$service_version"
   docker_output=$(docker run $docker_params redis:$service_version)
   # run only if previous command exited successfully
-  docker_status=$(sem-dockerize 6379 boot redis)
+  docker_status=$(sem-dockerize 6379 redis)
   if [ $docker_status ]; then
     # if not started in 30 seconds print logs and exit
     echo "done."
@@ -79,7 +79,7 @@ service::start_memcached() {
 
   docker_output=$(docker run --net=host --rm --name memcached -d memcached:$service_version)
   # run only if previous command exited successfully
-  docker_status=$(sem-dockerize 11211 boot memcached)
+  docker_status=$(sem-dockerize 11211 memcached)
   if [ $docker_status ]; then
     # if not started in 30 seconds print logs and exit
     echo "done."
@@ -98,7 +98,7 @@ service::start_mongodb() {
   service::pull_image "mongo:$service_version"
   docker_output=$(docker run $docker_params mongo:$service_version)
   # run only if previous command exited successfully
-  docker_status=$(sem-dockerize 27017 boot mongodb)
+  docker_status=$(sem-dockerize 27017 mongodb)
   if [ $docker_status ]; then
     # if not started in 30 seconds print logs and exit
     echo "done."
@@ -116,7 +116,7 @@ service::start_elasticsearch() {
   docker_output=$(docker run --net=host --rm --name elasticsearch -e "discovery.type=single-node" -d elasticsearch:$service_version)
 
   # run only if previous command exited successfully
-  docker status=$(sem-dockerize 9200 boot elasticseach)
+  docker status=$(sem-dockerize 9200 elasticseach)
   if [ $docker_status ]; then
     # if not started in 30 seconds print logs and exit
     echo "done."
@@ -134,7 +134,7 @@ service::start_rabbitmq() {
   docker_output=$(docker run --net=host --rm --name rabbitmq --hostname rabbitmq -d rabbitmq:$service_version)
 
   # run only if previous command exited successfully
-  docker_status=$(sem-dockerize 5672 boot rabbitmq)
+  docker_status=$(sem-dockerize 5672 rabbitmq)
   if [ $docker_status ]; then
     # if not started in 30 seconds print logs and exit
     echo "done."
@@ -152,7 +152,7 @@ service::start_cassandra() {
   docker_output=$(docker run --net=host --rm --name cassandra -d cassandra:$service_version)
 
   # run only if previous command exited successfully
-  docker_status=$(sem-dockerize 9042 boot cassandra)
+  docker_status=$(sem-dockerize 9042 cassandra)
   if [ $docker_status ]; then
     # if not started in 30 seconds print logs and exit
     echo "done."
@@ -170,7 +170,7 @@ service::start_rethinkdb() {
   docker_output=$(docker run --net=host --rm --name rethinkdb -d rethinkdb:$service_version)
 
   # run only if previous command exited successfully
-  docker_status=$(sem-dockerize 28015 boot rethinkdb)
+  docker_status=$(sem-dockerize 28015 rethinkdb)
   if [ $docker_status ]; then
     # if not started in 30 seconds print logs and exit
     echo "done."
