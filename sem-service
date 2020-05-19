@@ -25,13 +25,15 @@ service::start_mysql() {
   service::pull_image "mysql:$service_version"
   docker_output=$(docker run $docker_params mysql:$service_version)
   # run only if previous command exited successfully
-  service::duration sem-dockerize 3306 boot mysql
-
-  # if not started in 30 seconds print logs and exit
-  echo "done."
-  echo "MySQL $service_version is running at 0.0.0.0:3306"
-  echo "To access it use username 'root' and blank password."
-
+  docker_staus=$(sem-dockerize 3306 mysql)
+  if [ $docker_status ]; then
+    # if not started in 30 seconds print logs and exit
+    echo "done."
+    echo "MySQL $service_version is running at 0.0.0.0:3306"
+    echo "To access it use username 'root' and blank password."
+  else
+    echo $docker_output
+  fi
 }
 
 service::start_postgres() {
@@ -42,13 +44,15 @@ service::start_postgres() {
   service::pull_image "postgres:$service_version"
   docker_output=$(docker run $docker_params postgres:$service_version)
   # run only if previous command exited successfully
-  service::duration sem-dockerize 5432 boot postgress
-
-  # if not started in 30 seconds print logs and exit
-  echo "done."
-  echo "PostgreSQL $service_version is running at 0.0.0.0:5432"
-  echo "To access it use username 'postgres' and blank password."
-
+  docker_status=$(sem-dockerize 5432 postgres)
+  if [ $docker_status ]; then
+    # if not started in 30 seconds print logs and exit
+    echo "done."
+    echo "PostgreSQL $service_version is running at 0.0.0.0:5432"
+    echo "To access it use username 'postgres' and blank password."
+  else
+    echo $docker_output
+  fi
 }
 
 service::start_redis() {
@@ -58,11 +62,14 @@ service::start_redis() {
   service::pull_image "redis:$service_version"
   docker_output=$(docker run $docker_params redis:$service_version)
   # run only if previous command exited successfully
-  service::duration sem-dockerize 6379 boot redis
-
-  # if not started in 30 seconds print logs and exit
-  echo "done."
-  echo "Redis $service_version is running at 0.0.0.0:6379"
+  docker_status=$(sem-dockerize 6379 redis)
+  if [ $docker_status ]; then
+    # if not started in 30 seconds print logs and exit
+    echo "done."
+    echo "Redis $service_version is running at 0.0.0.0:6379"
+  else
+    echo $docker_output
+  fi
 
 }
 
@@ -72,11 +79,14 @@ service::start_memcached() {
 
   docker_output=$(docker run --net=host --rm --name memcached -d memcached:$service_version)
   # run only if previous command exited successfully
-  service::duration sem-dockerize 11211 boot memcached
-
-  # if not started in 30 seconds print logs and exit
-  echo "done."
-  echo "memcached $service_version is running at 0.0.0.0:11211"
+  docker_status=$(sem-dockerize 11211 memcached)
+  if [ $docker_status ]; then
+    # if not started in 30 seconds print logs and exit
+    echo "done."
+    echo "memcached $service_version is running at 0.0.0.0:11211"
+  else
+    echo $docker_output
+  fi
 
 }
 
@@ -88,11 +98,14 @@ service::start_mongodb() {
   service::pull_image "mongo:$service_version"
   docker_output=$(docker run $docker_params mongo:$service_version)
   # run only if previous command exited successfully
-  service::duration sem-dockerize 27017 -timeout 30s 2>/dev/null boot mongodb
-
-  # if not started in 30 seconds print logs and exit
-  echo "done."
-  echo "mongodb $service_version is running at 0.0.0.0:27017"
+  docker_status=$(sem-dockerize 27017 mongodb)
+  if [ $docker_status ]; then
+    # if not started in 30 seconds print logs and exit
+    echo "done."
+    echo "mongodb $service_version is running at 0.0.0.0:27017"
+  else
+    echo $docker_output
+  fi
 
 }
 
@@ -103,11 +116,14 @@ service::start_elasticsearch() {
   docker_output=$(docker run --net=host --rm --name elasticsearch -e "discovery.type=single-node" -d elasticsearch:$service_version)
 
   # run only if previous command exited successfully
-  service::duration sem-dockerize 9200 boot elasticseach
-
-  # if not started in 30 seconds print logs and exit
-  echo "done."
-  echo "elasticsearch $service_version is accessible at 0.0.0.0:9200 and 0.0.0.0:9300"
+  docker status=$(sem-dockerize 9200 elasticseach)
+  if [ $docker_status ]; then
+    # if not started in 30 seconds print logs and exit
+    echo "done."
+    echo "elasticsearch $service_version is accessible at 0.0.0.0:9200 and 0.0.0.0:9300"
+  else
+    echo $docker_output
+  fi
 
 }
 
@@ -118,11 +134,14 @@ service::start_rabbitmq() {
   docker_output=$(docker run --net=host --rm --name rabbitmq --hostname rabbitmq -d rabbitmq:$service_version)
 
   # run only if previous command exited successfully
-  service::duration sem-dockerize 5672 boot rabbitmq
-
-  # if not started in 30 seconds print logs and exit
-  echo "done."
-  echo "rabbitmq $service_version is accessible at 0.0.0.0:5672"
+  docker_status=$(sem-dockerize 5672 rabbitmq)
+  if [ $docker_status ]; then
+    # if not started in 30 seconds print logs and exit
+    echo "done."
+    echo "rabbitmq $service_version is accessible at 0.0.0.0:5672"
+  else
+    echo $docker_output
+  fi
 
 }
 
@@ -133,11 +152,14 @@ service::start_cassandra() {
   docker_output=$(docker run --net=host --rm --name cassandra -d cassandra:$service_version)
 
   # run only if previous command exited successfully
-  service::duration sem-dockerize 9042 boot cassandra
-
-  # if not started in 30 seconds print logs and exit
-  echo "done."
-  echo "cassandra $service_version is accessible at 0.0.0.0:9042"
+  docker_status=$(sem-dockerize 9042 cassandra)
+  if [ $docker_status ]; then
+    # if not started in 30 seconds print logs and exit
+    echo "done."
+    echo "cassandra $service_version is accessible at 0.0.0.0:9042"
+  else
+    echo $docker_output
+  fi
 
 }
 
@@ -148,11 +170,14 @@ service::start_rethinkdb() {
   docker_output=$(docker run --net=host --rm --name rethinkdb -d rethinkdb:$service_version)
 
   # run only if previous command exited successfully
-  service::duration sem-dockerize 28015 boot rethinkdb
-
-  # if not started in 30 seconds print logs and exit
-  echo "done."
-  echo "rethinkdb $service_version is accessible at 0.0.0.0:28015"
+  docker_status=$(sem-dockerize 28015 rethinkdb)
+  if [ $docker_status ]; then
+    # if not started in 30 seconds print logs and exit
+    echo "done."
+    echo "rethinkdb $service_version is accessible at 0.0.0.0:28015"
+  else
+    echo $docker_output
+  fi
 
 }
 
