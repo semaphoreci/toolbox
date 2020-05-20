@@ -24,6 +24,7 @@ service::start_mysql() {
 
   service::pull_image "mysql:$service_version"
   docker_output=$(docker run $docker_params mysql:$service_version)
+  [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_staus=$(sem-dockerize 3306 mysql)
   if [ $docker_status ]; then
@@ -43,6 +44,7 @@ service::start_postgres() {
 
   service::pull_image "postgres:$service_version"
   docker_output=$(docker run $docker_params postgres:$service_version)
+  [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 5432 postgres)
   if [ $docker_status ]; then
@@ -61,6 +63,7 @@ service::start_redis() {
   docker_params="$@"
   service::pull_image "redis:$service_version"
   docker_output=$(docker run $docker_params redis:$service_version)
+  [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 6379 redis)
   if [ $docker_status ]; then
@@ -78,6 +81,7 @@ service::start_memcached() {
   service::pull_image "memcached:$service_version"
 
   docker_output=$(docker run --net=host --rm --name memcached -d memcached:$service_version)
+  [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 11211 memcached)
   if [ $docker_status ]; then
@@ -97,6 +101,7 @@ service::start_mongodb() {
 
   service::pull_image "mongo:$service_version"
   docker_output=$(docker run $docker_params mongo:$service_version)
+  [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 27017 mongodb)
   if [ $docker_status ]; then
@@ -114,7 +119,7 @@ service::start_elasticsearch() {
   service::pull_image "elasticsearch:$service_version"
 
   docker_output=$(docker run --net=host --rm --name elasticsearch -e "discovery.type=single-node" -d elasticsearch:$service_version)
-
+  [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker status=$(sem-dockerize 9200 elasticseach)
   if [ $docker_status ]; then
@@ -132,7 +137,7 @@ service::start_rabbitmq() {
   service::pull_image "rabbitmq:$service_version"
 
   docker_output=$(docker run --net=host --rm --name rabbitmq --hostname rabbitmq -d rabbitmq:$service_version)
-
+  [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 5672 rabbitmq)
   if [ $docker_status ]; then
@@ -150,7 +155,7 @@ service::start_cassandra() {
   service::pull_image "cassandra:$service_version"
 
   docker_output=$(docker run --net=host --rm --name cassandra -d cassandra:$service_version)
-
+  [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 9042 cassandra)
   if [ $docker_status ]; then
@@ -168,7 +173,7 @@ service::start_rethinkdb() {
   service::pull_image "rethinkdb:$service_version"
 
   docker_output=$(docker run --net=host --rm --name rethinkdb -d rethinkdb:$service_version)
-
+  [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 28015 rethinkdb)
   if [ $docker_status ]; then

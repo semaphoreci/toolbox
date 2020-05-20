@@ -73,7 +73,7 @@ params-check::postgres () {
 
 params-check::redis () {
   default_params='--net=host --rm --name redis -d'
-  service_version="4.0.14-stretch"
+  service_version="4"
   params=""
   if [ "${1:0:1}" == "-" ];then
     params="$@"
