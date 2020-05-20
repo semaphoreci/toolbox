@@ -13,6 +13,7 @@ run::dockerize(){
     exit 1
   fi
   echo "toolbox_sem_service_success_rate_${service} 1" >> /tmp/toolbox_metrics
+  echo 0
 }
 
 run::dockerize $@
