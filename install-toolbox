@@ -104,20 +104,5 @@ else
   echo "toolbox_install_error{module='artifacts'} 1" >> /tmp/toolbox_metrics
 fi
 
-#
-# Installing the simple system metrics collector.
-#
-
-echo "Installing the Simple System Metrics Collector"
-
-install_cmd ln -sf ~/.toolbox/system-metrics-collector /usr/bin/system-metrics-collector
-install_cmd chmod +x /usr/bin/system-metrics-collector
-
-if [[ $? -eq 0 ]];then
-  echo "system-metrics-collector installed"
-else
-  echo "toolbox_install_error{module='system-metrics-collector'} 1" >> /tmp/toolbox_metrics
-fi
-
 echo "Starting to collect System Metrics in /tmp/system-metrics"
-system-metrics-collector & # failure won't be propagated to the caller in case of using &
+sh ~/toolbox/system-metrics-collector & # failure won't be propagated to the caller in case of using &
