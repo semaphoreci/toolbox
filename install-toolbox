@@ -105,4 +105,4 @@ else
 fi
 
 echo "Starting to collect System Metrics in /tmp/system-metrics"
-sh ~/toolbox/system-metrics-collector & # failure won't be propagated to the caller in case of using &
+sh ~/.toolbox/system-metrics-collector & # failure won't be propagated to the caller in case of using &
