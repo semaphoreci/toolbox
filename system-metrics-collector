@@ -1,0 +1,35 @@
+#!/bin/sh
+
+#
+# Simple log system metrics collector. Polls the system state every 30s and
+# saves the result to /tmp/system-metrics.
+#
+# The simple nature of the script allows it to seemlesly run in any Linux based
+# VM, Docker image, or on a MacVM host.
+#
+# The recommended way to start the script is to run it in the background.
+#
+#   $ system-metrics-collector &
+#
+# The resulting file's format is the following:
+#
+#   $ cat /tmp/system-metrics-collector
+#
+#     Mon May 18 14:50:58 UTC 2020 | mem:   5.03%, disk:  47.75%
+#     Mon May 18 14:51:28 UTC 2020 | mem:   5.03%, disk:  47.75%
+#
+# Jobs that run for an hour collect around 120 log lines. This should be safe
+# and not introduce any performance of disk usage problems.
+#
+
+DISK_NAME="/dev/mapper/semaphore--vm--vg-root"
+OUTPUT="/tmp/system-metrics"
+
+while true; do
+  MEMORY=$(free | grep Mem | awk '{ printf("%6.2f%%\n", ($3/$2 * 100.0)) }')
+  DISK=$(df | grep "$DISK_NAME" | awk '{ printf("%6.2f%%\n", ($3/$2 * 100.0)) }')
+
+  echo "$(date) | mem: $MEMORY, disk: $DISK" >> $OUTPUT
+
+  sleep 30
+done
