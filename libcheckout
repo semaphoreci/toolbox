@@ -1,8 +1,4 @@
 function checkout() {
-  if [ -n "$SEMAPHORE_SNAPSHOT_ID" ]; then
-    checkout::snapshot
-    return 0
-  fi
 
   if [ -z $SEMAPHORE_GIT_BRANCH ] || [ -z $SEMAPHORE_GIT_URL ] || [ -z $SEMAPHORE_GIT_DIR ] || [ -z $SEMAPHORE_GIT_SHA ]; then
     checkout::validation_message
@@ -27,19 +23,6 @@ function checkout::validation_message() {
   echo "SEMAPHORE_GIT_DIR=$SEMAPHORE_GIT_DIR"
   echo "SEMAPHORE_GIT_BRANCH=$SEMAPHORE_GIT_BRANCH"
   echo "SEMAPHORE_GIT_SHA=$SEMAPHORE_GIT_SHA"
-}
-
-function checkout::snapshot() {
-  echo SEMAPHORE_SNAPSHOT_ID: $SEMAPHORE_SNAPSHOT_ID
-
-  WORKDIR=snapshot
-  mkdir -p ~/$WORKDIR
-  cd ~/$WORKDIR
-
-  DOMAIN=snapshots.semaphoreci.com
-  URL="https://$DOMAIN/api/v1alpha/snapshots/$SEMAPHORE_SNAPSHOT_ID"
-  AUTH_HEADER="Authorization: Token omsAfx8Ly51RJ127xX6c"
-  curl $URL -H "$AUTH_HEADER" | tar xzf -
 }
 
 function checkout::use_cache() {
