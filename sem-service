@@ -26,7 +26,7 @@ service::start_mysql() {
   docker_output=$(docker run $docker_params mysql:$service_version)
   [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
-  docker_staus=$(sem-dockerize 3306 mysql)
+  docker_status=$(sem-dockerize 3306 mysql)
   if [ $docker_status ]; then
     # if not started in 30 seconds print logs and exit
     echo "done."
