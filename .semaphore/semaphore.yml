@@ -50,22 +50,24 @@ blocks:
           - gcc --version | grep " 8."
           - sem-version cpp 7
           - gcc --version | grep " 7."
-          - sem-version php 7.2.10
-          - php -v | grep 7.2.10
-          - sem-version php 7.0.32
-          - php -v | grep 7.0.32
+          - sem-version php 7.2.29
+          - php -v | grep 7.2.29
+          - sem-version php 7.0.33
+          - php -v | grep 7.0.33
           - time sem-version node 12.16.1
           - node --version | grep 12.16.1
           - echo "192.168.123.1 packages.semaphoreci.com" | sudo tee -a /etc/hosts
-          - sem-version ruby 2.6.5
-          - ruby --version | grep 2.6.5
+          - sem-version ruby 2.6.6
+          - ruby --version | grep 2.6.6
           - bundler --version | grep 2
-          - sem-version php 7.3.14
+          - sem-version php 7.3.16
           - php -m | grep intl
           - php -m | grep magick
           - php -m | grep gd
           - php -m | grep imap
-          - which composer | grep 7.3.14
+          - which composer | grep 7.3.16
+          - sem-version elixir 1.7.4
+
 
       - name: MySQL
         commands:
