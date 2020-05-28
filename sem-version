@@ -2,7 +2,6 @@
 source ~/.toolbox/sem-install
 
 # Changing language versions
-
 VERSION="0.7"
 SUPPORTED_LANGUAGES=(elixir go java php ruby python node c cpp erlang scala)
 
@@ -31,86 +30,63 @@ version::metrics() {
   duration=$(( $end - $start ))
   echo "toolbox_sem_version_duration_${language}{version=\"${version}\"} ${duration}" >> /tmp/toolbox_metrics #in ms
   echo "toolbox_sem_version_count_${language}{version=\"${version}\"} 1" >> /tmp/toolbox_metrics
-
   return 0
 }
-
 version::change() {
   command=$1
   version::log "Changing '${language}' to version ${language_version}"
-
   eval $command $language_version
   ch_status=$?
-
   return $ch_status
 }
-
 version::change_ruby() {
   if ! [ -d ~/.rbenv/versions/${language_version} ]; then
     sem-install ruby ${language_version}
   fi
   version::change "rbenv global"
-
   return $?
 }
-
 version::change_node() {
   version::change "sem-install node"
-
   return $?
 }
-
 version::change_elixir() {
-  if [ -z $(kiex list | grep ${language_version}) ];then
+  kiex list | grep -q ${language_version}
+  if [[ $? -gt 0 ]];then
     kiex install ${language_version}
   fi
-
   version::change "kiex use"
-
   return $?
 }
-
 version::change_go() {
   version::change "change-go-version"
-
   return $?
 }
-
 version::change_java() {
   version::change "change-java-version"
-
   return $?
 }
-
 version::change_php() {
   if ! [ -d ~/.phpbrew/php/php-${language_version} ]; then
     sem-install php ${language_version}
   fi
   version::change "phpbrew use"
-
   return $?
 }
-
 version::change_python() {
   version::change "change-python-version"
-
   return $?
 }
-
 version::change_c() {
   version::change "change-gcc-version"
-
   return $?
 }
-
 version::change_cpp() {
   version::change "change-gcc-version"
-
   return $?
 }
 version::change_scala() {
   version::change "change-scala-version"
-
   return $?
 }
 version::change_erlang() {
