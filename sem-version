@@ -28,6 +28,7 @@ version::metrics() {
   $cmd
   end=$(date +%s%3N)
   duration=$(( $end - $start ))
+  echo "toolbox_sem_version_install_count 1" >> /tmp/toolbox_metrics
   echo "toolbox_sem_version_duration_${language}{version=\"${version}\"} ${duration}" >> /tmp/toolbox_metrics #in ms
   echo "toolbox_sem_version_count_${language}{version=\"${version}\"} 1" >> /tmp/toolbox_metrics
   return 0
@@ -193,6 +194,7 @@ version::main() {
 
       if [[ fn_status -ne 0 ]]; then
         version::err "Failed to switch version.\nLog:\n$log"
+        echo "toolbox_sem_version_failure_rate_total 1" >> /tmp/toolbox_metrics
         echo "toolbox_sem_version_failure_rate_${language}{version=\"${version}\"} 1" >> /tmp/toolbox_metrics
         return $?
       fi
@@ -205,5 +207,11 @@ version::main() {
 }
 
 sem-version() {
-  version::main "$@"
+  if [[ `uname` == "Darwin" ]]; then
+    echo "`sem-version` is not supported in this environment."
+    echo "https://docs.semaphoreci.com/ci-cd-environment/sem-version-managing-language-versions-on-linu"
+    return 1
+  else
+    version::main "$@"
+  fi
 }

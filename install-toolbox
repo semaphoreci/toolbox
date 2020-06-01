@@ -104,5 +104,7 @@ else
   echo "toolbox_install_error{module='artifacts'} 1" >> /tmp/toolbox_metrics
 fi
 
-echo "Starting to collect System Metrics in /tmp/system-metrics"
-sh ~/.toolbox/system-metrics-collector & # failure won't be propagated to the caller in case of using &
+if [[ `uname` != "Darwin" ]]; then
+  echo "Starting to collect System Metrics in /tmp/system-metrics"
+  sh ~/.toolbox/system-metrics-collector & # failure won't be propagated to the caller in case of using &
+fi

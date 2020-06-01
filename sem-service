@@ -189,6 +189,7 @@ service::start_rethinkdb() {
 
 
 service::start() {
+  echo "toolbox_sem_service_total_count 1" >> /tmp/toolbox_metrics
   service_name=$1
   service_version=$2
   if [ -z "$service_name" ]; then
@@ -429,4 +430,10 @@ service::main () {
   esac
 }
 
-service::main "$@"
+if [[ `uname` == "Darwin" ]]; then
+  echo "`sem-service` is not supported in this environment."
+  echo "https://docs.semaphoreci.com/ci-cd-environment/sem-service-managing-databases-and-services-on-linux"
+  exit 1
+else
+  service::main "$@"
+fi
