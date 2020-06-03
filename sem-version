@@ -195,7 +195,7 @@ version::main() {
       if [[ fn_status -ne 0 ]]; then
         version::err "Failed to switch version.\nLog:\n$log"
         echo "toolbox_sem_version_failure_rate_total 1" >> /tmp/toolbox_metrics
-        echo "toolbox_sem_version_failure_rate_${language}{version=\"${version}\"} 1" >> /tmp/toolbox_metrics
+        echo "toolbox_sem_version_failure_rate_${language} 1" >> /tmp/toolbox_metrics
         return $?
       fi
 
