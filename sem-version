@@ -71,7 +71,8 @@ version::change_php() {
   if ! [ -d ~/.phpbrew/php/php-${language_version} ]; then
     sem-install php ${language_version}
   fi
-  version::change "phpbrew use"
+  language_version="php-${language_version}"
+  version::change "phpbrew switch"
   return $?
 }
 version::change_python() {
