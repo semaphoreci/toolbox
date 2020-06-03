@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 params-check::mysql () {
-  default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true --name mysql -v /var/run/mysqld:/var/run/mysqld '
+  default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true -v /var/tmp/mysql:/var/lib/mysql --name mysql -v /var/run/mysqld:/var/run/mysqld '
   service_version="5.6"
   sudo mkdir -p /var/run/mysqld ; sudo chmod -R 0777 /var/run/mysqld
+  sudo mkdir -p /var/tmp/mysqld ; sudo chmod -R 0777 /var/tmp/mysqld
   params=""
   if [ "${1:0:1}" == "-" ];then
     params="$@"
@@ -36,9 +37,10 @@ params-check::mysql () {
 }
 
 params-check::postgres () {
-  default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgres -v /var/run/postgresql:/var/run/postgresql'
+  default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgres -v /var/tmp/postgres:/var/lib/postgresql/data -v /var/run/postgresql:/var/run/postgresql'
   service_version="9.6"
   sudo mkdir -p /var/run/postgresql ; sudo chmod -R 0777 /var/run/postgresql
+  sudo mkdir -p /var/tmp/postgres ; sudo chmod -R 0777 /var/tmp/postgres
   params=""
   if [ "${1:0:1}" == "-" ];then
     params="$@"
