@@ -50,10 +50,12 @@ blocks:
           - gcc --version | grep " 8."
           - sem-version cpp 7
           - gcc --version | grep " 7."
-          - sem-version php 7.2.29
-          - php -v | grep 7.2.29
+          - sem-version php 7.2.31
+          - php -v | grep 7.2.31
           - sem-version php 7.0.33
           - php -v | grep 7.0.33
+          - sem-version php 7.4
+          - php -v | grep 7.4
           - time sem-version node 12.16.1
           - node --version | grep 12.16.1
           - echo "192.168.123.1 packages.semaphoreci.com" | sudo tee -a /etc/hosts
