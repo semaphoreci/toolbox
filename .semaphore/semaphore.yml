@@ -15,10 +15,14 @@ blocks:
       jobs:
         - name: ShellCheck
           commands:
-            - 'output=$(shellcheck sem-service -f gcc || true) && echo $output && echo "Number of errors: $(echo $output | wc -l)" && if [[ "$(echo $output | wc -l)" -gt "80" ]];  then false; else true; fi'
-            - 'output=$(shellcheck sem-version -f gcc || true) && echo $output && echo "Number of errors: $(echo $output | wc -l)" && if [[ "$(echo $output | wc -l)" -gt "21" ]];  then false; else true; fi'
-            - 'output=$(shellcheck cache       -f gcc || true) && echo $output && echo "Number of errors: $(echo $output | wc -l)" && if [[ "$(echo $output | wc -l)" -gt "150" ]]; then false; else true; fi'
-            - 'output=$(shellcheck libcheckout -f gcc || true) && echo $output && echo "Number of errors: $(echo $output | wc -l)" && if [[ "$(echo $output | wc -l)" -gt "65" ]];  then false; else true; fi'
+            - 'shellcheck sem-service || true'
+            - 'shellcheck sem-version || true'
+            - 'shellcheck cache       || true'
+            - 'shellcheck libcheckout || true'
+            - 'shellcheck sem-service -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -gt 80 ]]'
+            - 'shellcheck sem-version -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -gt 21 ]]'
+            - 'shellcheck cache       -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -gt 152 ]]'
+            - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -gt 59 ]]'
 
   - name: Run Tests
     task:
