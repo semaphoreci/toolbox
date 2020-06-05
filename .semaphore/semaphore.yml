@@ -6,6 +6,20 @@ agent:
     os_image: ubuntu1804
 
 blocks:
+  - name: Static Code Analysis
+    task:
+      prologue:
+        commands:
+          - checkout
+          - sudo apt-get install shellcheck
+      jobs:
+        - name: ShellCheck
+          commands:
+            - 'output=$(shellcheck sem-service -f gcc || true) && echo $output && echo "Number of errors: $(echo $output | wc -l)" && if [[ "$(echo $output | wc -l)" -gt "80" ]];  then false; else true; fi'
+            - 'output=$(shellcheck sem-version -f gcc || true) && echo $output && echo "Number of errors: $(echo $output | wc -l)" && if [[ "$(echo $output | wc -l)" -gt "21" ]];  then false; else true; fi'
+            - 'output=$(shellcheck cache       -f gcc || true) && echo $output && echo "Number of errors: $(echo $output | wc -l)" && if [[ "$(echo $output | wc -l)" -gt "150" ]]; then false; else true; fi'
+            - 'output=$(shellcheck libcheckout -f gcc || true) && echo $output && echo "Number of errors: $(echo $output | wc -l)" && if [[ "$(echo $output | wc -l)" -gt "65" ]];  then false; else true; fi'
+
   - name: Run Tests
     task:
       prologue:
@@ -165,7 +179,7 @@ blocks:
       - name: rethinkdb
         commands:
           - sem-service start rethinkdb
-          - docker ps -a | grep rethinkdb 
+          - docker ps -a | grep rethinkdb
 
       - name: Erlang change test
         commands:
