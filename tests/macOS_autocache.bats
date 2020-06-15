@@ -16,7 +16,7 @@ teardown() {
 
   git clone https://github.com/Shopify/example-ruby-app
   cd example-ruby-app
-  rm -rf .ruby-version
+  rm -rf .ruby-version && rm -rf Gemfile.lock
   bundle install --path vendor/bundle > /dev/null
 
   run cache store
