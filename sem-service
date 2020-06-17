@@ -27,12 +27,12 @@ service::start_mysql() {
   [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 3306 mysql)
-  if [ $docker_status ]; then
-    # if not started in 30 seconds print logs and exit
+  if [ "$docker_status" ]; then
     echo "done."
     echo "MySQL $service_version is running at 0.0.0.0:3306"
     echo "To access it use username 'root' and blank password."
   else
+    # if not started in 30 seconds print logs and exit
     echo $docker_output
   fi
 }
@@ -47,12 +47,12 @@ service::start_postgres() {
   [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 5432 postgres)
-  if [ $docker_status ]; then
-    # if not started in 30 seconds print logs and exit
+  if [ "$docker_status" ]; then
     echo "done."
     echo "PostgreSQL $service_version is running at 0.0.0.0:5432"
     echo "To access it use username 'postgres' and blank password."
   else
+    # if not started in 30 seconds print logs and exit
     echo $docker_output
   fi
 }
@@ -66,14 +66,13 @@ service::start_redis() {
   [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 6379 redis)
-  if [ $docker_status ]; then
-    # if not started in 30 seconds print logs and exit
+  if [ "$docker_status" ]; then
     echo "done."
     echo "Redis $service_version is running at 0.0.0.0:6379"
   else
+    # if not started in 30 seconds print logs and exit
     echo $docker_output
   fi
-
 }
 
 service::start_memcached() {
@@ -84,14 +83,13 @@ service::start_memcached() {
   [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 11211 memcached)
-  if [ $docker_status ]; then
-    # if not started in 30 seconds print logs and exit
+  if [ "$docker_status" ]; then
     echo "done."
     echo "memcached $service_version is running at 0.0.0.0:11211"
   else
+    # if not started in 30 seconds print logs and exit
     echo $docker_output
   fi
-
 }
 
 service::start_mongodb() {
@@ -104,14 +102,13 @@ service::start_mongodb() {
   [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 27017 mongodb)
-  if [ $docker_status ]; then
-    # if not started in 30 seconds print logs and exit
+  if [ "$docker_status" ]; then
     echo "done."
     echo "mongodb $service_version is running at 0.0.0.0:27017"
   else
+    # if not started in 30 seconds print logs and exit
     echo $docker_output
   fi
-
 }
 
 service::start_elasticsearch() {
@@ -122,14 +119,13 @@ service::start_elasticsearch() {
   [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 9200 elasticseach)
-  if [ $docker_status ]; then
-    # if not started in 30 seconds print logs and exit
+  if [ "$docker_status" ]; then
     echo "done."
     echo "elasticsearch $service_version is accessible at 0.0.0.0:9200 and 0.0.0.0:9300"
   else
+    # if not started in 30 seconds print logs and exit
     echo $docker_output
   fi
-
 }
 
 service::start_rabbitmq() {
@@ -140,14 +136,13 @@ service::start_rabbitmq() {
   [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 5672 rabbitmq)
-  if [ $docker_status ]; then
-    # if not started in 30 seconds print logs and exit
+  if [ "$docker_status" ]; then
     echo "done."
     echo "rabbitmq $service_version is accessible at 0.0.0.0:5672"
   else
+    # if not started in 30 seconds print logs and exit
     echo $docker_output
   fi
-
 }
 
 service::start_cassandra() {
@@ -158,14 +153,13 @@ service::start_cassandra() {
   [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 9042 cassandra)
-  if [ $docker_status ]; then
-    # if not started in 30 seconds print logs and exit
+  if [ "$docker_status" ]; then
     echo "done."
     echo "cassandra $service_version is accessible at 0.0.0.0:9042"
   else
+    # if not started in 30 seconds print logs and exit
     echo $docker_output
   fi
-
 }
 
 service::start_rethinkdb() {
@@ -176,17 +170,14 @@ service::start_rethinkdb() {
   [ "$?" -eq 0 ] || echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 28015 rethinkdb)
-  if [ $docker_status ]; then
-    # if not started in 30 seconds print logs and exit
+  if [ "$docker_status" ]; then
     echo "done."
     echo "rethinkdb $service_version is accessible at 0.0.0.0:28015"
   else
+    # if not started in 30 seconds print logs and exit
     echo $docker_output
   fi
-
 }
-
-
 
 service::start() {
   echo "toolbox_sem_service_total_count 1" >> /tmp/toolbox_metrics
