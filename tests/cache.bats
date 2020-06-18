@@ -461,6 +461,25 @@ normalize_key() {
   refute_output --partial "command not found"
 }
 
+@test "checking if nonexistent key ending with * is present in cache store" {
+  test_key=$(normalize_key bats-test-*)
+
+  run ./cache clear
+  assert_success
+  refute_output --partial "command not found"
+
+  run ./cache is_not_empty
+  assert_failure
+  refute_output --partial "command not found"
+
+  run ./cache has_key $test_key
+
+  assert_failure
+  assert_output --partial "Key ${test_key} doesn't exist in the cache store."
+  refute_output --partial "Key bats-test-* exists in the cache store."
+  refute_output --partial "command not found"
+}
+
 ################################################################################
 # cache delete
 ################################################################################
