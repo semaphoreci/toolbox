@@ -3,6 +3,14 @@
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
 
+service::pull_image_retry() {
+  counter=1 
+  local image_name=$2
+  while ! docker pull $image_name && [ $counter -lt 3 ] ;do 
+    counter=$((counter+1)); 
+  done
+}
+
 service::pull_image() {
   local image_name=$1
 
@@ -14,7 +22,7 @@ service::pull_image() {
     service::err "Invalid image name provided '${image_name}'"
   fi
 
-  service::duration service::run_cmd docker pull $image_name download $(echo ${image_name%%:*})
+  service::duration service::run_cmd service::pull_image_retry pull $image_name download $(echo ${image_name%%:*})
 }
 
 service::start_mysql() {
