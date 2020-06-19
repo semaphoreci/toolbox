@@ -7,7 +7,8 @@ service::pull_image_retry() {
   counter=1 
   local image_name=$2
   while ! docker pull $image_name && [ $counter -lt 3 ] ;do 
-    counter=$((counter+1)); 
+    counter=$((counter+1))
+    sleep 1
   done
 }
 
