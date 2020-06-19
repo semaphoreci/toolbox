@@ -31,5 +31,5 @@ while true; do
 
   echo "$(date) | mem: $MEMORY, disk: $DISK" >> $OUTPUT
 
-  sleep 30
+  sleep 1
 done

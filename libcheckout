@@ -26,7 +26,13 @@ function checkout::validation_message() {
 }
 
 function checkout::use_cache() {
+  export CACHE_FAIL_ON_ERROR="true"
   cache restore git-cache-
+
+  if [ "$?" -ne "0" ]; then
+    echo "Failed to restore from the cache"
+    rm -rf $SEMAPHORE_GIT_DIR
+  fi
 
   if [ -d "$HOME/$SEMAPHORE_GIT_DIR" ]; then
     checkout::fetch
