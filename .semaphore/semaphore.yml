@@ -21,7 +21,7 @@ blocks:
             - 'shellcheck libcheckout || true'
             - 'shellcheck sem-service -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -gt 80 ]]'
             - 'shellcheck sem-version -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -gt 21 ]]'
-            - 'shellcheck cache       -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -gt 152 ]]'
+            - 'shellcheck cache       -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -gt 154 ]]'
             - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -gt 59 ]]'
 
   - name: Run Tests

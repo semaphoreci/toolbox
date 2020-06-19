@@ -6,7 +6,7 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 service::pull_image_retry() {
   counter=1 
   local image_name=$2
-  while ! docker pull $image_name && [ $counter -lt 3 ] ;do 
+  while ! docker pull "$image_name" && [ $counter -lt 3 ] ;do 
     counter=$((counter+1))
     sleep 1
   done
@@ -19,11 +19,11 @@ service::pull_image() {
     service:err "Image name can't be empty"
   fi
 
-  if ! echo $image_name | grep -E '^[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
+  if ! echo "$image_name" | grep -E '^[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
     service::err "Invalid image name provided '${image_name}'"
   fi
 
-  service::duration service::run_cmd service::pull_image_retry pull $image_name download $(echo ${image_name%%:*})
+  service::duration service::run_cmd service::pull_image_retry pull "$image_name" download $(echo ${image_name%%:*})
 }
 
 service::start_mysql() {
