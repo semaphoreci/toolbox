@@ -95,6 +95,31 @@ teardown() {
   assert_output --partial "Revision: $SEMAPHORE_GIT_SHA not found .... Exiting"
 }
 
+@test "libcheckout - [PR] Checkout and use cache" {
+  export SEMAPHORE_GIT_REF_TYPE="pull-request"
+  export SEMAPHORE_GIT_REF="refs/pull/186/merge"
+  export SEMAPHORE_GIT_SHA=30774365e11f2b1e18706c9ed0920369f6d7c205
+  cache clear
+
+  run checkout --use-cache
+  assert_success
+  assert_output --partial "MISS: git-cache-"
+  assert_output --partial "No git cache... caching"
+  refute_output --partial "HIT: git-cache-"
+
+  cd ~
+  cache list
+  rm -rf $SEMAPHORE_GIT_DIR
+
+  cache restore git-cache-
+
+  run checkout --use-cache
+  assert_success
+  assert_output --partial "HIT: git-cache-"
+  refute_output --partial "No git cache... caching"
+  refute_output --partial "MISS: git-cache-"
+}
+
 # noRefType
 
 @test "libcheckout - [noRef] Checkout repository" {
