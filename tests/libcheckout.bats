@@ -74,6 +74,35 @@ teardown() {
   assert_output --partial "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
 }
 
+@test "libcheckout - [Tag] Checkout and use cache" {
+  export SEMAPHORE_GIT_REF_TYPE="tag"
+  export SEMAPHORE_GIT_TAG_NAME='v2.4.1'
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+  cache clear
+
+  run checkout --use-cache
+  assert_success
+  assert_output --partial "MISS: git-cache-"
+  assert_output --partial "No git cache... caching"
+  refute_output --partial "HIT: git-cache-"
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA Release $SEMAPHORE_GIT_TAG_NAME"
+
+  cd ~
+  cache list
+  rm -rf $SEMAPHORE_GIT_DIR
+
+  cache restore git-cache-
+
+  run checkout --use-cache
+  assert_success
+  assert_output --partial "HIT: git-cache-"
+  refute_output --partial "No git cache... caching"
+  refute_output --partial "MISS: git-cache-"
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA Release $SEMAPHORE_GIT_TAG_NAME"
+
+  cache clear
+}
+
 # PR
 
 @test "libcheckout - [PR]" {
@@ -118,6 +147,8 @@ teardown() {
   assert_output --partial "HIT: git-cache-"
   refute_output --partial "No git cache... caching"
   refute_output --partial "MISS: git-cache-"
+
+  cache clear
 }
 
 # noRefType
