@@ -39,7 +39,7 @@ function checkout::use_cache() {
   else
     checkout::clone
   fi
-  
+
   if [ "$?" -eq "0" ]; then
     checkout::cache_store
   else
@@ -48,38 +48,68 @@ function checkout::use_cache() {
 }
 
 function checkout::fetch() {
-  local branch_ref="refs/heads/$SEMAPHORE_GIT_BRANCH"
-  local branch_origin="origin/$SEMAPHORE_GIT_BRANCH"
-
   echo "Restored cache"
   cd $HOME/$SEMAPHORE_GIT_DIR
   git remote prune origin
   git fetch --tags origin
 
-  if [[ -n $(git show-ref $branch_ref) ]]; then
-    git checkout $SEMAPHORE_GIT_BRANCH
-  else
-    git checkout -b $SEMAPHORE_GIT_BRANCH -t $branch_origin;
-  fi
-  checkout::checkrevision
-  if [ "$?" -eq "0" ]; then
-  git reset --hard $SEMAPHORE_GIT_SHA
-  echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
-  else
-    return 1
-  fi
+  checkout::switch_revision
 }
 
 function checkout::clone() {
   git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
   cd $SEMAPHORE_GIT_DIR
-  git checkout $SEMAPHORE_GIT_BRANCH
+
+  checkout::switch_revision
+}
+
+function checkout::reset_to_sha {
   checkout::checkrevision
   if [ "$?" -eq "0" ]; then
     git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
     echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
+
+    return 0
   else
     return 1
+  fi
+}
+
+function checkout::switch_revision() {
+  if [ $SEMAPHORE_GIT_REF_TYPE = "pull-request" ]; then
+    git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
+    if [ $? -ne 0 ]; then
+      echo "Reference: ${SEMAPHORE_GIT_REF} not found .... Exiting"
+
+      return 1
+    else
+      checkout::reset_to_sha
+    fi
+
+  elif [ $SEMAPHORE_GIT_REF_TYPE = "tag" ]; then
+    git checkout -qf $SEMAPHORE_GIT_TAG_NAME
+    if [ $? -ne 0 ]; then
+      echo "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
+
+      return 1
+    else
+      echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
+      echo "HEAD is now at ${SEMAPHORE_GIT_SHA} Release ${SEMAPHORE_GIT_TAG_NAME}"
+
+      return 0
+    fi
+
+  else
+    local branch_ref="refs/heads/$SEMAPHORE_GIT_BRANCH"
+    local branch_origin="origin/$SEMAPHORE_GIT_BRANCH"
+
+    if [[ -n $(git show-ref $SEMAPHORE_GIT_REF) ]]; then
+      git checkout $SEMAPHORE_GIT_BRANCH
+    else
+      git checkout -b $SEMAPHORE_GIT_BRANCH -t $branch_origin;
+    fi
+
+    checkout::reset_to_sha
   fi
 }
 
