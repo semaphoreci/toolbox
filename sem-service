@@ -273,6 +273,7 @@ service::stop() {
 
   if [[ $service_status -eq 0 ]]; then
     stop_output=$( service::run_cmd docker stop $service_name )
+    sudo rm -rf /var/tmp/$service_name
 
     service::log "'${service_name}' stopped."
   else
