@@ -44,7 +44,8 @@ version::change_ruby() {
   if ! [ -d ~/.rbenv/versions/${language_version} ]; then
     sem-install ruby ${language_version}
   fi
-  version::change "rbenv global"
+  [ "$2" = "-f" ] && change_cmd="rbenv shell" || change_cmd="rbenv global"
+  version::change "$change_cmd"
   return $?
 }
 version::change_node() {
@@ -170,7 +171,7 @@ version::err() {
 #   none
 ################################################################################
 version::main() {
-  if ! [[ $# -eq 2 ]]; then
+  if ! [[ $# -ge 2 ]]; then
     version::usage
     version::err "Unsupported number of arguments provided!"
 
@@ -179,6 +180,7 @@ version::main() {
 
   language=$1
   language_version=$2
+  force=$3
 
   for (( i=0; i < ${#SUPPORTED_LANGUAGES}; i++ )); do
     if [[ ${SUPPORTED_LANGUAGES[i]} -eq $language ]]; then
@@ -190,7 +192,7 @@ version::main() {
         return $?
       fi
 
-      version::metrics version::change_${language} $language_version
+      version::metrics version::change_${language} $language_version $force
       fn_status=$?
 
       if [[ fn_status -ne 0 ]]; then
