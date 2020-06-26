@@ -64,9 +64,6 @@ blocks:
           - ruby --version | grep 2.5.3
           - sem-version ruby 2.3.7
           - ruby --version | grep 2.3.7
-          - mkdir ruby_test; echo "2.7.1" > ruby_test/.ruby_version
-          - cd ruby_test;ruby --version
-          - sem-version ruby 2.3.7 -f; pwd; ruby --version; cd ..
           - sem-version c 8
           - gcc --version | grep " 8."
           - sem-version cpp 7
@@ -90,6 +87,12 @@ blocks:
           - php -m | grep imap
           - which composer | grep 7.3.16
           - sem-version elixir 1.7.4
+          - mkdir ruby_test
+          - echo "2.7.1" > ruby_test/.ruby-version
+          - cd ruby_test
+          - ruby --version| grep 2.7.1
+          - sem-version ruby 2.3.7 -f
+          - ruby --version| grep 2.3.7
 
 
       - name: MySQL
