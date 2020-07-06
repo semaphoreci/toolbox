@@ -347,14 +347,14 @@ cache::allocate_space() {
 
   archive_size=$1
 
-  file="/tmp/keys_data"
+  file="/tmp/keys_data_$$"
   cache::save_command_output "cls --sort=date -l" $file
-  echo -e "$(cat $file | awk '{print $5}')" > "/tmp/usage_data"
-  echo -e "$(cat $file | awk '{print $5, $9}')" > "/tmp/size_key"
+  echo -e "$(cat $file | awk '{print $5}')" > "/tmp/usage_data_$$"
+  echo -e "$(cat $file | awk '{print $5, $9}')" > "/tmp/size_key_$$"
 
-  used_space=$(cache::used_space "/tmp/usage_data")
+  used_space=$(cache::used_space "/tmp/usage_data_$$")
   free_space=$(cache::free_space ${used_space})
-  rm -f "/tmp/usage_data"
+  rm -f "/tmp/usage_data_$$"
 
   if [ $free_space -lt $archive_size ]; then
     cache::log "Not enough space, deleting the oldest keys."
@@ -364,18 +364,18 @@ cache::allocate_space() {
     done
   fi
 
-  rm -f /tmp/size_key
-  rm -f /tmp/keys_data
+  rm -f /tmp/size_key_$$
+  rm -f /tmp/keys_data_$$
 }
 
 cache::delete_oldest_key() {
  local key
  local file
 
- file=/tmp/size_key
+ file=/tmp/size_key_$$
 
- size=$(cat /tmp/size_key | tail -1 | awk '{ print $1 }')
- key=$(cat /tmp/size_key | tail -1 | awk '{ print $2 }')
+ size=$(cat /tmp/size_key_$$ | tail -1 | awk '{ print $1 }')
+ key=$(cat /tmp/size_key_$$ | tail -1 | awk '{ print $2 }')
  cache::lftp "glob rm -f ${key}"
 
  cache::warn "Key ${key} is deleted."
@@ -504,10 +504,10 @@ cache::clear() {
 
 cache::list() {
   if cache::is_not_empty; then
-    cache::download "list" "/tmp/list_data"
-    output=$(cat /tmp/list_data)
+    cache::download "list" "/tmp/list_data_$$"
+    output=$(cat /tmp/list_data_$$)
     cache::log "${output}"
-    rm -f /tmp/list_data
+    rm -f /tmp/list_data_$$
   else
     cache::log "Cache is empty."
   fi
@@ -520,7 +520,7 @@ cache::usage() {
   local hr_free_space
   local file
 
-  file="/tmp/usage_data"
+  file="/tmp/usage_data_$$"
   cache::download "usage" $file
 
   used_space=$(cache::used_space $file)
