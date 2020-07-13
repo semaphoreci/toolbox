@@ -273,7 +273,7 @@ cache::autorestore() {
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'vendor' directory with cache keys 'composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH-,composer-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
-            cache::restore composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH,composers-master
+            cache::restore composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH,composer-master
             ;;
           "pom.xml")
             cache::log
