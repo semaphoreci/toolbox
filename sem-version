@@ -212,7 +212,7 @@ version::main() {
 sem-version() {
   if [[ `uname` == "Darwin" ]]; then
     echo "`sem-version` is not supported in this environment."
-    echo "https://docs.semaphoreci.com/ci-cd-environment/sem-version-managing-language-versions-on-linu"
+    echo "https://docs.semaphoreci.com/ci-cd-environment/sem-version-managing-language-versions-on-linux"
     return 1
   else
     version::main "$@"
