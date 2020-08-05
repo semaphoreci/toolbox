@@ -3,7 +3,7 @@ source ~/.toolbox/sem-install
 
 # Changing language versions
 VERSION="0.7"
-SUPPORTED_LANGUAGES=(elixir go java php ruby python node c cpp erlang scala)
+SUPPORTED_SOFTWARE=(elixir go java php ruby python node c cpp erlang scala firefox)
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
@@ -19,7 +19,7 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 
 version::metrics() {
   local cmd=$@
-  local language=${1#"version::change_"}
+  local software=${1#"version::change_"}
   local version=$2
   local start
   local end
@@ -29,20 +29,20 @@ version::metrics() {
   end=$(date +%s%3N)
   duration=$(( $end - $start ))
   echo "toolbox_sem_version_install_count 1" >> /tmp/toolbox_metrics
-  echo "toolbox_sem_version_duration_${language}{version=\"${version}\"} ${duration}" >> /tmp/toolbox_metrics #in ms
-  echo "toolbox_sem_version_count_${language}{version=\"${version}\"} 1" >> /tmp/toolbox_metrics
+  echo "toolbox_sem_version_duration_${software}{version=\"${version}\"} ${duration}" >> /tmp/toolbox_metrics #in ms
+  echo "toolbox_sem_version_count_${software}{version=\"${version}\"} 1" >> /tmp/toolbox_metrics
   return 0
 }
 version::change() {
   command=$1
-  version::log "Changing '${language}' to version ${language_version}"
-  eval $command $language_version
+  version::log "Changing '${software}' to version ${software_version}"
+  eval $command $software_version
   ch_status=$?
   return $ch_status
 }
 version::change_ruby() {
-  if ! [ -d ~/.rbenv/versions/${language_version} ]; then
-    sem-install ruby ${language_version}
+  if ! [ -d ~/.rbenv/versions/${software_version} ]; then
+    sem-install ruby ${software_version}
   fi
   [ "$2" = "-f" ] && change_cmd="rbenv shell" || change_cmd="rbenv global"
   version::change "$change_cmd"
@@ -53,9 +53,9 @@ version::change_node() {
   return $?
 }
 version::change_elixir() {
-  kiex list | grep -q ${language_version}
+  kiex list | grep -q ${software_version}
   if [[ $? -gt 0 ]];then
-    kiex install ${language_version}
+    kiex install ${software_version}
   fi
   version::change "kiex use"
   return $?
@@ -69,10 +69,10 @@ version::change_java() {
   return $?
 }
 version::change_php() {
-  if ! [ -d ~/.phpbrew/php/php-${language_version} ]; then
-    sem-install php ${language_version}
+  if ! [ -d ~/.phpbrew/php/php-${software_version} ]; then
+    sem-install php ${software_version}
   fi
-  language_version="php-${language_version}"
+  software_version="php-${software_version}"
   version::change "phpbrew switch"
   return $?
 }
@@ -94,11 +94,22 @@ version::change_scala() {
 }
 version::change_erlang() {
   version::change "change-erlang-version"
-
+  return $?
+}
+version::change_firefox() {
+  local firefox_version=""
+  case "${software_version}" in
+    "52")firefox_version="esr-prev";;
+    "68")firefox_version="esr";;
+    "78")firefox_version="esr-new";;
+    *)echo "Please choose one of 52, 68, 78";exit 1;;
+  esac
+  software_version="$firefox_version"
+  version::change "change-firefox-version"
   return $?
 }
 ################################################################################
-# End of language manager wrappers
+# End of software manager wrappers
 ################################################################################
 
 
@@ -113,10 +124,10 @@ version::change_erlang() {
 version::usage() {
   echo -e "
 ################################################################################
-sem-version ${VERSION} | Utility to change a selected languages active version
+sem-version ${VERSION} | Utility to change a selected software active version
 
 Usage:
-  sem-version language version
+  sem-version software version
 ################################################################################"
 }
 
@@ -164,9 +175,9 @@ version::err() {
 ################################################################################
 # The main entrypoint to the script. Holds the switching logic.
 # Globals:
-#   SUPPORTED_LANGUAGES
+#   SUPPORTED_SOFTWARE
 # Arguments:
-#   'language', 'version'
+#   'software', 'version'
 # Returns:
 #   none
 ################################################################################
@@ -178,27 +189,27 @@ version::main() {
     return $?
   fi
 
-  language=$1
-  language_version=$2
+  software=$1
+  software_version=$2
   force=$3
 
-  for (( i=0; i < ${#SUPPORTED_LANGUAGES}; i++ )); do
-    if [[ ${SUPPORTED_LANGUAGES[i]} -eq $language ]]; then
-      fn_name="version::change_${language}"
+  for (( i=0; i < ${#SUPPORTED_SOFTWARE}; i++ )); do
+    if [[ ${SUPPORTED_SOFTWARE[i]} -eq $software ]]; then
+      fn_name="version::change_${software}"
 
       if ! [[ $(type -t $fn_name) == function ]]; then
-        version::err "Function '${fn_name}' not implemented. Language '${language}' might not be supported."
+        version::err "Function '${fn_name}' not implemented. Software '${software}' might not be supported."
 
         return $?
       fi
 
-      version::metrics version::change_${language} $language_version $force
+      version::metrics version::change_${software} $software_version $force
       fn_status=$?
 
       if [[ fn_status -ne 0 ]]; then
         version::err "Failed to switch version.\nLog:\n$log"
         echo "toolbox_sem_version_failure_rate_total 1" >> /tmp/toolbox_metrics
-        echo "toolbox_sem_version_failure_rate_${language} 1" >> /tmp/toolbox_metrics
+        echo "toolbox_sem_version_failure_rate_${software} 1" >> /tmp/toolbox_metrics
         return $?
       fi
 
@@ -212,7 +223,7 @@ version::main() {
 sem-version() {
   if [[ `uname` == "Darwin" ]]; then
     echo "`sem-version` is not supported in this environment."
-    echo "https://docs.semaphoreci.com/ci-cd-environment/sem-version-managing-language-versions-on-linu"
+    echo "https://docs.semaphoreci.com/ci-cd-environment/sem-version-managing-language-versions-on-linux"
     return 1
   else
     version::main "$@"
