@@ -76,6 +76,8 @@ blocks:
           - php -v | grep 7.4
           - time sem-version node 12.16.1
           - node --version | grep 12.16.1
+          - time sem-version node 14
+          - node --version | grep 14
           - echo "192.168.123.1 packages.semaphoreci.com" | sudo tee -a /etc/hosts
           - sem-version ruby 2.6.6
           - ruby --version | grep 2.6.6
