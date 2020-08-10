@@ -23,6 +23,7 @@ blocks:
             - 'shellcheck sem-version -f gcc | wc -l && [[ "$(shellcheck sem-version -f gcc | wc -l)" -le 25 ]]'
             - 'shellcheck cache       -f gcc | wc -l && [[ "$(shellcheck cache -f gcc | wc -l)" -le 154 ]]'
             - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 89 ]]'
+            - 'shellcheck install-package'
 
   - name: Run Tests
     task:
@@ -49,6 +50,7 @@ blocks:
           - sem-version go 1.12
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
+          - bats tests/install_package.bats
           - bats tests/autocache.bats
           - bats tests/cache.bats
           - bats tests/libcheckout.bats
@@ -86,12 +88,12 @@ blocks:
           - sem-version ruby 2.6.6
           - ruby --version | grep 2.6.6
           - bundler --version | grep 2
-          - sem-version php 7.3.16
+          - sem-version php 7.3.19
           - php -m | grep intl
           - php -m | grep magick
           - php -m | grep gd
           - php -m | grep imap
-          - which composer | grep 7.3.16
+          - which composer | grep 7.3.19
           - sem-version elixir 1.7.4
           - mkdir ruby_test
           - echo "2.7.1" > ruby_test/.ruby-version

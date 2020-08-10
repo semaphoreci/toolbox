@@ -1,0 +1,124 @@
+#!/bin/bash
+# Package installer with caching, version 2.2
+
+show_usage_and_exit() {
+  echo -e "Package installer that caches packages\n"
+  echo -e "Usage: install-package [--update] [--skip-update] [--update-new] pkg1[=version] [pkg2[=version]] [-o APT::Option] ...\n"
+  echo "--update            Forces repository list update before installing the packages"
+  echo "--skip-update       Skips repository list update"
+  echo "--update-new        Update only repository lists added in the last 1h"
+
+  exit 1
+}
+
+skip_global_update() {
+  touch "$apt_update_ran"
+}
+
+update_repo_lists() {
+  echo ">> Updating repository lists and keys..."
+
+  sudo apt-key update
+  sudo apt-get update
+
+  skip_global_update
+}
+
+install_packages() {
+  echo ">> Installing packages..."
+
+  sudo apt-get install -y --force-yes -o Dir::Cache::archives="$temp_deb_store" "${packages[@]}"
+}
+
+unpack_pkg_archive_if_available() {
+    echo ">> Unpacking package archive..."
+
+    cache restore install_package_cache
+
+    skip_global_update
+}
+
+archive_packages() {
+  echo ">> Storing packages in archive..."
+
+  sudo chown "$USER" -R "$temp_deb_store"
+
+  cache store install_package_cache "$temp_deb_store"
+}
+
+init() {
+  deb_cache_base_name=".deb-cache"
+  temp_deb_store="/home/$(whoami)/$deb_cache_base_name"
+  apt_update_ran="/tmp/.apt_update_ran"
+
+  mkdir -p "$temp_deb_store"
+}
+
+run_selective_update() {
+  recently_modified_lists=$(find /etc/apt/sources.list.d/ -name "*.list" -type f -mmin -59)
+
+  if ! [ -z "${recently_modified_lists}" ]; then
+    for list in $recently_modified_lists; do
+      echo "* pulling from: $list"
+      sudo apt-get update -o Dir::Etc::sourcelist="$list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+    done
+  else
+    echo "* no PPA list found which is modified in the last hour"
+  fi
+}
+
+# Show usage and exit if no arguments provided
+[[ $# -eq 0 ]] && show_usage_and_exit
+
+init
+
+unpack_pkg_archive_if_available
+
+POSITIONAL=()
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --skip-update | -s )
+      echo "* global package lists will not be updated"
+      skip_global_update
+
+      shift
+      ;;
+    --update | -u )
+      echo "* global package list update will run"
+      rm -f $apt_update_ran
+
+      shift
+      ;;
+    --update-new | -n )
+      echo "* only the recent package lists will be updated"
+      skip_global_update
+
+      run_selective_update
+
+      shift
+      ;;
+    * )
+      POSITIONAL+=("$1")
+
+      shift
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL[@]}"
+
+# Run apt-get update if flag is not set
+[[ ! -f $apt_update_ran ]] && update_repo_lists
+
+packages=("$@")
+
+if install_packages;then 
+  if archive_packages;then
+    echo ">> Finished successfully."
+  fi
+else
+  echo ">> Errors have occured during package installation."
+  exit 1
+fi
+
