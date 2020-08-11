@@ -56,6 +56,10 @@ blocks:
 
       - name: Sem version tests
         commands:
+          - sem-version firefox 52
+          - firefox --version | grep -q 52
+          - sem-version firefox 78
+          - firefox --version | grep -q 78
           - sem-version ruby 2.5.3
           - ruby --version | grep 2.5.3
           - sem-version ruby 2.5.2
