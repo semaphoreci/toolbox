@@ -87,6 +87,16 @@ else
   echo "toolbox_install_error{module='sem-service-check-params'} 1" >> /tmp/toolbox_metrics
 fi
 
+install_cmd ln -sf ~/.toolbox/install-package $INSTALL_PATH/install-package
+install_cmd ln -sf ~/.toolbox/install-package $INSTALL_PATH/install-package.sh
+install_cmd chmod +x $INSTALL_PATH/install-package
+if [[ $? -eq 0 ]];then
+  echo "install-package installed"
+else
+  echo "toolbox_install_error{module='install-package'} 1" >> /tmp/toolbox_metrics
+fi
+
+
 #
 # Installing the Artifacts CLI.
 #
