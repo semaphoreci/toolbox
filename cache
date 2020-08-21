@@ -62,7 +62,7 @@ cache::current_timestamp_in_milis() {
 cache::autostore() {
 
   cache::log "==> Detecting project structure and storing into cache."
-  for lockfile in ${LOCKFILES[@]}; do
+  for lockfile in "${LOCKFILES[@]}"; do
     if [[ -f $lockfile ]]; then
         case $lockfile in
           ".nvmrc")
@@ -219,7 +219,7 @@ cache::autostore() {
 cache::autorestore() {
 
   cache::log "==> Detecting project structure and fetching cache."
-  for lockfile in ${LOCKFILES[@]}; do
+  for lockfile in "${LOCKFILES[@]}"; do
     if [[ -f $lockfile ]]; then
         case $lockfile in
           ".nvmrc")
@@ -676,8 +676,18 @@ cache::lftp_get() {
 
   if cache::file_is_present $key; then
     cd /tmp
+    start_time="$(date +'%s')"
     cache::lftp "get1 -c $key"
+    end_time="$(date +'%s')"
+    duration="$(( end_time - start_time ))"
     cd - &>/dev/null
+
+    test -f /tmp/$key && archive_size="$(stat --format='%s' /tmp/$key)" || archive_size=0
+    echo "cache_download_size $archive_size" >> /tmp/cache_metrics
+    echo "cache_download_time $duration" >> /tmp/cache_metrics
+    echo "cache_user $SEMAPHORE_CACHE_USERNAME" >> /tmp/cache_metrics
+    cache_server_ip="$(echo $SEMAPHORE_CACHE_URL| cut -d':' -f1)"
+    echo "cache_server $cache_server_ip" >> /tmp/cache_metrics
 
     case $DIST in
       Darwin)
@@ -707,7 +717,7 @@ cache::lftp_get() {
         cache::err "Failed to restore the key.."
       fi
     fi
-    archive_size=$(ls -l /tmp/$key | awk '{print $5}')
+
     rm -rf /tmp/$key
     cache::log "Restored: ${restored_path}"
   else
