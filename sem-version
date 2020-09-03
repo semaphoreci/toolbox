@@ -7,6 +7,7 @@ SUPPORTED_SOFTWARE=(elixir go java php ruby python node c cpp erlang scala firef
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
+TOTAL_TIME=0
 
 ################################################################################
 # Generic function which executes the passed 'command' to switch the version
@@ -27,10 +28,7 @@ version::metrics() {
   start=$(date +%s%3N)
   $cmd
   end=$(date +%s%3N)
-  duration=$(( $end - $start ))
-  echo "toolbox_sem_version_install_count 1" >> /tmp/toolbox_metrics
-  echo "toolbox_sem_version_duration_${software}{version=\"${version}\"} ${duration}" >> /tmp/toolbox_metrics #in ms
-  echo "toolbox_sem_version_count_${software}{version=\"${version}\"} 1" >> /tmp/toolbox_metrics
+  TOTAL_TIME=$(( $end - $start ))
   return 0
 }
 version::change() {
@@ -208,9 +206,10 @@ version::main() {
 
       if [[ fn_status -ne 0 ]]; then
         version::err "Failed to switch version.\nLog:\n$log"
-        echo "toolbox_sem_version_failure_rate_total 1" >> /tmp/toolbox_metrics
-        echo "toolbox_sem_version_failure_rate_${software} 1" >> /tmp/toolbox_metrics
+        echo "toolbox_sem_version{software=\"$software\",version=\"$version\",state='fail'} $TOTAL_TIME" >> /tmp/toolbox_semversion
         return $?
+      else
+        echo "toolbox_sem_version{software=\"$software\",version=\"$version\",state='success'} $TOTAL_TIME" >> /tmp/toolbox_semversion
       fi
 
       version::log "Switch successful."

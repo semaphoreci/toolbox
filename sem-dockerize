@@ -9,10 +9,8 @@ run::dockerize(){
 
   if [[ $? -ne 0 ]]; then
     echo "Failed to start service $service on port $port"
-    echo "toolbox_sem_service_error_rate_${service} 1" >> /tmp/toolbox_metrics
-    exit 1
+    echo 1
   fi
-  echo "toolbox_sem_service_success_rate_${service} 1" >> /tmp/toolbox_metrics
   echo 0
 }
 
