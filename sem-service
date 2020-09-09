@@ -379,7 +379,7 @@ service::print_usage() {
 service::duration() {
   local cmd=${@:1:$#-2}
   local service=$(echo "${@: -1}")
-  local version=$(echo "${@: -3}")
+  local version=$(echo "${@: 2:1}")
   local type=$(echo "${@: -2:1}")
   local start
   local end
@@ -389,7 +389,7 @@ service::duration() {
   end=$(date +%s%3N)
   duration=$(( $end - $start ))
   if [[ "$type" == "total" ]]; then
-    echo "toolbox_sem_service{service=\"$service\",version=\"$version\",state=${state[$docker_status]}} ${duration}" >> /tmp/toolbox_semservice
+    echo "toolbox_sem_service{service=\"$service\",version=\"$version\",state=\"${state[$docker_status]}\"} ${duration}" >> /tmp/toolbox_semservice
   fi
 
   return 0

@@ -39,8 +39,8 @@ version::change() {
   return $ch_status
 }
 version::change_ruby() {
-  if ! [ -d ~/.rbenv/versions/${software_version} ]; then
-    sem-install ruby ${software_version}
+  if ! [ -d ~/.rbenv/versions/"${software_version}" ]; then
+    sem-install ruby "${software_version}"
   fi
   [ "$2" = "-f" ] && change_cmd="rbenv shell" || change_cmd="rbenv global"
   version::change "$change_cmd"
@@ -51,9 +51,9 @@ version::change_node() {
   return $?
 }
 version::change_elixir() {
-  kiex list | grep -q ${software_version}
+  kiex list | grep -q "${software_version}"
   if [[ $? -gt 0 ]];then
-    kiex install ${software_version}
+    kiex install "${software_version}"
   fi
   version::change "kiex use"
   return $?
@@ -67,8 +67,8 @@ version::change_java() {
   return $?
 }
 version::change_php() {
-  if ! [ -d ~/.phpbrew/php/php-${software_version} ]; then
-    sem-install php ${software_version}
+  if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
+    sem-install php "${software_version}"
   fi
   software_version="php-${software_version}"
   version::change "phpbrew switch"
@@ -206,10 +206,10 @@ version::main() {
 
       if [[ fn_status -ne 0 ]]; then
         version::err "Failed to switch version.\nLog:\n$log"
-        echo "toolbox_sem_version{software=\"$software\",version=\"$version\",state='fail'} $TOTAL_TIME" >> /tmp/toolbox_semversion
+        echo "toolbox_sem_version{software=\"$software\",version=\"$software_version\",state='fail'} $TOTAL_TIME" >> /tmp/toolbox_semversion
         return $?
       else
-        echo "toolbox_sem_version{software=\"$software\",version=\"$version\",state='success'} $TOTAL_TIME" >> /tmp/toolbox_semversion
+        echo "toolbox_sem_version{software=\"$software\",version=\"$software_version\",state='success'} $TOTAL_TIME" >> /tmp/toolbox_semversion
       fi
 
       version::log "Switch successful."
