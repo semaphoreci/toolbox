@@ -206,10 +206,10 @@ version::main() {
 
       if [[ fn_status -ne 0 ]]; then
         version::err "Failed to switch version.\nLog:\n$log"
-        echo "semversion,software=$software,state=fail version=$software_version,duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
+        echo "semversion,software=$software,state=fail,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
         return $?
       else
-        echo "semversion,software=$software,state=success version=$software_version,duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
+        echo "semversion,software=$software,state=success,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
       fi
 
       version::log "Switch successful."
