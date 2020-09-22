@@ -101,7 +101,9 @@ blocks:
           - ruby --version| grep 2.7.1
           - sem-version ruby 2.3.7 -f
           - ruby --version| grep 2.3.7
-
+          - kubectl version --client
+          - sem-version kubectl 1.15.3
+          - kubectl version --client | grep -q 1.15.3
 
       - name: MySQL
         commands:
