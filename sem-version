@@ -3,7 +3,7 @@ source ~/.toolbox/sem-install
 
 # Changing language versions
 VERSION="0.7"
-SUPPORTED_SOFTWARE=(elixir go java php ruby python node c cpp erlang scala firefox)
+SUPPORTED_SOFTWARE=(elixir go java php ruby python node c cpp erlang scala firefox kubectl)
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
@@ -106,6 +106,16 @@ version::change_firefox() {
   version::change "change-firefox-version"
   return $?
 }
+version::change_kubectl() {
+  curl --silent -LO https://storage.googleapis.com/kubernetes-release/release/v"$software_version"/bin/linux/amd64/kubectl
+  if test -f "kubectl"; then
+    chmod +x ./kubectl
+    sudo mv -f kubectl /usr/bin/
+  fi
+  version::change "kubectl version --client | grep -q "
+  return $?
+}
+
 ################################################################################
 # End of software manager wrappers
 ################################################################################
