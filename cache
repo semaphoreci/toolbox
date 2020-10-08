@@ -685,6 +685,7 @@ cache::lftp_get() {
     test -f /tmp/$key && archive_size="$(stat --format='%s' /tmp/$key)" || archive_size=0
     echo "cache_download_size $archive_size" >> /tmp/cache_metrics
     echo "cache_download_time $duration" >> /tmp/cache_metrics
+    echo "Cache download time: $duration seconds"
     echo "cache_user $SEMAPHORE_CACHE_USERNAME" >> /tmp/cache_metrics
     cache_server_ip="$(echo $SEMAPHORE_CACHE_URL| cut -d':' -f1)"
     echo "cache_server $cache_server_ip" >> /tmp/cache_metrics
@@ -701,16 +702,15 @@ cache::lftp_get() {
         exit 1
       ;;
     esac
-
+    
+    echo "cache_total_rate 1" >> /tmp/toolbox_metrics
     if [[ "$restored_path" = /* ]]; then
-      echo "cache_total_rate 1" >> /tmp/toolbox_metrics
       tar xzPf /tmp/$key -C .
       if [[ $? -ne "0" ]]; then
         echo "cache_corruption_rate 1" >> /tmp/toolbox_metrics
         cache::err "Failed to restore the key.."
       fi
     else
-     echo "cache_total_rate 1" >> /tmp/toolbox_metrics
       tar xzf /tmp/$key -C .
       if [[ $? -ne "0" ]]; then
         echo "cache_corruption_rate 1" >> /tmp/toolbox_metrics
