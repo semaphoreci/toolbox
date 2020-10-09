@@ -48,6 +48,7 @@ blocks:
           - sudo apt-get install -y python3.8-dev
           - sem-version python 3.8
           - sem-version go 1.12
+          - sem-version php 7.3.23
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
           - bats tests/install_package.bats
@@ -82,6 +83,7 @@ blocks:
           - php -v | grep 7.4
           - time sem-version node 12.16.1
           - node --version | grep 12.16.1
+          - nodejs --version | grep 12.16.1
           - time sem-version node 14
           - node --version | grep 14
           - echo "192.168.123.1 packages.semaphoreci.com" | sudo tee -a /etc/hosts
