@@ -201,32 +201,23 @@ version::main() {
   software_version=$2
   force=$3
 
-  for (( i=0; i < ${#SUPPORTED_SOFTWARE}; i++ )); do
-    if [[ ${SUPPORTED_SOFTWARE[i]} -eq $software ]]; then
-      fn_name="version::change_${software}"
+  fn_name="version::change_${software}"
 
-      if ! [[ $(type -t $fn_name) == function ]]; then
-        version::err "Function '${fn_name}' not implemented. Software '${software}' might not be supported."
-
-        return $?
-      fi
-
-      version::metrics version::change_${software} $software_version $force
-      fn_status=$?
-
-      if [[ fn_status -ne 0 ]]; then
-        version::err "Failed to switch version.\nLog:\n$log"
-        echo "semversion,software=$software,state=fail,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
-        return $?
-      else
-        echo "semversion,software=$software,state=success,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
-      fi
-
+  if ! [[ $(type -t $fn_name) == function ]]; then
+    version::err "Function '${fn_name}' not implemented. Software '${software}' might not be supported."
+    return 1
+  else
+    version::metrics version::change_${software} $software_version $force
+    fn_status=$?
+    if [[ fn_status -ne 0 ]]; then
+      version::err "Failed to switch version.\nLog:\n$log"
+      echo "semversion,software=$software,state=fail,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
+    else
+      echo "semversion,software=$software,state=success,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
       version::log "Switch successful."
-
-      break
     fi
-  done
+    return "$fn_status"
+  fi
 }
 
 sem-version() {
