@@ -47,7 +47,7 @@ blocks:
           - cache clear
           - sudo apt-get install -y python3.8-dev
           - sem-version python 3.8
-          - sem-version go 1.12
+          - sem-version go 1.15
           - sem-version php 7.3.23
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
