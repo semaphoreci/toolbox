@@ -47,7 +47,7 @@ blocks:
           - cache clear
           - sudo apt-get install -y python3.8-dev
           - sem-version python 3.8
-          - sem-version go 1.12
+          - sem-version go 1.13
           - sem-version php 7.3.23
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
@@ -98,9 +98,9 @@ blocks:
           - which composer | grep 7.3.19
           - sem-version elixir 1.7.4
           - mkdir ruby_test
-          - echo "2.7.1" > ruby_test/.ruby-version
+          - echo "2.7.2" > ruby_test/.ruby-version
           - cd ruby_test
-          - ruby --version| grep 2.7.1
+          - ruby --version| grep 2.7.2
           - sem-version ruby 2.3.7 -f
           - ruby --version| grep 2.3.7
           - kubectl version --client
