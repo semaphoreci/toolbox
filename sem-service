@@ -5,6 +5,8 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 DOWNLOAD_TIME=0
 docker_status=0
 state=('success' 'fail')
+declare -A sem_services
+sem_services['memcached']="1.5 1.6"
 
 service::pull_image_retry() {
   counter=1 
@@ -22,12 +24,33 @@ service::pull_image() {
     service:err "Image name can't be empty"
   fi
 
-  if ! echo "$image_name" | grep -E '^[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
-    service::err "Invalid image name provided '${image_name}'"
+  if ! echo "$image_name" | grep -E '^registry.semaphoreci.com/[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
+    if ! echo "$image_name" | grep -E '^[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
+      service::err "Invalid image name provided '${image_name}'"
+    fi
   fi
 
   service::duration service::run_cmd service::pull_image_retry pull "$image_name" download $(echo ${image_name%%:*})
 }
+
+service::check_version(){
+  local version="$2"
+  local image_name="$1"
+  local have_it=1
+  local local_versions="${sem_services[$image_name]}"
+  for i in ${local_versions[@]};do
+    if [ "$version" == "$i" ];then
+      have_it=0
+      break
+    fi
+  done
+########### Output message if we dont host the image
+#  if [ $have_it -eq 1 ]; then
+#    service::err "We dont provide version: $version. Available versions for $image_name: $local_versions"
+#  fi
+  echo $have_it
+}
+
 
 service::start_mysql() {
   service_version=$1
@@ -86,8 +109,14 @@ service::start_redis() {
 
 service::start_memcached() {
   service_version="${1:-1.5}"
-  service::pull_image "memcached:$service_version"
-  docker_output=$(docker run --net=host --rm --name memcached -d memcached:$service_version)
+
+  local service_image='memcached'
+  if [ "$(service::check_version 'memcached' $service_version)" == "0" ]; then
+    service_image="registry.semaphoreci.com/$service_image"
+  fi
+
+  service::pull_image "$service_image:$service_version"
+  docker_output=$(docker run --net=host --rm --name memcached -d $service_image:$service_version)
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 11211 memcached)
   if [ "$docker_status" ]; then
@@ -369,7 +398,7 @@ service::print_usage() {
   echo "mysql (default: 5.6)"
   echo "postgres (default: 9.6)"
   echo "redis (default: 4)"
-  echo "memcached (default: 1.5)"
+  echo "memcached (default: 1.5, available versions: 1.5 1.6 )"
   echo "mongodb (default: 4.5)"
   echo "elasticsearch (default: 6.5.1)"
   echo "cassandra (default: 3.11.3)"
