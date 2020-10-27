@@ -60,7 +60,6 @@ service::check_version(){
 service::start_mysql() {
   service_version=$1
   shift
-
   local service_image='mysql'
   if [ "$(service::check_version 'mysql' $service_version)" == "0" ]; then
     service_image="registry.semaphoreci.com/$service_image"
@@ -84,10 +83,14 @@ service::start_mysql() {
 service::start_postgres() {
   service_version=$1
   shift
-  docker_params="$@"
+  local service_image='postgres'
+  if [ "$(service::check_version 'postgres' $service_version)" == "0" ]; then
+    service_image="registry.semaphoreci.com/$service_image"
+  fi
 
-  service::pull_image "postgres:$service_version"
-  docker_output=$(docker run $docker_params postgres:$service_version)
+  docker_params="$@"
+  service::pull_image "$service_image:$service_version"
+  docker_output=$(docker run $docker_params $service_image:$service_version)
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 5432 postgres)
   if [ "$docker_status" ]; then
@@ -103,7 +106,6 @@ service::start_postgres() {
 service::start_redis() {
   service_version=$1
   shift
-
   local service_image='redis'
   if [ "$(service::check_version 'redis' $service_version)" == "0" ]; then
     service_image="registry.semaphoreci.com/$service_image"
@@ -125,7 +127,6 @@ service::start_redis() {
 
 service::start_memcached() {
   service_version="${1:-1.5}"
-
   local service_image='memcached'
   if [ "$(service::check_version 'memcached' $service_version)" == "0" ]; then
     service_image="registry.semaphoreci.com/$service_image"
@@ -188,9 +189,13 @@ service::start_elasticsearch() {
 
 service::start_rabbitmq() {
   service_version="${1:-3.8.2}"
-  service::pull_image "rabbitmq:$service_version"
+  local service_image='rabbitmq'
+  if [ "$(service::check_version 'rabbitmq' $service_version)" == "0" ]; then
+    service_image="registry.semaphoreci.com/$service_image"
+  fi
 
-  docker_output=$(docker run --net=host --rm --name rabbitmq --hostname rabbitmq -d rabbitmq:$service_version)
+  service::pull_image "$service_image:$service_version"
+  docker_output=$(docker run --net=host --rm --name rabbitmq --hostname rabbitmq -d $service_image:$service_version)
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 5672 rabbitmq)
   if [ "$docker_status" ]; then
