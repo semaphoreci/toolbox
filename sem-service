@@ -5,6 +5,7 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 DOWNLOAD_TIME=0
 docker_status=0
 state=('success' 'fail')
+download_location='remote'
 declare -A sem_services
 sem_services['memcached']="1.5 1.6"
 sem_services['mysql']="5.5 5.6.52 5.6 5.6.50 5.7.27 5.7.31 5.7.32 5.7 5 8.0.22 8.0 8"
@@ -44,9 +45,11 @@ service::check_version(){
   local image_name="$1"
   local have_it=1
   local local_versions="${sem_services[$image_name]}"
+  [ "$(docker image ls -a | grep $imame_name | grep "$version" |head -n 1|awk '{print $2}')" == "$version" ] && download_location='disk'
   for i in ${local_versions[@]};do
     if [ "$version" == "$i" ];then
       have_it=0
+      [ "$download_location" == "remote" ] && download_location='local'
       break
     fi
   done
@@ -448,7 +451,7 @@ service::duration() {
   end=$(date +%s%3N)
   duration=$(( $end - $start ))
   if [[ "$type" == "total" ]]; then
-    echo "semservice,service=$service,state=${state[$docker_status]},version=$version duration=${duration}" >> /tmp/toolbox_semservice
+    echo "semservice,service=$service,state=${state[$docker_status]},version=$version,location=$download_location duration=${duration}" >> /tmp/toolbox_semservice
   fi
 
   return 0
