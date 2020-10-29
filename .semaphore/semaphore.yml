@@ -125,6 +125,8 @@ blocks:
           - mysql  -utest -ptest -e "show databases"
           - mysql  -utest -ptest -e 'SHOW VARIABLES like "version";'
           - sem-service stop mysql
+          - cat /tmp/toolbox_semservice
+          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: PostgreSQL
         commands:
@@ -145,6 +147,8 @@ blocks:
           - psql -h 0.0.0.0 -U xxx -c "\l"
           - psql -U xxx -c "SELECT version()" | grep 11
           - sem-service status postgres
+          - cat /tmp/toolbox_semservice
+          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: Redis
         commands:
@@ -153,16 +157,22 @@ blocks:
           - sem-service stop redis
           - sem-service start redis 5
           - sem-service status redis
+          - cat /tmp/toolbox_semservice
+          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: Memcached
         commands:
           - sem-service start memcached
           - sem-service status memcached
+          - cat /tmp/toolbox_semservice
+          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: RabbitMQ
         commands:
           - sem-service start rabbitmq
           - sem-service status rabbitmq
+          - cat /tmp/toolbox_semservice
+          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: mongodb
         commands:
@@ -178,6 +188,8 @@ blocks:
           - sem-service stop mongodb
           - sem-service start mongodb 4.2 --username=xxx --password=xxx
           - echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+          - cat /tmp/toolbox_semservice
+          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: elasticsearch
         commands:
@@ -191,17 +203,23 @@ blocks:
           - sem-service status elasticsearch
           - curl -XGET '0.0.0.0:9200' | grep 6.5.2
           - sem-service stop elasticsearch
+          - cat /tmp/toolbox_semservice
+          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: cassandra
         commands:
           - sem-service start cassandra
           - docker ps -a | grep cassandra
+          - cat /tmp/toolbox_semservice
+          - grep -q -v 'remote' /tmp/toolbox_semservice
 
 
       - name: rethinkdb
         commands:
           - sem-service start rethinkdb
           - docker ps -a | grep rethinkdb
+          - cat /tmp/toolbox_semservice
+          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: Erlang change test
         commands:
