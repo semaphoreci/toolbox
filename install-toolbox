@@ -96,6 +96,13 @@ else
   echo "toolbox_install_error{module='install-package'} 1" >> /tmp/toolbox_metrics
 fi
 
+install_cmd ln -sf ~/.toolbox/change_in $INSTALL_PATH/chaneg_in
+install_cmd chmod +x $INSTALL_PATH/change_in
+if [[ $? -eq 0 ]];then
+  echo "change_in installed"
+else
+  echo "toolbox_install_error{module='change_in'} 1" >> /tmp/toolbox_metrics
+fi
 
 #
 # Installing the Artifacts CLI.

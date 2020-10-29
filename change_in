@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+COMMIT_RANGE=$1
+shift;
+
+COMMIT_RANGE_BASE=$(echo $COMMIT_RANGE | awk -F '..' '{ print $1 }')
+
+EXCLUDE_YAML_FILE=false
+
+while test $# -gt 0; do
+  case "$1" in
+    --exclude-yaml-file) EXCLUDE_YAML_FILE=$1;  shift;;
+                     --) shift; break;;
+  esac
+done
+
+FILE_PATTERNS="$@"
+
+echo $COMMIT_RANGE_BASE
+
+git fetch
+
+git branch --set-upstream-to=origin/$COMMIT_RANGE_BASE $COMMIT_RANGE_BASE
+
+git diff --name-only $COMMIT_RANGE -- $FILE_PATTERNS
