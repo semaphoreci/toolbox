@@ -74,7 +74,7 @@ service::start_mysql() {
   docker_output=$(docker run $docker_params $service_image:$service_version)
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 3306 mysql)
-  if ["$docker_status" == "0" ]; then
+  if [ "$docker_status" == "0" ]; then
     echo "done."
     echo "MySQL $service_version is running at 0.0.0.0:3306"
     echo "To access it use username 'root' and blank password."
