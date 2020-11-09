@@ -117,7 +117,7 @@ service::start_redis() {
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run $docker_params $service_image:$service_version)
+  docker_output=$(docker run $docker_params $service_image:$service_version --appendonly yes)
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 6379 redis)
   if [ "$docker_status" == "0" ]; then
