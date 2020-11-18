@@ -121,12 +121,7 @@ blocks:
           - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.7
           - sem-service status mysql
           - sem-service stop mysql
-          - sem-service start mysql 8.0.19 --username=test --password=test --garbage else
-          - mysql  -utest -ptest -e "show databases"
-          - mysql  -utest -ptest -e 'SHOW VARIABLES like "version";'
-          - sem-service stop mysql
-          - cat /tmp/toolbox_semservice
-          - grep -q -v 'remote' /tmp/toolbox_semservice
+          - sem-service start mysql 8.0.19 --username=test --password=test --garbage else || true
 
       - name: PostgreSQL
         commands:
@@ -148,7 +143,6 @@ blocks:
           - psql -U xxx -c "SELECT version()" | grep 11
           - sem-service status postgres
           - cat /tmp/toolbox_semservice
-          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: Redis
         commands:
@@ -158,21 +152,18 @@ blocks:
           - sem-service start redis 5
           - sem-service status redis
           - cat /tmp/toolbox_semservice
-          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: Memcached
         commands:
           - sem-service start memcached
           - sem-service status memcached
           - cat /tmp/toolbox_semservice
-          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: RabbitMQ
         commands:
           - sem-service start rabbitmq
           - sem-service status rabbitmq
           - cat /tmp/toolbox_semservice
-          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: mongodb
         commands:
@@ -189,29 +180,31 @@ blocks:
           - sem-service start mongodb 4.2 --username=xxx --password=xxx
           - echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
           - cat /tmp/toolbox_semservice
-          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: elasticsearch
         commands:
           - sem-service start elasticsearch
           - curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
           - sem-service status elasticsearch
-          - curl -XGET '0.0.0.0:9200' | grep 6.5.1
+          - curl -XGET '0.0.0.0:9200' | grep 6.5
           - sem-service stop elasticsearch
-          - sem-service start elasticsearch 6.5.2
+          - sem-service start elasticsearch 6.6
           - curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
-          - sem-service status elasticsearch
-          - curl -XGET '0.0.0.0:9200' | grep 6.5.2
           - sem-service stop elasticsearch
+          - sem-service start elasticsearch 7.9
+          - curl -XGET '0.0.0.0:9200' | grep 7.9
+          - sem-service stop elasticsearch
+          - sem-service start elasticsearch 7.10.0
+          - curl -XGET '0.0.0.0:9200' | grep 7.10
+          - sem-service stop elasticsearch
+
           - cat /tmp/toolbox_semservice
-          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: cassandra
         commands:
           - sem-service start cassandra
           - docker ps -a | grep cassandra
           - cat /tmp/toolbox_semservice
-          - grep -q -v 'remote' /tmp/toolbox_semservice
 
 
       - name: rethinkdb
@@ -219,7 +212,6 @@ blocks:
           - sem-service start rethinkdb
           - docker ps -a | grep rethinkdb
           - cat /tmp/toolbox_semservice
-          - grep -q -v 'remote' /tmp/toolbox_semservice
 
       - name: Erlang change test
         commands:

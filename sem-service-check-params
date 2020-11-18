@@ -75,7 +75,7 @@ params-check::postgres () {
 
 params-check::redis () {
   default_params='--net=host --rm --name redis -d -v /var/tmp/redis:/data'
-  service_version="4"
+  service_version="4.0"
   sudo mkdir -p /var/tmp/redis ; sudo chmod -R 0777 /var/tmp/redis
   params=""
   if [ "${1:0:1}" == "-" ];then

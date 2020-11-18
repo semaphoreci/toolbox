@@ -5,13 +5,13 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 
 docker_status=0
 state=('success' 'fail')
-download_location='remote'
+download_location='local'
 declare -A sem_services
 sem_services['memcached']="1.5 1.6"
 sem_services['mysql']="5.5 5.6.52 5.6 5.6.50 5.7.25 5.7.27 5.7.31 5.7.32 5.7 5 8.0.16 8.0.22 8.0 8"
 sem_services['redis']="2.8.23 2.8 2 3.2.4 3.2.12 3.2 3 4.0.12 4.0.14 4.0 4 5.0.6 5.0.9 5.0 5 6.0.5 6.0.8 6.0 6"
 sem_services['mongo']="3.2.1 3.2 3.6.20 3.6 3 4.0.20 4.0 4.1.13 4.1 4.2.10 4.2 4.4.1 4.4 4"
-sem_services['elasticsearch']="1.7.6 1.7 1 2.4.6 2.4 2 5.4.3 5.4 5.5.2 5.5 5.6.16 5.6 5 6.5.1 6.5.4 6.5 6.8.1 6.8.13 6.8 6 7.1.1 7.1 7.2.0 7.2 7.2.1 7.2 7.3.1 7.3.2 7.3 7.4.2 7.4 7.5.0 7.5.1 7.5.2 7.5 7.6.0 7.6.2 7.6 7.7.0 7.7.1 7.7 7.8.1 7.8 7.9.0 7.9.2 7.9.3 7.9 7"
+sem_services['elasticsearch']="1.7.6 1.7 1 2.4.6 2.4 2 5.4.3 5.4 5.5.2 5.5 5.6.16 5.6 5 6.5.1 6.5.4 6.5 6.6 6.8.1 6.8.13 6.8 6 7.1.1 7.1 7.2.0 7.2 7.2.1 7.2 7.3.1 7.3.2 7.3 7.4.2 7.4 7.5.0 7.5.1 7.5.2 7.5 7.6.0 7.6.2 7.6 7.7.0 7.7.1 7.7 7.8.1 7.8 7.9.0 7.9.2 7.9.3 7.9 7.10.0 7"
 sem_services['postgres']="9.4.26 9.4 9.5.15 9.5.23 9.5 9.6.6 9.6.11 9.6.18 9.6.19 9.6 9 10.0 10.5 10.6 10.7 10.11 10.12 10.13 10.14 10 11.0 11.2 11.5 11.6 11.7 11.8 11.9 11 12.1 12.2 12.3 12.4 12 13.0 13"
 sem_services['rabbitmq']="3.6.16 3.6 3.8.2 3.8.9 3.8 3"
 sem_services['cassandra']="3.11.3 3.11.8 3.11 3"
@@ -55,19 +55,29 @@ service::check_version(){
     fi
   done
 ########### Output message if we dont host the image
-#  if [ $have_it -eq 1 ]; then
-#    service::err "We dont provide version: $version. Available versions for $image_name: $local_versions"
-#  fi
-  echo $have_it
+  if [ $have_it -eq 1 ]; then
+    echo -e "\e[31m[error] sem-service doesn't support '$image_name' with version '$version'.\e[0m"
+    echo -e ""
+    echo -e "Available options for '$image_name' are:"
+    echo -e ""
+    local_versions="${sem_services[$image_name]}"
+    for v in ${local_versions[@]};do
+      echo -e "  \e[34m- sem-version start ${image_name}:${v}\e[0m"
+    done
+    echo -e ""
+    echo -e "Check the full list of options:"
+    echo -e "--> \e[34mhttps://docs.semaphoreci.com/ci-cd-environment/semaphore-registry-images/\e[0m"
+    echo -e ""
+    echo -e "If the version you want is not supported, review alternative options:"
+    echo -e "--> \e[34mhttps://docs.semaphoreci.com/ci-cd-environment/semaphore-registry-images\e[0m"
+    echo -e ""
+  fi
 }
 
 service::start_mysql() {
   service_version=$1
   shift
-  local service_image='mysql'
-  if [ "$(service::check_version 'mysql' $service_version)" == "0" ]; then
-    service_image="registry.semaphoreci.com/$service_image"
-  fi
+  local service_image='registry.semaphoreci.com/mysql'
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
@@ -87,10 +97,7 @@ service::start_mysql() {
 service::start_postgres() {
   service_version=$1
   shift
-  local service_image='postgres'
-  if [ "$(service::check_version 'postgres' $service_version)" == "0" ]; then
-    service_image="registry.semaphoreci.com/$service_image"
-  fi
+  local service_image='registry.semaphoreci.com/postgres'
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
@@ -110,10 +117,7 @@ service::start_postgres() {
 service::start_redis() {
   service_version=$1
   shift
-  local service_image='redis'
-  if [ "$(service::check_version 'redis' $service_version)" == "0" ]; then
-    service_image="registry.semaphoreci.com/$service_image"
-  fi
+  local service_image='registry.semaphoreci.com/redis'
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
@@ -131,10 +135,7 @@ service::start_redis() {
 
 service::start_memcached() {
   service_version="${1:-1.5}"
-  local service_image='memcached'
-  if [ "$(service::check_version 'memcached' $service_version)" == "0" ]; then
-    service_image="registry.semaphoreci.com/$service_image"
-  fi
+  local service_image='registry.semaphoreci.com/memcached'
 
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name memcached -d $service_image:$service_version)
@@ -152,10 +153,7 @@ service::start_memcached() {
 service::start_mongodb() {
   service_version=$1
   shift
-  local service_image='mongo'
-  if [ "$(service::check_version 'mongo' $service_version)" == "0" ]; then
-    service_image="registry.semaphoreci.com/$service_image"
-  fi
+  local service_image='registry.semaphoreci.com/mongo'
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
@@ -172,11 +170,8 @@ service::start_mongodb() {
 }
 
 service::start_elasticsearch() {
-  service_version="${1:-6.5.1}"
-  local service_image='elasticsearch'
-  if [ "$(service::check_version 'elasticsearch' $service_version)" == "0" ]; then
-    service_image="registry.semaphoreci.com/$service_image"
-  fi
+  service_version="${1:-6.5}"
+  local service_image='registry.semaphoreci.com/elasticsearch'
 
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name elasticsearch -e "discovery.type=single-node" -d $service_image:$service_version)
@@ -192,11 +187,8 @@ service::start_elasticsearch() {
 }
 
 service::start_rabbitmq() {
-  service_version="${1:-3.8.2}"
-  local service_image='rabbitmq'
-  if [ "$(service::check_version 'rabbitmq' $service_version)" == "0" ]; then
-    service_image="registry.semaphoreci.com/$service_image"
-  fi
+  service_version="${1:-3.8}"
+  local service_image='registry.semaphoreci.com/rabbitmq'
 
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name rabbitmq --hostname rabbitmq -d $service_image:$service_version)
@@ -212,11 +204,8 @@ service::start_rabbitmq() {
 }
 
 service::start_cassandra() {
-  service_version="${1:-3.11.3}"
-  local service_image='cassandra'
-  if [ "$(service::check_version 'cassandra' $service_version)" == "0" ]; then
-    service_image="registry.semaphoreci.com/$service_image"
-  fi
+  service_version="${1:-3.11}"
+  local service_image='registry.semaphoreci.com/cassandra'
 
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name cassandra -d $service_image:$service_version)
@@ -232,11 +221,8 @@ service::start_cassandra() {
 }
 
 service::start_rethinkdb() {
-  service_version="${1:-2.3.6}"
-  local service_image='rethinkdb'
-  if [ "$(service::check_version 'rethinkdb' $service_version)" == "0" ]; then
-    service_image="registry.semaphoreci.com/$service_image"
-  fi
+  service_version="${1:-2.3}"
+  local service_image='registry.semaphoreci.com/rethinkdb'
 
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name rethinkdb -d $service_image:$service_version)
@@ -265,54 +251,63 @@ service::start() {
     "mysql" )
       shift
       service_version=$(sem-service-check-params mysql $@)
+      service::check_version 'mysql' ${service_version%% *}
       service::duration service::start_mysql $service_version total $service_name
       exit 0
       ;;
     "postgres" )
       shift
       service_version=$(sem-service-check-params postgres $@)
+      service::check_version 'postgres' ${service_version%% *}
       service::duration service::start_postgres $service_version total $service_name
       exit 0
       ;;
     "redis" )
       shift
       service_version=$(sem-service-check-params redis $@)
+      service::check_version 'redis' ${service_version%% *}
       service::duration service::start_redis $service_version total $service_name
       exit 0
       ;;
     "memcached" )
       shift
       service_version="${service_version:-1.5}"
+      service::check_version 'memcached' ${service_version%% *}
       service::duration service::start_memcached $service_version total $service_name
       exit 0
       ;;
     "mongodb" )
       shift
       service_version=$(sem-service-check-params mongodb $@)
+      service::check_version 'mongo' ${service_version%% *}
       service::duration service::start_mongodb $service_version total $service_name
       exit 0
       ;;
     "elasticsearch" )
       shift
-      service_version="${service_version:-6.5.1}"
+      service_version="${service_version:-6.5}"
+      service::check_version 'elasticsearch' ${service_version%% *}
       service::duration service::start_elasticsearch $service_version total $service_name
       exit 0
       ;;
     "rabbitmq" )
       shift
-      service_version="${service_version:-3.8.2}"
+      service_version="${service_version:-3.8}"
+      service::check_version 'rabbitmq' ${service_version%% *}
       service::duration service::start_rabbitmq $service_version total $service_name
       exit 0
       ;;
     "cassandra" )
       shift
-      service_version="${service_version:-3.11.3}"
+      service_version="${service_version:-3.11}"
+      service::check_version 'cassandra' ${service_version%% *}
       service::duration service::start_cassandra $service_version total $service_name
       exit 0
       ;;
     "rethinkdb" )
       shift
-      service_version="${service_version:-2.3.6}"
+      service_version="${service_version:-2.3}"
+      service::check_version 'rethinkdb' ${service_version%% *}
       service::duration service::start_rethinkdb $service_version total $service_name
       exit 0
       ;;
@@ -444,14 +439,14 @@ service::print_usage() {
   echo -e "\nsem-service [start|stop|status] [service] [version]\n"
 
   echo "Available services:"
-  echo "mysql (default: 5.6)"
-  echo "postgres (default: 9.6)"
-  echo "redis (default: 4)"
-  echo "memcached (default: 1.5, available versions: 1.5 1.6 )"
-  echo "mongodb (default: 4.5)"
-  echo "elasticsearch (default: 6.5.1)"
-  echo "cassandra (default: 3.11.3)"
-  echo "rethinkdb (default: 2.3.6)"
+  echo "mysql (default: 5.6), available versions: ${sem_services['mysql']}"
+  echo "postgres (default: 9.6), available versions: ${sem_services['postgres']}"
+  echo "redis (default: 4.0), available versions: ${sem_services['redis']}"
+  echo "memcached (default: 1.5), available versions: ${sem_services['memcached']}"
+  echo "mongodb (default: 4.1), available versions: ${sem_services['mongo']}"
+  echo "elasticsearch (default: 6.5), available versions: ${sem_services['elasticsearch']}"
+  echo "cassandra (default: 3.11), available versions: ${sem_services['cassandra']}"
+  echo "rethinkdb (default: 2.3), available versions: ${sem_services['rethinkdb']}"
 }
 
 service::duration() {
@@ -467,9 +462,6 @@ service::duration() {
   end=$(date +%s%3N)
   duration=$(( $end - $start ))
   if [[ "$type" == "total" ]]; then
-    if [ "$(service::check_version $([ $service == 'mongodb' ] && echo 'mongo' || echo $service) $version)" == "0" ]; then
-      download_location='local'
-    fi
     echo "semservice,service=$service,state=${state[$docker_status]},version=$version,location=$download_location duration=${duration}" >> /tmp/toolbox_semservice
   fi
 
