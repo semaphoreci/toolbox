@@ -32,7 +32,7 @@ IFS=$'\n\t'
 # TODO: This will not yield optimal performance. How to improve?
 #
 
-git fetch origin '+refs/heads/*:refs/heads/*'
+git fetch origin '+refs/heads/master:refs/heads/master'
 
 #
 # Compiling the pipeline.
