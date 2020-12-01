@@ -18,7 +18,7 @@ IFS=$'\n\t'
   sudo chmod +x when
 
   # Install the Pipeline compiler
-  curl -LO https://github.com/semaphoreci/spc/releases/download/v0.1.3/spc_Linux_x86_64.tar.gz
+  curl -LO https://github.com/semaphoreci/spc/releases/download/v0.1.4/spc_Linux_x86_64.tar.gz
   tar -xzf spc_Linux_x86_64.tar.gz
 
   # Installing the tools in a global dir
