@@ -27,6 +27,14 @@ IFS=$'\n\t'
 )
 
 #
+# Fetching all branches.
+#
+# TODO: This will not yield optimal performance. How to improve?
+#
+
+git fetch origin '+refs/heads/*:refs/heads/*'
+
+#
 # Compiling the pipeline.
 #
 
