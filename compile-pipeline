@@ -1,3 +1,49 @@
 #!/bin/bash
 
-echo "Compiler goes brrrrrr....."
+set -euo pipefail
+IFS=$'\n\t'
+
+#
+# Installing deps: When and SPC.
+#
+(
+  # Running commands in a subshell to avoid exposing vars or changing dirs in
+  # deps installation steps.
+
+  # Creating a temporary directory to store downloaded artifacts
+  cd $(mktemp -d)
+
+  # Install the 'when' expression parser
+  curl -LO https://github.com/renderedtext/when/releases/download/v0.0.1-alpha/when
+  sudo chmod +x when
+
+  # Install the Pipeline compiler
+  curl -LO https://github.com/semaphoreci/spc/releases/download/v0.1.3/spc_Linux_x86_64.tar.gz
+  tar -xzf spc_Linux_x86_64.tar.gz
+
+  # Installing the tools in a global dir
+  sudo mv when /usr/bin/when
+  sudo mv spc /usr/bin/spc
+)
+
+#
+# Compiling the pipeline.
+#
+
+echo "Compiling"
+
+input=$SEMAPHORE_YAML_FILE_PATH
+output=".semaphore/semaphore.compiled.yml"
+
+echo "Input: $input"
+echo "Output: $output"
+
+spc evaluate change-in --input $input --output $output --logs /tmp/logs.yml
+
+echo "Compilation finished"
+echo "Result"
+echo
+echo "------------------------------------------------------------------------"
+echo
+
+cat $output
