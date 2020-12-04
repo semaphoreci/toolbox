@@ -3,6 +3,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+echo "Starting Compiler"
+
 #
 # Installing deps: When and SPC.
 #
