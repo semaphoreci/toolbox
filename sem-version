@@ -70,11 +70,13 @@ version::change_php() {
   [[ "$software_version" == "7.0" ]] && software_version="7.0.33"
   [[ "$software_version" == "7.1" ]] && software_version="7.1.33"
   [[ "$software_version" == "7.2" ]] && software_version="7.2.34"
-  [[ "$software_version" == "7.3" ]] && software_version="7.3.24"
-  [[ "$software_version" == "7.4" ]] && software_version="7.4.12"
-
+  [[ "$software_version" == "7.3" ]] && software_version="7.3.25"
+  [[ "$software_version" == "7.4" ]] && software_version="7.4.13"
+  phpbrew update
   if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
     sem-install php "${software_version}"
+  else
+    phpbrew download "${software_version}"
   fi
   software_version="php-${software_version}"
   version::change "phpbrew switch"
