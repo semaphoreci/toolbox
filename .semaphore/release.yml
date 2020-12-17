@@ -13,4 +13,5 @@ blocks:
         - name: Create and Upload assets
           commands:
             - checkout
+            - rm -rf toolbox
             - ./release/create_release.sh

@@ -2,12 +2,11 @@
 
 set -euo pipefail
 
-#LAV LATEST_ARTIFACT_VERSION
-LAV="v0.2.8"
+ARTIFACT_CLI_VERSION="v0.2.8"
 
-curl -s -L --retry 5 https://github.com/semaphoreci/artifact/releases/download/$LAV/artifact_Linux_x86_64.tar.gz -o Linux.tar.gz
+curl -s -L --retry 5 https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION/artifact_Linux_x86_64.tar.gz -o Linux.tar.gz
 
-curl -s -L --retry 5 https://github.com/semaphoreci/artifact/releases/download/$LAV/artifact_Darwin_x86_64.tar.gz -o Darwin.tar.gz
+curl -s -L --retry 5 https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION/artifact_Darwin_x86_64.tar.gz -o Darwin.tar.gz
 
 git clone git@github.com:semaphoreci/toolbox.git
 
