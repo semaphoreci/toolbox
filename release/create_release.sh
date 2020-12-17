@@ -2,18 +2,12 @@
 
 set -euo pipefail
 
-get_latest_tag(){
-  local repo="$1"
-  local latest=$(curl --silent "https://api.github.com/repos/semaphoreci/$repo/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
-  echo $latest | cut -c 2-
-}
-
 #LAV LATEST_ARTIFACT_VERSION
-LAV="$(get_latest_tag 'artifact')"
+LAV="v0.2.8"
 
-curl -s -L --retry 5 https://github.com/semaphoreci/artifact/releases/download/v$LAV/artifact_Linux_x86_64.tar.gz -o Linux.tar.gz
+curl -s -L --retry 5 https://github.com/semaphoreci/artifact/releases/download/$LAV/artifact_Linux_x86_64.tar.gz -o Linux.tar.gz
 
-curl -s -L --retry 5 https://github.com/semaphoreci/artifact/releases/download/v$LAV/artifact_Darwin_x86_64.tar.gz -o Darwin.tar.gz
+curl -s -L --retry 5 https://github.com/semaphoreci/artifact/releases/download/$LAV/artifact_Darwin_x86_64.tar.gz -o Darwin.tar.gz
 
 git clone git@github.com:semaphoreci/toolbox.git
 
@@ -47,7 +41,9 @@ tar -cf toolbox_Darwin.tar $(echo $FILE_LIST)
 echo "toolbox Darwin content: "
 tar --list --verbose --file=toolbox_Darwin.tar
 
-release_id=$(curl --silent "https://api.github.com/repos/semaphoreci/toolbox/releases/latest" | grep -m1 'id' | awk '{print $2}' | tr -d ',' )
+latest=$(git tag | sort --version-sort | tail -n 1)
+
+release_id=$(curl --silent "https://api.github.com/repos/semaphoreci/toolbox/releases/tags/$latest" | grep -m1 'id' | awk '{print $2}' | tr -d ',' )
 
 curl \
     -X POST \
