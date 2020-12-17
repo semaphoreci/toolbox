@@ -42,7 +42,16 @@ tar --list --verbose --file=toolbox_Darwin.tar
 
 latest=$(git tag | sort --version-sort | tail -n 1)
 
-release_id=$(curl --silent "https://api.github.com/repos/semaphoreci/toolbox/releases/tags/$latest" | grep -m1 'id' | awk '{print $2}' | tr -d ',' )
+release_id=$(curl \
+  -X POST \
+  -H "Authorization: token $GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github.v3+json" \
+  https://api.github.com/repos/semaphoreci/toolbox/releases \
+  -d '{"tag_name":"'$latest'"}'
+)
+
+
+release_id=$(echo $latest | grep -m1 'id' | awk '{print $2}' | tr -d ',' )
 
 curl \
     -X POST \
