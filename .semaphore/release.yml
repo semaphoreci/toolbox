@@ -4,11 +4,10 @@ agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu1804
-auto_cancel:
-  running:
-    when: "branch != 'master'"
 blocks:
   - name: "Release"
+    skip:
+      when: "branch != 'master'"
     task:
       secrets:
         - name: sem-robot-ghtoken
