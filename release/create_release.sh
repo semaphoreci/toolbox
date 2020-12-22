@@ -23,8 +23,8 @@ cd /tmp/Darwin && tar -zxf Darwin.tar.gz && mv artifact toolbox/ && cd -
 #
 # Cp toolbox files, to not mess up workspace
 #
-cp $SEMAPHORE_PROJECT_DIR/* /tmp/Linux/toolbox
-cp $SEMAPHORE_PROJECT_DIR/* /tmp/Darwin/toolbox
+cp ~/$SEMAPHORE_GIT_DIR/* /tmp/Linux/toolbox
+cp ~/$SEMAPHORE_GIT_DIR/* /tmp/Darwin/toolbox
 
 #
 # Create linux release
