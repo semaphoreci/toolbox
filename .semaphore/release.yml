@@ -6,8 +6,6 @@ agent:
     os_image: ubuntu1804
 blocks:
   - name: "Release"
-    run:
-      when: "branch = 'master'"
     task:
       secrets:
         - name: sem-robot-ghtoken
