@@ -1,0 +1,19 @@
+version: "v1.0"
+name: Release
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: "Release"
+    run:
+      when: "branch = 'master'"
+    task:
+      secrets:
+        - name: sem-robot-ghtoken
+      jobs:
+        - name: Create and Upload assets
+          commands:
+            - checkout
+            - rm -rf toolbox
+            - ./release/create_release.sh

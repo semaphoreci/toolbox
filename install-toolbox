@@ -4,7 +4,6 @@ set -o pipefail
 IFS=$'\n\t'
 
 DIST=$(uname)
-ARTIFACT_CLI_VERSION="v0.2.8"
 
 case $DIST in
   Darwin)
@@ -102,12 +101,8 @@ fi
 #
 
 echo "Installing the artifacts CLI"
-echo "Using http://packages.semaphoreci.com/${ARTIFACT_CLI_VERSION}/artifact_${DIST}_x86_64.tar.gz"
-install_cmd curl -s -L --retry 5 -o artifact.tar.gz http://packages.semaphoreci.com/${ARTIFACT_CLI_VERSION}/artifact_${DIST}_x86_64.tar.gz
-install_cmd tar xzf artifact.tar.gz
 install_cmd mv artifact $INSTALL_PATH/artifact
 install_cmd chmod +x $INSTALL_PATH/artifact
-install_cmd rm -f artifact.tar.gz LICENSE README.md
 if [[ $? -eq 0 ]];then
   echo "artifacts installed"
 else
