@@ -101,7 +101,7 @@ fi
 #
 
 echo "Installing the artifacts CLI"
-install_cmd mv artifact $INSTALL_PATH/artifact
+install_cmd mv ~/.toolbox/artifact $INSTALL_PATH/artifact
 install_cmd chmod +x $INSTALL_PATH/artifact
 if [[ $? -eq 0 ]];then
   echo "artifacts installed"
