@@ -3,70 +3,75 @@
 set -euo pipefail
 
 ARTIFACT_CLI_VERSION="v0.2.8"
+ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
 
-curl -s -L --retry 5 https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION/artifact_Linux_x86_64.tar.gz -o Linux.tar.gz
+mkdir /tmp/Linux/toolbox
+mkdir /tmp/Darwin/toolbox
 
-curl -s -L --retry 5 https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION/artifact_Darwin_x86_64.tar.gz -o Darwin.tar.gz
+#
+# Get artifact releases
+#
+curl -s -L --retry 5 $ARTIFACT_CLI_URL/artifact_Linux_x86_64.tar.gz -o /tmp/Linux/Linux.tar.gz
+curl -s -L --retry 5 $ARTIFACT_CLI_URL/artifact_Darwin_x86_64.tar.gz -o /tmp/Darwin/Darwin.tar.gz
 
-git clone git@github.com:semaphoreci/toolbox.git
+#
+# Unpack artifacts
+#
+cd /tmp/Linux && tar -zxf Linux.tar.gz && mv artifact toolbox/ && cd -
+cd /tmp/Darwin && tar -zxf Darwin.tar.gz && mv artifact toolbox/ && cd -
 
-tar -zxf Linux.tar.gz
+#
+# Cp toolbox files, to not mess up workspace
+#
+cp $SEMAPHORE_PROJECT_DIR/* /tmp/Linux/toolbox
+cp $SEMAPHORE_PROJECT_DIR/* /tmp/Darwin/toolbox
 
-mv artifact toolbox/
-
-FILE_LIST=""
-for FILE in toolbox/*; do
-  FILE_LIST="$FILE_LIST $FILE"
-done
-
-tar -cf toolbox_Linux.tar $(echo $FILE_LIST)
+#
+# Create linux release
+#
+cd /tmp/Linux
+tar -cf linux.tar toolbox
 
 echo "toolbox Linux content: "
-tar --list --verbose --file=toolbox_Linux.tar
+tar --list --verbose --file=linux.tar
 
-rm toolbox/artifact
-
-tar -zxf Darwin.tar.gz
-
-mv artifact toolbox/
-
-FILE_LIST=""
-for FILE in toolbox/*; do
-  FILE_LIST="$FILE_LIST $FILE"
-done
-
-tar -cf toolbox_Darwin.tar $(echo $FILE_LIST)
+#
+# Create darwin release
+#
+cd /tmp/Darwin
+tar -cf darwin.tar toolbox
 
 echo "toolbox Darwin content: "
-tar --list --verbose --file=toolbox_Darwin.tar
+tar --list --verbose --file=darwin.tar
 
-latest=$(git tag | sort --version-sort | tail -n 1)
-
+#
+# Upload created release files to GitHub
+#
 curl \
   -X POST \
   -H "Authorization: token $GITHUB_TOKEN" \
   -H "Accept: application/vnd.github.v3+json" \
   https://api.github.com/repos/semaphoreci/toolbox/releases \
-  -d '{"tag_name":"'$latest'"}'
+  -d '{"tag_name":"'$SEMAPHORE_GIT_TAG_NAME'"}'
 
-release_id=$(curl --silent https://api.github.com/repos/semaphoreci/toolbox/releases/tags/$latest | grep -m1 'id' | awk '{print $2}' | tr -d ',' )
-
-curl \
-    -X POST \
-    -H "Authorization: token $GITHUB_TOKEN" \
-    -H "Accept: application/vnd.github.v3+json" \
-    -H "Content-Type: $(file -b --mime-type toolbox_Linux.tar)" \
-    --data-binary @toolbox_Linux.tar \
-    "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=toolbox_Linux.tar"
-
-echo "toolbox_Linux.tar uploaded"
+release_id=$(curl --silent https://api.github.com/repos/semaphoreci/toolbox/releases/tags/$SEMAPHORE_GIT_TAG_NAME | grep -m1 'id' | awk '{print $2}' | tr -d ',' )
 
 curl \
     -X POST \
     -H "Authorization: token $GITHUB_TOKEN" \
     -H "Accept: application/vnd.github.v3+json" \
-    -H "Content-Type: $(file -b --mime-type toolbox_Darwin.tar)" \
-    --data-binary @toolbox_Linux.tar \
-    "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=toolbox_Darwin.tar"
+    -H "Content-Type: $(file -b --mime-type /tmp/Linux/linux.tar)" \
+    --data-binary @/tmp/Linux/linux.tar \
+    "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=linux.tar"
 
-echo "toolbox_Darwin.tar uploaded"
+echo "linux.tar uploaded"
+
+curl \
+    -X POST \
+    -H "Authorization: token $GITHUB_TOKEN" \
+    -H "Accept: application/vnd.github.v3+json" \
+    -H "Content-Type: $(file -b --mime-type /tmp/Darwin/darwin.tar)" \
+    --data-binary @/tmp/Darwin/darwin.tar \
+    "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=darwin.tar"
+
+echo "darwin.tar uploaded"
