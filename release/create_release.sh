@@ -5,8 +5,8 @@ set -euo pipefail
 ARTIFACT_CLI_VERSION="v0.2.8"
 ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
 
-mkdir /tmp/Linux/toolbox
-mkdir /tmp/Darwin/toolbox
+mkdir -p /tmp/Linux/toolbox
+mkdir -p /tmp/Darwin/toolbox
 
 #
 # Get artifact releases
