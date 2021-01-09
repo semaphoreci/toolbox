@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Package installer with caching, version 2.2
 
 show_usage_and_exit() {
