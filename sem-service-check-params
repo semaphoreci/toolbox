@@ -1,5 +1,41 @@
 #!/usr/bin/env bash
 
+params-check::mariadb () {
+  default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true -v /var/tmp/mysql:/var/lib/mysql --name mariadb -v /var/run/mysqld:/var/run/mysqld '
+  service_version="10.5"
+  sudo mkdir -p /var/run/mysqld ; sudo chmod -R 0777 /var/run/mysqld
+  sudo mkdir -p /var/tmp/mysqld ; sudo chmod -R 0777 /var/tmp/mysqld
+  params=""
+  if [ "${1:0:1}" == "-" ];then
+    params="$@"
+  else
+    service_version="${1:-$service_version}"
+    tmp="${@:2}"
+    params="${tmp:-$default_params}"
+  fi
+  if [ "$default_params" != "$params" ];then
+    username=""; password=""; db=" -e MYSQL_DATABASE="; dbname="";
+    for words in $params; do
+      case $words in
+       --username=* )
+         username=" -e MYSQL_USER=$(echo $words|cut -d'=' -f2) "
+       ;;
+       --password=* )
+         password=" -e MYSQL_PASSWORD=$(echo $words|cut -d'=' -f2) "
+       ;;
+       --db=* )
+         dbname=$(echo $words|cut -d'=' -f2)
+       ;;
+       *)
+       ;;
+      esac
+    done
+    dbname=${dbname:-'test'}
+    [ "$username$password" ] && default_params="$default_params$username$password$db$dbname "
+  fi
+  echo "$service_version $default_params"
+}
+
 params-check::mysql () {
   default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true -v /var/tmp/mysql:/var/lib/mysql --name mysql -v /var/run/mysqld:/var/run/mysqld '
   service_version="5.6"
@@ -123,6 +159,10 @@ params-check::mongodb () {
 
 params-check::main () {
   case "$1" in
+    "mariadb" )
+      shift
+      params-check::mariadb $@
+      ;;
     "mysql" )
       shift
       params-check::mysql $@

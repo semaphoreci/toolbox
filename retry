@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Copied from: https://raw.githubusercontent.com/renderedtext/scripts/8f67b78cef7f5a7556777f59a5f290db8b23abe1/utility/retry
 #

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 SEMAPHORE_PACKAGE_REPOSITORY="http://packages.semaphoreci.com"
 install::available() {
   response=$(curl --write-out %{http_code} --head --silent --output /dev/null $SEMAPHORE_PACKAGE_REPOSITORY/${language}/${language_version}.tar.gz)
