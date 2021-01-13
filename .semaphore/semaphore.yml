@@ -27,11 +27,15 @@ blocks:
 
   - name: Run Tests
     task:
+      env_vars:
+        - name: ARTIFACT_URL
+          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
       prologue:
         commands:
           - checkout
           - cd ../
           - rm -rf .toolbox/
+          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
           - mv toolbox/ .toolbox
           - bash .toolbox/install-toolbox
           - source .toolbox/toolbox
@@ -235,12 +239,16 @@ blocks:
           machine:
             type: a1-standard-4
             os_image: macos-xcode11
+      env_vars:
+        - name: ARTIFACT_URL
+          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
       jobs:
       - name: Bats tests
         commands:
           - checkout
           - cd ../
           - rm -rf .toolbox/
+          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
           - mv toolbox/ .toolbox
           - bash .toolbox/install-toolbox
           - source .toolbox/toolbox
@@ -255,6 +263,7 @@ blocks:
           - checkout
           - cd ../
           - rm -rf .toolbox/
+          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
           - mv toolbox/ .toolbox
           - bash .toolbox/install-toolbox
           - source .toolbox/toolbox
@@ -270,12 +279,16 @@ blocks:
           containers:
             - name: main
               image: semaphoreci/ruby:2.6.2
+      env_vars:
+        - name: ARTIFACT_URL
+          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
       jobs:
       - name: Test Docker Image
         commands:
           - checkout
           - cd ../
           - rm -rf .toolbox/
+          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
           - mv toolbox/ .toolbox
           - bash .toolbox/install-toolbox
           - source .toolbox/toolbox
@@ -293,12 +306,16 @@ blocks:
           containers:
             - name: main
               image: semaphoreci/alpine:3.9
+      env_vars:
+        - name: ARTIFACT_URL
+          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
       jobs:
       - name: Test Alpine Image
         commands:
           - checkout
           - cd ../
           - rm -rf .toolbox/
+          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
           - mv toolbox/ .toolbox
           - bash .toolbox/install-toolbox
           - source .toolbox/toolbox
