@@ -16,11 +16,11 @@ echo "Starting Compiler"
   cd $(mktemp -d)
 
   # Install the 'when' expression parser
-  curl -LO https://github.com/renderedtext/when/releases/download/v0.0.1-alpha/when
+  curl -LO https://github.com/renderedtext/when/releases/download/v0.0.2-alpha/when
   sudo chmod +x when
 
   # Install the Pipeline compiler
-  curl -LO https://github.com/semaphoreci/spc/releases/download/v0.1.6/spc_Linux_x86_64.tar.gz
+  curl -LO https://github.com/semaphoreci/spc/releases/download/v0.1.7/spc_Linux_x86_64.tar.gz
   tar -xzf spc_Linux_x86_64.tar.gz
 
   # Installing the tools in a global dir
