@@ -4,9 +4,9 @@ agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu1804
-
 blocks:
   - name: Static Code Analysis
+    dependencies: []
     task:
       prologue:
         commands:
@@ -15,21 +15,277 @@ blocks:
       jobs:
         - name: ShellCheck
           commands:
-            - 'shellcheck sem-service || true'
-            - 'shellcheck sem-version || true'
-            - 'shellcheck cache       || true'
-            - 'shellcheck libcheckout || true'
+            - shellcheck sem-service || true
+            - shellcheck sem-version || true
+            - shellcheck cache       || true
+            - shellcheck libcheckout || true
             - 'shellcheck sem-service -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -le 76 ]]'
             - 'shellcheck sem-version -f gcc | wc -l && [[ "$(shellcheck sem-version -f gcc | wc -l)" -le 21 ]]'
             - 'shellcheck cache       -f gcc | wc -l && [[ "$(shellcheck cache -f gcc | wc -l)" -le 152 ]]'
             - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 89 ]]'
-            - 'shellcheck install-package'
+            - shellcheck install-package
 
-  - name: Run Tests
+  - name: Tests
+    dependencies: []
     task:
+      prologue:
+        commands:
+          - checkout
+          - cd ../
+          - rm -rf .toolbox/
+          - mv toolbox/ .toolbox
+          - bash .toolbox/install-toolbox
+          - source .toolbox/toolbox
+          - cd .toolbox
+      jobs:
+        - name: Sem version tests
+          commands:
+            - sem-version firefox 52
+            - firefox --version | grep -q 52
+            - sem-version firefox 78
+            - firefox --version | grep -q 78
+            - sem-version ruby 2.5.3
+            - ruby --version | grep 2.5.3
+            - sem-version ruby 2.5.2
+            - ruby --version | grep 2.5.2
+            - sem-version ruby 2.5.3
+            - ruby --version | grep 2.5.3
+            - sem-version ruby 2.3.7
+            - ruby --version | grep 2.3.7
+            - sem-version c 8
+            - gcc --version | grep " 8."
+            - sem-version cpp 7
+            - gcc --version | grep " 7."
+            - sem-version php 7.2.31
+            - php -v | grep 7.2.31
+            - sem-version php 7.0.33
+            - php -v | grep 7.0.33
+            - sem-version php 7.4
+            - php -v | grep 7.4
+            - phpbrew ext install xdebug
+            - php -m | grep xdebug
+            - sem-version php 7.3.19
+            - php -m | grep magick
+            - php -m | grep gd
+            - php -m | grep imap
+            - which composer | grep 7.3.19
+            - sem-version elixir 1.7.4
+            - time sem-version node 12.16.1
+            - node --version | grep 12.16.1
+            - nodejs --version | grep 12.16.1
+            - time sem-version node 14
+            - node --version | grep 14
+            - sem-version ruby 2.6.6
+            - ruby --version | grep 2.6.6
+            - bundler --version | grep 2
+            - mkdir ruby_test
+            - echo "2.7.2" > ruby_test/.ruby-version
+            - cd ruby_test
+            - ruby --version| grep 2.7.2
+            - sem-version ruby 2.3.7 -f
+            - ruby --version| grep 2.3.7
+            - kubectl version --client
+            - sem-version kubectl 1.15.3
+            - kubectl version --client | grep -q 1.15.3
+        - name: MySQL
+          commands:
+            - sem-service start mysql
+            - mysql --host=0.0.0.0 -uroot -e "create database fooo"
+            - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
+            - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.6
+            - sem-service status mysql
+            - sem-service stop mysql
+            - sem-service start mysql 5.7
+            - mysql --host=0.0.0.0 -uroot -e "create database fooo"
+            - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
+            - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.7
+            - sem-service status mysql
+            - sem-service stop mysql
+            - sem-service start mysql 8.0.19 --username=test --password=test --garbage else || true
+        - name: PostgreSQL
+          commands:
+            - sem-service start postgres
+            - createdb -U postgres -h 0.0.0.0 fooo
+            - psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+            - psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 9.6
+            - sem-service status postgres
+            - sem-service stop postgres
+            - sem-service start postgres 11
+            - createdb -U postgres -h 0.0.0.0 fooo
+            - psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+            - psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 11
+            - sem-service status postgres
+            - sem-service stop postgres
+            - sem-service start postgres 11 --username=xxx --password=xxx --db=xxx --garbage else
+            - createdb -U xxx  -h 0.0.0.0 fooo
+            - psql -h 0.0.0.0 -U xxx -c "\l"
+            - psql -U xxx -c "SELECT version()" | grep 11
+            - sem-service status postgres
+            - cat /tmp/toolbox_semservice
+        - name: Redis
+          commands:
+            - sem-service start redis
+            - sem-service status redis
+            - sem-service stop redis
+            - sem-service start redis 5
+            - sem-service status redis
+            - cat /tmp/toolbox_semservice
+        - name: Memcached
+          commands:
+            - sem-service start memcached
+            - sem-service status memcached
+            - cat /tmp/toolbox_semservice
+        - name: RabbitMQ
+          commands:
+            - sem-service start rabbitmq
+            - sem-service status rabbitmq
+            - cat /tmp/toolbox_semservice
+        - name: mongodb
+          commands:
+            - sudo apt-get install -y mongodb-clients
+            - sem-service start mongodb
+            - 'curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."'
+            - sem-service status mongodb
+            - sem-service stop mongodb
+            - sem-service start mongodb 3.2
+            - 'curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."'
+            - sem-service status mongodb
+            - sem-service stop mongodb
+            - sem-service stop mongodb
+            - sem-service start mongodb 4.2 --username=xxx --password=xxx
+            - echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+            - cat /tmp/toolbox_semservice
+        - name: elasticsearch
+          commands:
+            - sem-service start elasticsearch
+            - 'curl -XGET ''0.0.0.0:9200/_cluster/health?pretty'' | grep green'
+            - sem-service status elasticsearch
+            - 'curl -XGET ''0.0.0.0:9200'' | grep 6.5'
+            - sem-service stop elasticsearch
+            - sem-service start elasticsearch 6.6
+            - 'curl -XGET ''0.0.0.0:9200/_cluster/health?pretty'' | grep green'
+            - sem-service stop elasticsearch
+            - sem-service start elasticsearch 7.9
+            - 'curl -XGET ''0.0.0.0:9200'' | grep 7.9'
+            - sem-service stop elasticsearch
+            - sem-service start elasticsearch 7.10.0
+            - 'curl -XGET ''0.0.0.0:9200'' | grep 7.10'
+            - sem-service stop elasticsearch
+            - cat /tmp/toolbox_semservice
+        - name: cassandra
+          commands:
+            - sem-service start cassandra
+            - docker ps -a | grep cassandra
+            - cat /tmp/toolbox_semservice
+        - name: rethinkdb
+          commands:
+            - sem-service start rethinkdb
+            - docker ps -a | grep rethinkdb
+            - cat /tmp/toolbox_semservice
+        - name: Erlang change test
+          commands:
+            - echo "Erlang version"
+            - 'erl -eval ''erlang:display(erlang:system_info(otp_release)), halt().''  -noshell'
+            - sem-version erlang 20
+            - 'erl -eval ''erlang:display(erlang:system_info(otp_release)), halt().''  -noshell'
+            - sem-version erlang 21
+            - 'erl -eval ''erlang:display(erlang:system_info(otp_release)), halt().''  -noshell'
+        - name: scala change test
+          commands:
+            - echo "actual scala version"
+            - scala -version
+            - sem-version scala 2.11
+            - sem-version scala 2.12
+
+  - name: 'Bats: Mac'
+    task:
+      agent:
+        machine:
+          type: a1-standard-4
+          os_image: macos-xcode11
       env_vars:
         - name: ARTIFACT_URL
-          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
+          value: 'https://github.com/semaphoreci/artifact/releases/download/v0.2.8'
+      jobs:
+        - name: 'Bats: Mac'
+          commands:
+            - checkout
+            - cd ../
+            - rm -rf .toolbox/
+            - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
+            - mv toolbox/ .toolbox
+            - bash .toolbox/install-toolbox
+            - source .toolbox/toolbox
+            - cd .toolbox
+            - git submodule init && git submodule update
+            - sudo ./tests/support/bats-core/install.sh /usr/local
+            - bats tests/macos_cache.bats
+            - bats tests/macos_autocache.bats
+            - bats tests/libcheckout.bats
+    dependencies:
+      - 'Bats: Linux'
+  - name: 'Bats: Docker'
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+          os_image: ubuntu1804
+        containers:
+          - name: main
+            image: 'semaphoreci/ruby:2.6.2'
+      env_vars:
+        - name: ARTIFACT_URL
+          value: 'https://github.com/semaphoreci/artifact/releases/download/v0.2.8'
+      jobs:
+        - name: 'Bats: Docker'
+          commands:
+            - checkout
+            - cd ../
+            - rm -rf .toolbox/
+            - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
+            - mv toolbox/ .toolbox
+            - bash .toolbox/install-toolbox
+            - source .toolbox/toolbox
+            - cd .toolbox
+            - git submodule init && git submodule update
+            - ./tests/support/bats-core/install.sh /usr/local
+            - bats tests/cache.bats
+            - bats tests/libcheckout.bats
+    dependencies:
+      - 'Bats: Mac'
+  - name: 'Bats: Minimal Docker'
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+          os_image: ubuntu1804
+        containers:
+          - name: main
+            image: 'semaphoreci/alpine:3.9'
+      env_vars:
+        - name: ARTIFACT_URL
+          value: 'https://github.com/semaphoreci/artifact/releases/download/v0.2.8'
+      jobs:
+        - name: 'Bats: Alpine'
+          commands:
+            - checkout
+            - cd ../
+            - rm -rf .toolbox/
+            - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
+            - mv toolbox/ .toolbox
+            - bash .toolbox/install-toolbox
+            - source .toolbox/toolbox
+            - cd .toolbox
+            - git submodule init && git submodule update
+            - ./tests/support/bats-core/install.sh /usr/local
+            - bats tests/cache.bats
+            - bats tests/libcheckout.bats
+    dependencies:
+      - 'Bats: Docker'
+  - name: 'Bats: Linux'
+    dependencies:
+      - Static Code Analysis
+    task:
       prologue:
         commands:
           - checkout
@@ -41,293 +297,24 @@ blocks:
           - source .toolbox/toolbox
           - cd .toolbox
       jobs:
-      - name: Test artifact CLI installation
-        commands:
-          - ls artifact.tar.gz || true
-          - artifact | grep "Semaphore 2.0 Artifact CLI"
-
-      - name: Bats tests
-        commands:
-          - cache clear
-          - sudo apt-get install -y python3.8-dev
-          - sem-version python 3.8
-          - sem-version go 1.13
-          - sem-version php 7.3.23
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
-          - bats tests/install_package.bats
-          - bats tests/autocache.bats
-          - bats tests/cache.bats
-          - bats tests/libcheckout.bats
-          - bats tests/base.bats
-
-      - name: Sem version tests
-        commands:
-          - sem-version firefox 52
-          - firefox --version | grep -q 52
-          - sem-version firefox 78
-          - firefox --version | grep -q 78
-          - sem-version ruby 2.5.3
-          - ruby --version | grep 2.5.3
-          - sem-version ruby 2.5.2
-          - ruby --version | grep 2.5.2
-          - sem-version ruby 2.5.3
-          - ruby --version | grep 2.5.3
-          - sem-version ruby 2.3.7
-          - ruby --version | grep 2.3.7
-          - sem-version c 8
-          - gcc --version | grep " 8."
-          - sem-version cpp 7
-          - gcc --version | grep " 7."
-          - sem-version php 7.2.31
-          - php -v | grep 7.2.31
-          - sem-version php 7.0.33
-          - php -v | grep 7.0.33
-          - sem-version php 7.4
-          - php -v | grep 7.4
-          - phpbrew ext install xdebug
-          - php -m | grep xdebug
-          - sem-version php 7.3.19
-          - php -m | grep magick
-          - php -m | grep gd
-          - php -m | grep imap
-          - which composer | grep 7.3.19
-          - sem-version elixir 1.7.4
-          - time sem-version node 12.16.1
-          - node --version | grep 12.16.1
-          - nodejs --version | grep 12.16.1
-          - time sem-version node 14
-          - node --version | grep 14
-          - sem-version ruby 2.6.6
-          - ruby --version | grep 2.6.6
-          - bundler --version | grep 2
-          - mkdir ruby_test
-          - echo "2.7.2" > ruby_test/.ruby-version
-          - cd ruby_test
-          - ruby --version| grep 2.7.2
-          - sem-version ruby 2.3.7 -f
-          - ruby --version| grep 2.3.7
-          - kubectl version --client
-          - sem-version kubectl 1.15.3
-          - kubectl version --client | grep -q 1.15.3
-
-      - name: MySQL
-        commands:
-          - sem-service start mysql
-          - mysql --host=0.0.0.0 -uroot -e "create database fooo"
-          - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
-          - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.6
-          - sem-service status mysql
-          - sem-service stop mysql
-          - sem-service start mysql 5.7
-          - mysql --host=0.0.0.0 -uroot -e "create database fooo"
-          - mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
-          - mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.7
-          - sem-service status mysql
-          - sem-service stop mysql
-          - sem-service start mysql 8.0.19 --username=test --password=test --garbage else || true
-
-      - name: PostgreSQL
-        commands:
-          - sem-service start postgres
-          - createdb -U postgres -h 0.0.0.0 fooo
-          - psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
-          - psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 9.6
-          - sem-service status postgres
-          - sem-service stop postgres
-          - sem-service start postgres 11
-          - createdb -U postgres -h 0.0.0.0 fooo
-          - psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
-          - psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 11
-          - sem-service status postgres
-          - sem-service stop postgres
-          - sem-service start postgres 11 --username=xxx --password=xxx --db=xxx --garbage else
-          - createdb -U xxx  -h 0.0.0.0 fooo
-          - psql -h 0.0.0.0 -U xxx -c "\l"
-          - psql -U xxx -c "SELECT version()" | grep 11
-          - sem-service status postgres
-          - cat /tmp/toolbox_semservice
-
-      - name: Redis
-        commands:
-          - sem-service start redis
-          - sem-service status redis
-          - sem-service stop redis
-          - sem-service start redis 5
-          - sem-service status redis
-          - cat /tmp/toolbox_semservice
-
-      - name: Memcached
-        commands:
-          - sem-service start memcached
-          - sem-service status memcached
-          - cat /tmp/toolbox_semservice
-
-      - name: RabbitMQ
-        commands:
-          - sem-service start rabbitmq
-          - sem-service status rabbitmq
-          - cat /tmp/toolbox_semservice
-
-      - name: mongodb
-        commands:
-          - sudo apt-get install -y mongodb-clients
-          - sem-service start mongodb
-          - curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
-          - sem-service status mongodb
-          - sem-service stop mongodb
-          - sem-service start mongodb 3.2
-          - curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
-          - sem-service status mongodb
-          - sem-service stop mongodb
-          - sem-service stop mongodb
-          - sem-service start mongodb 4.2 --username=xxx --password=xxx
-          - echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
-          - cat /tmp/toolbox_semservice
-
-      - name: elasticsearch
-        commands:
-          - sem-service start elasticsearch
-          - curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
-          - sem-service status elasticsearch
-          - curl -XGET '0.0.0.0:9200' | grep 6.5
-          - sem-service stop elasticsearch
-          - sem-service start elasticsearch 6.6
-          - curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
-          - sem-service stop elasticsearch
-          - sem-service start elasticsearch 7.9
-          - curl -XGET '0.0.0.0:9200' | grep 7.9
-          - sem-service stop elasticsearch
-          - sem-service start elasticsearch 7.10.0
-          - curl -XGET '0.0.0.0:9200' | grep 7.10
-          - sem-service stop elasticsearch
-
-          - cat /tmp/toolbox_semservice
-
-      - name: cassandra
-        commands:
-          - sem-service start cassandra
-          - docker ps -a | grep cassandra
-          - cat /tmp/toolbox_semservice
-
-
-      - name: rethinkdb
-        commands:
-          - sem-service start rethinkdb
-          - docker ps -a | grep rethinkdb
-          - cat /tmp/toolbox_semservice
-
-      - name: Erlang change test
-        commands:
-          - echo "Erlang version"
-          - erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-          - sem-version erlang 20
-          - erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-          - sem-version erlang 21
-          - erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-
-      - name: scala change test
-        commands:
-          - echo "actual scala version"
-          - scala -version
-          - sem-version scala 2.11
-          - sem-version scala 2.12
-
-  - name: Run tests in MacOS env
-    task:
-      agent:
-          machine:
-            type: a1-standard-4
-            os_image: macos-xcode11
-      env_vars:
-        - name: ARTIFACT_URL
-          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
-      jobs:
-      - name: Bats tests
-        commands:
-          - checkout
-          - cd ../
-          - rm -rf .toolbox/
-          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox
-          - cd .toolbox
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
-          - bats tests/macos_cache.bats
-          - bats tests/macos_autocache.bats
-          - bats tests/libcheckout.bats
-      - name: Test artifact CLI installation macOS
-        commands:
-          - checkout
-          - cd ../
-          - rm -rf .toolbox/
-          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox
-          - cd .toolbox
-          - ls artifact.tar.gz || true
-          - artifact | grep "Semaphore 2.0 Artifact CLI"
-
-  - name: Run tests in Semaphoreci Docker container
-    task:
-      agent:
-          machine:
-            type: e1-standard-2
-          containers:
-            - name: main
-              image: semaphoreci/ruby:2.6.2
-      env_vars:
-        - name: ARTIFACT_URL
-          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
-      jobs:
-      - name: Test Docker Image
-        commands:
-          - checkout
-          - cd ../
-          - rm -rf .toolbox/
-          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox
-          - cd .toolbox
-          - git submodule init && git submodule update
-          - ./tests/support/bats-core/install.sh /usr/local
-          - bats tests/cache.bats
-          - bats tests/libcheckout.bats
-
-  - name: Run tests in Docker container
-    task:
-      agent:
-          machine:
-            type: e1-standard-2
-          containers:
-            - name: main
-              image: semaphoreci/alpine:3.9
-      env_vars:
-        - name: ARTIFACT_URL
-          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
-      jobs:
-      - name: Test Alpine Image
-        commands:
-          - checkout
-          - cd ../
-          - rm -rf .toolbox/
-          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox
-          - cd .toolbox
-          - git submodule init && git submodule update
-          - ./tests/support/bats-core/install.sh /usr/local
-          - bats tests/cache.bats
-          - bats tests/libcheckout.bats
+        - name: 'Bats: Linux'
+          commands:
+            - cache clear
+            - sudo apt-get install -y python3.8-dev
+            - sem-version python 3.8
+            - sem-version go 1.13
+            - sem-version php 7.3.23
+            - git submodule init && git submodule update
+            - sudo ./tests/support/bats-core/install.sh /usr/local
+            - bats tests/install_package.bats
+            - bats tests/autocache.bats
+            - bats tests/cache.bats
+            - bats tests/libcheckout.bats
+            - bats tests/base.bats
 promotions:
   - name: Release
-    pipeline_file: "release.yml"
+    pipeline_file: release.yml
     auto_promote_on:
       - result: passed
         branch:
-          - "^refs/tags/v*"
+          - ^refs/tags/v*
