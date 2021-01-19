@@ -25,25 +25,25 @@ blocks:
             - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 89 ]]'
             - 'shellcheck install-package'
 
+  - name: Verify Build
+    task:
+      jobs:
+        - name: Verify thta release/create.sh works
+          commands:
+            - checkout
+            - ./release/create.sh
+
   - name: Run Tests
     task:
-      env_vars:
-        - name: ARTIFACT_URL
-          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
       prologue:
         commands:
           - checkout
-          - cd ../
-          - rm -rf .toolbox/
-          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox
-          - cd .toolbox
+          - ./release/create.sh
+          - ./release/install_in_tests.sh
+
       jobs:
       - name: Test artifact CLI installation
         commands:
-          - ls artifact.tar.gz || true
           - artifact | grep "Semaphore 2.0 Artifact CLI"
 
       - name: Bats tests
@@ -239,36 +239,24 @@ blocks:
           machine:
             type: a1-standard-4
             os_image: macos-xcode11
-      env_vars:
-        - name: ARTIFACT_URL
-          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
+      prologue:
+        commands:
+          - checkout
+          - ./release/create.sh
+          - ./release/install_in_tests.sh
+          - cd toolbox
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+
       jobs:
       - name: Bats tests
         commands:
-          - checkout
-          - cd ../
-          - rm -rf .toolbox/
-          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox
-          - cd .toolbox
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
           - bats tests/macos_cache.bats
           - bats tests/macos_autocache.bats
           - bats tests/libcheckout.bats
+
       - name: Test artifact CLI installation macOS
         commands:
-          - checkout
-          - cd ../
-          - rm -rf .toolbox/
-          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox
-          - cd .toolbox
-          - ls artifact.tar.gz || true
           - artifact | grep "Semaphore 2.0 Artifact CLI"
 
   - name: Run tests in Semaphoreci Docker container
@@ -279,22 +267,18 @@ blocks:
           containers:
             - name: main
               image: semaphoreci/ruby:2.6.2
-      env_vars:
-        - name: ARTIFACT_URL
-          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
+      prologue:
+        commands:
+          - checkout
+          - ./release/create.sh
+          - ./release/install_in_tests.sh
+          - cd toolbox
+          - git submodule init && git submodule update
+          - ./tests/support/bats-core/install.sh /usr/local
+
       jobs:
       - name: Test Docker Image
         commands:
-          - checkout
-          - cd ../
-          - rm -rf .toolbox/
-          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox
-          - cd .toolbox
-          - git submodule init && git submodule update
-          - ./tests/support/bats-core/install.sh /usr/local
           - bats tests/cache.bats
           - bats tests/libcheckout.bats
 
@@ -306,24 +290,20 @@ blocks:
           containers:
             - name: main
               image: semaphoreci/alpine:3.9
-      env_vars:
-        - name: ARTIFACT_URL
-          value: "https://github.com/semaphoreci/artifact/releases/download/v0.2.8"
+      prologue:
+        commands:
+          - checkout
+          - ./release/create.sh
+          - ./release/install_in_tests.sh
+          - cd toolbox
+          - git submodule init && git submodule update
+          - ./tests/support/bats-core/install.sh /usr/local
       jobs:
       - name: Test Alpine Image
         commands:
-          - checkout
-          - cd ../
-          - rm -rf .toolbox/
-          - curl -s -L 5 --retry 5 $ARTIFACT_URL/artifact_$(uname -s)_x86_64.tar.gz | tar -xz
-          - mv toolbox/ .toolbox
-          - bash .toolbox/install-toolbox
-          - source .toolbox/toolbox
-          - cd .toolbox
-          - git submodule init && git submodule update
-          - ./tests/support/bats-core/install.sh /usr/local
           - bats tests/cache.bats
           - bats tests/libcheckout.bats
+
 promotions:
   - name: Release
     pipeline_file: "release.yml"
