@@ -11,7 +11,6 @@ setup() {
 }
 
 @test "cache - autostore/autorestore [go]" {
-  run cache delete go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum)
   cd tests/autocache/go
   go get ./...
 
@@ -28,7 +27,6 @@ setup() {
 }
 
 @test "cache - autostore/autorestore [bundle]" {
-  run cache delete gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock)
   cd tests/autocache/ruby
   bundle install --path vendor/bundle
 
@@ -47,7 +45,6 @@ setup() {
 }
 
 @test "cache - autostore/autorestore [pip]" {
-  run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
   cd tests/autocache/python
   pip install -r requirements.txt --cache-dir .pip_cache
 
@@ -67,7 +64,6 @@ setup() {
 }
 
 @test "cache - autostore/autorestore [nodejs]" {
-  run cache delete node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json)
   cd tests/autocache/js
   npm install
 
@@ -86,7 +82,6 @@ setup() {
 }
 
 @test "cache - autostore/autorestore [elixir]" {
-  run cache delete deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock)
   cd tests/autocache/elixir
   mix deps.get
 
@@ -105,7 +100,6 @@ setup() {
 }
 
 @test "cache - autostore/autorestore [php]" {
-  run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock)
   cd tests/autocache/php
   composer install
 
@@ -124,9 +118,6 @@ setup() {
 }
 
 @test "cache - autostore/autorestore [mvn]" {
-  run cache delete maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
-  run cache delete maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
-
   cd tests/autocache/java
   mvn -Dmaven.repo.local=".m2" test-compile
 
