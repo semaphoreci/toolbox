@@ -6,6 +6,7 @@ load "support/bats-assert/load"
 PROJECT_ROOT=$(pwd)
 
 setup() {
+  cache clear
   cd $PROJECT_ROOT
 }
 
@@ -29,7 +30,7 @@ setup() {
 @test "cache - autostore/autorestore [bundle]" {
   run cache delete gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock)
   cd tests/autocache/ruby
-  bundle install --path vendor/bundle > /dev/null
+  bundle install --path vendor/bundle
 
   run cache store
 
@@ -47,8 +48,8 @@ setup() {
 
 @test "cache - autostore/autorestore [pip]" {
   run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
-  cd tests/autocache/ruby
-  pip install -r requirements.txt --cache-dir .pip_cache > /dev/null
+  cd tests/autocache/python
+  pip install -r requirements.txt --cache-dir .pip_cache
 
   run cache store
 
@@ -68,7 +69,7 @@ setup() {
 @test "cache - autostore/autorestore [nodejs]" {
   run cache delete node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json)
   cd tests/autocache/js
-  npm install > /dev/null
+  npm install
 
   run cache store
 
@@ -87,7 +88,7 @@ setup() {
 @test "cache - autostore/autorestore [elixir]" {
   run cache delete deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock)
   cd tests/autocache/elixir
-  mix deps.get > /dev/null
+  mix deps.get
 
   run cache store
 
@@ -105,8 +106,8 @@ setup() {
 
 @test "cache - autostore/autorestore [php]" {
   run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock)
-  cd tests/autocache/php/
-  composer install > /dev/null || true
+  cd tests/autocache/php
+  composer install
 
   run cache store
 
