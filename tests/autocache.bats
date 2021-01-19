@@ -7,15 +7,8 @@ teardown() {
   rm -rf semaphore-demo-*
 }
 
-
-################################################################################
-# cache autostore/autorestore
-################################################################################
 @test "cache - autostore/autorestore [go]" {
-
-  git clone git@github.com:eddycjy/go-gin-example.git
-  cd go-gin-example
-  
+  cd autocache/go
   go get ./...
   run cache store
 
@@ -30,14 +23,10 @@ teardown() {
 
   run cache delete go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum)
   cd ../
-  rm -rf go-gin-example
 }
 
-
 @test "cache - autostore/autorestore [bundle]" {
-
-  git clone git@github.com:semaphoreci-demos/semaphore-demo-ruby-rails.git
-  cd semaphore-demo-ruby-rails
+  cd autocache/ruby
   bundle install --path vendor/bundle > /dev/null
 
   run cache store
@@ -54,14 +43,11 @@ teardown() {
   assert_output --partial "Restored: vendor/bundle/"
 
   run cache delete gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock)
-  cd ../
-  rm -rf semaphore-demo-ruby-rails
+  cd ../..
 }
 
 @test "cache - autostore/autorestore [pip]" {
-
-  git clone git@github.com:semaphoreci-demos/semaphore-demo-python-django.git
-  cd semaphore-demo-python-django
+  cd autocache/ruby
   pip install -r requirements.txt --cache-dir .pip_cache > /dev/null
 
   run cache store
@@ -78,15 +64,11 @@ teardown() {
   assert_output --partial "Restored: .pip_cache/"
 
   run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
-  cd ../
-  rm -rf semaphore-demo-python-django
+  cd ../..
 }
 
 @test "cache - autostore/autorestore [nodejs]" {
-
-  git clone git@github.com:semaphoreci-demos/semaphore-demo-javascript.git
-  cd semaphore-demo-javascript/src/client/
-
+  cd autocache/js
   npm install > /dev/null
 
   run cache store
@@ -103,14 +85,11 @@ teardown() {
   assert_output --partial "Restored: node_modules/"
 
   run cache delete node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json)
-  cd ../../../
-  rm -rf semaphore-demo-javascript
+  cd ../..
 }
 
 @test "cache - autostore/autorestore [elixir]" {
-
-  git clone git@github.com:semaphoreci-demos/semaphore-demo-elixir-phoenix.git
-  cd semaphore-demo-elixir-phoenix
+  cd autocache/elixir
   mix deps.get > /dev/null
 
   run cache store
@@ -128,13 +107,10 @@ teardown() {
 
   run cache delete deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock)
   cd ../
-  rm -rf semaphore-demo-elixir-phoenix
 }
 
 @test "cache - autostore/autorestore [php]" {
-
-  git clone git@github.com:semaphoreci-demos/semaphore-demo-php-laravel.git
-  cd semaphore-demo-php-laravel
+  cd autocache/php/
   composer install > /dev/null || true
 
   run cache store
@@ -151,14 +127,11 @@ teardown() {
   assert_output --partial "Restored: vendor/"
 
   run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock)
-  cd ../
-  rm -rf semaphore-demo-php-laravel
+  cd ../..
 }
 
 @test "cache - autostore/autorestore [mvn]" {
-
-  git clone git@github.com:jitpack/maven-simple.git
-  cd maven-simple
+  cd autocache/java
   mvn -Dmaven.repo.local=".m2" test-compile
 
   run cache store
@@ -181,6 +154,5 @@ teardown() {
 
   run cache delete maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
   run cache delete maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
-  cd ../
-  rm -rf maven-simple
+  cd ../..
 }

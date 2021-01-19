@@ -1,0 +1,14 @@
+{
+    "name": "test",
+    "type": "project",
+    "description": "test",
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^7.3.0",
+        "laracasts/flash": "^3.0",
+    },
+}
