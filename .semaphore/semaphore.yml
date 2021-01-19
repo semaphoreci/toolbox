@@ -28,10 +28,12 @@ blocks:
   - name: Verify Build
     task:
       jobs:
-        - name: Verify thta release/create.sh works
+        - name: Verify that release/create.sh works
           commands:
             - checkout
             - ./release/create.sh
+            - test -f /tmp/Linux/linux.tar
+            - test -f /tmp/Darwin/darwin.tar
 
   - name: Run Tests
     task:
