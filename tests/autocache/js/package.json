@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "license": "MIT",
   "dependencies": {
-    "rimraf": "^2.6.3",
+    "rimraf": "^2.6.3"
   }
 }
