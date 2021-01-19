@@ -569,11 +569,9 @@ normalize_key() {
 
 @test "communicates the correct cache usage" {
   test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
-  export CACHE_SIZE=100
-  run ./cache usage
-
   dd if=/dev/zero of=tmp.file bs=1M count=50
   ./cache store $test_key tmp.file
+
   export CACHE_SIZE=100
   run ./cache usage
 

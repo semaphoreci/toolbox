@@ -10,6 +10,11 @@ setup() {
   cd $PROJECT_ROOT
 }
 
+teardown() {
+  git reset --hard
+  git clean -fd
+}
+
 @test "cache - autostore/autorestore [go]" {
   cd tests/autocache/go
   go get ./...
