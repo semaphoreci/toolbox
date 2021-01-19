@@ -3,13 +3,17 @@
 load "support/bats-support/load"
 load "support/bats-assert/load"
 
-teardown() {
-  rm -rf semaphore-demo-*
+PROJECT_ROOT=$(pwd)
+
+setup() {
+  cd $PROJECT_ROOT
 }
 
 @test "cache - autostore/autorestore [go]" {
-  cd autocache/go
+  run cache delete go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum)
+  cd tests/autocache/go
   go get ./...
+
   run cache store
 
   assert_success
@@ -20,13 +24,11 @@ teardown() {
 
   run cache restore
   assert_success
-
-  run cache delete go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum)
-  cd ../
 }
 
 @test "cache - autostore/autorestore [bundle]" {
-  cd autocache/ruby
+  run cache delete gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock)
+  cd tests/autocache/ruby
   bundle install --path vendor/bundle > /dev/null
 
   run cache store
@@ -41,13 +43,11 @@ teardown() {
   assert_success
   assert_output --partial  "* Fetching 'vendor/bundle' directory with cache keys"
   assert_output --partial "Restored: vendor/bundle/"
-
-  run cache delete gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock)
-  cd ../..
 }
 
 @test "cache - autostore/autorestore [pip]" {
-  cd autocache/ruby
+  run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
+  cd tests/autocache/ruby
   pip install -r requirements.txt --cache-dir .pip_cache > /dev/null
 
   run cache store
@@ -63,12 +63,11 @@ teardown() {
   assert_output --partial "* Fetching '.pip_cache' directory with cache keys"
   assert_output --partial "Restored: .pip_cache/"
 
-  run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)
-  cd ../..
 }
 
 @test "cache - autostore/autorestore [nodejs]" {
-  cd autocache/js
+  run cache delete node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json)
+  cd tests/autocache/js
   npm install > /dev/null
 
   run cache store
@@ -83,13 +82,11 @@ teardown() {
   assert_success
   assert_output --partial "* Fetching 'node_modules' directory with cache keys"
   assert_output --partial "Restored: node_modules/"
-
-  run cache delete node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json)
-  cd ../..
 }
 
 @test "cache - autostore/autorestore [elixir]" {
-  cd autocache/elixir
+  run cache delete deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock)
+  cd tests/autocache/elixir
   mix deps.get > /dev/null
 
   run cache store
@@ -104,13 +101,11 @@ teardown() {
   assert_success
   assert_output --partial "* Fetching 'deps' directory with cache keys"
   assert_output --partial "Restored: deps/"
-
-  run cache delete deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock)
-  cd ../
 }
 
 @test "cache - autostore/autorestore [php]" {
-  cd autocache/php/
+  run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock)
+  cd tests/autocache/php/
   composer install > /dev/null || true
 
   run cache store
@@ -125,13 +120,13 @@ teardown() {
   assert_success
   assert_output --partial "* Fetching 'vendor' directory with cache keys"
   assert_output --partial "Restored: vendor/"
-
-  run cache delete requirements-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock)
-  cd ../..
 }
 
 @test "cache - autostore/autorestore [mvn]" {
-  cd autocache/java
+  run cache delete maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
+  run cache delete maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
+
+  cd tests/autocache/java
   mvn -Dmaven.repo.local=".m2" test-compile
 
   run cache store
@@ -151,8 +146,4 @@ teardown() {
   assert_output --partial "Restored: .m2"
   assert_output --partial "* Fetching 'target' directory with cache keys"
   assert_output --partial "Restored: target"
-
-  run cache delete maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
-  run cache delete maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)
-  cd ../..
 }
