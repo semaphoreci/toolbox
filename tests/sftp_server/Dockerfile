@@ -6,7 +6,7 @@ RUN mkdir -p /var/run/sshd
 COPY sshd_config /etc/ssh/sshd_config
 
 RUN addgroup ftpaccess
-RUN adduser tester --ingroup ftpaccess --shell /usr/sbin/nologin --disabled-password --gecos ''
+RUN adduser tester --ingroup ftpaccess --shell /bin/bash --disabled-password --gecos ''
 RUN chown tester:ftpaccess /home/tester
 RUN mkdir /home/tester/.ssh
 
