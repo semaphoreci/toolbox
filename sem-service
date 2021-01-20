@@ -176,7 +176,7 @@ service::start_elasticsearch() {
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name elasticsearch -e "discovery.type=single-node" -d $service_image:$service_version)
   # run only if previous command exited successfully
-  docker_status=$(sem-dockerize 9200 elasticseach)
+  docker_status=$(sem-dockerize 9200 elasticsearch)
   if [ "$docker_status" == "0" ]; then
     echo "done."
     echo "elasticsearch $service_version is accessible at 0.0.0.0:9200 and 0.0.0.0:9300"
