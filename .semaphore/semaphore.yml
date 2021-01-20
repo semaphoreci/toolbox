@@ -283,6 +283,10 @@ blocks:
           - bash .toolbox/install-toolbox
           - source .toolbox/toolbox
           - cd .toolbox
+          - bash tests/sftp_server/start.sh
+          - export SEMAPHORE_CACHE_URL=9000
+          - export SEMAPHORE_USERNAME=tester
+          - export SEMAPHORE_CACHE_PRIVATE_KEY_PATH=$(pwd)/tests/sftp_server/id_rsa
       jobs:
         - name: 'Bats: Linux'
           commands:
