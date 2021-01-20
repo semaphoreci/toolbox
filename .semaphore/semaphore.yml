@@ -198,6 +198,7 @@ blocks:
             - scala -version
             - sem-version scala 2.11
             - sem-version scala 2.12
+
   - name: 'Bats: Mac'
     dependencies: []
     task:
@@ -205,23 +206,38 @@ blocks:
         machine:
           type: a1-standard-4
           os_image: macos-xcode11
+
+      prologue:
+        commands:
+          - checkout
+          - cd ../
+          - rm -rf .toolbox/
+          - mv toolbox/ .toolbox
+          - bash .toolbox/install-toolbox
+          - source .toolbox/toolbox
+          - cd .toolbox
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+          - bash tests/sftp_server/start_on_mac.sh
+          - export SEMAPHORE_CACHE_URL=localhost:22
+          - export SEMAPHORE_CACHE_USERNAME=semaphore
+          - mv tests/sftp_server/id_rsa ~/.ssh/semaphore_cache_key
+          - chmod 0600 ~/.ssh/semaphore_cache_key
+
       jobs:
         - name: 'Bats: Mac'
+          matrix:
+            - env_var: TEST
+              values:
+                - tests/macos_cache.bats
+                - tests/macos_autocache.bats
+                - tests/libcheckout.bats
+
           commands:
-            - checkout
-            - cd ../
-            - rm -rf .toolbox/
-            - mv toolbox/ .toolbox
-            - bash .toolbox/install-toolbox
-            - source .toolbox/toolbox
-            - cd .toolbox
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --tap --timing tests/macos_cache.bats
-            - bats --tap --timing tests/macos_autocache.bats
-            - bats --tap --timing tests/libcheckout.bats
+            - bats --tap --timing $TEST
 
   - name: 'Bats: Docker'
+    dependencies: []
     task:
       agent:
         machine:
@@ -230,23 +246,40 @@ blocks:
         containers:
           - name: main
             image: 'semaphoreci/ruby:2.6.2'
+      prologue:
+        commands:
+          - checkout
+          - cd ../
+          - rm -rf .toolbox/
+          - mv toolbox/ .toolbox
+          - bash .toolbox/install-toolbox
+          - source .toolbox/toolbox
+          - cd .toolbox
+          - bash tests/sftp_server/start.sh
+          - export SEMAPHORE_CACHE_URL=localhost:9000
+          - export SEMAPHORE_CACHE_USERNAME=tester
+          - mv tests/sftp_server/id_rsa /home/semaphore/.ssh/semaphore_cache_key
+          - chmod 0600 /home/semaphore/.ssh/semaphore_cache_key
+          - ssh-keyscan -p 9000 -H localhost >> /home/semaphore/.ssh/known_hosts
+          - cache clear
+          - sudo apt-get install -y python3.8-dev
+          - sem-version python 3.8
+          - sem-version go 1.13
+          - sem-version php 7.3.23
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
       jobs:
-        - name: 'Bats: Docker'
+        - name: 'Bats'
+          matrix:
+            - env_var: TEST
+              values:
+                - tests/cache.bats
+                - tests/libcheckout.bats
           commands:
-            - checkout
-            - cd ../
-            - rm -rf .toolbox/
-            - mv toolbox/ .toolbox
-            - bash .toolbox/install-toolbox
-            - source .toolbox/toolbox
-            - cd .toolbox
-            - git submodule init && git submodule update
-            - ./tests/support/bats-core/install.sh /usr/local
-            - bats --tap --timing tests/cache.bats
-            - bats --tap --timing tests/libcheckout.bats
-    dependencies:
-      - 'Bats: Mac'
+            - bats --tap --timing $TEST
+
   - name: 'Bats: Minimal Docker'
+    dependencies: []
     task:
       agent:
         machine:
@@ -269,8 +302,6 @@ blocks:
             - ./tests/support/bats-core/install.sh /usr/local
             - bats --tap --timing tests/cache.bats
             - bats --tap --timing tests/libcheckout.bats
-    dependencies:
-      - 'Bats: Docker'
 
   - name: 'Bats: Linux'
     dependencies: []
