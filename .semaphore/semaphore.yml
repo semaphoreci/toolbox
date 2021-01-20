@@ -285,9 +285,10 @@ blocks:
           - cd .toolbox
           - bash tests/sftp_server/start.sh
           - export SEMAPHORE_CACHE_URL=localhost:9000
-          - export SEMAPHORE_USERNAME=tester
+          - export SEMAPHORE_CACHE_USERNAME=tester
           - mv tests/sftp_server/id_rsa /home/semaphore/.ssh/semaphore_cache_key
           - chmod 0600 /home/semaphore/.ssh/semaphore_cache_key
+          - ssh-keyscan -p 9000 -H localhost >> /home/semaphore/.ssh/known_hosts
       jobs:
         - name: 'Bats: Linux'
           commands:
