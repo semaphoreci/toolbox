@@ -96,10 +96,6 @@ else
 fi
 
 
-#
-# Installing the Artifacts CLI.
-#
-
 echo "Installing the artifacts CLI"
 install_cmd mv ~/.toolbox/artifact $INSTALL_PATH/artifact
 install_cmd chmod +x $INSTALL_PATH/artifact
@@ -108,6 +104,26 @@ if [[ $? -eq 0 ]];then
 else
   echo "toolbox_install_error{module='artifacts'} 1" >> /tmp/toolbox_metrics
 fi
+
+
+echo "Installing the artifacts CLI"
+install_cmd mv ~/.toolbox/spc $INSTALL_PATH/spc
+install_cmd chmod +x $INSTALL_PATH/spc
+if [[ $? -eq 0 ]];then
+  echo "spc installed"
+else
+  echo "toolbox_install_error{module='spc'} 1" >> /tmp/toolbox_metrics
+fi
+
+echo "Installing the when CLI"
+install_cmd mv ~/.toolbox/when $INSTALL_PATH/when
+install_cmd chmod +x $INSTALL_PATH/when
+if [[ $? -eq 0 ]];then
+  echo "when installed"
+else
+  echo "toolbox_install_error{module='when'} 1" >> /tmp/toolbox_metrics
+fi
+
 
 if [[ `uname` != "Darwin" ]]; then
   echo "Starting to collect System Metrics in /tmp/system-metrics"
