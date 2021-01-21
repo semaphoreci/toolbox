@@ -241,6 +241,19 @@ blocks:
           commands:
             - bats --tap --timing $TEST
 
+  - name: Semaphore Compiler
+    dependencies: []
+    task:
+      prologue:
+        commands:
+          - bash release/install_in_tests.sh
+
+      jobs:
+        - name: Check if installed
+          commands:
+            - whereis spc
+            - whereis when
+
 promotions:
   - name: Release
     pipeline_file: release.yml
