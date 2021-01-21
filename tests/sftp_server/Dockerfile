@@ -11,7 +11,7 @@ RUN chown tester:ftpaccess /home/tester
 RUN mkdir /etc/ssh/authorized_keys
 
 COPY id_rsa.pub /tmp/id_rsa.pub
-RUN cat id_rsa.pub >> /etc/ssh/authorized_keys/tester
+RUN cat /tmp/id_rsa.pub >> /etc/ssh/authorized_keys/tester
 
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
