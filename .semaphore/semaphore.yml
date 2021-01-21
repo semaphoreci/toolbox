@@ -218,6 +218,7 @@ blocks:
       prologue:
         commands:
           - checkout
+          - source tests/sftp_server/start_on_mac.sh
           - cd ../
           - rm -rf .toolbox/
           - mv toolbox/ .toolbox
@@ -226,11 +227,6 @@ blocks:
           - cd .toolbox
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
-          - bash tests/sftp_server/start_on_mac.sh
-          - export SEMAPHORE_CACHE_URL=localhost:22
-          - export SEMAPHORE_CACHE_USERNAME=semaphore
-          - mv tests/sftp_server/id_rsa ~/.ssh/semaphore_cache_key
-          - chmod 0600 ~/.ssh/semaphore_cache_key
 
       jobs:
         - name: 'Bats: Mac'
