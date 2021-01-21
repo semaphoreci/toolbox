@@ -576,8 +576,8 @@ normalize_key() {
   run ./cache usage
 
   assert_success
-  assert_line "FREE SPACE: 54K"
-  assert_line "USED SPACE: 47K"
+  assert_line "FREE SPACE: 47K"
+  assert_line "USED SPACE: 54K"
   refute_output --partial "command not found"
 
   rm -f tmp.file

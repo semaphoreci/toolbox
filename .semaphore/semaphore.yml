@@ -287,20 +287,29 @@ blocks:
         containers:
           - name: main
             image: 'semaphoreci/alpine:3.9'
+      prologue:
+        commands:
+          - checkout
+          - cd ../
+          - rm -rf .toolbox/
+          - mv toolbox/ .toolbox
+          - bash .toolbox/install-toolbox
+          - source .toolbox/toolbox
+          - cd .toolbox
+          - apk add --update docker openrc
+          - source tests/sftp_server/start_in_docker.sh
+          - cache clear
+          - git submodule init && git submodule update
+          - ./tests/support/bats-core/install.sh /usr/local
       jobs:
-        - name: 'Bats: Alpine'
+        - name: 'Bats'
+          matrix:
+            - env_var: TEST
+              values:
+                - tests/cache.bats
+                - tests/libcheckout.bats
           commands:
-            - checkout
-            - cd ../
-            - rm -rf .toolbox/
-            - mv toolbox/ .toolbox
-            - bash .toolbox/install-toolbox
-            - source .toolbox/toolbox
-            - cd .toolbox
-            - git submodule init && git submodule update
-            - ./tests/support/bats-core/install.sh /usr/local
-            - bats --tap --timing tests/cache.bats
-            - bats --tap --timing tests/libcheckout.bats
+            - bats --tap --timing $TEST
 
   - name: 'Bats: Linux'
     dependencies: []
