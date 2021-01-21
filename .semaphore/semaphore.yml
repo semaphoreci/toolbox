@@ -4,9 +4,17 @@ agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu1804
-fail_fast:
-  stop:
-    when: 'true'
+
+execution_time_limit:
+  minutes: 5
+
+global_job_config:
+  prologue:
+    commands:
+      # Disconnect from cache server
+      - export SEMAPHORE_CACHE_URL=""
+      - export SEMAPHORE_CACHE_USERNAME=""
+
 blocks:
   - name: Static Code Analysis
     dependencies: []
@@ -258,14 +266,10 @@ blocks:
           - bash tests/sftp_server/start.sh
           - export SEMAPHORE_CACHE_URL=localhost:9000
           - export SEMAPHORE_CACHE_USERNAME=tester
-          - mv tests/sftp_server/id_rsa /home/semaphore/.ssh/semaphore_cache_key
-          - chmod 0600 /home/semaphore/.ssh/semaphore_cache_key
-          - ssh-keyscan -p 9000 -H localhost >> /home/semaphore/.ssh/known_hosts
+          - mv tests/sftp_server/id_rsa ~/.ssh/semaphore_cache_key
+          - chmod 0600 ~/.ssh/semaphore_cache_key
+          - ssh-keyscan -p 9000 -H localhost >> ~/.ssh/known_hosts
           - cache clear
-          - sudo apt-get install -y python3.8-dev
-          - sem-version python 3.8
-          - sem-version go 1.13
-          - sem-version php 7.3.23
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
       jobs:

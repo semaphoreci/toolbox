@@ -577,7 +577,7 @@ normalize_key() {
 
   assert_success
   assert_line "FREE SPACE: 51K"
-  assert_line "USED SPACE: 50K"
+  assert_line "USED SPACE: 47K"
   refute_output --partial "command not found"
 
   rm -f tmp.file
