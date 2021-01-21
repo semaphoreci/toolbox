@@ -251,8 +251,8 @@ blocks:
       jobs:
         - name: Check if installed
           commands:
-            - whereis spc
-            - whereis when
+            - which spc
+            - which when
 
 promotions:
   - name: Release
