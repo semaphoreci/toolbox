@@ -263,7 +263,7 @@ blocks:
           - bash .toolbox/install-toolbox
           - source .toolbox/toolbox
           - cd .toolbox
-          - source tests/sftp_server/start_in_docker.sh
+          - source tests/sftp_server/start_on_docker.sh
           - cache clear
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
@@ -297,7 +297,7 @@ blocks:
           - source .toolbox/toolbox
           - cd .toolbox
           - apk add --update docker openrc
-          - source tests/sftp_server/start_in_docker.sh
+          - source tests/sftp_server/start_on_docker.sh
           - cache clear
           - git submodule init && git submodule update
           - ./tests/support/bats-core/install.sh /usr/local
@@ -323,12 +323,7 @@ blocks:
           - bash .toolbox/install-toolbox
           - source .toolbox/toolbox
           - cd .toolbox
-          - bash tests/sftp_server/start.sh
-          - export SEMAPHORE_CACHE_URL=localhost:9000
-          - export SEMAPHORE_CACHE_USERNAME=tester
-          - mv tests/sftp_server/id_rsa /home/semaphore/.ssh/semaphore_cache_key
-          - chmod 0600 /home/semaphore/.ssh/semaphore_cache_key
-          - ssh-keyscan -p 9000 -H localhost >> /home/semaphore/.ssh/known_hosts
+          - source tests/sftp_server/start_on_linux.sh
           - cache clear
           - sudo apt-get install -y python3.8-dev
           - sem-version python 3.8
