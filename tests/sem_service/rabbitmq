@@ -1,0 +1,7 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+sem-service start rabbitmq
+sem-service status rabbitmq
+cat /tmp/toolbox_semservice
