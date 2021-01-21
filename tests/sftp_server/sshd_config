@@ -23,6 +23,7 @@ AllowTcpForwarding no
 Subsystem sftp internal-sftp
 # ForceCommand internal-sftp
 # ChrootDirectory %h
+AuthorizedKeysFile  /etc/ssh/authorized_keys/%u
 
 # Enable this for more logs
 #LogLevel VERBOSE

@@ -8,10 +8,10 @@ COPY sshd_config /etc/ssh/sshd_config
 RUN addgroup ftpaccess
 RUN adduser tester --ingroup ftpaccess --shell /bin/bash --disabled-password --gecos ''
 RUN chown tester:ftpaccess /home/tester
-RUN mkdir /home/tester/.ssh
+RUN mkdir /etc/ssh/authorized_keys
 
-COPY id_rsa.pub id_rsa.pub
-RUN cat id_rsa.pub >> /home/tester/.ssh/authorized_keys
+COPY id_rsa.pub /tmp/id_rsa.pub
+RUN cat id_rsa.pub >> /etc/ssh/authorized_keys/tester
 
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
