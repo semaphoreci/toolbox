@@ -3,12 +3,11 @@
 set -euo pipefail
 
 ARTIFACT_CLI_VERSION="v0.4.0"
-ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
-
-SPC_CLI_VERSION="v1.0.0"
-SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSION"
-
 WHEN_CLI_VERSION="v0.0.2-alpha"
+SPC_CLI_VERSION="v1.0.1"
+
+ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
+SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSION"
 WHEN_CLI_URL="https://github.com/renderedtext/when/releases/download/$WHEN_CLI_VERSION"
 
 #
