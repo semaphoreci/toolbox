@@ -15,7 +15,7 @@ global_job_config:
       - export SEMAPHORE_CACHE_URL=""
       - export SEMAPHORE_CACHE_USERNAME=""
       - checkout
-      - make release/create.sh
+      - bash release/create.sh
 
 blocks:
   - name: Static Code Analysis
@@ -37,7 +37,7 @@ blocks:
             - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 89 ]]'
             - shellcheck install-package
 
-  - name: Tests
+  - name: Sem Version Tests
     dependencies: []
     task:
       prologue:
@@ -45,25 +45,55 @@ blocks:
           - bash release/install_in_tests.sh
 
       jobs:
-        - name: Sem version tests
+        - name: Sem Version
           commands:
-            - bash tests/sem_version_tests
-
-        - name: Sem service tests
-          matrix:
-            - env_var: TEST
-              values:
-                - mysql
-                - postgres
-                - redis
-                - memcached
-                - rabbitmq
-                - mongodb
-                - elasticsearch
-                - cassandra
-                - rethinkdb
-          commands:
-            - bash tests/sem_service/$TEST
+            - sem-version firefox 52
+            - firefox --version | grep -q 52
+            - sem-version firefox 78
+            - firefox --version | grep -q 78
+            - sem-version ruby 2.5.3
+            - ruby --version | grep 2.5.3
+            - sem-version ruby 2.5.2
+            - ruby --version | grep 2.5.2
+            - sem-version ruby 2.5.3
+            - ruby --version | grep 2.5.3
+            - sem-version ruby 2.3.7
+            - ruby --version | grep 2.3.7
+            - sem-version c 8
+            - gcc --version | grep " 8."
+            - sem-version cpp 7
+            - gcc --version | grep " 7."
+            - sem-version php 7.2.31
+            - php -v | grep 7.2.31
+            - sem-version php 7.0.33
+            - php -v | grep 7.0.33
+            - sem-version php 7.4
+            - php -v | grep 7.4
+            - phpbrew ext install xdebug
+            - php -m | grep xdebug
+            - sem-version php 7.3.19
+            - php -m | grep magick
+            - php -m | grep gd
+            - php -m | grep imap
+            - which composer | grep 7.3.19
+            - sem-version elixir 1.7.4
+            - time sem-version node 12.16.1
+            - node --version | grep 12.16.1
+            - nodejs --version | grep 12.16.1
+            - time sem-version node 14
+            - node --version | grep 14
+            - sem-version ruby 2.6.6
+            - ruby --version | grep 2.6.6
+            - bundler --version | grep 2
+            - mkdir ruby_test
+            - echo "2.7.2" > ruby_test/.ruby-version
+            - cd ruby_test
+            - ruby --version| grep 2.7.2
+            - sem-version ruby 2.3.7 -f
+            - ruby --version| grep 2.3.7
+            - kubectl version --client
+            - sem-version kubectl 1.15.3
+            - kubectl version --client | grep -q 1.15.3
 
         - name: Erlang change test
           commands:
@@ -80,6 +110,30 @@ blocks:
             - scala -version
             - sem-version scala 2.11
             - sem-version scala 2.12
+
+  - name: Sem Service Tests
+    dependencies: []
+    task:
+      prologue:
+        commands:
+          - bash release/install_in_tests.sh
+
+      jobs:
+        - name: Sem service tests
+          matrix:
+            - env_var: TEST
+              values:
+                - mysql
+                - postgres
+                - redis
+                - memcached
+                - rabbitmq
+                - mongodb
+                - elasticsearch
+                - cassandra
+                - rethinkdb
+          commands:
+            - bash tests/sem_service/$TEST
 
   - name: 'Bats: Mac'
     dependencies: []
@@ -146,6 +200,7 @@ blocks:
             image: 'semaphoreci/alpine:3.9'
       prologue:
         commands:
+          - apk add --update docker openrc
           - source tests/sftp_server/start_on_docker.sh
           - bash release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -172,7 +227,7 @@ blocks:
           - sem-version php 7.3.23
           - bash release/install_in_tests.sh
           - git submodule init && git submodule update
-          - ./tests/support/bats-core/install.sh /usr/local
+          - sudo ./tests/support/bats-core/install.sh /usr/local
       jobs:
         - name: 'Bats'
           matrix:

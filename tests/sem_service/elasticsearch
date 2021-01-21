@@ -3,17 +3,22 @@ set -euo pipefail
 IFS=$'\n\t'
 
 sem-service start elasticsearch
-'curl -XGET ''0.0.0.0:9200/_cluster/health?pretty'' | grep green'
+curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
+
 sem-service status elasticsearch
-'curl -XGET ''0.0.0.0:9200'' | grep 6.5'
+curl -XGET '0.0.0.0:9200' | grep 6.5
+
 sem-service stop elasticsearch
 sem-service start elasticsearch 6.6
-'curl -XGET ''0.0.0.0:9200/_cluster/health?pretty'' | grep green'
+curl -XGET '0.0.0.0:9200/_cluster/health?pretty' | grep green
+
 sem-service stop elasticsearch
 sem-service start elasticsearch 7.9
-'curl -XGET ''0.0.0.0:9200'' | grep 7.9'
+curl -XGET '0.0.0.0:9200' | grep 7.9
+
 sem-service stop elasticsearch
 sem-service start elasticsearch 7.10.0
-'curl -XGET ''0.0.0.0:9200'' | grep 7.10'
+curl -XGET '0.0.0.0:9200' | grep 7.10
+
 sem-service stop elasticsearch
 cat /tmp/toolbox_semservice
