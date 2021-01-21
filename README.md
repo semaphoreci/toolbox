@@ -5,8 +5,6 @@ Toolset used in Semaphore 2.0 jobs.
 ## Installation
 
 ``` bash
-git clone https://github.com/semaphoreci/toolbox.git ~/.toolbox
-
 # Install binaries
 bash ~/.toolbox/install-toolbox
 

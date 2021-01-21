@@ -702,7 +702,7 @@ cache::lftp_get() {
         exit 1
       ;;
     esac
-    
+
     echo "cache_total_rate 1" >> /tmp/toolbox_metrics
     if [[ "$restored_path" = /* ]]; then
       tar xzPf /tmp/$key -C .
