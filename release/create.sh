@@ -56,10 +56,8 @@ cd /tmp/Darwin && tar -zxf artifact_Darwin.tar.gz && mv artifact toolbox/ && cd 
 echo "Download When CLI"
 
 curl -s -L --retry 5 $WHEN_CLI_URL/when -o /tmp/Linux/toolbox/when
-curl -s -L --retry 5 $WHEN_CLI_URL/when -o /tmp/Darwin/toolbox/when
 
 chmod +x /tmp/Linux/toolbox/when
-chmod +x /tmp/Darwin/toolbox/when
 
 #
 # Download and add SPC CLI to the release
@@ -67,10 +65,8 @@ chmod +x /tmp/Darwin/toolbox/when
 echo "Download SPC CLI"
 
 curl -s -L --retry 5 $SPC_CLI_URL/spc_Linux_x86_64.tar.gz -o /tmp/Linux/spc_Linux.tar.gz
-curl -s -L --retry 5 $SPC_CLI_URL/spc_Darwin_x86_64.tar.gz -o /tmp/Darwin/spc_Darwin.tar.gz
 
 cd /tmp/Linux && tar -zxf spc_Linux.tar.gz && mv spc toolbox/ && cd -
-cd /tmp/Darwin && tar -zxf spc_Darwin.tar.gz && mv spc toolbox/ && cd -
 
 #
 # Create linux release
