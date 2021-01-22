@@ -1,7 +1,12 @@
 #!/bin/bash
-SEMAPHORE_PACKAGE_REPOSITORY="http://packages.semaphoreci.com"
+
+install::package_url() {
+
+ echo "http://packages.semaphoreci.com/$(lsb_release -cs)"
+}
+
 install::available() {
-  response=$(curl --write-out %{http_code} --head --silent --output /dev/null $SEMAPHORE_PACKAGE_REPOSITORY/${language}/${language_version}.tar.gz)
+  response=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/${language_version}.tar.gz)
   if [[ $response -ne 200 ]]; then
     echo 1
   else
@@ -10,7 +15,7 @@ install::available() {
 }
 
 install::download() {
-  curl --silent $SEMAPHORE_PACKAGE_REPOSITORY/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
+  curl --silent $(install::package_url)/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
 }
 
 install::install_node() {

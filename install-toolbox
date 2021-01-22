@@ -95,6 +95,13 @@ else
   echo "toolbox_install_error{module='install-package'} 1" >> /tmp/toolbox_metrics
 fi
 
+install_cmd mv ~/.toolbox/artifact $INSTALL_PATH/artifact
+install_cmd chmod +x $INSTALL_PATH/artifact
+if [[ $? -eq 0 ]];then
+  echo "artifacts installed"
+else
+  echo "toolbox_install_error{module='artifacts'} 1" >> /tmp/toolbox_metrics
+fi
 
 echo "Installing the artifacts CLI"
 install_cmd mv ~/.toolbox/artifact $INSTALL_PATH/artifact
@@ -115,6 +122,7 @@ if [[ `uname` != "Darwin" ]]; then
   else
     echo "toolbox_install_error{module='spc'} 1" >> /tmp/toolbox_metrics
   fi
+
 
   echo "Installing the when CLI"
   install_cmd mv ~/.toolbox/when $INSTALL_PATH/when
