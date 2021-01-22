@@ -5,6 +5,7 @@ sudo dscl . -create /Users/sftp UniqueID "1010"
 sudo dscl . -create /Users/sftp PrimaryGroupID 80
 sudo dscl . -create /Users/sftp NFSHomeDirectory /Users/sftp
 
+sudo mkdir -p /Users/sftp
 sudo sh -c 'echo "Subsystem sftp internal-sftp" >> /private/etc/ssh/sshd_config'
 sudo sh -c 'echo "AuthorizedKeysFile  /etc/ssh/authorized_keys/%u" >> /private/etc/ssh/sshd_config'
 sudo mkdir -p /private/etc/ssh/authorized_keys
