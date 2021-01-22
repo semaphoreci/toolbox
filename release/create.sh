@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-ARTIFACT_CLI_VERSION="v0.2.7"
+ARTIFACT_CLI_VERSION="v0.2.8"
 WHEN_CLI_VERSION="v0.0.2-alpha"
 SPC_CLI_VERSION="v1.0.1"
 
@@ -44,8 +44,8 @@ rm -rf /tmp/Darwin/toolbox/tests
 #
 echo "Download Artifact CLI"
 
-curl -s -L --retry 5 $ARTIFACT_CLI_URL/artifact_Linux_x86_64.tar.gz -o /tmp/Linux/artifact_Linux.tar.gz
-curl -s -L --retry 5 $ARTIFACT_CLI_URL/artifact_Darwin_x86_64.tar.gz -o /tmp/Darwin/artifact_Darwin.tar.gz
+curl -s -L --fail --retry 5 $ARTIFACT_CLI_URL/artifact_Linux_x86_64.tar.gz -o /tmp/Linux/artifact_Linux.tar.gz
+curl -s -L --fail --retry 5 $ARTIFACT_CLI_URL/artifact_Darwin_x86_64.tar.gz -o /tmp/Darwin/artifact_Darwin.tar.gz
 
 cd /tmp/Linux && tar -zxf artifact_Linux.tar.gz && mv artifact toolbox/ && cd -
 cd /tmp/Darwin && tar -zxf artifact_Darwin.tar.gz && mv artifact toolbox/ && cd -
@@ -64,7 +64,7 @@ chmod +x /tmp/Linux/toolbox/when
 #
 echo "Download SPC CLI"
 
-curl -s -L --retry 5 $SPC_CLI_URL/spc_Linux_x86_64.tar.gz -o /tmp/Linux/spc_Linux.tar.gz
+curl -s -L --fail --retry 5 $SPC_CLI_URL/spc_Linux_x86_64.tar.gz -o /tmp/Linux/spc_Linux.tar.gz
 
 cd /tmp/Linux && tar -zxf spc_Linux.tar.gz && mv spc toolbox/ && cd -
 
