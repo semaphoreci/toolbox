@@ -50,7 +50,6 @@ else
   echo "toolbox_install_error{module='ssh-session-cli'} 1" >> /tmp/toolbox_metrics
 fi
 
-
 install_cmd ln -sf ~/.toolbox/cache $INSTALL_PATH/cache
 install_cmd chmod +x $INSTALL_PATH/cache
 if [[ $? -eq 0 ]];then
@@ -58,7 +57,6 @@ if [[ $? -eq 0 ]];then
 else
   echo "toolbox_install_error{module='cache'} 1" >> /tmp/toolbox_metrics
 fi
-
 
 install_cmd ln -sf ~/.toolbox/sem-service $INSTALL_PATH/sem-service
 install_cmd chmod +x $INSTALL_PATH/sem-service
@@ -68,7 +66,6 @@ else
   echo "toolbox_install_error{module='sem-service'} 1" >> /tmp/toolbox_metrics
 fi
 
-
 install_cmd ln -sf ~/.toolbox/sem-dockerize $INSTALL_PATH/sem-dockerize
 install_cmd chmod +x $INSTALL_PATH/sem-dockerize
 if [[ $? -eq 0 ]];then
@@ -76,7 +73,6 @@ if [[ $? -eq 0 ]];then
 else
   echo "toolbox_install_error{module='sem-dockerize'} 1" >> /tmp/toolbox_metrics
 fi
-
 
 install_cmd ln -sf ~/.toolbox/sem-service-check-params $INSTALL_PATH/sem-service-check-params
 install_cmd chmod +x $INSTALL_PATH/sem-service-check-params
@@ -93,14 +89,6 @@ if [[ $? -eq 0 ]];then
   echo "install-package installed"
 else
   echo "toolbox_install_error{module='install-package'} 1" >> /tmp/toolbox_metrics
-fi
-
-install_cmd mv ~/.toolbox/artifact $INSTALL_PATH/artifact
-install_cmd chmod +x $INSTALL_PATH/artifact
-if [[ $? -eq 0 ]];then
-  echo "artifacts installed"
-else
-  echo "toolbox_install_error{module='artifacts'} 1" >> /tmp/toolbox_metrics
 fi
 
 echo "Installing the artifacts CLI"

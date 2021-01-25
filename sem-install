@@ -1,7 +1,6 @@
 #!/bin/bash
 
 install::package_url() {
-
  echo "http://packages.semaphoreci.com/$(lsb_release -cs)"
 }
 
