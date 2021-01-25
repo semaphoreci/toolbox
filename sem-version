@@ -216,13 +216,13 @@ version::main() {
     version::metrics version::change_${software} $software_version $force
     fn_status=$?
     if [[ fn_status -ne 0 ]]; then
-      version::err "Failed to switch version.\nLog:\n$log"
+      version::err "Failed to switch version.\n"
       echo "semversion,software=$software,state=fail,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
     else
       echo "semversion,software=$software,state=success,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
       version::log "Switch successful."
     fi
-    return "$fn_status"
+    return 0
   fi
 }
 
