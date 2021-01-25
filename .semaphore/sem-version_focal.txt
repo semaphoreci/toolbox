@@ -1,0 +1,44 @@
+sem-version firefox 52
+firefox --version | grep -q 52
+sem-version firefox 78
+firefox --version | grep -q 78
+sem-version c 10
+gcc --version | grep " 10."
+sem-version cpp 9
+gcc --version | grep " 9."
+sem-version php 7.4.1
+php -v | grep 7.4.1
+sem-version php 7.4
+php -v | grep 7.4
+phpbrew ext install xdebug
+php -m | grep xdebug
+sem-version php 7.4.14
+php -m | grep magick
+php -m | grep gd
+php -m | grep imap
+which composer | grep 7.4.14
+time sem-version node 12.16.1
+node --version | grep 12.16.1
+nodejs --version | grep 12.16.1
+time sem-version node 14
+node --version | grep 14
+sem-version ruby 2.6.1
+ruby --version | grep 2.6.1
+bundler --version | grep 2
+mkdir ruby_test
+echo "2.7.2" > ruby_test/.ruby-version
+cd ruby_test
+ruby --version| grep 2.7.2
+sem-version ruby 2.6.2 -f
+ruby --version| grep 2.6.2
+kubectl version --client
+sem-version kubectl 1.15.3
+kubectl version --client | grep -q 1.15.3
+echo "Erlang version"
+erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+sem-version erlang 23
+erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+sem-version erlang 23.2
+erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+echo "actual scala version"
+scala -version

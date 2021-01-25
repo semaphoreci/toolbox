@@ -22,4 +22,5 @@ case $(uname) in
 esac
 
 bash ~/.toolbox/install-toolbox
-source ~/.toolbox/toolbox
+cat ~/.toolbox/toolbox >> ~/.bash_profile
+source ~/.bash_profile

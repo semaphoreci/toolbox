@@ -50,7 +50,6 @@ else
   echo "toolbox_install_error{module='ssh-session-cli'} 1" >> /tmp/toolbox_metrics
 fi
 
-
 install_cmd ln -sf ~/.toolbox/cache $INSTALL_PATH/cache
 install_cmd chmod +x $INSTALL_PATH/cache
 if [[ $? -eq 0 ]];then
@@ -58,7 +57,6 @@ if [[ $? -eq 0 ]];then
 else
   echo "toolbox_install_error{module='cache'} 1" >> /tmp/toolbox_metrics
 fi
-
 
 install_cmd ln -sf ~/.toolbox/sem-service $INSTALL_PATH/sem-service
 install_cmd chmod +x $INSTALL_PATH/sem-service
@@ -68,7 +66,6 @@ else
   echo "toolbox_install_error{module='sem-service'} 1" >> /tmp/toolbox_metrics
 fi
 
-
 install_cmd ln -sf ~/.toolbox/sem-dockerize $INSTALL_PATH/sem-dockerize
 install_cmd chmod +x $INSTALL_PATH/sem-dockerize
 if [[ $? -eq 0 ]];then
@@ -76,7 +73,6 @@ if [[ $? -eq 0 ]];then
 else
   echo "toolbox_install_error{module='sem-dockerize'} 1" >> /tmp/toolbox_metrics
 fi
-
 
 install_cmd ln -sf ~/.toolbox/sem-service-check-params $INSTALL_PATH/sem-service-check-params
 install_cmd chmod +x $INSTALL_PATH/sem-service-check-params
@@ -94,7 +90,6 @@ if [[ $? -eq 0 ]];then
 else
   echo "toolbox_install_error{module='install-package'} 1" >> /tmp/toolbox_metrics
 fi
-
 
 echo "Installing the artifacts CLI"
 install_cmd mv ~/.toolbox/artifact $INSTALL_PATH/artifact
@@ -115,6 +110,7 @@ if [[ `uname` != "Darwin" ]]; then
   else
     echo "toolbox_install_error{module='spc'} 1" >> /tmp/toolbox_metrics
   fi
+
 
   echo "Installing the when CLI"
   install_cmd mv ~/.toolbox/when $INSTALL_PATH/when

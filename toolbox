@@ -1,3 +1,4 @@
+source ~/.toolbox/sem-install
 source ~/.toolbox/sem-version
 source ~/.toolbox/libcheckout
 source ~/.toolbox/libchecksum
