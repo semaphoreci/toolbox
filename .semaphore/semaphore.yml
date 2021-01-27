@@ -53,7 +53,7 @@ blocks:
       agent:
           machine:
             type: g1-standard-2
-            os_image: ubuntu1804
+            os_image: ubuntu2004
       prologue:
         commands:
           - bash release/install_in_tests.sh
