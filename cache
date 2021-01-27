@@ -682,7 +682,19 @@ cache::lftp_get() {
     duration="$(( end_time - start_time ))"
     cd - &>/dev/null
 
-    test -f /tmp/$key && archive_size="$(stat --format='%s' /tmp/$key)" || archive_size=0
+    case $DIST in
+      Darwin)
+        test -f "/tmp/$key" && archive_size="$(stat -f '%z' /tmp/$key)" || archive_size=0
+        ;;
+      Linux)
+        test -f "/tmp/$key" && archive_size="$(stat --format='%s' /tmp/$key)" || archive_size=0
+       ;;
+      *)
+        echo "Unsupported distro $DIST"
+        exit 1
+      ;;
+    esac
+
     echo "cache_download_size $archive_size" >> /tmp/cache_metrics
     echo "cache_download_time $duration" >> /tmp/cache_metrics
     echo "Cache download time: $duration seconds"
