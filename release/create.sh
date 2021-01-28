@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-ARTIFACT_CLI_VERSION="v0.2.8"
+ARTIFACT_CLI_VERSION="v0.4.2"
 WHEN_CLI_VERSION="v0.0.2-alpha"
 SPC_CLI_VERSION="v1.0.1"
 
