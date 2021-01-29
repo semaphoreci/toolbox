@@ -4,9 +4,9 @@
 
 # Remove installed toolbox
 sudo rm -rf ~/.toolbox
-sudo rm -f $(whereis artifact)
-sudo rm -f $(whereis spc)
-sudo rm -f $(whereis when)
+sudo rm -f $(which artifact)
+sudo rm -f $(which spc)
+sudo rm -f $(which when)
 
 cd ~
 
