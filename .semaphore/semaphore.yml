@@ -40,11 +40,9 @@ blocks:
     task:
       prologue:
         commands:
-          - bash release/install_in_tests.sh
-
-
+          - source release/install_in_tests.sh
       jobs:
-        - name: Sem Version 
+        - name: Sem Version
           commands_file: sem-version_bionic.txt
 
   - name: Sem Version Tests focal
@@ -56,8 +54,7 @@ blocks:
             os_image: ubuntu2004
       prologue:
         commands:
-          - bash release/install_in_tests.sh
-          - source ~/.toolbox/toolbox
+          - source release/install_in_tests.sh
       jobs:
         - name: Sem Version focal
           commands_file: sem-version_focal.txt
@@ -68,7 +65,7 @@ blocks:
     task:
       prologue:
         commands:
-          - bash release/install_in_tests.sh
+          - source release/install_in_tests.sh
 
       jobs:
         - name: Sem service tests
@@ -98,7 +95,7 @@ blocks:
       prologue:
         commands:
           - source tests/sftp_server/start_on_mac.sh
-          - bash release/install_in_tests.sh
+          - source release/install_in_tests.sh
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
 
@@ -128,7 +125,7 @@ blocks:
       prologue:
         commands:
           - source tests/sftp_server/start_on_docker.sh
-          - bash release/install_in_tests.sh
+          - source release/install_in_tests.sh
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
       jobs:
@@ -156,7 +153,7 @@ blocks:
         commands:
           - apk add --update docker openrc
           - source tests/sftp_server/start_on_docker.sh
-          - bash release/install_in_tests.sh
+          - source release/install_in_tests.sh
           - git submodule init && git submodule update
           - ./tests/support/bats-core/install.sh /usr/local
       jobs:
@@ -180,7 +177,7 @@ blocks:
           - sem-version python 3.8
           - sem-version go 1.13
           - sem-version php 7.3.23
-          - bash release/install_in_tests.sh
+          - source release/install_in_tests.sh
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
       jobs:
@@ -194,21 +191,9 @@ blocks:
                 - tests/libcheckout.bats
                 - tests/base.bats
                 - tests/artifacts.bats
+                - tests/compiler.bats
           commands:
             - bats --tap --timing $TEST
-
-  - name: Semaphore Compiler
-    dependencies: []
-    task:
-      prologue:
-        commands:
-          - bash release/install_in_tests.sh
-
-      jobs:
-        - name: Check if installed
-          commands:
-            - which spc
-            - which when
 
 promotions:
   - name: Release
