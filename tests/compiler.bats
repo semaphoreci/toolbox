@@ -3,20 +3,37 @@
 load "support/bats-support/load"
 load "support/bats-assert/load"
 
-@test "compiler can evaluare change_in expressions" {
-  rm -rf /tmp/test-repo
-  cp -R tests/compiler/test-repo /tmp/test-repo
+setup() {
+  unset SEMAPHORE_GIT_REF_TYPE
+  unset SEMAPHORE_GIT_BRANCH
+  unset SEMAPHORE_GIT_COMMIT_RANGE
+  unset SEMAPHORE_GIT_SHA
+  unset SEMAPHORE_MERGE_BASE
+  unset SEMAPHORE_MERGE_BASE
 
-  cd /tmp/test-repo
   git config --global user.email "you@example.com"
   git config --global user.name "Your Name"
-  git init .
+
+  rm -rf /tmp/test-repo-origin
+  rm -rf /tmp/test-repo-clone
+  cp -R tests/compiler/test-repo /tmp/test-repo-origin
+
+  cd /tmp/test-repo-origin
+  git init
   git add .
   git commit -m "Bootstrap"
+  git clone /tmp/test-repo-origin /tmp/test-repo-clone
+  cd -
+}
 
-  run spc --input .semaphore/semaphore.yml --output .semaphore/semaphore.yml.compiler --logs .semaphore/semaphore.yml.logs
+@test "compiler can evaluare change_in expressions" {
+  cd /tmp/test-repo-clone
+
+  run spc evaluate change-in --input .semaphore/semaphore.yml --output .semaphore/semaphore.yml.compiler --logs .semaphore/semaphore.yml.logs
   assert_success
 
   run cat .semaphore/semaphore.yml.compiler
-  assert_output "adasdas"
+  assert_output --partial "(branch = 'master') and false"
+
+  cd -
 }
