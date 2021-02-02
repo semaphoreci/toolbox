@@ -45,21 +45,6 @@ blocks:
         - name: Sem Version
           commands_file: sem-version_bionic.txt
 
-  - name: Sem Version Tests focal
-    dependencies: []
-    task:
-      agent:
-          machine:
-            type: g1-standard-2
-            os_image: ubuntu2004
-      prologue:
-        commands:
-          - source release/install_in_tests.sh
-      jobs:
-        - name: Sem Version focal
-          commands_file: sem-version_focal.txt
-
-
   - name: Sem Service Tests
     dependencies: []
     task:
