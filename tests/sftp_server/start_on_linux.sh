@@ -8,7 +8,7 @@ sleep 2
 cp tests/sftp_server/id_rsa ~/.ssh/semaphore_cache_key
 chmod 0600 ~/.ssh/semaphore_cache_key
 
-ssh-keyscan -p 9000 -H localhost >> ~/.ssh/known_hosts
+ssh-keyscan -p 9000 -H 127.0.0.1 >> ~/.ssh/known_hosts
 
-export SEMAPHORE_CACHE_URL=localhost:9000
+export SEMAPHORE_CACHE_URL="127.0.0.1:9000"
 export SEMAPHORE_CACHE_USERNAME=tester
