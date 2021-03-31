@@ -5,10 +5,12 @@ set -euo pipefail
 ARTIFACT_CLI_VERSION="v0.4.4"
 WHEN_CLI_VERSION="v1.0.5"
 SPC_CLI_VERSION="v1.6.0"
+TEST_RESULTS_CLI_VERSION="v0.0.4"
 
 ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
 SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSION"
 WHEN_CLI_URL="https://github.com/renderedtext/when/releases/download/$WHEN_CLI_VERSION"
+TEST_RESULTS_CLI_URL="https://github.com/semaphoreci/test-results/releases/download/$TEST_RESULTS_CLI_VERSION"
 
 #
 # Create release dirs
@@ -67,6 +69,17 @@ echo "Download SPC CLI"
 curl -s -L --fail --retry 5 $SPC_CLI_URL/spc_Linux_x86_64.tar.gz -o /tmp/Linux/spc_Linux.tar.gz
 
 cd /tmp/Linux && tar -zxf spc_Linux.tar.gz && mv spc toolbox/ && cd -
+
+#
+# Download and add Test Results CLI to the release
+#
+echo "Download Test Results CLI"
+
+curl -s -L --fail --retry 5 $TEST_RESULTS_CLI_URL/test-results_Linux_x86_64.tar.gz -o /tmp/Linux/test-results_Linux.tar.gz
+curl -s -L --fail --retry 5 $TEST_RESULTS_CLI_URL/test-results_Darwin_x86_64.tar.gz -o /tmp/Darwin/test-results_Darwin.tar.gz
+
+cd /tmp/Linux && tar -zxf test-results_Linux.tar.gz && mv test-results toolbox/ && cd -
+cd /tmp/Darwin && tar -zxf test-results_Darwin.tar.gz && mv test-results toolbox/ && cd -
 
 #
 # Create linux release
