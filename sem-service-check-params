@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
 params-check::mysql () {
-  default_params='--net=host --rm -d -e MYSQL_ALLOW_EMPTY_PASSWORD=true -v /var/tmp/mysql:/var/lib/mysql --name mysql -v /var/run/mysqld:/var/run/mysqld '
+  default_params='--net=host --rm -d  -v /var/tmp/mysql:/var/lib/mysql --name mysql -v /var/run/mysqld:/var/run/mysqld '
   service_version="5.6"
   sudo mkdir -p /var/run/mysqld ; sudo chmod -R 0777 /var/run/mysqld
   sudo mkdir -p /var/tmp/mysqld ; sudo chmod -R 0777 /var/tmp/mysqld
   params=""
+  local password="";
+  local username="";
+  local db=" -e MYSQL_DATABASE=test ";
   if [ "${1:0:1}" == "-" ];then
     params="$@"
   else
@@ -13,26 +16,37 @@ params-check::mysql () {
     tmp="${@:2}"
     params="${tmp:-$default_params}"
   fi
+
   if [ "$default_params" != "$params" ];then
-    username=""; password=""; db=" -e MYSQL_DATABASE="; dbname="";
     for words in $params; do
       case $words in
        --username=* )
-         username=" -e MYSQL_USER=$(echo $words|cut -d'=' -f2) "
+         username="$(echo $words|cut -d'=' -f2)"
        ;;
        --password=* )
-         password=" -e MYSQL_PASSWORD=$(echo $words|cut -d'=' -f2) "
+         password="$(echo $words|cut -d'=' -f2)"
        ;;
        --db=* )
-         dbname=$(echo $words|cut -d'=' -f2)
+         db="  -e MYSQL_DATABASE=$(echo $words|cut -d'=' -f2) "
        ;;
        *)
        ;;
       esac
     done
-    dbname=${dbname:-'test'}
-    [ "$username$password" ] && default_params="$default_params$username$password$db$dbname "
   fi
+  if [ "$username" = "" ] || [ "$username" = "root" ]; then
+    username=""
+    if [ "$password" ]; then 
+      password=" -e MYSQL_ROOT_PASSWORD=$password "
+    else
+      password=" -e MYSQL_ALLOW_EMPTY_PASSWORD=yes "
+    fi
+  else
+    username=" -e MYSQL_USER=$username "
+    password=" -e MYSQL_PASSWORD=$password  -e MYSQL_ALLOW_EMPTY_PASSWORD=yes "
+  fi
+
+  default_params="$default_params$username$password$db "
   echo "$service_version $default_params"
 }
 

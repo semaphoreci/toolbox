@@ -14,4 +14,7 @@ mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
 mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.7
 sem-service status mysql
 sem-service stop mysql
-sem-service start mysql 8.0.19 --username=test --password=test --garbage else || true
+sem-service start mysql 8 --username=test --password=test --garbage else || true
+sem-service stop mysql
+sem-service start mysql --username=root --password=root
+sem-service status mysql
