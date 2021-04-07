@@ -50,8 +50,9 @@ blocks:
     task:
       prologue:
         commands:
+          - source release/create.sh
+          - cd ~/$SEMAPHORE_GIT_DIR/
           - source release/install_in_tests.sh
-
       jobs:
         - name: Sem service tests
           matrix:
