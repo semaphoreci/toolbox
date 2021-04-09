@@ -60,7 +60,6 @@ cache::current_timestamp_in_milis() {
 }
 
 cache::autostore() {
-
   cache::log "==> Detecting project structure and storing into cache."
   for lockfile in "${LOCKFILES[@]}"; do
     if [[ -f $lockfile ]]; then
@@ -217,7 +216,6 @@ cache::autostore() {
 }
 
 cache::autorestore() {
-
   cache::log "==> Detecting project structure and fetching cache."
   for lockfile in "${LOCKFILES[@]}"; do
     if [[ -f $lockfile ]]; then
@@ -305,6 +303,10 @@ cache::autorestore() {
   done
 }
 
+cache::parse_namespace_argument {
+
+}
+
 ################################################################################
 # Send the files identified by the key, to the cache repository using LFTP
 # Globals:
@@ -316,6 +318,22 @@ cache::autorestore() {
 #   None
 ################################################################################
 cache::store() {
+  cache::parse_namespace_argument
+
+  if [[ $# -eq 0 ]]; then
+    cache::autostore
+  elif [[ $# -ne 2 ]]; then
+    cache::show_store_usage
+    cache::err "Incorrect number of arguments!"
+  else
+    SEMAPHORE_LOCAL_CACHE_PATHS=$2
+    SEMAPHORE_CACHE_KEY=$(cache::normalize_string $1)
+
+    cache::lftp_put
+  fi
+}
+
+cache::show_store_usage() {
   local usage
 
   usage='
@@ -326,17 +344,7 @@ Example:
       cache store bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock) vendor/bundle
 '
 
-  if [[ $# -eq 0 ]]; then
-    cache::autostore
-  elif [[ $# -ne 2 ]]; then
-    cache::log "${usage}"
-    cache::err "Incorrect number of arguments!"
-  else
-    SEMAPHORE_LOCAL_CACHE_PATHS=$2
-    SEMAPHORE_CACHE_KEY=$(cache::normalize_string $1)
-
-    cache::lftp_put
-  fi
+  cache::log "${usage}"
 }
 
 cache::allocate_space() {
