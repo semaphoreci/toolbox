@@ -303,8 +303,43 @@ cache::autorestore() {
   done
 }
 
-cache::parse_namespace_argument {
+#
+# Extract's the --namespace argument from the cache store/restore commands
+# This function modifes the ARGV array $@.
+#
+# 1. If the $@ is "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle --namespace test"
+#    After running this function, it will be: "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
+#    CACHE_NAMESPACE will be set to "test"
+#
+# 2. If the $@ is "store --namespace test bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
+#    After running this function, it will be: "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
+#    CACHE_NAMESPACE will be set to "test"
+#
+# 3. If the $@ is "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
+#    After running this function, it will be: "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
+#    CACHE_NAMESPACE will not be set.
+#
+cache::extract_namespace_argument() {
+  POSITIONAL=()
 
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+
+    case $key in
+      --namespace)
+        CACHE_NAMESPACE="$2"
+        shift # past argument
+        shift # past value
+        ;;
+
+      *)    # unknown option
+        POSITIONAL+=("$1") # save it in an array for later
+        shift # past argument
+        ;;
+    esac
+  done
+
+  set -- "${POSITIONAL[@]}" # restore positional parameters
 }
 
 ################################################################################
@@ -318,7 +353,7 @@ cache::parse_namespace_argument {
 #   None
 ################################################################################
 cache::store() {
-  cache::parse_namespace_argument
+  cache::extract_namespace_argument
 
   if [[ $# -eq 0 ]]; then
     cache::autostore
@@ -327,7 +362,8 @@ cache::store() {
     cache::err "Incorrect number of arguments!"
   else
     SEMAPHORE_LOCAL_CACHE_PATHS=$2
-    SEMAPHORE_CACHE_KEY=$(cache::normalize_string $1)
+    SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace $1)
+    SEMAPHORE_CACHE_KEY=$(cache::normalize_string $SEMAPHORE_CACHE_KEY)
 
     cache::lftp_put
   fi
@@ -456,6 +492,8 @@ cache::lftp_put() {
 #   None
 ################################################################################
 cache::restore() {
+  cache::extract_namespace_argument
+
   local usage
   local semaphore_cache_keys
 
@@ -479,7 +517,9 @@ Fallback example:
     cache::download "keys" "/tmp/cache_keys_$$"
 
     for key in ${semaphore_cache_keys//,/ }; do
-      cache_key=$(cache::normalize_string $key)
+      cache_key=$(cache::cache_key_with_namespace $key)
+      cache_key=$(cache::normalize_string $cache_key)
+
       match=$(grep -m 1 ${cache_key} /tmp/cache_keys_$$)
 
       if [[ ! -z "${match}" ]]; then
@@ -501,6 +541,22 @@ Fallback example:
     done
 
     rm -f /tmp/cache_keys_$$
+  fi
+}
+
+#
+# Input: a cache key.
+# Output: a cache key with namespace, if namespace is set.
+#
+cache::cache_key_with_namespace() {
+  if [[ ! -z "$CACHE_NAMESPACE" ]]; then
+    # If CACHE_NAMESPACE is not set, return cache_key without modifications.
+
+    echo "${cache_key}"
+  else
+    # If CACHE_NAMESPACE is set, prepend the cache key.
+
+    echo "${CACHE_NAMESPACE}-${cache_key}"
   fi
 }
 
