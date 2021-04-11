@@ -303,45 +303,6 @@ cache::autorestore() {
   done
 }
 
-#
-# Extract's the --namespace argument from the cache store/restore commands
-# This function modifes the ARGV array $@.
-#
-# 1. If the $@ is "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle --namespace test"
-#    After running this function, it will be: "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
-#    CACHE_NAMESPACE will be set to "test"
-#
-# 2. If the $@ is "store --namespace test bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
-#    After running this function, it will be: "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
-#    CACHE_NAMESPACE will be set to "test"
-#
-# 3. If the $@ is "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
-#    After running this function, it will be: "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
-#    CACHE_NAMESPACE will not be set.
-#
-cache::extract_namespace_argument() {
-  POSITIONAL=()
-
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-
-    case $key in
-      --namespace)
-        CACHE_NAMESPACE="$2"
-        shift # past argument
-        shift # past value
-        ;;
-
-      *)    # unknown option
-        POSITIONAL+=("$1") # save it in an array for later
-        shift # past argument
-        ;;
-    esac
-  done
-
-  set -- "${POSITIONAL[@]}" # restore positional parameters
-}
-
 ################################################################################
 # Send the files identified by the key, to the cache repository using LFTP
 # Globals:
@@ -354,7 +315,7 @@ cache::extract_namespace_argument() {
 ################################################################################
 cache::store() {
   if [[ $# -eq 0 ]]; then
-    cache::autostore
+    cache::autostore "$@"
   elif [[ $# -ne 2 ]]; then
     cache::show_store_usage
     cache::err "Incorrect number of arguments!"
@@ -503,7 +464,7 @@ Fallback example:
 '
 
   if [[ $# -eq 0 ]]; then
-    cache::autorestore
+    cache::autorestore "$@"
   elif [[ $# -ne 1 ]]; then
     cache::log "${usage}"
     cache::err "Incorrect number of arguments!"
@@ -1049,13 +1010,7 @@ cache::log() {
   fi
 }
 
-cache::main() {
-  cache::check_lftp
-  # cache::check_ssh_key
-  cache::check_env
-
-  cache::extract_namespace_argument "$@"
-
+cache::run_command() {
   case "$1" in
     "restore" )
       shift
@@ -1101,6 +1056,62 @@ cache::main() {
       cache::print_usage
       ;;
   esac
+}
+
+cache::main() {
+  cache::check_lftp
+  cache::check_env
+
+  #
+  # Parsing parameters.
+  # This part of the code modifies the $@, it can't be extracted into a function.
+  #
+  # In the upcomming code we are extracting the --namespace argument from the
+  # command line args ($@).
+  #
+  # Examples:
+  #
+  # 1. If the $@ is "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle --namespace test"
+  #    After running this function, it will be: "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
+  #    CACHE_NAMESPACE will be set to "test"
+  #
+  # 2. If the $@ is "store --namespace test bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
+  #    After running this function, it will be: "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
+  #    CACHE_NAMESPACE will be set to "test"
+  #
+  # 3. If the $@ is "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
+  #    After running this function, it will be: "store bundle-$SEMAPHORE_GIT_BRANCH vendor/bundle"
+  #    CACHE_NAMESPACE will not be set.
+  #
+
+  POSITIONAL=()
+
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+
+    case $key in
+      --namespace)
+        CACHE_NAMESPACE="$2"
+        shift # remove argument from $@
+        shift # remove value from $@
+        ;;
+
+      *)                      # unknown option
+        POSITIONAL+=("$1")    # save it in an array for later
+        shift                 # remove positional argument from $@
+        ;;
+    esac
+  done
+
+  # Sets the content of $@ to what remained in $POSITIONAL.
+  # Read this part of the code as $@=$POSITIONAL.
+  set -- "${POSITIONAL[@]}"
+
+  #
+  # Flags parsed.
+  # Running cache subcommand.
+  #
+  cache::run_command "$@"
 }
 
 cache::main "$@"
