@@ -353,8 +353,6 @@ cache::extract_namespace_argument() {
 #   None
 ################################################################################
 cache::store() {
-  cache::extract_namespace_argument
-
   if [[ $# -eq 0 ]]; then
     cache::autostore
   elif [[ $# -ne 2 ]]; then
@@ -362,8 +360,7 @@ cache::store() {
     cache::err "Incorrect number of arguments!"
   else
     SEMAPHORE_LOCAL_CACHE_PATHS=$2
-    SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace $1)
-    SEMAPHORE_CACHE_KEY=$(cache::normalize_string $SEMAPHORE_CACHE_KEY)
+    SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "$1")
 
     cache::lftp_put
   fi
@@ -492,8 +489,6 @@ cache::lftp_put() {
 #   None
 ################################################################################
 cache::restore() {
-  cache::extract_namespace_argument
-
   local usage
   local semaphore_cache_keys
 
@@ -517,8 +512,7 @@ Fallback example:
     cache::download "keys" "/tmp/cache_keys_$$"
 
     for key in ${semaphore_cache_keys//,/ }; do
-      cache_key=$(cache::cache_key_with_namespace $key)
-      cache_key=$(cache::normalize_string $cache_key)
+      cache_key=$(cache::cache_key_with_namespace "$key")
 
       match=$(grep -m 1 ${cache_key} /tmp/cache_keys_$$)
 
@@ -552,11 +546,11 @@ cache::cache_key_with_namespace() {
   if [[ ! -z "$CACHE_NAMESPACE" ]]; then
     # If CACHE_NAMESPACE is not set, return cache_key without modifications.
 
-    echo "${cache_key}"
+    cache::normalize_string "$cache_key"
   else
     # If CACHE_NAMESPACE is set, prepend the cache key.
 
-    echo "${CACHE_NAMESPACE}-${cache_key}"
+    cache::normalize_string "${CACHE_NAMESPACE}-${cache_key}"
   fi
 }
 
@@ -609,7 +603,7 @@ cache::delete() {
   elif [[ $# -ne 1 ]]; then
     cache::err "Incorrect number of arguments!"
   else
-    key=$(cache::normalize_string $1)
+    key=$(cache::cache_key_with_namespace "$1")
 
     if cache::file_is_present ${key}; then
       cache::lftp "glob rm -f ${key}"
@@ -635,7 +629,7 @@ cache::has_key() {
   elif [[ $# -ne 1 ]]; then
     cache::err "Incorrect number of arguments!"
   else
-    key=$(cache::normalize_string $1)
+    key=$(cache::cache_key_with_namespace "$1")
 
     if cache::file_is_present ${key}
     then
@@ -1063,6 +1057,8 @@ cache::main() {
   cache::check_lftp
   # cache::check_ssh_key
   cache::check_env
+
+  cache::extract_namespace_argument "$@"
 
   case "$1" in
     "restore" )
