@@ -544,13 +544,9 @@ Fallback example:
 #
 cache::cache_key_with_namespace() {
   if [[ ! -z "$CACHE_NAMESPACE" ]]; then
-    # If CACHE_NAMESPACE is not set, return cache_key without modifications.
-
-    cache::normalize_string "$cache_key"
+    cache::normalize_string "${CACHE_NAMESPACE}-$1"
   else
-    # If CACHE_NAMESPACE is set, prepend the cache key.
-
-    cache::normalize_string "${CACHE_NAMESPACE}-${cache_key}"
+    cache::normalize_string "$1"
   fi
 }
 
