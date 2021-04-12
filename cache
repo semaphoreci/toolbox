@@ -70,7 +70,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.nvm"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace nvm-$SEMAPHORE_GIT_BRANCH-$(checksum .nvmrc))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "nvm-$SEMAPHORE_GIT_BRANCH-$(checksum .nvmrc)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -82,7 +82,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor/bundle"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -94,7 +94,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -106,7 +106,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.cache/yarn"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace yarn-cache-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "yarn-cache-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -114,7 +114,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -126,7 +126,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="deps"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -134,7 +134,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="_build"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -146,7 +146,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS=".pip_cache"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -158,7 +158,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -170,7 +170,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS=".m2"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -178,7 +178,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="target"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -190,7 +190,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="Pods"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -202,7 +202,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/go/pkg/mod"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
-              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum))
+              SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum)")
               cache::lftp_put
             else
               cache::log "* WARNING!!! Default cache path: $SEMAPHORE_LOCAL_CACHE_PATHS not found, nothing to store in cache."
@@ -225,76 +225,76 @@ cache::autorestore() {
             cache::log "* Detected $lockfile."
             cache::log "* Fetching '~/.nvm' directory with cache keys 'nvm-${SEMAPHORE_GIT_BRANCH}-$(checksum .nvmrc),nvm-${SEMAPHORE_GIT_BRANCH},nvm-master'."
             SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.nvm"
-            cache::restore nvm-${SEMAPHORE_GIT_BRANCH}-$(checksum .nvmrc),nvm-${SEMAPHORE_GIT_BRANCH},nvm-master
+            cache::restore "nvm-${SEMAPHORE_GIT_BRANCH}-$(checksum .nvmrc),nvm-${SEMAPHORE_GIT_BRANCH},nvm-master"
             ;;
           "Gemfile.lock")
             cache::log
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'vendor/bundle' directory with cache keys 'gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock),gems-$SEMAPHORE_GIT_BRANCH-,gems-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor/bundle"
-            cache::restore gems-${SEMAPHORE_GIT_BRANCH}-$(checksum Gemfile.lock),gems-${SEMAPHORE_GIT_BRANCH},gems-master
+            cache::restore "gems-${SEMAPHORE_GIT_BRANCH}-$(checksum Gemfile.lock),gems-${SEMAPHORE_GIT_BRANCH},gems-master"
             ;;
           "package-lock.json")
             cache::log
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'node_modules' directory with cache keys 'node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json),node-modules-$SEMAPHORE_GIT_BRANCH-,node-modules-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
-            cache::restore node-modules-${SEMAPHORE_GIT_BRANCH}-$(checksum package-lock.json),node-modules-${SEMAPHORE_GIT_BRANCH}-,node-modules-master-
+            cache::restore "node-modules-${SEMAPHORE_GIT_BRANCH}-$(checksum package-lock.json),node-modules-${SEMAPHORE_GIT_BRANCH}-,node-modules-master-"
             ;;
           "yarn.lock")
             cache::log "\n"
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'semaphore/.cache/yarn' directory with cache keys 'yarn-cache-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock),yarn-cache-$SEMAPHORE_GIT_BRANCH-,yarn-cache-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.cache/yarn"
-            cache::restore yarn-cache-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),yarn-cache-${SEMAPHORE_GIT_BRANCH}-,yarn-cache-master-
+            cache::restore "yarn-cache-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),yarn-cache-${SEMAPHORE_GIT_BRANCH}-,yarn-cache-master-"
             cache::log "* Fetching 'node_modules' directory with cache keys 'node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock),node-modules-$SEMAPHORE_GIT_BRANCH-,node-modules-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
-            cache::restore node-modules-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),node-modules-${SEMAPHORE_GIT_BRANCH}-,node-modules-master-
+            cache::restore "node-modules-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),node-modules-${SEMAPHORE_GIT_BRANCH}-,node-modules-master-"
             ;;
           "mix.lock")
             cache::log
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'deps' directory with cache keys mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-deps-$SEMAPHORE_GIT_BRANCH,mix-deps-master"
-            cache::restore mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-deps-$SEMAPHORE_GIT_BRANCH,mix-deps-master
+            cache::restore "mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-deps-$SEMAPHORE_GIT_BRANCH,mix-deps-master"
             cache::log "* Fetching '_build' directory with cache keys mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-build-$SEMAPHORE_GIT_BRANCH,mix-build-master"
-            cache::restore mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-build-$SEMAPHORE_GIT_BRANCH,mix-build-master
+            cache::restore "mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-build-$SEMAPHORE_GIT_BRANCH,mix-build-master"
             ;;
           "requirements.txt")
             cache::log
             cache::log "* Detected $lockfile."
             cache::log "* Fetching '.pip_cache' directory with cache keys 'requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),requirements-$SEMAPHORE_GIT_BRANCH-,requirements-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor/bundle"
-            cache::restore requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),requirements-$SEMAPHORE_GIT_BRANCH,requirements-master
+            cache::restore "requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),requirements-$SEMAPHORE_GIT_BRANCH,requirements-master"
             ;;
           "composer.lock")
             cache::log
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'vendor' directory with cache keys 'composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH-,composer-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
-            cache::restore composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH,composer-master
+            cache::restore "composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH,composer-master"
             ;;
           "pom.xml")
             cache::log
             cache::log "* Detected $lockfile."
             cache::log "* Fetching '.m2' directory with cache keys 'cache restore maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master'."
             SEMAPHORE_LOCAL_CACHE_PATHS=".m2"
-            cache::restore maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master
+            cache::restore "maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master"
             cache::log "* Fetching 'target' directory with cache keys maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-target-$SEMAPHORE_GIT_BRANCH,maven-target-master"
-            cache::restore maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-target-$SEMAPHORE_GIT_BRANCH,maven-target-master
+            cache::restore "maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-target-$SEMAPHORE_GIT_BRANCH,maven-target-master"
             ;;
           "Podfile.lock")
             cache::log
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'Pods' directory with cache keys 'pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),pods-$SEMAPHORE_GIT_BRANCH-,pods-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
-            cache::restore pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),pods-$SEMAPHORE_GIT_BRANCH-,pods-master-
+            cache::restore "pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),pods-$SEMAPHORE_GIT_BRANCH-,pods-master-"
             ;;
           "go.sum")
             cache::log
             cache::log "* Detected $lockfile."
             cache::log "* Fetching 'Pods' directory with cache keys 'go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum),go-$SEMAPHORE_GIT_BRANCH-,go-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/go/pkg/mod"
-            cache::restore go-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),go-$SEMAPHORE_GIT_BRANCH-,go-master-
+            cache::restore "go-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),go-$SEMAPHORE_GIT_BRANCH-,go-master-"
             ;;
           *)
             cache::log "* Nothing to fetch from cache";;
@@ -314,20 +314,6 @@ cache::autorestore() {
 #   None
 ################################################################################
 cache::store() {
-  if [[ $# -eq 0 ]]; then
-    cache::autostore "$@"
-  elif [[ $# -ne 2 ]]; then
-    cache::show_store_usage
-    cache::err "Incorrect number of arguments!"
-  else
-    SEMAPHORE_LOCAL_CACHE_PATHS=$2
-    SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "$1")
-
-    cache::lftp_put
-  fi
-}
-
-cache::show_store_usage() {
   local usage
 
   usage='
@@ -338,7 +324,17 @@ Example:
       cache store bundle-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock) vendor/bundle
 '
 
-  cache::log "${usage}"
+  if [[ $# -eq 0 ]]; then
+    cache::autostore "$@"
+  elif [[ $# -ne 2 ]]; then
+    cache::log "${usage}"
+    cache::err "Incorrect number of arguments!"
+  else
+    SEMAPHORE_LOCAL_CACHE_PATHS=$2
+    SEMAPHORE_CACHE_KEY=$(cache::cache_key_with_namespace "$1")
+
+    cache::lftp_put
+  fi
 }
 
 cache::allocate_space() {
@@ -350,9 +346,9 @@ cache::allocate_space() {
   archive_size=$1
 
   file="/tmp/keys_data_$$"
-  cache::save_command_output "cls --sort=date -l" $file
-  echo -e "$(cat $file | awk '{print $5}')" > "/tmp/usage_data_$$"
-  echo -e "$(cat $file | awk '{print $5, $9}')" > "/tmp/size_key_$$"
+  cache::save_command_output "cls --sort=date -l" "$file"
+  echo -e "$(cat "$file" | awk '{print $5}')" > "/tmp/usage_data_$$"
+  echo -e "$(cat "$file" | awk '{print $5, $9}')" > "/tmp/size_key_$$"
 
   used_space=$(cache::used_space "/tmp/usage_data_$$")
   free_space=$(cache::free_space ${used_space})
@@ -383,10 +379,10 @@ cache::delete_oldest_key() {
  cache::warn "Key ${key} is deleted."
  case $DIST in
    Darwin)
-     sed -i "" '$d' $file
+     sed -i "" '$d' "$file"
      ;;
    Linux)
-     sed -i '$d' $file
+     sed -i '$d' "$file"
     ;;
    *)
      echo "Unsupported distro $DIST"
@@ -536,9 +532,9 @@ cache::usage() {
   local file
 
   file="/tmp/usage_data_$$"
-  cache::download "usage" $file
+  cache::download "usage" "$file"
 
-  used_space=$(cache::used_space $file)
+  used_space=$(cache::used_space "$file")
   free_space=$(cache::free_space ${used_space})
 
   hr_used_space=$(numfmt --to=iec ${used_space})
@@ -547,7 +543,7 @@ cache::usage() {
   cache::log "FREE SPACE: ${hr_free_space}"
   cache::log "USED SPACE: ${hr_used_space}"
 
-  rm -f $file
+  rm -f "$file"
 }
 
 cache::delete() {
@@ -611,7 +607,7 @@ cache::save_command_output() {
 
   output=$(echo -e "${command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
 
-  echo -e "$output" > $file
+  echo -e "$output" > "$file"
 }
 
 cache::download() {
@@ -624,14 +620,14 @@ cache::download() {
     "keys" )
       command="cls --sort=date"
 
-      cache::save_command_output "$command" $file
+      cache::save_command_output "$command" "$file"
 
       ;;
     "usage" )
       command="cls --sort=date -l"
 
-      cache::save_command_output "${command}" $file
-      echo -e "$(cat $file | awk '{print $5}')" > $file
+      cache::save_command_output "${command}" "$file"
+      echo -e "$(cat "$file" | awk '{print $5}')" > "$file"
 
       ;;
     "list" )
@@ -639,8 +635,8 @@ cache::download() {
 
       cache::save_command_output "$command" "${file}_tmp"
 
-      printf "%-70s \t %10s \t %-10s\n" "KEY" "SIZE" "STORED AT" > $file
-      echo -e "$(cat ${file}_tmp)" | awk '{ printf("%-70s \t %10s \t %-4s %2s %s\n", $9, $5, $6, $7, $8); }' | numfmt --field 2 --to=iec >> $file
+      printf "%-70s \t %10s \t %-10s\n" "KEY" "SIZE" "STORED AT" > "$file"
+      echo -e "$(cat ${file}_tmp)" | awk '{ printf("%-70s \t %10s \t %-4s %2s %s\n", $9, $5, $6, $7, $8); }' | numfmt --field 2 --to=iec >> "$file"
 
       rm -f ${file}_tmp
 
@@ -657,7 +653,7 @@ cache::used_space() {
 
   while read line; do
     if [[ ! -z "$line" ]]; then sum=$((sum + $line)); fi
-  done < $file
+  done < "$file"
 
   echo "$sum"
 }
@@ -841,17 +837,17 @@ cache::lftp() {
 cache::calculate_key_md5() {
   if [[ -f $SEMAPHORE_CACHE_KEY ]]; then
     cache::log "Cache key is a file. Calculating md5 hash..."
-    SEMAPHORE_CACHE_KEY_MD5=$(md5sum ${SEMAPHORE_CACHE_KEY})
+    SEMAPHORE_CACHE_KEY_MD5=$(md5sum "${SEMAPHORE_CACHE_KEY}")
   else
     cache::log "Cache key is a string. Calculating md5 hash..."
-    SEMAPHORE_CACHE_KEY_MD5=$(echo ${SEMAPHORE_CACHE_KEY} | md5sum)
+    SEMAPHORE_CACHE_KEY_MD5=$(echo "${SEMAPHORE_CACHE_KEY}" | md5sum)
   fi
 
 
   if [[ $? -ne 0 ]]; then
     cache::err "Failed to generate md5 sum for the provided key. (${SEMAPHORE_CACHE_KEY})"
   else
-    SEMAPHORE_CACHE_KEY_MD5=$(echo $SEMAPHORE_CACHE_KEY_MD5 | cut -d' ' -f1)
+    SEMAPHORE_CACHE_KEY_MD5=$(echo "$SEMAPHORE_CACHE_KEY_MD5" | cut -d' ' -f1)
 
     cache::log "md5 hash: ${SEMAPHORE_CACHE_KEY_MD5}"
   fi
@@ -1087,9 +1083,7 @@ cache::main() {
   POSITIONAL=()
 
   while [[ $# -gt 0 ]]; do
-    key="$1"
-
-    case $key in
+    case "$1" in
       --namespace)
         CACHE_NAMESPACE="$2"
         shift # remove argument from $@
