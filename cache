@@ -133,7 +133,7 @@ cache::autostore() {
             ;;
 
           "pom.xml")
-            cache::autostore_one_path ".m2" "${prefix}maven-target-${suffix}"
+            cache::autostore_one_path ".m2" "${prefix}maven-m2-${suffix}"
             cache::autostore_one_path "target" "${prefix}maven-target-${suffix}"
             ;;
 
@@ -166,6 +166,16 @@ cache::autostore_one_path() {
   fi
 }
 
+cache::autorestore_one_path() {
+  local_path="$1"
+  cache_keys="$2"
+
+  cache::log "* Fetching '$local_path' directory with cache keys '$cache_keys'."
+
+  SEMAPHORE_LOCAL_CACHE_PATHS="$local_path"
+  cache::restore "$cache_keys"
+}
+
 cache::autorestore() {
   let prefix
   prefix=$(cache::autocache_key_prefix "$(pwd)")
@@ -174,83 +184,53 @@ cache::autorestore() {
 
   for lockfile in "${LOCKFILES[@]}"; do
     if [[ -f $lockfile ]]; then
+        cache::log
+        cache::log "* Detected $lockfile."
+
         case $lockfile in
           ".nvmrc")
-            cache::log
-            cache::log "* Detected $lockfile."
-            cache::log "* Fetching '~/.nvm' directory with cache keys 'nvm-${SEMAPHORE_GIT_BRANCH}-$(checksum .nvmrc),nvm-${SEMAPHORE_GIT_BRANCH},nvm-master'."
-            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.nvm"
-            cache::restore "${prefix}nvm-${SEMAPHORE_GIT_BRANCH}-$(checksum .nvmrc),${prefix}nvm-${SEMAPHORE_GIT_BRANCH},${prefix}nvm-master"
+            cache::autorestore_one_path "$HOME/.nvm" "${prefix}nvm-${SEMAPHORE_GIT_BRANCH}-$(checksum .nvmrc),${prefix}nvm-${SEMAPHORE_GIT_BRANCH},${prefix}nvm-master"
             ;;
+
           "Gemfile.lock")
-            cache::log
-            cache::log "* Detected $lockfile."
-            cache::log "* Fetching 'vendor/bundle' directory with cache keys 'gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock),gems-$SEMAPHORE_GIT_BRANCH-,gems-master-'."
-            SEMAPHORE_LOCAL_CACHE_PATHS="vendor/bundle"
-            cache::restore "${prefix}gems-${SEMAPHORE_GIT_BRANCH}-$(checksum Gemfile.lock),${prefix}gems-${SEMAPHORE_GIT_BRANCH},${prefix}gems-master"
+            cache::autorestore_one_path "vendor/bundle" "${prefix}gems-${SEMAPHORE_GIT_BRANCH}-$(checksum Gemfile.lock),${prefix}gems-${SEMAPHORE_GIT_BRANCH},${prefix}gems-master"
             ;;
+
           "package-lock.json")
-            cache::log
-            cache::log "* Detected $lockfile."
-            cache::log "* Fetching 'node_modules' directory with cache keys 'node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json),node-modules-$SEMAPHORE_GIT_BRANCH-,node-modules-master-'."
-            SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
-            cache::restore "${prefix}node-modules-${SEMAPHORE_GIT_BRANCH}-$(checksum package-lock.json),${prefix}node-modules-${SEMAPHORE_GIT_BRANCH}-,${prefix}node-modules-master-"
+            cache::autorestore_one_path "node_modules" "${prefix}node-modules-${SEMAPHORE_GIT_BRANCH}-$(checksum package-lock.json),${prefix}node-modules-${SEMAPHORE_GIT_BRANCH}-,${prefix}node-modules-master-"
             ;;
+
           "yarn.lock")
-            cache::log "\n"
-            cache::log "* Detected $lockfile."
-            cache::log "* Fetching 'semaphore/.cache/yarn' directory with cache keys 'yarn-cache-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock),yarn-cache-$SEMAPHORE_GIT_BRANCH-,yarn-cache-master-'."
-            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/.cache/yarn"
-            cache::restore "${prefix}yarn-cache-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),${prefix}yarn-cache-${SEMAPHORE_GIT_BRANCH}-,${prefix}yarn-cache-master-"
-            cache::log "* Fetching 'node_modules' directory with cache keys 'node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum yarn.lock),node-modules-$SEMAPHORE_GIT_BRANCH-,node-modules-master-'."
-            SEMAPHORE_LOCAL_CACHE_PATHS="node_modules"
-            cache::restore "${prefix}node-modules-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),${prefix}node-modules-${SEMAPHORE_GIT_BRANCH}-,${prefix}node-modules-master-"
+            cache::autorestore_one_path "$HOME/.cache/yarn" "${prefix}yarn-cache-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),${prefix}yarn-cache-${SEMAPHORE_GIT_BRANCH}-,${prefix}yarn-cache-master-"
+            cache::autorestore_one_path "node_modules" "${prefix}node-modules-${SEMAPHORE_GIT_BRANCH}-$(checksum yarn.lock),${prefix}node-modules-${SEMAPHORE_GIT_BRANCH}-,${prefix}node-modules-master-"
             ;;
+
           "mix.lock")
-            cache::log
-            cache::log "* Detected $lockfile."
-            cache::log "* Fetching 'deps' directory with cache keys mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-deps-$SEMAPHORE_GIT_BRANCH,mix-deps-master"
-            cache::restore "${prefix}mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),${prefix}mix-deps-$SEMAPHORE_GIT_BRANCH,${prefix}mix-deps-master"
-            cache::log "* Fetching '_build' directory with cache keys mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),mix-build-$SEMAPHORE_GIT_BRANCH,mix-build-master"
-            cache::restore "${prefix}mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),${prefix}mix-build-$SEMAPHORE_GIT_BRANCH,${prefix}mix-build-master"
+            cache::autorestore_one_path "deps" "${prefix}mix-deps-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),${prefix}mix-deps-$SEMAPHORE_GIT_BRANCH,${prefix}mix-deps-master"
+            cache::autorestore_one_path "_build" "${prefix}mix-build-$SEMAPHORE_GIT_BRANCH-$(checksum mix.lock),${prefix}mix-build-$SEMAPHORE_GIT_BRANCH,${prefix}mix-build-master"
             ;;
+
           "requirements.txt")
-            cache::log
-            cache::log "* Detected $lockfile."
-            cache::log "* Fetching '.pip_cache' directory with cache keys 'requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),requirements-$SEMAPHORE_GIT_BRANCH-,requirements-master-'."
-            SEMAPHORE_LOCAL_CACHE_PATHS="vendor/bundle"
-            cache::restore "${prefix}requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),${prefix}requirements-$SEMAPHORE_GIT_BRANCH,${prefix}requirements-master"
+            cache::autorestore_one_path ".pip_cache" "${prefix}requirements-$SEMAPHORE_GIT_BRANCH-$(checksum requirements.txt),${prefix}requirements-$SEMAPHORE_GIT_BRANCH,${prefix}requirements-master"
             ;;
+
           "composer.lock")
-            cache::log
-            cache::log "* Detected $lockfile."
-            cache::log "* Fetching 'vendor' directory with cache keys 'composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),composer-$SEMAPHORE_GIT_BRANCH-,composer-master-'."
-            SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
-            cache::restore "${prefix}composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),${prefix}composer-$SEMAPHORE_GIT_BRANCH,${prefix}composer-master"
+            cache::autorestore_one_path "vendor" "${prefix}composer-$SEMAPHORE_GIT_BRANCH-$(checksum composer.lock),${prefix}composer-$SEMAPHORE_GIT_BRANCH,${prefix}composer-master"
             ;;
+
           "pom.xml")
-            cache::log
-            cache::log "* Detected $lockfile."
-            cache::log "* Fetching '.m2' directory with cache keys 'cache restore maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-$SEMAPHORE_GIT_BRANCH,maven-master'."
-            SEMAPHORE_LOCAL_CACHE_PATHS=".m2"
-            cache::restore "${prefix}maven-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),${prefix}maven-$SEMAPHORE_GIT_BRANCH,${prefix}maven-master"
-            cache::log "* Fetching 'target' directory with cache keys maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),maven-target-$SEMAPHORE_GIT_BRANCH,maven-target-master"
-            cache::restore "${prefix}maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),${prefix}maven-target-$SEMAPHORE_GIT_BRANCH,${prefix}maven-target-master"
+            cache::autorestore_one_path ".m2" "${prefix}maven-m2-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),${prefix}maven-m2-$SEMAPHORE_GIT_BRANCH,${prefix}maven-m2-master"
+            cache::autorestore_one_path "target" "${prefix}maven-target-$SEMAPHORE_GIT_BRANCH-$(checksum pom.xml),${prefix}maven-target-$SEMAPHORE_GIT_BRANCH,${prefix}maven-target-master"
             ;;
+
           "Podfile.lock")
-            cache::log
-            cache::log "* Detected $lockfile."
-            cache::log "* Fetching 'Pods' directory with cache keys 'pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),pods-$SEMAPHORE_GIT_BRANCH-,pods-master-'."
-            SEMAPHORE_LOCAL_CACHE_PATHS="vendor"
-            cache::restore "${prefix}pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),${prefix}pods-$SEMAPHORE_GIT_BRANCH-,${prefix}pods-master-"
+            cache::autorestore_one_path "Pods" "${prefix}pods-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),${prefix}pods-$SEMAPHORE_GIT_BRANCH-,${prefix}pods-master-"
             ;;
+
           "go.sum")
-            cache::log
-            cache::log "* Detected $lockfile."
-            cache::log "* Fetching 'Pods' directory with cache keys 'go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum),go-$SEMAPHORE_GIT_BRANCH-,go-master-'."
-            SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/go/pkg/mod"
-            cache::restore "${prefix}go-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),${prefix}go-$SEMAPHORE_GIT_BRANCH-,${prefix}go-master-"
+            cache::autorestore_one_path "$HOME/go/pkg/mod" "${prefix}go-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),${prefix}go-$SEMAPHORE_GIT_BRANCH-,${prefix}go-master-"
             ;;
+
           *)
             cache::log "* Nothing to fetch from cache";;
         esac
