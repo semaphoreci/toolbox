@@ -160,9 +160,9 @@ teardown() {
 
   assert_success
   assert_output --partial "* Detected pom.xml"
-  assert_output --partial "* Using default cache path '.m2'."
+  assert_output --partial "Uploading '.m2' with cache key"
   assert_output --partial "Upload complete."
-  assert_output --partial "* Using default cache path 'target'."
+  assert_output --partial "Uploading 'target' with cache key"
   assert_output --partial "Upload complete."
 
   sudo rm -rf .m2 target
