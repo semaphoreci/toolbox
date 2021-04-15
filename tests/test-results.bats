@@ -36,7 +36,7 @@ teardown() {
   run artifact pull job test-results/junit.json
   assert_success
 
-  artifact yank job test-results/junit.xml
+  artifact yank job test-results/junit.json
   assert_success
 
   run git diff --no-index junit-sample.json junit.json --exit-code --output /dev/null
