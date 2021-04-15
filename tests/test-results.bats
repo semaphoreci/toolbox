@@ -8,8 +8,6 @@ setup() {
 
   mkdir /tmp/test-results-cli
 
-  artifact yank job test-results/junit.json
-  artifact yank job test-results/junit.xml
 
   cp tests/test-results/junit-sample.xml /tmp/test-results-cli/junit-sample.xml
   cp tests/test-results/junit-sample.json /tmp/test-results-cli/junit-sample.json
@@ -29,10 +27,16 @@ teardown() {
   run artifact pull job test-results/junit.xml
   assert_success
 
+  run artifact yank job test-results/junit.xml
+  assert_success
+
   run git diff --no-index junit-sample.xml junit.xml --exit-code --output /dev/null
   assert_success
 
   run artifact pull job test-results/junit.json
+  assert_success
+
+  artifact yank job test-results/junit.xml
   assert_success
 
   run git diff --no-index junit-sample.json junit.json --exit-code --output /dev/null
