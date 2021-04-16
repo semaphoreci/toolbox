@@ -30,7 +30,7 @@ teardown() {
   run artifact yank job test-results/junit.xml
   assert_success
 
-  run git diff --no-index junit-sample.xml junit.xml --exit-code --output /dev/null
+  run diff junit-sample.xml junit.xml
   assert_success
 
   run artifact pull job test-results/junit.json
@@ -39,7 +39,7 @@ teardown() {
   run artifact yank job test-results/junit.json
   assert_success
 
-  run git diff --no-index junit-sample.json junit.json --exit-code --output /dev/null
+  run diff junit-sample.json junit.json
   assert_success
 }
 
@@ -50,6 +50,6 @@ teardown() {
   assert_success
   assert_output --partial "Using rspec parser"
 
-  run git diff --no-index junit-sample.json junit-compile.json --exit-code --output /dev/null
+  run diff junit-sample.json junit-compile.json
   assert_success
 }

@@ -7,6 +7,7 @@ sudo rm -rf ~/.toolbox
 sudo rm -f $(which artifact)
 sudo rm -f $(which spc)
 sudo rm -f $(which when)
+sudo rm -f $(which test-results)
 
 cd ~
 
