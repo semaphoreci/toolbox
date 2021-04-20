@@ -1,12 +1,22 @@
 #!/bin/bash
 
+prefix_cmd() {
+  local cmd=$@
+  if [ `whoami` == 'root' ]; then
+    `$@`
+  else
+    `sudo $@`
+  fi
+}
+
 # Before running this, you need to run release/create.sh
 
 # Remove installed toolbox
-sudo rm -rf ~/.toolbox
-sudo rm -f $(which artifact)
-sudo rm -f $(which spc)
-sudo rm -f $(which when)
+prefix_cmd rm -rf ~/.toolbox
+prefix_cmd rm -f $(which artifact)
+prefix_cmd rm -f $(which spc)
+prefix_cmd rm -f $(which when)
+prefix_cmd rm -f $(which test-results)
 
 cd ~
 

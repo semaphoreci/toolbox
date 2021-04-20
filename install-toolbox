@@ -100,6 +100,15 @@ else
   echo "toolbox_install_error{module='artifacts'} 1" >> /tmp/toolbox_metrics
 fi
 
+echo "Installing the test results CLI"
+install_cmd mv ~/.toolbox/test-results $INSTALL_PATH/test-results
+install_cmd chmod +x $INSTALL_PATH/test-results
+if [[ $? -eq 0 ]];then
+  echo "test-results installed"
+else
+  echo "toolbox_install_error{module='test-results'} 1" >> /tmp/toolbox_metrics
+fi
+
 if [[ `uname` != "Darwin" ]]; then
 
   echo "Installing the SPC CLI"

@@ -94,6 +94,7 @@ blocks:
                 - tests/macos_autocache.bats
                 - tests/libcheckout.bats
                 - tests/artifacts.bats
+                - tests/test-results.bats
 
           commands:
             - bats --tap --timing $TEST
@@ -122,6 +123,7 @@ blocks:
                 - tests/cache.bats
                 - tests/libcheckout.bats
                 - tests/artifacts.bats
+                - tests/test-results.bats
           commands:
             - bats --tap --timing $TEST
 
@@ -150,6 +152,7 @@ blocks:
                 - tests/cache.bats
                 - tests/libcheckout.bats
                 - tests/artifacts.bats
+                - tests/test-results.bats
           commands:
             - bats --tap --timing $TEST
 
@@ -178,6 +181,7 @@ blocks:
                 - tests/base.bats
                 - tests/artifacts.bats
                 - tests/compiler.bats
+                - tests/test-results.bats
           commands:
             - bats --tap --timing $TEST
 
