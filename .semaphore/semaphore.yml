@@ -97,7 +97,8 @@ blocks:
                 - tests/test-results.bats
 
           commands:
-            - bats --tap --timing $TEST
+            - bats -o /tmp/ --report-formatter junit --tap --timing $TEST
+            - test-results publish /tmp/report.xml
 
   - name: 'Bats: Docker'
     dependencies: []
@@ -125,7 +126,8 @@ blocks:
                 - tests/artifacts.bats
                 - tests/test-results.bats
           commands:
-            - bats --tap --timing $TEST
+            - bats -o /tmp/ --report-formatter junit --tap --timing $TEST
+            - test-results publish /tmp/report.xml
 
   - name: 'Bats: Minimal Docker'
     dependencies: []
@@ -154,7 +156,8 @@ blocks:
                 - tests/artifacts.bats
                 - tests/test-results.bats
           commands:
-            - bats --tap --timing $TEST
+            - bats -o /tmp/ --report-formatter junit --tap --timing $TEST
+            - test-results publish /tmp/report.xml
 
   - name: 'Bats: Linux'
     dependencies: []
@@ -183,7 +186,8 @@ blocks:
                 - tests/compiler.bats
                 - tests/test-results.bats
           commands:
-            - bats --tap --timing $TEST
+            - bats -o /tmp/ --report-formatter junit --tap --timing $TEST
+            - test-results publish /tmp/report.xml
 
 promotions:
   - name: Release
