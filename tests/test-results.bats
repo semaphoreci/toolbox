@@ -18,6 +18,11 @@ teardown() {
   rm -rf /tmp/test-results-cli
 }
 
+teardown_file() {
+  artifact yank job test-results/junit.json
+  artifact yank job test-results/junit.xml
+}
+
 @test "test-results publish works" {
   cd /tmp/test-results-cli
 
@@ -27,16 +32,10 @@ teardown() {
   run artifact pull job test-results/junit.xml
   assert_success
 
-  run artifact yank job test-results/junit.xml
-  assert_success
-
   run diff junit-sample.xml junit.xml
   assert_success
 
   run artifact pull job test-results/junit.json
-  assert_success
-
-  run artifact yank job test-results/junit.json
   assert_success
 
   run diff junit-sample.json junit.json
