@@ -9,18 +9,25 @@ setup() {
 
 @test "artifacts - uploading to proect level" {
   run artifact push project /tmp/unique-file-$SEMAPHORE_JOB_ID
+  assert_success
 
+
+  run artifact yank project /tmp/unique-file-$SEMAPHORE_JOB_ID
   assert_success
 }
 
 @test "artifacts - uploading to workflows level" {
   run artifact push workflows /tmp/unique-file-$SEMAPHORE_JOB_ID
+  assert_success
 
+  run artifact yank workflows /tmp/unique-file-$SEMAPHORE_JOB_ID
   assert_success
 }
 
 @test "artifacts - uploading to job level" {
   run artifact push job /tmp/unique-file-$SEMAPHORE_JOB_ID
+  assert_success
 
+  run artifact yank job /tmp/unique-file-$SEMAPHORE_JOB_ID
   assert_success
 }
