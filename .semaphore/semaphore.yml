@@ -41,9 +41,13 @@ blocks:
       prologue:
         commands:
           - source release/install_in_tests.sh
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+
       jobs:
         - name: Sem Version
-          commands_file: sem-version_bionic.txt
+          commands:
+            - bats tests/sem_version_bionic.bats
 
   - name: Sem Service Tests
     dependencies: []
@@ -95,7 +99,7 @@ blocks:
                 - tests/libcheckout.bats
                 - tests/artifacts.bats
                 - tests/test-results.bats
-
+                - tests/macOS_sem_version.bats
           commands:
             - bats -o /tmp/ --report-formatter junit --tap --timing $TEST
             - test-results publish /tmp/report.xml
