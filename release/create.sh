@@ -5,7 +5,7 @@ set -euo pipefail
 ARTIFACT_CLI_VERSION="v0.4.6"
 WHEN_CLI_VERSION="v1.0.5"
 SPC_CLI_VERSION="v1.8.1"
-TEST_RESULTS_CLI_VERSION="v0.2.1"
+TEST_RESULTS_CLI_VERSION="v0.2.3"
 
 ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
 SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSION"
