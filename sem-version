@@ -222,7 +222,7 @@ version::main() {
     if [[ fn_status -ne 0 ]]; then
       version::err "Failed to switch version.\n"
       echo "semversion,software=$software,state=fail,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
-      return 1
+      exit 1
     else
       echo "semversion,software=$software,state=success,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
       version::log "Switch successful."
@@ -232,10 +232,14 @@ version::main() {
 }
 
 sem-version() {
-  if [[ "$(uname)" == "Darwin" ]] && [ "$1" != 'ruby' ]; then
-    echo "`sem-version` is not supported in this environment."
-    echo "https://docs.semaphoreci.com/ci-cd-environment/sem-version-managing-language-versions-on-linux"
-    return 1
+  if [[ "$(uname)" == "Darwin" ]]; then
+    if [[ "$1" == 'ruby' ]] || [[ "$1" == 'node' ]]; then
+      version::main "$@"
+    else
+      echo "`sem-version` is not supported in this environment."
+      echo "https://docs.semaphoreci.com/ci-cd-environment/sem-version-managing-language-versions-on-linux"
+      exit 1
+    fi
   else
     version::main "$@"
   fi
