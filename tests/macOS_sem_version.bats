@@ -52,11 +52,17 @@ setup() {
   assert_success
   assert_output --partial "3.0.1"
 }
-
-
 @test "[macOS] sem-version php - 8.0.5 " {
 
   run sem-version php 8.0.5
   assert_failure
+}
+
+@test "[macOS] sem-version node - 14.16.1 " {
+
+  run sem-version node 14.16.1
+  assert_success
+  assert_output --partial "14.16.1"
+  node --version
 }
 

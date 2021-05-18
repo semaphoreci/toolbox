@@ -168,3 +168,15 @@ setup() {
   assert_line --partial "2.11"
 }
 
+@test "sem-version fail php" {
+
+  run sem-version php 9
+  assert_failure
+}
+
+@test "sem-version firefox 90" {
+
+  run sem-version firefox 90
+  assert_failure
+}
+
