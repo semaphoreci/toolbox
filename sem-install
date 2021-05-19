@@ -1,7 +1,19 @@
 #!/bin/bash
 
 install::package_url() {
- echo "http://packages.semaphoreci.com/$(lsb_release -cs)"
+  DIST=$(uname)
+  case $DIST in 
+    Linux)
+      echo "http://packages.semaphoreci.com/$(lsb_release -cs)"
+      ;;
+    Darwin)
+      echo "http://packages.semaphoreci.com/mac"
+      ;;
+    *)
+    echo "Unsupported distro $DIST"
+    exit 1
+    ;;
+  esac
 }
 
 install::available() {

@@ -24,10 +24,12 @@ version::metrics() {
   local start
   local end
   local duration
-  start=$(date +%s%3N)
+  [ "$(uname)" == "Linux" ] && start=$(date +%s%3N)
+  [ "$(uname)" == "Darwin" ] && start=$(gdate +%s%3N)
   $cmd
   ch_status=$?
-  end=$(date +%s%3N)
+  [ "$(uname)" == "Linux" ] && end=$(date +%s%3N)
+  [ "$(uname)" == "Darwin" ] && end=$(gdate +%s%3N)
   TOTAL_TIME=$(( $end - $start ))
   return $ch_status
 }
@@ -108,7 +110,7 @@ version::change_firefox() {
     "52")firefox_version="esr-prev";;
     "68")firefox_version="esr";;
     "78")firefox_version="esr-new";;
-    *)echo "Please choose one of 52, 68, 78";exit 1;;
+    *)echo "Please choose one of 52, 68, 78";return 1;;
   esac
   software_version="$firefox_version"
   version::change "change-firefox-version"
@@ -220,6 +222,7 @@ version::main() {
     if [[ fn_status -ne 0 ]]; then
       version::err "Failed to switch version.\n"
       echo "semversion,software=$software,state=fail,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
+      exit 1
     else
       echo "semversion,software=$software,state=success,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
       version::log "Switch successful."
@@ -229,10 +232,14 @@ version::main() {
 }
 
 sem-version() {
-  if [[ `uname` == "Darwin" ]]; then
-    echo "`sem-version` is not supported in this environment."
-    echo "https://docs.semaphoreci.com/ci-cd-environment/sem-version-managing-language-versions-on-linux"
-    return 1
+  if [[ "$(uname)" == "Darwin" ]]; then
+    if [[ "$1" == 'ruby' ]] || [[ "$1" == 'node' ]]; then
+      version::main "$@"
+    else
+      echo "`sem-version` is not supported in this environment."
+      echo "https://docs.semaphoreci.com/ci-cd-environment/sem-version-managing-language-versions-on-linux"
+      exit 1
+    fi
   else
     version::main "$@"
   fi
