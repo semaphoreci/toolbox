@@ -74,6 +74,30 @@ setup() {
   run ruby --version
   assert_line --partial "ruby 3.0.1"
 }
+@test "ruby minor versions test" {
+
+  run sem-version ruby 2.5
+  assert_success
+  run ruby --version
+  assert_line --partial "ruby 2.5.9"
+
+  run sem-version ruby 2.6
+  assert_success
+  run ruby --version
+  assert_line --partial "ruby 2.6.7"
+
+  run sem-version ruby 2.7
+  assert_success
+  run ruby --version
+  assert_line --partial "ruby 2.7.3"
+
+  run sem-version ruby 3.0
+  assert_success
+  run ruby --version
+  assert_line --partial "ruby 3.0.1"
+
+}
+
 
 @test "change ruby to 4.0.1" {
 
@@ -179,4 +203,13 @@ setup() {
   run sem-version firefox 90
   assert_failure
 }
+
+@test "sem-version test ignore" {
+
+  run sem-version firefox 90
+  assert_failure
+  run sem-version firefox 90 --ignore
+  assert_success
+}
+
 
