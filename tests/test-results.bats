@@ -19,8 +19,7 @@ teardown() {
 }
 
 teardown_file() {
-  artifact yank job test-results/junit.json
-  artifact yank job test-results/junit.xml
+  artifact yank job test-results
 }
 
 @test "test-results publish works" {
