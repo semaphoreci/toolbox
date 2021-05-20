@@ -41,6 +41,11 @@ version::change() {
   return $ch_status
 }
 version::change_ruby() {
+  [[ "$software_version" == "2.5" ]] && software_version="2.5.9"
+  [[ "$software_version" == "2.6" ]] && software_version="2.6.7"
+  [[ "$software_version" == "2.7" ]] && software_version="2.7.3"
+  [[ "$software_version" == "3.0" ]] && software_version="3.0.1"
+
   if ! [ -d ~/.rbenv/versions/"${software_version}" ]; then
     sem-install ruby "${software_version}"
   fi
@@ -73,9 +78,9 @@ version::change_php() {
   [[ "$software_version" == "7.1" ]] && software_version="7.1.33"
   [[ "$software_version" == "7.2" ]] && software_version="7.2.34"
   [[ "$software_version" == "7.3" ]] && software_version="7.3.27"
-  [[ "$software_version" == "7.4" ]] && software_version="7.4.14"
-  [[ "$software_version" == "8" ]] && software_version="8.0.2"
-  [[ "$software_version" == "8.0" ]] && software_version="8.0.2"
+  [[ "$software_version" == "7.4" ]] && software_version="7.4.18"
+  [[ "$software_version" == "8" ]] && software_version="8.0.5"
+  [[ "$software_version" == "8.0" ]] && software_version="8.0.5"
 
   if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
     sem-install php "${software_version}"
@@ -210,6 +215,15 @@ version::main() {
   software=$1
   software_version=$2
   force=$3
+  ignore=$4
+
+  if [[ "$force" == "-i" ]] || [[ "$force" == "--ignore" ]]; then
+    ignore="--ignore"
+    force=""
+  fi
+  if [[ "$ignore" == "-i" ]]; then
+    ignore="--ignore"
+  fi
 
   fn_name="version::change_${software}"
 
@@ -222,7 +236,7 @@ version::main() {
     if [[ fn_status -ne 0 ]]; then
       version::err "Failed to switch version.\n"
       echo "semversion,software=$software,state=fail,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
-      exit 1
+      [[ "$ignore" == "--ignore" ]] || exit 1
     else
       echo "semversion,software=$software,state=success,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
       version::log "Switch successful."
