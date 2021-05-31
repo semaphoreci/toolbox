@@ -16,6 +16,7 @@ sem_services['postgres']="9.4.26 9.4 9.5.15 9.5.23 9.5 9.6.6 9.6.11 9.6.18 9.6.1
 sem_services['rabbitmq']="3.6.16 3.6 3.8.2 3.8.9 3.8.14 3.8 3"
 sem_services['cassandra']="3.11.3 3.11.8 3.11 3"
 sem_services['rethinkdb']="2.3.6 2.3 2.4.1 2.4 2"
+sem_services['postgis']="9.5-2.5 9.5-3.0 9.6-2.5 9.6-3.0 10-2.5 10-3.0 11-2.5 11-3.0 12-2.5 12-3.0 13-3.0"
 
 service::pull_image_retry() {
   counter=1 
@@ -62,7 +63,7 @@ service::check_version(){
     echo -e ""
     local_versions="${sem_services[$image_name]}"
     for v in ${local_versions[@]};do
-      echo -e "  \e[34m- sem-version start ${image_name}:${v}\e[0m"
+      echo -e "  \e[34m- sem-version start ${image_name} ${v}\e[0m"
     done
     echo -e ""
     echo -e "Check the full list of options:"
@@ -81,7 +82,7 @@ service::start_mysql() {
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run $docker_params $service_image:$service_version)
+  docker_output=$(docker run $docker_params "$service_image":"$service_version")
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 3306 mysql)
   if [ "$docker_status" == "0" ]; then
@@ -101,12 +102,33 @@ service::start_postgres() {
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run $docker_params $service_image:$service_version)
+  docker_output=$(docker run $docker_params "$service_image":"$service_version")
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 5432 postgres)
   if [ "$docker_status" == "0" ]; then
     echo "done."
     echo "PostgreSQL $service_version is running at 0.0.0.0:5432"
+    echo "To access it use username 'postgres' and blank password."
+  else
+    # if not started in 30 seconds print logs and exit
+    echo "$docker_output"
+  fi
+}
+
+service::start_postgis() {
+  service_version=$1
+  shift
+  local service_image='registry.semaphoreci.com/postgis'
+
+  docker_params="$@"
+  service::pull_image "$service_image:$service_version"
+  docker_output=$(docker run $docker_params "$service_image":"$service_version")
+  # run only if previous command exited successfully
+  service::duration sem-dockerize 5432 boot postgis
+  docker_status=$(sem-dockerize 5432 postgis)
+  if [ "$docker_status" == "0" ]; then
+    echo "done."
+    echo "PostgreSQL with postgis $service_version is running at 0.0.0.0:5432"
     echo "To access it use username 'postgres' and blank password."
   else
     # if not started in 30 seconds print logs and exit
@@ -121,7 +143,7 @@ service::start_redis() {
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run $docker_params $service_image:$service_version --appendonly yes)
+  docker_output=$(docker run $docker_params "$service_image":"$service_version" --appendonly yes)
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 6379 redis)
   if [ "$docker_status" == "0" ]; then
@@ -138,7 +160,7 @@ service::start_memcached() {
   local service_image='registry.semaphoreci.com/memcached'
 
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run --net=host --rm --name memcached -d $service_image:$service_version)
+  docker_output=$(docker run --net=host --rm --name memcached -d "$service_image":"$service_version")
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 11211 memcached)
   if [ "$docker_status" == "0" ]; then
@@ -157,7 +179,7 @@ service::start_mongodb() {
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run $docker_params $service_image:$service_version)
+  docker_output=$(docker run $docker_params "$service_image":"$service_version")
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 27017 mongodb)
   if [ "$docker_status" == "0" ]; then
@@ -260,6 +282,13 @@ service::start() {
       service_version=$(sem-service-check-params postgres $@)
       service::check_version 'postgres' ${service_version%% *}
       service::duration service::start_postgres $service_version total $service_name
+      exit 0
+      ;;
+    "postgis" )
+      shift
+      service_version=$(sem-service-check-params postgis $@)
+      service::check_version 'postgis' ${service_version%% *}
+      service::duration service::start_postgis $service_version total $service_name
       exit 0
       ;;
     "redis" )
@@ -460,7 +489,7 @@ service::duration() {
   start=$(date +%s%3N)
   $cmd
   end=$(date +%s%3N)
-  duration=$(( $end - $start ))
+  duration=$(( end - start ))
   if [[ "$type" == "total" ]]; then
     echo "semservice,service=$service,state=${state[$docker_status]},version=$version,location=$download_location duration=${duration}" >> /tmp/toolbox_semservice
   fi
@@ -491,7 +520,7 @@ service::main () {
   esac
 }
 
-if [[ `uname` == "Darwin" ]]; then
+if [[ "$(uname)" == "Darwin" ]]; then
   echo "`sem-service` is not supported in this environment."
   echo "https://docs.semaphoreci.com/ci-cd-environment/sem-service-managing-databases-and-services-on-linux"
   exit 1

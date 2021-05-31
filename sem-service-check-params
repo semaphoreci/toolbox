@@ -86,6 +86,43 @@ params-check::postgres () {
   fi
   echo "$service_version $default_params"
 }
+params-check::postgis () {
+  default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgis -v /var/tmp/postgres:/var/lib/postgresql/data -v /var/run/postgresql:/var/run/postgresql'
+  service_version="9.6-2.5"
+  sudo rm -rf /var/run/postgresql /var/tmp/postgres
+  sudo mkdir -p /var/run/postgresql ; sudo chmod -R 0777 /var/run/postgresql
+  sudo mkdir -p /var/tmp/postgres ; sudo chmod -R 0777 /var/tmp/postgres
+  params=""
+  if [ "${1:0:1}" == "-" ];then
+    params="$@"
+  else
+    service_version="${1:-$service_version}"
+    tmp="${@:2}"
+    params="${tmp:-$default_params}"
+  fi
+  if [ "$default_params" != "$params" ];then
+    username=""; password=""; db=""; dbname="";
+    for words in $params; do
+      case $words in
+       --username=* )
+         username=" -e POSTGRES_USER=$(echo $words|cut -d'=' -f2) "
+       ;;
+       --password=* )
+         password=$(echo $words|cut -d'=' -f2) 
+         password=" -e POSTGRES_PASSWORD=${password:-'semaphore'}"
+       ;;
+       --db=* )
+         dbname=$(echo $words|cut -d'=' -f2)
+       ;;
+       *)
+       ;;
+      esac
+    done
+    [ "$dbname" ] && db=" -e POSTGRES_DB=$dbname"
+    [ "$username$password" ] && default_params="$default_params$username$password$db "
+  fi
+  echo "$service_version $default_params"
+}
 
 params-check::redis () {
   default_params='--net=host --rm --name redis -d -v /var/tmp/redis:/data'
@@ -144,6 +181,10 @@ params-check::main () {
     "postgres" )
       shift
       params-check::postgres $@
+      ;;
+    "postgis" )
+      shift
+      params-check::postgis $@
       ;;
     "redis" )
       shift

@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+sem-service start postgis
+createdb -U postgres -h 0.0.0.0 fooo
+psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 9.6
+psql -U postgres -h localhost -c 'SELECT * FROM pg_extension' | grep -i postgis
+sem-service status postgis
+sem-service stop postgis
+sem-service start postgis 11-2.5
+psql -U postgres -h localhost -c 'SELECT * FROM pg_extension' | grep -i postgis
+createdb -U postgres -h 0.0.0.0 fooo
+psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 11
+sem-service status postgis
+sem-service stop postgis
+sem-service start postgis 11-3.0 --username=xxx --password=xxx --db=xxx --garbage else
+psql -U xxx -h localhost -c 'SELECT * FROM pg_extension' | grep -i postgis
+createdb -U xxx  -h 0.0.0.0 fooo
+psql -h 0.0.0.0 -U xxx -c "\l"
+psql -U xxx -c "SELECT version()" | grep 11
+sem-service status postgis
+cat /tmp/toolbox_semservice
