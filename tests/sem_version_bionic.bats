@@ -50,7 +50,6 @@ setup() {
   run ruby --version
   assert_line --partial "ruby 2.5.3"
 }
-
 @test "change ruby to 2.3.7" {
 
   run sem-version ruby 2.3.7
@@ -58,7 +57,6 @@ setup() {
   run ruby --version
   assert_line --partial "ruby 2.3.7"
 }
-
 @test "change ruby to 2.7.3" {
 
   run sem-version ruby 2.7.3
@@ -66,7 +64,6 @@ setup() {
   run ruby --version
   assert_line --partial "ruby 2.7.3"
 }
-
 @test "change ruby to 3.0.1" {
 
   run sem-version ruby 3.0.1
@@ -97,8 +94,6 @@ setup() {
   assert_line --partial "ruby 3.0.1"
 
 }
-
-
 @test "change ruby to 4.0.1" {
 
   run sem-version ruby 4.0.1
@@ -154,15 +149,53 @@ setup() {
 #  Elixir
 @test "change elixir to 1.7.4" {
   sem-version elixir 1.7.4
+  assert_success
   run elixir --version
   assert_line --partial "Elixir 1.7.4"
+  run ls /home/semaphore/.kiex/mix/archives/elixir-1.7.4/
+  assert_line --partial "hex"
 }
-
+@test "change elixir to 1.8.2" {
+  sem-version elixir 1.8.2
+  assert_success
+  run elixir --version
+  assert_line --partial "Elixir 1.8.2"
+  run ls /home/semaphore/.kiex/mix/archives/elixir-1.8.2/
+  assert_line --partial "hex"
+}
+@test "change elixir to 1.9.4" {
+  sem-version elixir 1.9.4
+  assert_success
+  run elixir --version
+  assert_line --partial "Elixir 1.9.4"
+  run ls /home/semaphore/.kiex/mix/archives/elixir-1.9.4/
+  assert_line --partial "hex"
+}
+@test "change elixir to 1.10.4" {
+  sem-version elixir 1.10.4
+  assert_success
+  run elixir --version
+  assert_line --partial "Elixir 1.10.4"
+  run ls /home/semaphore/.kiex/mix/archives/elixir-1.10.4/
+  assert_line --partial "hex"
+}
 @test "change elixir to 1.11.4" {
   sem-version elixir 1.11.4
+  assert_success
   run elixir --version
   assert_line --partial "Elixir 1.11.4"
+  run ls /home/semaphore/.kiex/mix/archives/elixir-1.11.4/
+  assert_line --partial "hex"
 }
+@test "change elixir to 1.12.1" {
+  sem-version elixir 1.12.1
+  assert_success
+  run elixir --version
+  assert_line --partial "Elixir 1.12.1"
+  run ls /home/semaphore/.kiex/mix/archives/elixir-1.12.1/
+  assert_line --partial "hex"
+}
+
 #  Node
 @test "change node to 12.16.1" {
   sem-version node 12.16.1
@@ -211,5 +244,4 @@ setup() {
   run sem-version firefox 90 --ignore
   assert_success
 }
-
 

@@ -58,9 +58,15 @@ version::change_node() {
   return $?
 }
 version::change_elixir() {
-  kiex list | grep -q "${software_version}"
-  if [[ $? -gt 0 ]];then
-    kiex install "${software_version}"
+  [[ "$software_version" == "1.7" ]] && software_version="1.7.4"
+  [[ "$software_version" == "1.8" ]] && software_version="1.8.2"
+  [[ "$software_version" == "1.9" ]] && software_version="1.9.4"
+  [[ "$software_version" == "1.10" ]] && software_version="1.10.4"
+  [[ "$software_version" == "1.11" ]] && software_version="1.11.4"
+  [[ "$software_version" == "1.12" ]] && software_version="1.12.1"
+
+  if ! [[ $(kiex list) =~ "${software_version}" ]]; then
+    sem-install elixir "${software_version}"
   fi
   version::change "kiex use"
   return $?
