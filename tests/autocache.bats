@@ -8,11 +8,41 @@ PROJECT_ROOT=$(pwd)
 setup() {
   cache clear
   cd $PROJECT_ROOT
+
+  export SEMAPHORE_GIT_DIR=test-project
 }
 
 teardown() {
   git reset --hard
   git clean -fd
+}
+
+@test "autocache prefix" {
+  source "cache"
+
+  #
+  # If you run cache store/restore in the root of the project dir
+  # the prefix is empty.
+  #
+  run cache::autocache_key_prefix "/home/semaphore/$SEMAPHORE_GIT_DIR"
+  assert_output ""
+
+  #
+  # If you run cache store/restore in a subfolder, it will include a normalized
+  # path to that directory.
+  #
+  run cache::autocache_key_prefix "/home/semaphore/$SEMAPHORE_GIT_DIR/services"
+  assert_output "services-"
+
+  #
+  # If you run cache store/restore outside of the project dir, it will be a
+  # normalized path to the full path.
+  #
+  run cache::autocache_key_prefix "/tmp/test"
+  assert_output "tmp-test-"
+
+  run cache::autocache_key_prefix "/home/semaphore/$SEMAPHORE_GIT_DIR/services/nested/path"
+  assert_output "services-nested-path-"
 }
 
 @test "cache - autostore/autorestore [go]" {
@@ -130,9 +160,9 @@ teardown() {
 
   assert_success
   assert_output --partial "* Detected pom.xml"
-  assert_output --partial "* Using default cache path '.m2'."
+  assert_output --partial "Uploading '.m2' with cache key"
   assert_output --partial "Upload complete."
-  assert_output --partial "* Using default cache path 'target'."
+  assert_output --partial "Uploading 'target' with cache key"
   assert_output --partial "Upload complete."
 
   sudo rm -rf .m2 target
