@@ -153,6 +153,7 @@ setup() {
   run elixir --version
   assert_line --partial "Elixir 1.7.4"
   run ls /home/semaphore/.kiex/mix/archives/elixir-1.7.4/
+  assert_success
   assert_line --partial "hex"
 }
 @test "change elixir to 1.8.2" {
@@ -161,6 +162,7 @@ setup() {
   run elixir --version
   assert_line --partial "Elixir 1.8.2"
   run ls /home/semaphore/.kiex/mix/archives/elixir-1.8.2/
+  assert_success
   assert_line --partial "hex"
 }
 @test "change elixir to 1.9.4" {
@@ -169,6 +171,7 @@ setup() {
   run elixir --version
   assert_line --partial "Elixir 1.9.4"
   run ls /home/semaphore/.kiex/mix/archives/elixir-1.9.4/
+  assert_success
   assert_line --partial "hex"
 }
 @test "change elixir to 1.10.4" {
@@ -177,6 +180,7 @@ setup() {
   run elixir --version
   assert_line --partial "Elixir 1.10.4"
   run ls /home/semaphore/.kiex/mix/archives/elixir-1.10.4/
+  assert_success
   assert_line --partial "hex"
 }
 @test "change elixir to 1.11.4" {
@@ -185,14 +189,16 @@ setup() {
   run elixir --version
   assert_line --partial "Elixir 1.11.4"
   run ls /home/semaphore/.kiex/mix/archives/elixir-1.11.4/
+  assert_success
   assert_line --partial "hex"
 }
-@test "change elixir to 1.12.1" {
-  sem-version elixir 1.12.1
+@test "change elixir to 1.12.0-rc.1" {
+  sem-version elixir 1.12.0-rc.1
   assert_success
   run elixir --version
-  assert_line --partial "Elixir 1.12.1"
-  run ls /home/semaphore/.kiex/mix/archives/elixir-1.12.1/
+  assert_line --partial "Elixir 1.12.0-rc.1"
+  run ls /home/semaphore/.kiex/mix/archives/elixir-1.12.0-rc.1/
+  assert_success
   assert_line --partial "hex"
 }
 

@@ -88,16 +88,16 @@ install::install_elixir() {
   response2=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/archives_${language_version}.tar.gz)
   case ${language_version} in
       "1.7"* | "1.8"*)
-        sem-version erlang 21.3
+        local erlang_version="21.3"
         ;;
       "1.9"* | "1.10"*)
-        sem-version erlang 22.3
+        local erlang_version="22.3"
         ;;
       "1.11"*)
-        sem-version erlang 23.3
+        local erlang_version="23.3"
         ;;
       "1.12"*)
-        sem-version erlang 24.0
+        local erlang_version="24.0"
         ;;
 
       *)
@@ -106,17 +106,34 @@ install::install_elixir() {
         ;;
   esac
   if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
+    echo "Building"
+    sem-version erlang ${erlang_version}
+    echo "erlang changed to ${erlang_version} with sem-version"
+#    . ~/.kerl/installs/${erlang_version}/activate
+#    echo "erlang changed to ${erlang_version} with activate"
     kiex install ${language_version}
     kiex use ${language_version}
     mix local.hex --force
   else
+    echo "Downloading"
+    sem-version erlang ${erlang_version}
+    echo "erlang changed to ${erlang_version} with sem-version"
+#    . ~/.kerl/installs/${erlang_version}/activate
+#    echo "erlang changed to ${erlang_version} with activate"
     curl --silent $(install::package_url)/${language}/elixirs_${language_version}.tar.gz --output elixirs_${language_version}.tar.gz
     curl --silent $(install::package_url)/${language}/archives_${language_version}.tar.gz --output archives_${language_version}.tar.gz
+    echo "download domplete"
     tar -zxf elixirs_${language_version}.tar.gz && rm -rf elixirs_${language_version}.tar.gz
     tar -zxf archives_${language_version}.tar.gz && rm -rf archives_${language_version}.tar.gz
-    mv elixirs/* ~/.kiex/elixirs/
-    mv archives/* ~/.kiex/mix/archives/
+    echo "extract complete"
+    mv ./elixirs/*${language_version}* ~/.kiex/elixirs/
+    mv ./elixirs/.*${language_version}* ~/.kiex/elixirs/
+    mv ./archives/*${language_version} ~/.kiex/mix/archives/
+    echo "mv complete"
+    rm -rf ./archives && rm -rf ./elixirs
+    echo "rm complete"
     kiex use ${language_version}
+    echo "kiex use done"
   fi
   return $?
 }
