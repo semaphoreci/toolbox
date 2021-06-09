@@ -107,12 +107,12 @@ install::install_elixir() {
         ;;
   esac
   if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
-    sem-version erlang ${erlang_version}
+    #sem-version erlang ${erlang_version}
     kiex install ${language_version}
     kiex use ${language_version}
     mix local.hex --force
   else
-    sem-version erlang ${erlang_version}
+    #sem-version erlang ${erlang_version}
     curl --silent $(install::package_url)/${language}/elixirs_${language_version}.tar.gz --output elixirs_${language_version}.tar.gz
     curl --silent $(install::package_url)/${language}/archives_${language_version}.tar.gz --output archives_${language_version}.tar.gz
     tar -zxf elixirs_${language_version}.tar.gz && rm -rf elixirs_${language_version}.tar.gz
