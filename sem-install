@@ -86,8 +86,7 @@ install::install_php() {
 install::install_elixir() {
   response1=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/elixirs_${language_version}.tar.gz)
   response2=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/archives_${language_version}.tar.gz)
-  if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
-    case ${language_version} in
+  case ${language_version} in
       "1.7"* | "1.8"*)
         sem-version erlang 21.3
         ;;
@@ -98,14 +97,15 @@ install::install_elixir() {
         sem-version erlang 23.3
         ;;
       "1.12"*)
-	sem-version erlang 24.0
+        sem-version erlang 24.0
         ;;
 
       *)
         echo "Building of '${language}' version '${language_version}' is not supported"
         return 1;
         ;;
-    esac
+  esac
+  if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
     kiex install ${language_version}
     kiex use ${language_version}
     mix local.hex --force
