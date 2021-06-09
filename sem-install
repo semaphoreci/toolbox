@@ -118,6 +118,7 @@ install::install_elixir() {
     tar -zxf elixirs_${language_version}.tar.gz && rm -rf elixirs_${language_version}.tar.gz
     tar -zxf archives_${language_version}.tar.gz && rm -rf archives_${language_version}.tar.gz
     mv ./elixirs ~/.kiex/
+    ln -s ~/.kiex/elixirs/elixir-${language_version}.env ~/.kiex/elixirs/.elixir-${language_version}
     mv ./archives ~/.kiex/mix/
     rm -rf ./archives && rm -rf ./elixirs
   fi
