@@ -84,22 +84,23 @@ install::install_php() {
 }
 
 install::install_elixir() {
+  local erlang_version="24.0"
   response1=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/elixirs_${language_version}.tar.gz)
   response2=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/archives_${language_version}.tar.gz)
+
   case ${language_version} in
       "1.7"* | "1.8"*)
-        local erlang_version="21.3"
+        erlang_version="21.3"
         ;;
       "1.9"* | "1.10"*)
-        local erlang_version="22.3"
+        erlang_version="22.3"
         ;;
       "1.11"*)
-        local erlang_version="23.3"
+        erlang_version="23.3"
         ;;
       "1.12"*)
-        local erlang_version="24.0"
+        erlang_version="24.0"
         ;;
-
       *)
         echo "Building of '${language}' version '${language_version}' is not supported"
         return 1;
