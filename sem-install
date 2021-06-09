@@ -127,9 +127,8 @@ install::install_elixir() {
     tar -zxf elixirs_${language_version}.tar.gz && rm -rf elixirs_${language_version}.tar.gz
     tar -zxf archives_${language_version}.tar.gz && rm -rf archives_${language_version}.tar.gz
     echo "extract complete"
-    mv ./elixirs/*${language_version}* ~/.kiex/elixirs/
-    mv ./elixirs/.*${language_version}* ~/.kiex/elixirs/
-    mv ./archives/*${language_version} ~/.kiex/mix/archives/
+    mv ./elixirs ~/.kiex/
+    mv ./archives ~/.kiex/mix/
     echo "mv complete"
     rm -rf ./archives && rm -rf ./elixirs
     echo "rm complete"
