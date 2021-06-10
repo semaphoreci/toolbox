@@ -5,6 +5,7 @@ load "support/bats-assert/load"
 
 rm -rf /home/semaphore/.kiex/elixirs
 rm -rf /home/semaphore/.kiex/mix/archives
+rm -rf /home/semaphore/.kerl/installs/*
 setup() {
   source /tmp/.env
   source /opt/change-erlang-version.sh
@@ -24,6 +25,14 @@ setup() {
 
   source ~/.toolbox/toolbox
 }
+#  Erlang
+@test "change erlang to 21.3" {
+  sem-version erlang 21.3
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "21.3"
+
+}
+
 #  Elixir
 @test "change elixir to 1.7.4" {
   sem-version elixir 1.7.4
@@ -34,3 +43,4 @@ setup() {
   assert_success
   assert_line --partial "hex"
 }
+

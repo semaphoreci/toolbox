@@ -29,6 +29,19 @@ install::download() {
   curl --silent $(install::package_url)/${language}/${language_version}.tar.gz --output ${language_version}.tar.gz
 }
 
+install::install_erlang() {
+  if [[ $(install::available) -eq 1 ]] ; then
+    export KERL_BUILD_BACKEND=git
+    kerl update releases
+    kerl build ${language_version} ~/.kerl/installs/${language_version}
+  else
+    install::download
+    tar -zxf ${language_version}.tar.gz
+    rm -rf ${language_version}.tar.gz
+    mv ${language_version} ~/.kerl/installs/
+  fi
+  echo "${language_version} ~/.kerl/installs/${language_version}" >> ~/.kerl/otp_installations
+}
 install::install_node() {
   NVM_NODEJS_ORG_MIRROR=https://nodejs.semaphoreci.com/dist nvm install ${language_version}
   nvm use ${language_version}
@@ -90,16 +103,16 @@ install::install_elixir() {
 
   case ${language_version} in
       "1.7"* | "1.8"*)
-        erlang_version="21"
+        erlang_version="21.3"
         ;;
       "1.9"* | "1.10"*)
-        erlang_version="22"
+        erlang_version="22.3"
         ;;
       "1.11"*)
-        erlang_version="23"
+        erlang_version="23.3"
         ;;
       "1.12"*)
-        erlang_version="24"
+        erlang_version="24.0"
         ;;
       *)
         echo "Building of '${language}' version '${language_version}' is not supported"
@@ -118,9 +131,7 @@ install::install_elixir() {
     tar -zxf elixirs_${language_version}.tar.gz && rm -rf elixirs_${language_version}.tar.gz
     tar -zxf archives_${language_version}.tar.gz && rm -rf archives_${language_version}.tar.gz
     mv ./elixirs ~/.kiex/
-    ln -s ~/.kiex/elixirs/elixir-${language_version}.env ~/.kiex/elixirs/.elixir-${language_version}
     mv ./archives ~/.kiex/mix/
-    rm -rf ./archives && rm -rf ./elixirs
   fi
   return $?
 }

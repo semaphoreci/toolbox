@@ -112,7 +112,12 @@ version::change_scala() {
   return $?
 }
 version::change_erlang() {
-  version::change "change-erlang-version"
+  if [ -f ~/.kerl/installs/${software_version}/activate ]; then
+    version::change "change-erlang-version"
+  else
+    sem-install erlang "${software_version}"
+    . ~/.kerl/installs/${software_version}/activate
+  fi
   return $?
 }
 version::change_firefox() {
