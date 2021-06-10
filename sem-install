@@ -83,6 +83,22 @@ install::install_php() {
   return $?
 }
 
+install::install_erlang() {
+  if [[ $(install::available) -eq 1 ]] ; then
+    # should kerl pre-updated in the image already?
+    sudo curl https://raw.githubusercontent.com/kerl/kerl/master/kerl --output /opt/kerl && sudo chmod +x /opt/kerl
+    kerl update releases
+    kerl build "${language_version}" "${language_version}"
+    kerl install "${language_version}" ~/.kerl/installs/"${language_version}"
+    echo ""${language_version}" /home/semaphore/.kerl/installs/"${language_version}"">> ~/.kerl/otp_installations
+ else
+    install::download
+    tar -zxf ./"${language_version}".tar.gz
+    mv ./"${language_version}" ~/.kerl/installs/
+    echo ""${language_version}" /home/semaphore/.kerl/installs/"${language_version}"">> ~/.kerl/otp_installations
+#    . ~/.kerl/installs/"${language_version}"/activate
+}
+
 install::install_elixir() {
   response1=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/elixirs_${language_version}.tar.gz)
   response2=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/archives_${language_version}.tar.gz)
@@ -107,19 +123,16 @@ install::install_elixir() {
   esac
   if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
     echo "Building"
-    sem-version erlang ${erlang_version}
-    echo "erlang changed to ${erlang_version} with sem-version"
-#    . ~/.kerl/installs/${erlang_version}/activate
-#    echo "erlang changed to ${erlang_version} with activate"
+    if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then sem-install erlang ${erlang_version}
+    . ~/.kerl/installs/${erlang_version}/activate
+    echo "erlang changed to ${erlang_version} with activate"
     kiex install ${language_version}
+    # should install fucntion do the changes or that should be left in sem-version. hex requires change in orter to install in proper folder
     kiex use ${language_version}
     mix local.hex --force
   else
     echo "Downloading"
-    sem-version erlang ${erlang_version}
-    echo "erlang changed to ${erlang_version} with sem-version"
-#    . ~/.kerl/installs/${erlang_version}/activate
-#    echo "erlang changed to ${erlang_version} with activate"
+    if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then sem-install erlang ${erlang_version}
     curl --silent $(install::package_url)/${language}/elixirs_${language_version}.tar.gz --output elixirs_${language_version}.tar.gz
     curl --silent $(install::package_url)/${language}/archives_${language_version}.tar.gz --output archives_${language_version}.tar.gz
     echo "download domplete"
@@ -132,8 +145,8 @@ install::install_elixir() {
     echo "mv complete"
     rm -rf ./archives && rm -rf ./elixirs
     echo "rm complete"
-    kiex use ${language_version}
-    echo "kiex use done"
+#    kiex use ${language_version}
+#    echo "kiex use done"
   fi
   return $?
 }
@@ -169,7 +182,10 @@ sem-install() {
       ;;
     node)
       install::install_node
-      ;;
+     ;;
+    erlang)
+      install::install_erlang
+     ;;
     elixir)
       install::install_elixir
       ;;

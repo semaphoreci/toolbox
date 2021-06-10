@@ -22,57 +22,49 @@ setup() {
 
   source ~/.toolbox/toolbox
 }
+
 #  Firefox
-
 @test "change firefox to 52" {
-
   run sem-version firefox 52
   assert_success
   assert_line --partial "Mozilla Firefox 52"
 }
 @test "change firefox to 78" {
-
   run sem-version firefox 78
   assert_success
   assert_line --partial "Mozilla Firefox 78"
 }
 @test "change firefox to 90" {
-
   run sem-version firefox 90
   assert_failure
 }
 
 #  Ruby
 @test "change ruby to 2.5.3" {
-
   run sem-version ruby 2.5.3
   assert_success
   run ruby --version
   assert_line --partial "ruby 2.5.3"
 }
 @test "change ruby to 2.3.7" {
-
   run sem-version ruby 2.3.7
   assert_success
   run ruby --version
   assert_line --partial "ruby 2.3.7"
 }
 @test "change ruby to 2.7.3" {
-
   run sem-version ruby 2.7.3
   assert_success
   run ruby --version
   assert_line --partial "ruby 2.7.3"
 }
 @test "change ruby to 3.0.1" {
-
   run sem-version ruby 3.0.1
   assert_success
   run ruby --version
   assert_line --partial "ruby 3.0.1"
 }
 @test "ruby minor versions test" {
-
   run sem-version ruby 2.5
   assert_success
   run ruby --version
@@ -92,31 +84,26 @@ setup() {
   assert_success
   run ruby --version
   assert_line --partial "ruby 3.0.1"
-
 }
 @test "change ruby to 4.0.1" {
-
   run sem-version ruby 4.0.1
   assert_failure
 }
 
 #  C
 @test "change gcc to 8" {
-
   run sem-version c 8
   assert_success
   run gcc -v
   assert_line --partial "gcc version 8."
 }
 @test "change gcc to 16" {
-
   run sem-version c 16
   assert_failure
 }
 
 # PHP
 @test "change php to 7.3.27" {
-
   run sem-version php 7.3.27
   assert_success
   source ~/.phpbrew/bashrc
@@ -128,7 +115,6 @@ setup() {
   assert_line --partial "imap"
 }
 @test "change php to 8.0.5" {
-
   run sem-version php 8.0.5
   assert_success
   source ~/.phpbrew/bashrc
@@ -139,11 +125,36 @@ setup() {
   assert_line --partial "imap"
 }
 @test "php check composer 8.0.5" {
-
   run which composer
   assert_success
   source ~/.phpbrew/bashrc
   assert_line --partial "8.0.5"
+}
+
+#  Erlang
+@test "change erlang to 22.3" {
+  sem-version erlang 22.3
+  assert_success
+  run kerl list installations
+  assert_line --partial 22.3
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "22"
+}
+@test "change erlang to 23.3" {
+  sem-version erlang 23.3
+  assert_success
+  run kerl list installations
+  assert_line --partial 23.3
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "23"
+}
+@test "change erlang to 24.0" {
+  sem-version erlang 24.0
+  assert_success
+  run kerl list installations
+  assert_line --partial 24.0
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "24"
 }
 
 #  Elixir
@@ -208,18 +219,14 @@ setup() {
   run node --version
   assert_line --partial "v12.16.1"
 }
+
 #  kubectl
 @test "change kubectl to 1.15.3" {
   sem-version kubectl 1.15.3
   run kubectl version
   assert_line --partial "1.15.3"
 }
-#  erlang
-@test "change erlang to 23.2" {
-  sem-version erlang 23.2
-  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-  assert_line --partial "23"
-}
+
 #  scala
 @test "change scala to 2.11" {
 
@@ -250,4 +257,3 @@ setup() {
   run sem-version firefox 90 --ignore
   assert_success
 }
-

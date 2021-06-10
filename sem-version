@@ -57,6 +57,20 @@ version::change_node() {
   version::change "sem-install node"
   return $?
 }
+version::change_erlang() {
+  [[ "$software_version" == "20" ]] && software_version="20.3"
+  [[ "$software_version" == "21" ]] && software_version="21.3"
+  [[ "$software_version" == "22" ]] && software_version="22.3"
+  [[ "$software_version" == "23" ]] && software_version="23.3"
+  [[ "$software_version" == "24" ]] && software_version="24.0"
+
+  if [[ $(kerl list installations) != *"${software_version}"* ]]; then
+    sem-install erlang "${software_version}"
+  fi
+#  version::change ??????
+  . /home/semaphore/.kerl/installs/$software_version/activate
+  return $?
+}
 version::change_elixir() {
   [[ "$software_version" == "1.7" ]] && software_version="1.7.4"
   [[ "$software_version" == "1.8" ]] && software_version="1.8.2"
@@ -109,10 +123,6 @@ version::change_cpp() {
 }
 version::change_scala() {
   version::change "change-scala-version"
-  return $?
-}
-version::change_erlang() {
-  version::change "change-erlang-version"
   return $?
 }
 version::change_firefox() {
