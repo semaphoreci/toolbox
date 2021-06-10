@@ -126,8 +126,6 @@ install::install_elixir() {
   if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
     . ~/.kerl/installs/${erlang_version}/activate
     kiex install ${language_version}
-    kiex use ${language_version}
-    mix local.hex --force
   else
     curl --silent $(install::package_url)/${language}/elixirs_${language_version}.tar.gz --output elixirs_${language_version}.tar.gz
     curl --silent $(install::package_url)/${language}/archives_${language_version}.tar.gz --output archives_${language_version}.tar.gz
