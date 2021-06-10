@@ -129,13 +129,8 @@ install::install_elixir() {
     kiex use ${language_version}
     mix local.hex --force
   else
-    echo $(install::package_url)/${language}/elixirs_${language_version}.tar.gz
-    pwd
-    curl $(install::package_url)/${language}/elixirs_${language_version}.tar.gz --output elixirs_${language_version}.tar.gz
-    curl $(install::package_url)/${language}/archives_${language_version}.tar.gz --output archives_${language_version}.tar.gz
-    echo $(install::package_url)/${language}/elixirs_${language_version}.tar.gz
-    pwd
-    ls -lah
+    curl --silent $(install::package_url)/${language}/elixirs_${language_version}.tar.gz --output elixirs_${language_version}.tar.gz
+    curl --silent $(install::package_url)/${language}/archives_${language_version}.tar.gz --output archives_${language_version}.tar.gz
     tar -zxf elixirs_${language_version}.tar.gz && rm -rf elixirs_${language_version}.tar.gz
     tar -zxf archives_${language_version}.tar.gz && rm -rf archives_${language_version}.tar.gz
     mv ./elixirs ~/.kiex/
