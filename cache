@@ -414,12 +414,15 @@ cache::lftp_put() {
     if cache::file_is_present ${SEMAPHORE_CACHE_KEY}; then
       cache::log "Key '${SEMAPHORE_CACHE_KEY}' already exists."
     else
+      archive_start=$(date +'%s')
       if [[ "$local_path" = /* ]]; then
         tar czPf /tmp/$tmp_key $local_path
       else
         tar czf /tmp/$tmp_key $local_path
       fi
-
+      archive_end=$(date +'%s')
+      archive_create_duration="$((archive_end - archive_start))"
+      cache::log "Cache archive duration: $archive_create_duration seconds. Size: ${archive_size} bytes."
       archive_size=$(ls -l /tmp/${tmp_key} | awk '{print $5}')
       if [ "${archive_size}" -gt "${limit}" ]; then
         allocated_space=$(numfmt --to=iec ${limit})

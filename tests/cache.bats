@@ -55,6 +55,7 @@ normalize_key() {
   assert_success
   assert_line "Uploading 'tmp' with cache key '${test_key}'..."
   assert_line "Upload complete."
+  assert_output --partial "Cache archive duration:"
   refute_line ${test_key}
   refute_output --partial "command not found"
 
@@ -80,6 +81,7 @@ normalize_key() {
   assert_success
   assert_line "Uploading '/home/semaphore/tmp' with cache key '${test_key}'..."
   assert_line "Upload complete."
+  assert_output --partial "Cache archive duration:"
   refute_line ${test_key}
   refute_output --partial "command not found"
 
@@ -106,6 +108,7 @@ normalize_key() {
   assert_line --partial "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
   assert_line --partial "Uploading 'tmp' with cache key '${test_key}'..."
   assert_line --partial "Upload complete."
+  assert_output --partial "Cache archive duration:"
   refute_line ${test_key}
   refute_output --partial "command not found"
 
@@ -138,6 +141,7 @@ normalize_key() {
   assert_success
   assert_line "Key '${test_key}' already exists."
   refute_line "Uploading 'tmp' with cache key '${tes_key}'..."
+  refute_output --partial "Cache archive duration:"
   refute_line ${test_key}
   refute_output --partial "command not found"
 
@@ -186,6 +190,7 @@ normalize_key() {
 
   run ./cache store $test_key tmp.file
   assert_success
+  assert_output --partial "Cache archive duration:"
   assert_line "Archive exceeds allocated 50K for cache."
   refute_output --partial "command not found"
 }
