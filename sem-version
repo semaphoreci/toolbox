@@ -67,7 +67,7 @@ version::change_erlang() {
   if [[ $(kerl list installations) != *"${software_version}"* ]]; then
     sem-install erlang "${software_version}"
   fi
-#  version::change ??????
+#  version::change ? adding new script to change erlang
   . /home/semaphore/.kerl/installs/$software_version/activate
   return $?
 }

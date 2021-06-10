@@ -85,18 +85,19 @@ install::install_php() {
 
 install::install_erlang() {
   if [[ $(install::available) -eq 1 ]] ; then
-    # should kerl pre-updated in the image already?
+    echo "Building Erlang"
+    # should kerl be pre-updated in the ubuntu image?
     sudo curl https://raw.githubusercontent.com/kerl/kerl/master/kerl --output /opt/kerl && sudo chmod +x /opt/kerl
     kerl update releases
     kerl build "${language_version}" "${language_version}"
     kerl install "${language_version}" ~/.kerl/installs/"${language_version}"
     echo ""${language_version}" /home/semaphore/.kerl/installs/"${language_version}"">> ~/.kerl/otp_installations
   else
+    echo "Downloading Erlang"
     install::download
-    tar -zxf ./"${language_version}".tar.gz
+    tar -zxf ./"${language_version}".tar.gz && rm -rf ./"${language_version}".tar.gz
     mv ./"${language_version}" ~/.kerl/installs/
     echo ""${language_version}" /home/semaphore/.kerl/installs/"${language_version}"">> ~/.kerl/otp_installations
-#    . ~/.kerl/installs/"${language_version}"/activate
   fi
   return $?
 }
@@ -124,31 +125,25 @@ install::install_elixir() {
         ;;
   esac
   if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
-    echo "Building"
-    if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then sem-install erlang ${erlang_version}
+    echo "Building Elixir"
+    if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then install_erlang ${erlang_version}; fi
+    # what if customer wants to use different version of suported erlang to build elixir?
     . ~/.kerl/installs/${erlang_version}/activate
-    echo "erlang changed to ${erlang_version} with activate"
     kiex install ${language_version}
-    # should install fucntion do the changes or that should be left in sem-version. hex requires change in orter to install in proper folder
+    # should install fucntion do the changes or that should be done in sem-version? hex requires change in order to install in proper folder
     kiex use ${language_version}
     mix local.hex --force
   else
-    echo "Downloading"
-    if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then sem-install erlang ${erlang_version}
+    echo "Downloading Elixir"
+    if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then install_erlang ${erlang_version}; fi
     curl --silent $(install::package_url)/${language}/elixirs_${language_version}.tar.gz --output elixirs_${language_version}.tar.gz
     curl --silent $(install::package_url)/${language}/archives_${language_version}.tar.gz --output archives_${language_version}.tar.gz
-    echo "download domplete"
     tar -zxf elixirs_${language_version}.tar.gz && rm -rf elixirs_${language_version}.tar.gz
     tar -zxf archives_${language_version}.tar.gz && rm -rf archives_${language_version}.tar.gz
-    echo "extract complete"
     mv ./elixirs/*${language_version}* ~/.kiex/elixirs/
     mv ./elixirs/.*${language_version}* ~/.kiex/elixirs/
     mv ./archives/*${language_version} ~/.kiex/mix/archives/
-    echo "mv complete"
     rm -rf ./archives && rm -rf ./elixirs
-    echo "rm complete"
-#    kiex use ${language_version}
-#    echo "kiex use done"
   fi
   return $?
 }
