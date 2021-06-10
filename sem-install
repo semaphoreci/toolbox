@@ -127,7 +127,7 @@ install::install_elixir() {
     . ~/.kerl/installs/${erlang_version}/activate
     mkdir -p ~/.kiex/elixirs
     kiex install ${language_version}
-    ~/.kiex/elixirs/elixir/elixir-${language_version}/mix local.hex --force
+    ~/.kiex/elixirs/elixir-${language_version}/mix local.hex --force
   else
     curl --silent $(install::package_url)/${language}/elixirs_${language_version}.tar.gz --output elixirs_${language_version}.tar.gz
     curl --silent $(install::package_url)/${language}/archives_${language_version}.tar.gz --output archives_${language_version}.tar.gz
