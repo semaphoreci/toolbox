@@ -29,8 +29,7 @@ setup() {
 @test "change erlang to 21.3" {
   sem-version erlang 21.3
   run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-  assert_line --partial "21.3"
-
+  assert_line --partial "21"
 }
 
 #  Elixir

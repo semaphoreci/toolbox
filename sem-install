@@ -119,7 +119,9 @@ install::install_elixir() {
         return 1;
         ;;
   esac
+  language_switch=${language_version}
   sem-install erlang ${erlang_version}
+  language_version=${language_switch}
   if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
     . ~/.kerl/installs/${erlang_version}/activate
     kiex install ${language_version}
