@@ -171,6 +171,9 @@ sem-install() {
     elixir)
       install::install_elixir
       ;;
+    erlang)
+      install::install_erlang
+      ;;
 
     *)
       install:err "Installation of '${language}' is not yet supported"
