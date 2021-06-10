@@ -91,12 +91,14 @@ install::install_erlang() {
     kerl build "${language_version}" "${language_version}"
     kerl install "${language_version}" ~/.kerl/installs/"${language_version}"
     echo ""${language_version}" /home/semaphore/.kerl/installs/"${language_version}"">> ~/.kerl/otp_installations
- else
+  else
     install::download
     tar -zxf ./"${language_version}".tar.gz
     mv ./"${language_version}" ~/.kerl/installs/
     echo ""${language_version}" /home/semaphore/.kerl/installs/"${language_version}"">> ~/.kerl/otp_installations
 #    . ~/.kerl/installs/"${language_version}"/activate
+  fi
+  return $?
 }
 
 install::install_elixir() {
