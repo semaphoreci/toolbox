@@ -42,4 +42,14 @@ setup() {
   assert_success
   assert_line --partial "hex"
 }
+#  Elixir
+@test "change elixir to 1.12.0" {
+  sem-version elixir 1.12.0
+  assert_success
+  run elixir --version
+  assert_line --partial "Elixir 1.12.0"
+  run ls /home/semaphore/.kiex/mix/archives/elixir-1.12.0/
+  assert_success
+  assert_line --partial "hex"
+}
 
