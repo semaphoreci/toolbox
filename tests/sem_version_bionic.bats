@@ -172,14 +172,6 @@ setup() {
   run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
   assert_line --partial "22"
 }
-@test "change erlang to 24.0.1" {
-  sem-version erlang 24.0.1
-  assert_success
-  run kerl list installations
-  assert_line --partial 24.0.1
-  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-  assert_line --partial "24"
-}
 
 
 #  Elixir
