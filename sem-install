@@ -85,15 +85,13 @@ install::install_php() {
 
 install::install_erlang() {
   if [[ $(install::available) -eq 1 ]] ; then
-    echo "Building Erlang"
-    # should kerl be pre-updated in the ubuntu image?
-    sudo curl https://raw.githubusercontent.com/kerl/kerl/master/kerl --output /opt/kerl && sudo chmod +x /opt/kerl
+    # kerl update, should be removed after 2.1.2 is added to the Ubuntu image
+    sudo curl https://raw.githubusercontent.com/kerl/kerl/2.1.2/kerl --output /opt/kerl && sudo chmod +x /opt/kerl
     kerl update releases
     kerl build "${language_version}" "${language_version}"
     kerl install "${language_version}" ~/.kerl/installs/"${language_version}"
     echo ""${language_version}" /home/semaphore/.kerl/installs/"${language_version}"">> ~/.kerl/otp_installations
   else
-    echo "Downloading Erlang"
     install::download
     tar -zxf ./"${language_version}".tar.gz && rm -rf ./"${language_version}".tar.gz
     mv ./"${language_version}" ~/.kerl/installs/
@@ -125,16 +123,12 @@ install::install_elixir() {
         ;;
   esac
   if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
-    echo "Building Elixir"
     if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then install_erlang ${erlang_version}; fi
-    # what if customer wants to use different version of suported erlang to build elixir?
     . ~/.kerl/installs/${erlang_version}/activate
     kiex install ${language_version}
-    # should install fucntion do the changes or that should be done in sem-version? hex requires change in order to install in proper folder
     kiex use ${language_version}
     mix local.hex --force
   else
-    echo "Downloading Elixir"
     if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then install_erlang ${erlang_version}; fi
     curl --silent $(install::package_url)/${language}/elixirs_${language_version}.tar.gz --output elixirs_${language_version}.tar.gz
     curl --silent $(install::package_url)/${language}/archives_${language_version}.tar.gz --output archives_${language_version}.tar.gz
@@ -155,7 +149,7 @@ Usage:
 }
 
 install::err() {
-  echo -e "\n! [$(version::date)]: $@" >&2 
+  echo -e "\n! [$(version::date)]: $@" >&2
   return 1
 }
 
