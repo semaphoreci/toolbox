@@ -164,26 +164,8 @@ setup() {
   run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
   assert_line --partial "24"
 }
-@test "change erlang to 22.3.4.18" {
-  sem-version erlang 22.3.4.18
-  assert_success
-  run kerl list installations
-  assert_line --partial 22.3.4.18
-  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-  assert_line --partial "22"
-}
-
 
 #  Elixir
-@test "change elixir to 1.7.4" {
-  sem-version elixir 1.7.4
-  assert_success
-  run elixir --version
-  assert_line --partial "Elixir 1.7.4"
-  run ls /home/semaphore/.kiex/mix/archives/elixir-1.7.4/
-  assert_success
-  assert_line --partial "hex"
-}
 @test "change elixir to 1.8.2" {
   sem-version elixir 1.8.2
   assert_success
@@ -226,15 +208,6 @@ setup() {
   run elixir --version
   assert_line --partial "Elixir 1.12.1"
   run ls /home/semaphore/.kiex/mix/archives/elixir-1.12.1/
-  assert_success
-  assert_line --partial "hex"
-}
-@test "change elixir to 1.12.0-rc.1" {
-  sem-version elixir 1.12.0-rc.1
-  assert_success
-  run elixir --version
-  assert_line --partial "Elixir 1.12.0-rc.1"
-  run ls /home/semaphore/.kiex/mix/archives/elixir-1.12.0-rc.1/
   assert_success
   assert_line --partial "hex"
 }

@@ -85,8 +85,6 @@ install::install_php() {
 
 install::install_erlang() {
   if [[ $(install::available) -eq 1 ]] ; then
-    # kerl update, should be removed after 2.1.2 is added to the Ubuntu image
-    sudo curl https://raw.githubusercontent.com/kerl/kerl/2.1.2/kerl --output /opt/kerl && sudo chmod +x /opt/kerl
     kerl update releases
     kerl build "${language_version}" "${language_version}"
     kerl install "${language_version}" ~/.kerl/installs/"${language_version}"
@@ -104,10 +102,7 @@ install::install_elixir() {
   response1=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/elixirs_${language_version}.tar.gz)
   response2=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/archives_${language_version}.tar.gz)
   case ${language_version} in
-      "1.7"* | "1.8"*)
-        local erlang_version="21.3"
-        ;;
-      "1.9"* | "1.10"*)
+      "1.7"* | "1.8"* | "1.9"* | "1.10"*)
         local erlang_version="22.3"
         ;;
       "1.11"*)
@@ -116,20 +111,18 @@ install::install_elixir() {
       "1.12"*)
         local erlang_version="24.0"
         ;;
-
       *)
-        echo "Building of '${language}' version '${language_version}' is not supported"
+        echo "Installation of '${language}' version '${language_version}' is not yet supported"
         return 1;
         ;;
   esac
+  if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then install_erlang ${erlang_version}; fi
   if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
-    if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then install_erlang ${erlang_version}; fi
     . ~/.kerl/installs/${erlang_version}/activate
     kiex install ${language_version}
     kiex use ${language_version}
     mix local.hex --force
   else
-    if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then install_erlang ${erlang_version}; fi
     curl --silent $(install::package_url)/${language}/elixirs_${language_version}.tar.gz --output elixirs_${language_version}.tar.gz
     curl --silent $(install::package_url)/${language}/archives_${language_version}.tar.gz --output archives_${language_version}.tar.gz
     tar -zxf elixirs_${language_version}.tar.gz && rm -rf elixirs_${language_version}.tar.gz
