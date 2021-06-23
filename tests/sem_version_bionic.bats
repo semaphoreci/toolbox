@@ -169,7 +169,7 @@ setup() {
   run node --version
   assert_line --partial "v12.16.1"
   run npm --version
-  assert_line --partial "7.18.1"
+  assert_line --partial "$(npm view npm version)"
 }
 #  kubectl
 @test "change kubectl to 1.15.3" {
