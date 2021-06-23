@@ -168,6 +168,8 @@ setup() {
   sem-version node 12.16.1
   run node --version
   assert_line --partial "v12.16.1"
+  run npm --version
+  assert_line --partial "7.18.1"
 }
 #  kubectl
 @test "change kubectl to 1.15.3" {
