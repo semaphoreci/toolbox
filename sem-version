@@ -57,6 +57,7 @@ version::change_node() {
   version::change "sem-install node"
   return $?
 }
+
 version::change_erlang() {
   [[ "$software_version" == "20" ]] && software_version="20.3"
   [[ "$software_version" == "21" ]] && software_version="21.3"

@@ -85,6 +85,8 @@ install::install_php() {
 
 install::install_erlang() {
   if [[ $(install::available) -eq 1 ]] ; then
+    export KERL_BUILD_BACKEND=git
+    export OTP_GITHUB_URL='https://github.com/erlang/otp'
     kerl update releases
     kerl build "${language_version}" "${language_version}"
     kerl install "${language_version}" ~/.kerl/installs/"${language_version}"
