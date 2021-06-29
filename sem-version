@@ -67,7 +67,9 @@ version::change_elixir() {
 }
 version::change_go() {
   version::change "change-go-version"
-  return $?
+  ret=$?
+  [[ "$ret" == "0" ]] && export PATH="$(go env GOPATH)/bin:${PATH}"
+  return $ret
 }
 version::change_java() {
   version::change "change-java-version"
