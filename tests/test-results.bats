@@ -20,6 +20,7 @@ teardown() {
 
 teardown_file() {
   artifact yank job test-results
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID/$SEMAPHORE_JOB_ID.json
 }
 
 @test "test-results publish works" {

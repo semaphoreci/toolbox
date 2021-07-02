@@ -102,8 +102,11 @@ blocks:
                 - tests/test-results.bats
                 - tests/macOS_sem_version.bats
           commands:
-            - bats -o /tmp/ --report-formatter junit --tap --timing $TEST
-            - test-results publish /tmp/report.xml
+            - bats --report-formatter junit --tap --timing $TEST
+      epilogue:
+        always:
+          commands:
+            - 'test-results publish report.xml --name="Bats: Mac" --suite-prefix=$TEST'
 
   - name: 'Bats: Docker'
     dependencies: []
@@ -131,8 +134,11 @@ blocks:
                 - tests/artifacts.bats
                 - tests/test-results.bats
           commands:
-            - bats -o /tmp/ --report-formatter junit --tap --timing $TEST
-            - test-results publish /tmp/report.xml
+            - bats --report-formatter junit --tap --timing $TEST
+      epilogue:
+        always:
+          commands:
+            - 'test-results publish report.xml --name="Bats: Docker" --suite-prefix=$TEST'
 
   - name: 'Bats: Minimal Docker'
     dependencies: []
@@ -161,8 +167,11 @@ blocks:
                 - tests/artifacts.bats
                 - tests/test-results.bats
           commands:
-            - bats -o /tmp/ --report-formatter junit --tap --timing $TEST
-            - test-results publish /tmp/report.xml
+            - bats --report-formatter junit --tap --timing $TEST
+      epilogue:
+        always:
+          commands:
+            - 'test-results publish report.xml --name="Bats: Minimal Docker" --suite-prefix=$TEST'
 
   - name: 'Bats: Linux'
     dependencies: []
@@ -191,8 +200,11 @@ blocks:
                 - tests/compiler.bats
                 - tests/test-results.bats
           commands:
-            - bats -o /tmp/ --report-formatter junit --tap --timing $TEST
-            - test-results publish /tmp/report.xml
+            - bats --report-formatter junit --tap --timing $TEST
+      epilogue:
+        always:
+          commands:
+            - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
 
 promotions:
   - name: Release
@@ -201,3 +213,7 @@ promotions:
       - result: passed
         branch:
           - ^refs/tags/v*
+  - name: Pipeline report
+    pipeline_file: reports.yml
+    auto_promote:
+      when: true
