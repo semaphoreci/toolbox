@@ -15,6 +15,13 @@ setup() {
   . /home/semaphore/.nvm/nvm.sh
   export PATH="$PATH:/home/semaphore/.yarn/bin"
   source "/home/semaphore/.kiex/scripts/kiex"
+  rm -rf /home/semaphore/.kiex/elixirs/
+  mkdir /home/semaphore/.kiex/elixirs
+  rm -rf /home/semaphore/.kiex/mix/archives
+  mkdir /home/semaphore/.kiex/mix/archives
+  rm -rf /home/semaphore/.kerl/installs/
+  mkdir /home/semaphore/.kerl/installs
+  rm -rf /home/semaphore/.kerl/otp_installations
   export PATH="/home/semaphore/.rbenv/bin:$PATH"
   export NVM_DIR=/home/semaphore/.nvm
   export PHPBREW_HOME=/home/semaphore/.phpbrew
@@ -131,40 +138,6 @@ setup() {
   assert_line --partial "8.0.5"
 }
 
-#  Erlang
-@test "change erlang to 21.3" {
-  sem-version erlang 21.3
-  assert_success
-  run kerl list installations
-  assert_line --partial 21.3
-  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-  assert_line --partial "21"
-}
-@test "change erlang to 22.3" {
-  sem-version erlang 22.3
-  assert_success
-  run kerl list installations
-  assert_line --partial 22.3
-  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-  assert_line --partial "22"
-}
-@test "change erlang to 23.3" {
-  sem-version erlang 23.3
-  assert_success
-  run kerl list installations
-  assert_line --partial 23.3
-  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-  assert_line --partial "23"
-}
-@test "change erlang to 24.0" {
-  sem-version erlang 24.0
-  assert_success
-  run kerl list installations
-  assert_line --partial 24.0
-  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-  assert_line --partial "24"
-}
-
 #  Elixir
 @test "change elixir to 1.8.2" {
   sem-version elixir 1.8.2
@@ -210,6 +183,40 @@ setup() {
   run ls /home/semaphore/.kiex/mix/archives/elixir-1.12.2/
   assert_success
   assert_line --partial "hex"
+}
+
+#  Erlang
+@test "change erlang to 21.3" {
+  sem-version erlang 21.3
+  assert_success
+  run kerl list installations
+  assert_line --partial 21.3
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "21"
+}
+@test "change erlang to 22.3" {
+  sem-version erlang 22.3
+  assert_success
+  run kerl list installations
+  assert_line --partial 22.3
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "22"
+}
+@test "change erlang to 23.3" {
+  sem-version erlang 23.3
+  assert_success
+  run kerl list installations
+  assert_line --partial 23.3
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "23"
+}
+@test "change erlang to 24.0" {
+  sem-version erlang 24.0
+  assert_success
+  run kerl list installations
+  assert_line --partial 24.0
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "24"
 }
 
 #  Node
