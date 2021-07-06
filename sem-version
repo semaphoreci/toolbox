@@ -77,7 +77,7 @@ version::change_elixir() {
   [[ "$software_version" == "1.9" ]] && software_version="1.9.4"
   [[ "$software_version" == "1.10" ]] && software_version="1.10.4"
   [[ "$software_version" == "1.11" ]] && software_version="1.11.4"
-  [[ "$software_version" == "1.12" ]] && software_version="1.12.1"
+  [[ "$software_version" == "1.12" ]] && software_version="1.12.2"
 
   if [[ $(kiex list) != *"${software_version}"* ]]; then
     sem-install elixir "${software_version}"
