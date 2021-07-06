@@ -118,7 +118,15 @@ install::install_elixir() {
         return 1;
         ;;
   esac
-  if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then install_erlang ${erlang_version}; fi
+  if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then 
+    language_before=${language}
+    language_version_before=${language_version}
+    language="erlang"
+    language_version=${erlang_version}
+    install::install_erlang
+    language=${language_before}
+    language_version=${language_version_before}
+  fi
   if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
     . ~/.kerl/installs/${erlang_version}/activate
     kiex install ${language_version}
