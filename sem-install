@@ -32,7 +32,6 @@ install::download() {
 install::install_node() {
   NVM_NODEJS_ORG_MIRROR=https://nodejs.semaphoreci.com/dist nvm install ${language_version}
   nvm use ${language_version}
-  npm install -g npm
   npm install -g grunt-cli
   result="$?"
   sudo ln -fs "$(which node)" /usr/bin/nodejs
