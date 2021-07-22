@@ -153,15 +153,15 @@ normalize_key() {
 @test "automatic key deletion in case of insufficient space" {
   preexisting_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   new_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH-1)
-  dd if=/dev/zero of=tmp.file bs=1M count=50
-  dd if=/dev/zero of=tmp.larger_file bs=1M count=70
+  dd if=/dev/urandom of=tmp.file bs=1M count=50
+  dd if=/dev/urandom of=tmp.larger_file bs=1M count=70
   export CACHE_SIZE=110
   ./cache store $preexisting_key tmp.file
   ./cache store tmp-key tmp.file
   ./cache list
 
   run ./cache store $new_key tmp.larger_file
-  assert_line "Not enough space, deleting the oldest keys."
+  assert_line --partial "Not enough space, deleting the oldest keys."
   assert_line "Key ${preexisting_key} is deleted."
   assert_line "Key tmp-key is deleted."
   assert_line "Uploading 'tmp.larger_file' with cache key '${new_key}'..."
