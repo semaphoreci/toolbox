@@ -191,7 +191,7 @@ normalize_key() {
   run ./cache store $test_key tmp.file
   assert_success
   assert_output --partial "Cache archive duration:"
-  assert_line "Archive exceeds allocated 50K for cache."
+  assert_line --partial "Archive exceeds allocated 50K for cache."
   refute_output --partial "command not found"
 }
 
