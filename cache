@@ -422,7 +422,7 @@ cache::lftp_put() {
       fi
       archive_end=$(date +'%s')
       archive_create_duration="$((archive_end - archive_start))"
-      archive_size=$(ls -l /tmp/${tmp_key} | stat --format='%s' /tmp/${key})
+      archive_size=$(ls -l "/tmp/${tmp_key}" | stat --format='%s' "/tmp/${key}")
       cache::log "Cache archive duration: $archive_create_duration seconds. Size: ${archive_size} bytes."
       if [ "${archive_size}" -gt "${limit}" ]; then
         allocated_space=$(numfmt --to=iec ${limit})
