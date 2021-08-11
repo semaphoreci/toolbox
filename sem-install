@@ -62,7 +62,7 @@ install::install_php() {
     echo "date.timezone = UTC" >> ~/.phpbrew/php/php-${language_version}/etc/php.ini
     phpbrew ext install imap -- --with-kerberos --with-imap-ssl
     phpbrew ext install gd -- --enable-gd-native-ttf --with-freetype-dir=/usr/lib/x86_64-linux-gnu
-    phpbrew ext install imagick
+    if [[ $(echo "${language_version}" | cut -f1 -d".") != "8" ]]; then phpbrew ext install imagick; fi
     phpbrew ext install intl
     wget https://getcomposer.org/composer-stable.phar -O ~/.phpbrew/php/php-${language_version}/bin/composer.phar
     echo '#!/usr/bin/env bash' >> ~/.phpbrew/php/php-${language_version}/bin/composer

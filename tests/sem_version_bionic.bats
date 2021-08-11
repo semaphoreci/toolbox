@@ -59,17 +59,17 @@ setup() {
   run ruby --version
   assert_line --partial "ruby 2.3.7"
 }
-@test "change ruby to 2.7.3" {
-  run sem-version ruby 2.7.3
+@test "change ruby to 2.7.4" {
+  run sem-version ruby 2.7.4
   assert_success
   run ruby --version
-  assert_line --partial "ruby 2.7.3"
+  assert_line --partial "ruby 2.7.4"
 }
-@test "change ruby to 3.0.1" {
-  run sem-version ruby 3.0.1
+@test "change ruby to 3.0.2" {
+  run sem-version ruby 3.0.2
   assert_success
   run ruby --version
-  assert_line --partial "ruby 3.0.1"
+  assert_line --partial "ruby 3.0.2"
 }
 @test "ruby minor versions test" {
   run sem-version ruby 2.5
@@ -80,17 +80,17 @@ setup() {
   run sem-version ruby 2.6
   assert_success
   run ruby --version
-  assert_line --partial "ruby 2.6.7"
+  assert_line --partial "ruby 2.6.8"
 
   run sem-version ruby 2.7
   assert_success
   run ruby --version
-  assert_line --partial "ruby 2.7.3"
+  assert_line --partial "ruby 2.7.4"
 
   run sem-version ruby 3.0
   assert_success
   run ruby --version
-  assert_line --partial "ruby 3.0.1"
+  assert_line --partial "ruby 3.0.2"
 }
 @test "change ruby to 4.0.1" {
   run sem-version ruby 4.0.1
@@ -110,32 +110,32 @@ setup() {
 }
 
 # PHP
-@test "change php to 7.3.27" {
-  run sem-version php 7.3.27
+@test "change php to 7.3.29" {
+  run sem-version php 7.3.29
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 7.3.27"
+  assert_line --partial "PHP 7.3.29"
   run php -m 
   assert_line --partial "magick"
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
-@test "change php to 8.0.5" {
-  run sem-version php 8.0.5
+@test "change php to 8.0.9" {
+  run sem-version php 8.0.9
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.0.5"
+  assert_line --partial "PHP 8.0.9"
   run php -m 
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
-@test "php check composer 8.0.5" {
+@test "php check composer 8.0.9" {
   run which composer
   assert_success
   source ~/.phpbrew/bashrc
-  assert_line --partial "8.0.5"
+  assert_line --partial "8.0.9"
 }
 
 #  Elixir
