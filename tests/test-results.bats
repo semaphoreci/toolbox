@@ -52,3 +52,10 @@ teardown_file() {
   run diff junit-sample.json junit-compile.json
   assert_success
 }
+
+@test "test-results compile does not work with non existent file" {
+  cd /tmp/test-results-cli
+
+  run test-results compile /tmp/some/file /tmp/some/file.json
+  assert_failure
+}
