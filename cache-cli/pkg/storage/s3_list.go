@@ -2,12 +2,14 @@ package storage
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
-func (s *S3Storage) List() (*ListResult, error) {
+func (s *S3Storage) List() ([]CacheKey, error) {
 	input := s3.ListObjectsInput{
 		Bucket: &s.bucketName,
 		Prefix: &s.project,
@@ -18,20 +20,19 @@ func (s *S3Storage) List() (*ListResult, error) {
 		return nil, err
 	}
 
-	return createListResult(output.Contents), nil
+	return createListResult(s.project, output.Contents), nil
 }
 
-func createListResult(objects []types.Object) *ListResult {
-	result := ListResult{
-		Keys: make([]CacheKey, 0),
-	}
+func createListResult(project string, objects []types.Object) []CacheKey {
+	keys := make([]CacheKey, 0)
 
 	for _, object := range objects {
-		result.Keys = append(result.Keys, CacheKey{
-			Name:      *object.Key,
-			UpdatedAt: object.LastModified,
+		keyWithoutProject := strings.ReplaceAll(*object.Key, fmt.Sprintf("%s/", project), "")
+		keys = append(keys, CacheKey{
+			Name:     keyWithoutProject,
+			StoredAt: object.LastModified,
 		})
 	}
 
-	return &result
+	return keys
 }

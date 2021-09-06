@@ -7,17 +7,14 @@ import (
 )
 
 type Storage interface {
-	List() (*ListResult, error)
+	List() ([]CacheKey, error)
 	HasKey(key string) (bool, error)
-}
-
-type ListResult struct {
-	Keys []CacheKey
+	Store(key, path string) error
 }
 
 type CacheKey struct {
-	Name      string
-	UpdatedAt *time.Time
+	Name     string
+	StoredAt *time.Time
 }
 
 func InitStorage() (Storage, error) {

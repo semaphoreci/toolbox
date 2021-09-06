@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
@@ -12,6 +13,7 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "list all keys in the cache.",
 	Long:  ``,
+	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		RunList(cmd, args)
 	},
@@ -21,13 +23,16 @@ func RunList(cmd *cobra.Command, args []string) {
 	storage, err := storage.InitStorage()
 	utils.Check(err)
 
-	listResult, err := storage.List()
+	keys, err := storage.List()
 	utils.Check(err)
 
-	if len(listResult.Keys) == 0 {
+	if len(keys) == 0 {
 		fmt.Println("Cache is empty.")
 	} else {
-		fmt.Println(listResult)
+		fmt.Printf("%-60s%-12s\n", "NAME", "STORED AT")
+		for _, key := range keys {
+			fmt.Printf("%-60s%-12s\n", key.Name, key.StoredAt.Format(time.RFC822))
+		}
 	}
 }
 
