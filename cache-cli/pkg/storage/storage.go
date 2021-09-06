@@ -10,6 +10,7 @@ type Storage interface {
 	List() ([]CacheKey, error)
 	HasKey(key string) (bool, error)
 	Store(key, path string) error
+	Delete(key string) error
 }
 
 type CacheKey struct {
