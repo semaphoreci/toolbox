@@ -12,7 +12,7 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "list all keys in the cache.",
+	Short: "List all keys in the cache.",
 	Long:  ``,
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {

@@ -13,7 +13,7 @@ import (
 
 var storeCmd = &cobra.Command{
 	Use:   "store [key path]",
-	Short: "Store values in cache.",
+	Short: "Store keys in the cache.",
 	Long:  ``,
 	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {

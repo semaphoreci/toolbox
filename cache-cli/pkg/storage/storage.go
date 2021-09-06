@@ -12,12 +12,18 @@ type Storage interface {
 	Store(key, path string) error
 	Delete(key string) error
 	Clear() error
+	Usage() (*UsageSummary, error)
 }
 
 type CacheKey struct {
 	Name     string
 	StoredAt *time.Time
 	Size     int64
+}
+
+type UsageSummary struct {
+	Free int64
+	Used int64
 }
 
 func InitStorage() (Storage, error) {

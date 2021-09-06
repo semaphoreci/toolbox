@@ -10,7 +10,7 @@ import (
 
 var deleteCmd = &cobra.Command{
 	Use:   "delete [key]",
-	Short: "Deletes a key from the cache.",
+	Short: "Delete a key from the cache.",
 	Long:  ``,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
