@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
 	"github.com/spf13/cobra"
@@ -29,9 +30,9 @@ func RunList(cmd *cobra.Command, args []string) {
 	if len(keys) == 0 {
 		fmt.Println("Cache is empty.")
 	} else {
-		fmt.Printf("%-60s%-12s\n", "NAME", "STORED AT")
+		fmt.Printf("%-60s %-12s %-12s\n", "NAME", "SIZE", "STORED AT")
 		for _, key := range keys {
-			fmt.Printf("%-60s%-12s\n", key.Name, key.StoredAt.Format(time.RFC822))
+			fmt.Printf("%-60s %-12s %-12s\n", key.Name, files.HumanReadableSize(key.Size), key.StoredAt.Format(time.RFC822))
 		}
 	}
 }

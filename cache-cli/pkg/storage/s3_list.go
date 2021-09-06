@@ -31,6 +31,7 @@ func createListResult(project string, objects []types.Object) []CacheKey {
 		keys = append(keys, CacheKey{
 			Name:     keyWithoutProject,
 			StoredAt: object.LastModified,
+			Size:     object.Size,
 		})
 	}
 

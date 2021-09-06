@@ -55,7 +55,7 @@ func compressAndStore(storage storage.Storage, key, path string) {
 
 		compressionDuration := time.Since(compressingStart)
 		info, _ := os.Stat(compressed)
-		fmt.Printf("Compression duration: %v. Size: %v bytes.\n", compressionDuration.String(), info.Size())
+		fmt.Printf("Compression duration: %v. Size: %v bytes.\n", compressionDuration.String(), files.HumanReadableSize(info.Size()))
 
 		uploadStart := time.Now()
 		fmt.Printf("Uploading '%s' with cache key '%s'...\n", path, key)

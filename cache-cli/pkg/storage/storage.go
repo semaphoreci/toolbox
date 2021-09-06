@@ -11,11 +11,13 @@ type Storage interface {
 	HasKey(key string) (bool, error)
 	Store(key, path string) error
 	Delete(key string) error
+	Clear() error
 }
 
 type CacheKey struct {
 	Name     string
 	StoredAt *time.Time
+	Size     int64
 }
 
 func InitStorage() (Storage, error) {
