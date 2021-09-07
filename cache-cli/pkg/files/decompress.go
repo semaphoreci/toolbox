@@ -1,10 +1,13 @@
 package files
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"fmt"
+	"io"
+	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 )
 
 func Decompress(path string) error {
@@ -28,6 +31,7 @@ func decompressionCommand(path string) (*exec.Cmd, error) {
 	}
 
 	if filepath.IsAbs(restorationPath) {
+		fmt.Printf("Absolute restoration path found: %s.\n", restorationPath)
 		return exec.Command("tar", "xzPf", path, "-C", "."), nil
 	} else {
 		return exec.Command("tar", "xzf", path, "-C", "."), nil
@@ -35,19 +39,33 @@ func decompressionCommand(path string) (*exec.Cmd, error) {
 }
 
 func findRestorationPath(path string) (string, error) {
-	var cmd *exec.Cmd
-	switch runtime.GOOS {
-	case "darwin":
-		cmd = exec.Command(fmt.Sprintf("tar -ztvf %s 2>/dev/null | head -1 | awk '{print $9}'", path))
-	case "linux":
-		cmd = exec.Command(fmt.Sprintf("tar -ztvf %s 2>/dev/null | head -1 | awk '{print $6}'", path))
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Printf("error opening %s: %v\n", path, err)
+		return "", err
 	}
 
-	output, err := cmd.Output()
+	defer file.Close()
+
+	gzipReader, err := gzip.NewReader(file)
 	if err != nil {
+		fmt.Printf("error creating gzip reader: %v\n", err)
+		return "", err
+	}
+
+	defer gzipReader.Close()
+
+	tr := tar.NewReader(gzipReader)
+	header, err := tr.Next()
+	if err == io.EOF {
+		fmt.Printf("No files in archive.\n")
 		return "", nil
 	}
 
-	fmt.Printf("Restoration path is %s\n", string(output))
-	return string(output), nil
+	if err != nil {
+		fmt.Printf("Error reading %s: %v\n", path, err)
+		return "", err
+	}
+
+	return header.Name, nil
 }
