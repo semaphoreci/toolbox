@@ -10,31 +10,30 @@ import (
 	"path/filepath"
 )
 
-func Decompress(path string) error {
-	cmd, err := decompressionCommand(path)
+func Unpack(path string) (string, error) {
+	restorationPath, err := findRestorationPath(path)
 	if err != nil {
-		return err
+		return "", err
+	}
+
+	cmd, err := unpackCommand(restorationPath, path)
+	if err != nil {
+		return "", err
 	}
 
 	_, err = cmd.Output()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return restorationPath, nil
 }
 
-func decompressionCommand(path string) (*exec.Cmd, error) {
-	restorationPath, err := findRestorationPath(path)
-	if err != nil {
-		return nil, err
-	}
-
+func unpackCommand(restorationPath, tempFile string) (*exec.Cmd, error) {
 	if filepath.IsAbs(restorationPath) {
-		fmt.Printf("Absolute restoration path found: %s.\n", restorationPath)
-		return exec.Command("tar", "xzPf", path, "-C", "."), nil
+		return exec.Command("tar", "xzPf", tempFile, "-C", "."), nil
 	} else {
-		return exec.Command("tar", "xzf", path, "-C", "."), nil
+		return exec.Command("tar", "xzf", tempFile, "-C", "."), nil
 	}
 }
 

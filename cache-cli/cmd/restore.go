@@ -34,10 +34,10 @@ func RunRestore(cmd *cobra.Command, args []string) {
 
 	if len(args) == 0 {
 		lookupResults := files.Lookup()
-		downloadAndDecompress(storage, onlyKeys(lookupResults))
+		downloadAndUnpack(storage, onlyKeys(lookupResults))
 	} else {
 		keys := strings.Split(args[0], ",")
-		downloadAndDecompress(storage, keys)
+		downloadAndUnpack(storage, keys)
 	}
 }
 
@@ -50,31 +50,57 @@ func onlyKeys(lookupResults []files.LookupResult) []string {
 	return keys
 }
 
-func downloadAndDecompress(storage storage.Storage, keys []string) {
+func downloadAndUnpack(storage storage.Storage, keys []string) {
 	for _, key := range keys {
-		if ok, _ := storage.HasKey(key); !ok {
-			fmt.Printf("Key %s does not exist.\n", key)
-			continue
+		if ok, _ := storage.HasKey(key); ok {
+			fmt.Printf("HIT: '%s', using key '%s'.\n", key, key)
+			downloadAndUnpackKey(storage, key)
+			return
 		}
 
-		downloadStart := time.Now()
-		fmt.Printf("Downloading %s...\n", key)
-		compressed, err := storage.Restore(key)
+		availableKeys, err := storage.List()
 		utils.Check(err)
 
-		downloadDuration := time.Since(downloadStart)
-		info, _ := os.Stat(compressed.Name())
-		fmt.Printf("Download complete. Duration: %v. Size: %v bytes.\n", downloadDuration.String(), files.HumanReadableSize(info.Size()))
-
-		decompressStart := time.Now()
-		fmt.Printf("Decompressing '%s'...\n", compressed.Name())
-		err = files.Decompress(compressed.Name())
-		utils.Check(err)
-
-		decompressDuration := time.Since(decompressStart)
-		fmt.Printf("Decompression complete. Duration: %v.\n", decompressDuration)
-		os.Remove(compressed.Name())
+		matchingKey := findMatchingKey(availableKeys, key)
+		if matchingKey != "" {
+			fmt.Printf("HIT: '%s', using key '%s'.\n", key, matchingKey)
+			downloadAndUnpackKey(storage, key)
+			return
+		} else {
+			fmt.Printf("MISS: '%s'.\n", key)
+		}
 	}
+}
+
+func findMatchingKey(availableKeys []storage.CacheKey, match string) string {
+	for _, availableKey := range availableKeys {
+		if strings.Contains(availableKey.Name, match) {
+			return availableKey.Name
+		}
+	}
+
+	return ""
+}
+
+func downloadAndUnpackKey(storage storage.Storage, key string) {
+	downloadStart := time.Now()
+	fmt.Printf("Downloading key '%s'...\n", key)
+	compressed, err := storage.Restore(key)
+	utils.Check(err)
+
+	downloadDuration := time.Since(downloadStart)
+	info, _ := os.Stat(compressed.Name())
+	fmt.Printf("Download complete. Duration: %v. Size: %v bytes.\n", downloadDuration.String(), files.HumanReadableSize(info.Size()))
+
+	unpackStart := time.Now()
+	fmt.Printf("Unpacking '%s'...\n", compressed.Name())
+	restorationPath, err := files.Unpack(compressed.Name())
+	utils.Check(err)
+
+	unpackDuration := time.Since(unpackStart)
+	fmt.Printf("Unpack complete. Duration: %v.\n", unpackDuration)
+	fmt.Printf("Restored: %s.\n", restorationPath)
+	os.Remove(compressed.Name())
 }
 
 func init() {
