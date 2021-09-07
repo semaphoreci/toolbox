@@ -237,7 +237,7 @@ blocks:
           - sem-version go 1.16
           - "export GOPATH=~/go"
           - "export PATH=/home/semaphore/go/bin:$PATH"
-          - checkout
+          - checkout && cd cache-cli
       jobs:
         - name: Build
           commands:

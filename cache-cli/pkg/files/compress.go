@@ -14,7 +14,7 @@ func Compress(key, path string) (string, error) {
 	cmd := compressionCommand(path, tempFileName)
 	_, err := cmd.Output()
 	if err != nil {
-		return "", err
+		return tempFileName, err
 	}
 
 	return tempFileName, nil
