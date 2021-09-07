@@ -206,6 +206,44 @@ blocks:
           commands:
             - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
 
+  - name: "Cache CLI: Unit Test"
+    dependencies: []
+    run:
+      when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
+    task:
+      prologue:
+        commands:
+          - sem-version go 1.16
+          - "export GOPATH=~/go"
+          - "export PATH=/home/semaphore/go/bin:$PATH"
+          - checkout
+          - make test.setup
+      jobs:
+        - name: "Test"
+          commands:
+            - make test
+      epilogue:
+        always:
+          commands:
+            - test-results publish /tmp/junit.xml
+
+  - name: "Cache CLI: Build"
+    dependencies: []
+    run:
+      when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
+    task:
+      prologue:
+        commands:
+          - sem-version go 1.16
+          - "export GOPATH=~/go"
+          - "export PATH=/home/semaphore/go/bin:$PATH"
+          - checkout
+      jobs:
+        - name: Build
+          commands:
+            - make build
+            - artifact push workflow bin/cache -d bin/cache
+
 promotions:
   - name: Release
     pipeline_file: release.yml

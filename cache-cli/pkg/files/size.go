@@ -3,7 +3,7 @@ package files
 import "fmt"
 
 func HumanReadableSize(b int64) string {
-	const unit = 1000
+	const unit = 1024
 
 	if b < unit {
 		return fmt.Sprintf("%d B", b)
