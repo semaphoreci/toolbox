@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -34,6 +35,10 @@ func createListResult(project string, objects []types.Object) []CacheKey {
 			Size:     object.Size,
 		})
 	}
+
+	sort.SliceStable(keys, func(i, j int) bool {
+		return keys[i].StoredAt.After(*keys[j].StoredAt)
+	})
 
 	return keys
 }
