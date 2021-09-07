@@ -41,7 +41,6 @@ func resultForfile(file string) []LookupResult {
 	results := []LookupResult{}
 	gitBranch := os.Getenv("SEMAPHORE_GIT_BRANCH")
 	homedir, _ := os.UserHomeDir()
-	cwd, _ := os.Getwd()
 
 	switch file {
 	case ".nvmrc":
@@ -54,14 +53,14 @@ func resultForfile(file string) []LookupResult {
 	case "Gemfile.lock":
 		buildResult(&results, buildResultOpts{
 			file:      file,
-			path:      fmt.Sprintf("%s/vendor/bundle", cwd),
+			path:      "vendor/bundle",
 			gitBranch: gitBranch,
 			keyPrefix: "gems",
 		})
 	case "package-lock.json":
 		buildResult(&results, buildResultOpts{
 			file:      file,
-			path:      fmt.Sprintf("%s/node_modules", cwd),
+			path:      "node_modules",
 			gitBranch: gitBranch,
 			keyPrefix: "node-modules",
 		})
@@ -74,54 +73,54 @@ func resultForfile(file string) []LookupResult {
 		})
 		buildResult(&results, buildResultOpts{
 			file:      file,
-			path:      fmt.Sprintf("%s/node_modules", cwd),
+			path:      "node_modules",
 			gitBranch: gitBranch,
 			keyPrefix: "node-modules",
 		})
 	case "mix.lock":
 		buildResult(&results, buildResultOpts{
 			file:      file,
-			path:      fmt.Sprintf("%s/deps", cwd),
+			path:      "deps",
 			gitBranch: gitBranch,
 			keyPrefix: "mix-deps",
 		})
 		buildResult(&results, buildResultOpts{
 			file:      file,
-			path:      fmt.Sprintf("%s/_build", cwd),
+			path:      "_build",
 			gitBranch: gitBranch,
 			keyPrefix: "mix-build",
 		})
 	case "requirements.txt":
 		buildResult(&results, buildResultOpts{
 			file:      file,
-			path:      fmt.Sprintf("%s/.pip_cache", cwd),
+			path:      ".pip_cache",
 			gitBranch: gitBranch,
 			keyPrefix: "requirements",
 		})
 	case "composer.lock":
 		buildResult(&results, buildResultOpts{
 			file:      file,
-			path:      fmt.Sprintf("%s/vendor", cwd),
+			path:      "vendor",
 			gitBranch: gitBranch,
 			keyPrefix: "composer",
 		})
 	case "pom.xml":
 		buildResult(&results, buildResultOpts{
 			file:      file,
-			path:      fmt.Sprintf("%s/.m2", cwd),
+			path:      ".m2",
 			gitBranch: gitBranch,
 			keyPrefix: "maven",
 		})
 		buildResult(&results, buildResultOpts{
 			file:      file,
-			path:      fmt.Sprintf("%s/target", cwd),
+			path:      "target",
 			gitBranch: gitBranch,
 			keyPrefix: "maven-target",
 		})
 	case "Podfile.lock":
 		buildResult(&results, buildResultOpts{
 			file:      file,
-			path:      fmt.Sprintf("%s/Pods", cwd),
+			path:      "Pods",
 			gitBranch: gitBranch,
 			keyPrefix: "pods",
 		})

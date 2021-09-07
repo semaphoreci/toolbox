@@ -25,6 +25,7 @@ func RunStore(cmd *cobra.Command, args []string) {
 	if len(args) != 0 && len(args) != 2 {
 		fmt.Printf("Wrong number of arguments %d for store command\n", len(args))
 		cmd.Help()
+		return
 	}
 
 	storage, err := storage.InitStorage()
@@ -36,8 +37,7 @@ func RunStore(cmd *cobra.Command, args []string) {
 			compressAndStore(storage, lookupResult.Key, lookupResult.Path)
 		}
 	} else {
-		cwd, _ := os.Getwd()
-		compressAndStore(storage, args[0], fmt.Sprintf("%s/%s", cwd, args[1]))
+		compressAndStore(storage, args[0], args[1])
 	}
 }
 
@@ -55,7 +55,7 @@ func compressAndStore(storage storage.Storage, key, path string) {
 
 		compressionDuration := time.Since(compressingStart)
 		info, _ := os.Stat(compressed)
-		fmt.Printf("Compression duration: %v. Size: %v bytes.\n", compressionDuration.String(), files.HumanReadableSize(info.Size()))
+		fmt.Printf("Compression complete. Duration: %v. Size: %v bytes.\n", compressionDuration.String(), files.HumanReadableSize(info.Size()))
 
 		uploadStart := time.Now()
 		fmt.Printf("Uploading '%s' with cache key '%s'...\n", path, key)

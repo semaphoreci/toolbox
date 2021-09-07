@@ -10,6 +10,7 @@ type Storage interface {
 	List() ([]CacheKey, error)
 	HasKey(key string) (bool, error)
 	Store(key, path string) error
+	Restore(key string) (*os.File, error)
 	Delete(key string) error
 	Clear() error
 	Usage() (*UsageSummary, error)
