@@ -20,8 +20,9 @@ var lockFiles = []string{
 }
 
 type LookupResult struct {
-	Key  string
-	Path string
+	DetectedFile string
+	Key          string
+	Path         string
 }
 
 func Lookup() []LookupResult {
@@ -148,11 +149,11 @@ func buildResult(results *[]LookupResult, opts buildResultOpts) {
 	if err != nil {
 		fmt.Printf("Error generating checksum for %s: %v\n", opts.file, err)
 	} else {
-		fmt.Printf("Detected %s.\n", opts.file)
 		key := fmt.Sprintf("%s-%s-%s", opts.keyPrefix, opts.gitBranch, checksum)
 		*results = append(*results, LookupResult{
-			Key:  normalizeKey(key),
-			Path: opts.path,
+			DetectedFile: opts.file,
+			Key:          normalizeKey(key),
+			Path:         opts.path,
 		})
 	}
 }

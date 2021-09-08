@@ -34,6 +34,7 @@ func RunStore(cmd *cobra.Command, args []string) {
 	if len(args) == 0 {
 		lookupResults := files.Lookup()
 		for _, lookupResult := range lookupResults {
+			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
 			compressAndStore(storage, lookupResult.Key, lookupResult.Path)
 		}
 	} else {
@@ -66,7 +67,7 @@ func compressAndStore(storage storage.Storage, key, path string) {
 		fmt.Printf("Upload complete. Duration: %v.\n", uploadDuration)
 		os.Remove(compressed)
 	} else {
-		fmt.Printf("Path %s does not exist", path)
+		fmt.Printf("Path %s does not exist.\n", path)
 	}
 }
 
