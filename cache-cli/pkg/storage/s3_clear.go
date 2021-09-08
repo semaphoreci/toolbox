@@ -14,6 +14,10 @@ func (s *S3Storage) Clear() error {
 		return err
 	}
 
+	if len(keys) == 0 {
+		return nil
+	}
+
 	output, err := s.client.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
 		Bucket: &s.bucketName,
 		Delete: &types.Delete{
