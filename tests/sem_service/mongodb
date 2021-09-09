@@ -26,6 +26,7 @@ sem-service stop mongodb
 sem-service stop mongodb
 sem-service start mongodb 4.2 --username=xxx --password=xxx
 docker ps -a
+docker logs mongo
 echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
 cat /tmp/toolbox_semservice
