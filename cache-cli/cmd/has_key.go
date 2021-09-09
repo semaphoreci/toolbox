@@ -27,9 +27,9 @@ func RunHasKey(cmd *cobra.Command, args []string) {
 	utils.Check(err)
 
 	if exists {
-		fmt.Printf("The key %s exists in the cache.", key)
+		fmt.Printf("The key '%s' exists in the cache.\n", key)
 	} else {
-		fmt.Printf("The key %s does not exist in the cache.", key)
+		fmt.Printf("The key '%s' does not exist in the cache.\n", key)
 	}
 }
 

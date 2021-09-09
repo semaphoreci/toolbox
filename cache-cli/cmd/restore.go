@@ -36,7 +36,9 @@ func RunRestore(cmd *cobra.Command, args []string) {
 		lookupResults := files.Lookup()
 		for _, lookupResult := range lookupResults {
 			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
-			downloadAndUnpack(storage, lookupResult.Key)
+			for _, entry := range lookupResult.Entries {
+				downloadAndUnpack(storage, entry.Key)
+			}
 		}
 	} else {
 		keys := strings.Split(args[0], ",")

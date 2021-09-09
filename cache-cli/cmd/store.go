@@ -35,7 +35,9 @@ func RunStore(cmd *cobra.Command, args []string) {
 		lookupResults := files.Lookup()
 		for _, lookupResult := range lookupResults {
 			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
-			compressAndStore(storage, lookupResult.Key, lookupResult.Path)
+			for _, entry := range lookupResult.Entries {
+				compressAndStore(storage, entry.Key, entry.Path)
+			}
 		}
 	} else {
 		compressAndStore(storage, args[0], args[1])
@@ -45,7 +47,7 @@ func RunStore(cmd *cobra.Command, args []string) {
 func compressAndStore(storage storage.Storage, key, path string) {
 	if _, err := os.Stat(path); err == nil {
 		if ok, _ := storage.HasKey(key); ok {
-			fmt.Printf("Key %s already exists.\n", key)
+			fmt.Printf("Key '%s' already exists.\n", key)
 			return
 		}
 

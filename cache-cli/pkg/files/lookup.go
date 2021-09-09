@@ -21,8 +21,12 @@ var lockFiles = []string{
 
 type LookupResult struct {
 	DetectedFile string
-	Key          string
-	Path         string
+	Entries      []LookupResultEntry
+}
+
+type LookupResultEntry struct {
+	Key  string
+	Path string
 }
 
 func Lookup() []LookupResult {
@@ -30,131 +34,87 @@ func Lookup() []LookupResult {
 	results := []LookupResult{}
 	for _, lockFile := range lockFiles {
 		if _, err := os.Stat(fmt.Sprintf("%s/%s", cwd, lockFile)); err == nil {
-			resultsForFile := resultForfile(lockFile)
-			results = append(results, resultsForFile...)
+			resultForFile := resultForfile(lockFile)
+			results = append(results, *resultForFile)
 		}
 	}
 
 	return results
 }
 
-func resultForfile(file string) []LookupResult {
-	results := []LookupResult{}
+func resultForfile(file string) *LookupResult {
 	gitBranch := os.Getenv("SEMAPHORE_GIT_BRANCH")
 	homedir, _ := os.UserHomeDir()
 
 	switch file {
 	case ".nvmrc":
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      fmt.Sprintf("%s/.nvm", homedir),
-			gitBranch: gitBranch,
-			keyPrefix: "nvm",
+		return buildResult(file, gitBranch, []LookupResultEntry{
+			{"nvm", fmt.Sprintf("%s/.nvm", homedir)},
 		})
 	case "Gemfile.lock":
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      "vendor/bundle",
-			gitBranch: gitBranch,
-			keyPrefix: "gems",
+		return buildResult(file, gitBranch, []LookupResultEntry{
+			{"gems", "vendor/bundle"},
 		})
 	case "package-lock.json":
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      "node_modules",
-			gitBranch: gitBranch,
-			keyPrefix: "node-modules",
+		return buildResult(file, gitBranch, []LookupResultEntry{
+			{"node-modules", "node_modules"},
 		})
 	case "yarn.lock":
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      fmt.Sprintf("%s/.cache/yarn", homedir),
-			gitBranch: gitBranch,
-			keyPrefix: "yarn-cache",
-		})
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      "node_modules",
-			gitBranch: gitBranch,
-			keyPrefix: "node-modules",
+		return buildResult(file, gitBranch, []LookupResultEntry{
+			{"yarn-cache", fmt.Sprintf("%s/.cache/yarn", homedir)},
+			{"node-modules", "node_modules"},
 		})
 	case "mix.lock":
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      "deps",
-			gitBranch: gitBranch,
-			keyPrefix: "mix-deps",
-		})
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      "_build",
-			gitBranch: gitBranch,
-			keyPrefix: "mix-build",
+		return buildResult(file, gitBranch, []LookupResultEntry{
+			{"mix-deps", "deps"},
+			{"mix-build", "_build"},
 		})
 	case "requirements.txt":
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      ".pip_cache",
-			gitBranch: gitBranch,
-			keyPrefix: "requirements",
+		return buildResult(file, gitBranch, []LookupResultEntry{
+			{"requirements", ".pip_cache"},
 		})
 	case "composer.lock":
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      "vendor",
-			gitBranch: gitBranch,
-			keyPrefix: "composer",
+		return buildResult(file, gitBranch, []LookupResultEntry{
+			{"composer", "vendor"},
 		})
 	case "pom.xml":
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      ".m2",
-			gitBranch: gitBranch,
-			keyPrefix: "maven",
-		})
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      "target",
-			gitBranch: gitBranch,
-			keyPrefix: "maven-target",
+		return buildResult(file, gitBranch, []LookupResultEntry{
+			{"maven", ".m2"},
+			{"maven-target", "target"},
 		})
 	case "Podfile.lock":
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      "Pods",
-			gitBranch: gitBranch,
-			keyPrefix: "pods",
+		return buildResult(file, gitBranch, []LookupResultEntry{
+			{"pods", "Pods"},
 		})
 	case "go.sum":
-		buildResult(&results, buildResultOpts{
-			file:      file,
-			path:      fmt.Sprintf("%s/go/pkg/mod", homedir),
-			gitBranch: gitBranch,
-			keyPrefix: "go",
+		return buildResult(file, gitBranch, []LookupResultEntry{
+			{"go", fmt.Sprintf("%s/go/pkg/mod", homedir)},
 		})
+	default:
+		fmt.Printf("Missing branch for %s - this should never happen!\n", file)
+		return nil
 	}
-
-	return results
 }
 
-type buildResultOpts struct {
-	file      string
-	path      string
-	keyPrefix string
-	gitBranch string
-}
-
-func buildResult(results *[]LookupResult, opts buildResultOpts) {
-	checksum, err := generateChecksum(opts.file)
+func buildResult(file, gitBranch string, entries []LookupResultEntry) *LookupResult {
+	checksum, err := generateChecksum(file)
 	if err != nil {
-		fmt.Printf("Error generating checksum for %s: %v\n", opts.file, err)
+		fmt.Printf("Error generating checksum for %s: %v\n", file, err)
+		return nil
 	} else {
-		key := fmt.Sprintf("%s-%s-%s", opts.keyPrefix, opts.gitBranch, checksum)
-		*results = append(*results, LookupResult{
-			DetectedFile: opts.file,
-			Key:          normalizeKey(key),
-			Path:         opts.path,
-		})
+		newEntries := []LookupResultEntry{}
+		for _, entry := range entries {
+			key := fmt.Sprintf("%s-%s-%s", entry.Key, gitBranch, checksum)
+			newEntries = append(newEntries, LookupResultEntry{
+				Key:  normalizeKey(key),
+				Path: entry.Path,
+			})
+		}
+
+		return &LookupResult{
+			DetectedFile: file,
+			Entries:      newEntries,
+		}
 	}
 }
 
