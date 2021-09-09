@@ -2,7 +2,15 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-sudo apt-get install -y mongodb-clients
+
+sudo apt-get purge -y mongo-tools mongodb-clients
+wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo apt-key add -
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
+sudo apt-get update
+sudo apt-get install -y mongodb-org-tools mongodb-org-shell
+
+#sudo apt-get install -y mongodb-clients
+
 sem-service start mongodb
 curl http://localhost:27017 | grep "It looks like you are trying to access MongoDB over HTTP on the native driver port."
 

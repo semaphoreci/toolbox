@@ -176,11 +176,11 @@ setup() {
 }
 
 #  Elixir
-# @test "change elixir to 1.7.4" {
-#   sem-version elixir 1.7.4
-#   run elixir --version
-#   assert_line --partial "Elixir 1.7.4"
-# }
+@test "change elixir to 1.7.4" {
+  sem-version elixir 1.7.4
+  run elixir --version
+  assert_line --partial "Elixir 1.7.4"
+}
 
 @test "change elixir to 1.11.4" {
   sem-version elixir 1.11.4
