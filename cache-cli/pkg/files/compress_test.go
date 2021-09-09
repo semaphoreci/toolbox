@@ -35,7 +35,10 @@ func Test__CompressAndUnpack(t *testing.T) {
 		_, err = os.Stat(compressedFileName)
 		assert.Nil(t, err)
 
-		os.Remove(tempDir)
+		err = os.Remove(tempFile.Name())
+		assert.Nil(t, err)
+		err = os.Remove(tempDir)
+		assert.Nil(t, err)
 
 		// unpacking
 		unpackedAt, err := Unpack(compressedFileName)
@@ -47,16 +50,76 @@ func Test__CompressAndUnpack(t *testing.T) {
 		file := files[0]
 		assert.Equal(t, filepath.Base(tempFile.Name()), file.Name())
 
-		os.Remove(tempFile.Name())
-		os.Remove(unpackedAt)
-		os.Remove(compressedFileName)
+		err = os.Remove(tempFile.Name())
+		assert.Nil(t, err)
+		err = os.Remove(unpackedAt)
+		assert.Nil(t, err)
+		err = os.Remove(compressedFileName)
+		assert.Nil(t, err)
 	})
 
 	t.Run("using relative paths", func(t *testing.T) {
-		// TODO
+		cwd, _ := os.Getwd()
+		tempDir, _ := ioutil.TempDir(cwd, "*")
+		tempFile, _ := ioutil.TempFile(tempDir, "*")
+
+		// compressing
+		compressedFileName, err := Compress("abc0003", tempDir)
+		assert.Nil(t, err)
+		assert.True(t, strings.HasPrefix(compressedFileName, "/tmp/abc0003"))
+
+		_, err = os.Stat(compressedFileName)
+		assert.Nil(t, err)
+
+		err = os.Remove(tempFile.Name())
+		assert.Nil(t, err)
+		err = os.Remove(tempDir)
+		assert.Nil(t, err)
+
+		// unpacking
+		unpackedAt, err := Unpack(compressedFileName)
+		assert.Nil(t, err)
+		assert.Equal(t, fmt.Sprintf("%s/", tempDir), unpackedAt)
+
+		files, _ := ioutil.ReadDir(unpackedAt)
+		assert.Len(t, files, 1)
+		file := files[0]
+		assert.Equal(t, filepath.Base(tempFile.Name()), file.Name())
+
+		err = os.Remove(tempFile.Name())
+		assert.Nil(t, err)
+		err = os.Remove(unpackedAt)
+		assert.Nil(t, err)
+		err = os.Remove(compressedFileName)
+		assert.Nil(t, err)
 	})
 
 	t.Run("using single file", func(t *testing.T) {
-		// TODO
+		cwd, _ := os.Getwd()
+		tempFile, _ := ioutil.TempFile(cwd, "*")
+
+		// compressing
+		compressedFileName, err := Compress("abc0003", tempFile.Name())
+		assert.Nil(t, err)
+		assert.True(t, strings.HasPrefix(compressedFileName, "/tmp/abc0003"))
+
+		_, err = os.Stat(compressedFileName)
+		assert.Nil(t, err)
+
+		err = os.Remove(tempFile.Name())
+		assert.Nil(t, err)
+
+		// unpacking
+		unpackedAt, err := Unpack(compressedFileName)
+		assert.Nil(t, err)
+		assert.Equal(t, tempFile.Name(), unpackedAt)
+
+		_, err = os.Stat(unpackedAt)
+		assert.Nil(t, err)
+
+		err = os.Remove(tempFile.Name())
+		assert.Nil(t, err)
+		err = os.Remove(compressedFileName)
+		assert.Nil(t, err)
 	})
 }
