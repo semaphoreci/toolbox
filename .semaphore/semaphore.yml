@@ -213,6 +213,7 @@ blocks:
     task:
       prologue:
         commands:
+          - checkout && cd cache-cli
           - make test.setup
       jobs:
         - name: "Test"
