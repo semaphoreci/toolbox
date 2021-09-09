@@ -1,5 +1,11 @@
 #!/usr/bin/env bats
 
+rm -rf /home/semaphore/.kiex/elixirs/*
+rm -rf /home/semaphore/.kiex/mix/achives/*
+
+rm -rf /home/semaphore/.kerl/installs/*
+rm -rf /home/semaphore/.kerl/otp_installations
+
 load "support/bats-support/load"
 load "support/bats-assert/load"
 
