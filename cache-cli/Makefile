@@ -1,12 +1,15 @@
 test.setup:
-	go get ./...
-	go get gotest.tools/gotestsum
+	docker-compose build
+	docker-compose run app go get ./...
 
 test:
-	gotestsum --junitfile /tmp/junit.xml
+	docker-compose run --rm app gotestsum --format short-verbose --junitfile junit-report.xml --packages="./..." -- -p 1
 
 test.watch:
-	gotestsum --watch ./...
+	docker-compose run --rm app gotestsum --watch --format short-verbose --junitfile junit-report.xml --packages="./..." -- -p 1
 
-build:
+build.mac:
 	CGO_ENABLED=0 go build -o bin/cache
+
+build.linux:
+	CGO_ENABLED=0 GOOS=linux go build -o bin/cache

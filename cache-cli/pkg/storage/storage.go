@@ -37,6 +37,6 @@ func InitStorage() (Storage, error) {
 	case "s3":
 		return NewS3Storage()
 	default:
-		return nil, fmt.Errorf("cache backend %s is not available", backend)
+		return nil, fmt.Errorf("cache backend '%s' is not available", backend)
 	}
 }

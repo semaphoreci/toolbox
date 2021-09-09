@@ -1,0 +1,33 @@
+version: '3.6'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - s3
+    tty: true
+    environment:
+      SEMAPHORE_GIT_BRANCH: master
+      SEMAPHORE_PROJECT_NAME: cache-cli
+      SEMAPHORE_CACHE_BACKEND: s3
+      SEMAPHORE_CACHE_S3_URL: http://s3:9000
+      SEMAPHORE_CACHE_S3_BUCKET: semaphore-cache
+    command: "/app/bin/cache"
+    container_name: 'cache-cli'
+    volumes:
+      - go-pkg-cache:/go
+      - .:/app
+  s3:
+    image: quay.io/minio/minio
+    container_name: 's3'
+    volumes:
+      - /tmp/s3-data:/tmp/s3-data
+    ports:
+      - 9000:9000
+      - 9001:9001
+    entrypoint: sh
+    command: -c 'mkdir -p /tmp/s3-data/semaphore-cache && /usr/bin/minio server /tmp/s3-data'
+volumes:
+  go-pkg-cache:
+    driver: local

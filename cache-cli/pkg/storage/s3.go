@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -16,9 +18,9 @@ type S3Storage struct {
 }
 
 func NewS3Storage() (*S3Storage, error) {
-	config, err := awsConfig.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		return nil, err
+	project := os.Getenv("SEMAPHORE_PROJECT_NAME")
+	if project == "" {
+		return nil, fmt.Errorf("no SEMAPHORE_PROJECT_NAME set")
 	}
 
 	s3Bucket := os.Getenv("SEMAPHORE_CACHE_S3_BUCKET")
@@ -26,16 +28,51 @@ func NewS3Storage() (*S3Storage, error) {
 		return nil, fmt.Errorf("no SEMAPHORE_CACHE_S3_BUCKET set")
 	}
 
-	project := os.Getenv("SEMAPHORE_PROJECT_NAME")
-	if project == "" {
-		return nil, fmt.Errorf("no SEMAPHORE_PROJECT_NAME set")
+	s3Url := os.Getenv("SEMAPHORE_CACHE_S3_URL")
+	if s3Url != "" {
+		return createS3StorageUsingEndpoint(s3Bucket, project, s3Url)
+	} else {
+		return createDefaultS3Storage(s3Bucket, project)
+	}
+}
+
+func createDefaultS3Storage(s3Bucket, project string) (*S3Storage, error) {
+	config, err := awsConfig.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return nil, err
 	}
 
-	s3Storage := S3Storage{
+	return &S3Storage{
 		client:     s3.NewFromConfig(config),
 		bucketName: s3Bucket,
 		project:    project,
+	}, nil
+}
+
+func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string) (*S3Storage, error) {
+	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+		return aws.Endpoint{
+			URL: s3Url,
+		}, nil
+	})
+
+	creds := credentials.NewStaticCredentialsProvider("minioadmin", "minioadmin", "")
+	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
+		awsConfig.WithCredentialsProvider(creds),
+		awsConfig.WithEndpointResolver(resolver),
+	)
+
+	if err != nil {
+		return nil, err
 	}
 
-	return &s3Storage, nil
+	svc := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.UsePathStyle = true
+	})
+
+	return &S3Storage{
+		client:     svc,
+		bucketName: s3Bucket,
+		project:    project,
+	}, nil
 }
