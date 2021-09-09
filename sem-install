@@ -37,9 +37,6 @@ install::install_node() {
   sudo ln -fs "$(which node)" /usr/bin/nodejs
   return $result
 }
-
-
-
 install::install_ruby() {
   if [[ $(install::available) -eq 1 ]] ; then
     rbenv install -s ${language_version}
@@ -53,6 +50,67 @@ install::install_ruby() {
     mv ${language_version} ~/.rbenv/versions/
   fi
   rbenv rehash
+  return $?
+}
+install::install_erlang() {
+  if [[ $(install::available) -eq 1 ]] ; then
+    export KERL_BUILD_BACKEND=git
+    export OTP_GITHUB_URL='https://github.com/erlang/otp'
+    kerl update releases
+    kerl build "${language_version}" "${language_version}"
+    kerl install "${language_version}" ~/.kerl/installs/"${language_version}"
+    echo ""${language_version}" /home/semaphore/.kerl/installs/"${language_version}"">> ~/.kerl/otp_installations
+  else
+    install::download
+    tar -zxf ./"${language_version}".tar.gz && rm -rf ./"${language_version}".tar.gz
+    mv ./"${language_version}" ~/.kerl/installs/
+    echo ""${language_version}" /home/semaphore/.kerl/installs/"${language_version}"">> ~/.kerl/otp_installations
+  fi
+  return $?
+}
+
+install::install_elixir() {
+  response1=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/elixirs_${language_version}.tar.gz)
+  response2=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/archives_${language_version}.tar.gz)
+  case ${language_version} in
+      "1.7"* | "1.8"* | "1.9"* | "1.10"*)
+        local erlang_version="22.3"
+        ;;
+      "1.11"*)
+        local erlang_version="23.3"
+        ;;
+      "1.12"*)
+        local erlang_version="24.0"
+        ;;
+      *)
+        echo "Installation of '${language}' version '${language_version}' is not yet supported"
+        return 1;
+        ;;
+  esac
+  if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then 
+    language_before=${language}
+    language_version_before=${language_version}
+    language="erlang"
+    language_version=${erlang_version}
+    install::install_erlang
+    language=${language_before}
+    language_version=${language_version_before}
+  fi
+  if [[ $response1 -ne 200 ]] || [[ $response2 -ne 200 ]]; then
+    . ~/.kerl/installs/${erlang_version}/activate
+    kiex install ${language_version}
+    kiex use ${language_version}
+    mix local.hex --force
+  else
+    curl --silent $(install::package_url)/${language}/elixirs_${language_version}.tar.gz --output elixirs_${language_version}.tar.gz
+    curl --silent $(install::package_url)/${language}/archives_${language_version}.tar.gz --output archives_${language_version}.tar.gz
+    tar -zxf elixirs_${language_version}.tar.gz && rm -rf elixirs_${language_version}.tar.gz
+    tar -zxf archives_${language_version}.tar.gz && rm -rf archives_${language_version}.tar.gz
+    mv ./elixirs/*${language_version}* ~/.kiex/elixirs/
+    mv ./elixirs/.*${language_version}* ~/.kiex/elixirs/
+    mv ./archives/*${language_version} ~/.kiex/mix/archives/
+    rm -rf ./archives && rm -rf ./elixirs
+  fi
   return $?
 }
 
@@ -109,6 +167,12 @@ sem-install() {
   language_version=$2
 
   case $language in
+    elixir)
+      install::install_elixir
+      ;;
+    erlang)
+      install::install_erlang
+      ;;
     php)
       install::install_php
       ;;
