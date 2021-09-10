@@ -71,6 +71,27 @@ func Test__Restore(t *testing.T) {
 		os.Remove(tempDir)
 	})
 
+	t.Run("only first matching key is used", func(*testing.T) {
+		storage.Clear()
+
+		tempDir, _ := ioutil.TempDir("/tmp", "*")
+		tempFile, _ := ioutil.TempFile(tempDir, "*")
+
+		compressAndStore(storage, "abc-001", tempDir)
+		compressAndStore(storage, "abc-002", tempDir)
+
+		capturer := utils.CreateOutputCapturer()
+		RunRestore(restoreCmd, []string{"abc-001,abc-002"})
+		output := capturer.Done()
+
+		assert.Contains(t, output, "HIT: 'abc-001', using key 'abc-001'.")
+		assert.Contains(t, output, fmt.Sprintf("Restored: %s/.", tempDir))
+		assert.NotContains(t, output, "HIT: 'abc-002', using key 'abc-002'.")
+
+		os.Remove(tempFile.Name())
+		os.Remove(tempDir)
+	})
+
 	t.Run("using fallback key", func(*testing.T) {
 		storage.Clear()
 
