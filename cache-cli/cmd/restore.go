@@ -33,38 +33,38 @@ func RunRestore(cmd *cobra.Command, args []string) {
 	utils.Check(err)
 
 	if len(args) == 0 {
-		lookupResults := files.Lookup()
+		lookupResults := files.LookupRestore()
 		for _, lookupResult := range lookupResults {
 			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {
-				downloadAndUnpack(storage, entry.Key)
+				downloadAndUnpack(storage, entry.Keys)
 			}
 		}
 	} else {
 		keys := strings.Split(args[0], ",")
-		for _, key := range keys {
-			downloadAndUnpack(storage, key)
-		}
+		downloadAndUnpack(storage, keys)
 	}
 }
 
-func downloadAndUnpack(storage storage.Storage, key string) {
-	if ok, _ := storage.HasKey(key); ok {
-		fmt.Printf("HIT: '%s', using key '%s'.\n", key, key)
-		downloadAndUnpackKey(storage, key)
-		return
-	}
+func downloadAndUnpack(storage storage.Storage, keys []string) {
+	for _, key := range keys {
+		if ok, _ := storage.HasKey(key); ok {
+			fmt.Printf("HIT: '%s', using key '%s'.\n", key, key)
+			downloadAndUnpackKey(storage, key)
+			break
+		}
 
-	availableKeys, err := storage.List()
-	utils.Check(err)
+		availableKeys, err := storage.List()
+		utils.Check(err)
 
-	matchingKey := findMatchingKey(availableKeys, key)
-	if matchingKey != "" {
-		fmt.Printf("HIT: '%s', using key '%s'.\n", key, matchingKey)
-		downloadAndUnpackKey(storage, matchingKey)
-		return
-	} else {
-		fmt.Printf("MISS: '%s'.\n", key)
+		matchingKey := findMatchingKey(availableKeys, key)
+		if matchingKey != "" {
+			fmt.Printf("HIT: '%s', using key '%s'.\n", key, matchingKey)
+			downloadAndUnpackKey(storage, matchingKey)
+			break
+		} else {
+			fmt.Printf("MISS: '%s'.\n", key)
+		}
 	}
 }
 

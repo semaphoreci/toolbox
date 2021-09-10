@@ -32,11 +32,12 @@ func RunStore(cmd *cobra.Command, args []string) {
 	utils.Check(err)
 
 	if len(args) == 0 {
-		lookupResults := files.Lookup()
+		lookupResults := files.LookupStore()
 		for _, lookupResult := range lookupResults {
 			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {
-				compressAndStore(storage, entry.Key, entry.Path)
+				key := entry.Keys[0]
+				compressAndStore(storage, key, entry.Path)
 			}
 		}
 	} else {
