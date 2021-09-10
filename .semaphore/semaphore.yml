@@ -223,7 +223,7 @@ blocks:
         always:
           commands:
             - docker-compose logs s3
-            - test-results publish junit.xml
+            - test-results publish junit-report.xml
 
   - name: "Cache CLI: Build"
     dependencies: []
