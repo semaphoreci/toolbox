@@ -61,7 +61,7 @@ func downloadAndUnpack(storage storage.Storage, key string) {
 	matchingKey := findMatchingKey(availableKeys, key)
 	if matchingKey != "" {
 		fmt.Printf("HIT: '%s', using key '%s'.\n", key, matchingKey)
-		downloadAndUnpackKey(storage, key)
+		downloadAndUnpackKey(storage, matchingKey)
 		return
 	} else {
 		fmt.Printf("MISS: '%s'.\n", key)

@@ -22,10 +22,6 @@ func Test__Store(t *testing.T) {
 		assert.Contains(t, output, "Wrong number of arguments")
 	})
 
-	t.Run("automatic", func(t *testing.T) {
-		// TODO
-	})
-
 	t.Run("using key and invalid path", func(*testing.T) {
 		capturer := utils.CreateOutputCapturer()
 		RunStore(storeCmd, []string{"abc001", "/tmp/this-path-does-not-exist"})
@@ -65,4 +61,8 @@ func Test__Store(t *testing.T) {
 		output = capturer.Done()
 		assert.Contains(t, output, "Key 'abc003' already exists")
 	})
+}
+
+func Test_AutomaticStore(t *testing.T) {
+	// TODO
 }
