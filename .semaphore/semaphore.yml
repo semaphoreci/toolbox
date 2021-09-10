@@ -222,7 +222,8 @@ blocks:
       epilogue:
         always:
           commands:
-            - test-results publish /tmp/junit.xml
+            - docker-compose logs s3
+            - test-results publish junit.xml
 
   - name: "Cache CLI: Build"
     dependencies: []
