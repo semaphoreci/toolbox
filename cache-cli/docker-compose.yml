@@ -21,13 +21,10 @@ services:
   s3:
     image: quay.io/minio/minio
     container_name: 's3'
-    volumes:
-      - /tmp/s3-data:/tmp/s3-data
     ports:
       - 9000:9000
-      - 9001:9001
     entrypoint: sh
-    command: -c 'mkdir -p /tmp/s3-data/semaphore-cache && /usr/bin/minio server /tmp/s3-data'
+    command: -c 'mkdir -p /tmp/s3-data/semaphore-cache && minio server /tmp/s3-data'
 volumes:
   go-pkg-cache:
     driver: local
