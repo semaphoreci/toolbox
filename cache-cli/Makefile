@@ -1,3 +1,5 @@
+.PHONY: test
+
 test.setup:
 	docker-compose build
 	docker-compose run cli go get ./...
