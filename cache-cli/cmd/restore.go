@@ -33,7 +33,11 @@ func RunRestore(cmd *cobra.Command, args []string) {
 	utils.Check(err)
 
 	if len(args) == 0 {
-		lookupResults := files.LookupRestore()
+		lookupResults := files.Lookup(files.LookupOptions{
+			GitBranch: os.Getenv("SEMAPHORE_GIT_BRANCH"),
+			Restore:   true,
+		})
+
 		for _, lookupResult := range lookupResults {
 			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {

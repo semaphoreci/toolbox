@@ -32,7 +32,11 @@ func RunStore(cmd *cobra.Command, args []string) {
 	utils.Check(err)
 
 	if len(args) == 0 {
-		lookupResults := files.LookupStore()
+		lookupResults := files.Lookup(files.LookupOptions{
+			GitBranch: os.Getenv("SEMAPHORE_GIT_BRANCH"),
+			Restore:   false,
+		})
+
 		for _, lookupResult := range lookupResults {
 			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {
