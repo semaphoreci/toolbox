@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 
+	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
 	assert "github.com/stretchr/testify/assert"
@@ -114,5 +117,45 @@ func Test__Restore(t *testing.T) {
 }
 
 func Test__AutomaticRestore(t *testing.T) {
-	// TODO
+	_, file, _, _ := runtime.Caller(0)
+	cmdPath := filepath.Dir(file)
+	rootPath := filepath.Dir(cmdPath)
+	storage, _ := storage.InitStorage()
+
+	t.Run("nothing found", func(t *testing.T) {
+		storage.Clear()
+		os.Chdir(cmdPath)
+
+		capturer := utils.CreateOutputCapturer()
+		RunRestore(restoreCmd, []string{})
+		output := capturer.Done()
+
+		assert.Contains(t, output, "Nothing to restore from cache")
+	})
+
+	t.Run("detects and restores", func(t *testing.T) {
+		storage.Clear()
+
+		os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
+		os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
+		os.MkdirAll("vendor/bundle", os.ModePerm)
+
+		// storing
+		checksum, _ := files.GenerateChecksum("Gemfile.lock")
+		key := fmt.Sprintf("gems-master-%s", checksum)
+		compressedFile, _ := files.Compress(key, "vendor/bundle")
+		storage.Store(key, compressedFile)
+
+		// restoring
+		capturer := utils.CreateOutputCapturer()
+		RunRestore(restoreCmd, []string{})
+		output := capturer.Done()
+
+		assert.Contains(t, output, "Detected Gemfile.lock")
+		assert.Contains(t, output, fmt.Sprintf("Downloading key '%s'", key))
+		assert.Contains(t, output, "Restored: vendor/bundle")
+
+		os.RemoveAll("vendor")
+		os.Remove(compressedFile)
+	})
 }

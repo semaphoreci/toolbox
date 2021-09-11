@@ -37,6 +37,11 @@ func RunStore(cmd *cobra.Command, args []string) {
 			Restore:   false,
 		})
 
+		if len(lookupResults) == 0 {
+			fmt.Printf("Nothing to store in cache.\n")
+			return
+		}
+
 		for _, lookupResult := range lookupResults {
 			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {

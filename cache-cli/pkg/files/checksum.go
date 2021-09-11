@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func generateChecksum(filePath string) (string, error) {
+func GenerateChecksum(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", err

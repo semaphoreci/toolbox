@@ -38,6 +38,11 @@ func RunRestore(cmd *cobra.Command, args []string) {
 			Restore:   true,
 		})
 
+		if len(lookupResults) == 0 {
+			fmt.Printf("Nothing to restore from cache.")
+			return
+		}
+
 		for _, lookupResult := range lookupResults {
 			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {

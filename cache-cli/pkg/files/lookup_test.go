@@ -25,7 +25,7 @@ func Test__LookupStore(t *testing.T) {
 	})
 
 	t.Run("finds .nvmrc", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/nvm/.nvmrc", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/nvm/.nvmrc", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/nvm", rootPath)
@@ -40,7 +40,7 @@ func Test__LookupStore(t *testing.T) {
 	})
 
 	t.Run("finds Gemfile.lock", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/gems/Gemfile.lock", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/gems/Gemfile.lock", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/gems", rootPath)
@@ -55,7 +55,7 @@ func Test__LookupStore(t *testing.T) {
 	})
 
 	t.Run("finds package-lock.json", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/npm/package-lock.json", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/npm/package-lock.json", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/npm", rootPath)
@@ -70,7 +70,7 @@ func Test__LookupStore(t *testing.T) {
 	})
 
 	t.Run("finds requirements.txt", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/pip/requirements.txt", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/pip/requirements.txt", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/pip", rootPath)
@@ -85,7 +85,7 @@ func Test__LookupStore(t *testing.T) {
 	})
 
 	t.Run("finds composer.lock", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/composer/composer.lock", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/composer/composer.lock", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/composer", rootPath)
@@ -100,7 +100,7 @@ func Test__LookupStore(t *testing.T) {
 	})
 
 	t.Run("finds Podfile.lock", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/cocoapods/Podfile.lock", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/cocoapods/Podfile.lock", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/cocoapods", rootPath)
@@ -115,7 +115,7 @@ func Test__LookupStore(t *testing.T) {
 	})
 
 	t.Run("finds go.sum", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/go/go.sum", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/go/go.sum", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/go", rootPath)
@@ -130,7 +130,7 @@ func Test__LookupStore(t *testing.T) {
 	})
 
 	t.Run("finds yarn.lock", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/yarn/yarn.lock", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/yarn/yarn.lock", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/yarn", rootPath)
@@ -146,7 +146,7 @@ func Test__LookupStore(t *testing.T) {
 	})
 
 	t.Run("finds mix.lock", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/elixir/mix.lock", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/elixir/mix.lock", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/elixir", rootPath)
@@ -162,7 +162,7 @@ func Test__LookupStore(t *testing.T) {
 	})
 
 	t.Run("finds pom.xml", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/maven/pom.xml", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/maven/pom.xml", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/maven", rootPath)
@@ -178,10 +178,10 @@ func Test__LookupStore(t *testing.T) {
 	})
 
 	t.Run("finds requirements.txt and package-lock.json", func(t *testing.T) {
-		requirementsChecksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/multiple-files/requirements.txt", rootPath))
+		requirementsChecksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/multiple-files/requirements.txt", rootPath))
 		assert.Nil(t, err)
 
-		packageLockChecksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/multiple-files/package-lock.json", rootPath))
+		packageLockChecksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/multiple-files/package-lock.json", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/multiple-files", rootPath)
@@ -217,7 +217,7 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("finds .nvmrc", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/nvm/.nvmrc", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/nvm/.nvmrc", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/nvm", rootPath)
@@ -236,7 +236,7 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("finds Gemfile.lock", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/gems/Gemfile.lock", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/gems/Gemfile.lock", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/gems", rootPath)
@@ -255,7 +255,7 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("finds package-lock.json", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/npm/package-lock.json", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/npm/package-lock.json", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/npm", rootPath)
@@ -274,7 +274,7 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("finds requirements.txt", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/pip/requirements.txt", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/pip/requirements.txt", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/pip", rootPath)
@@ -293,7 +293,7 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("finds composer.lock", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/composer/composer.lock", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/composer/composer.lock", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/composer", rootPath)
@@ -312,7 +312,7 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("finds Podfile.lock", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/cocoapods/Podfile.lock", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/cocoapods/Podfile.lock", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/cocoapods", rootPath)
@@ -331,7 +331,7 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("finds go.sum", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/go/go.sum", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/go/go.sum", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/go", rootPath)
@@ -350,7 +350,7 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("finds yarn.lock", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/yarn/yarn.lock", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/yarn/yarn.lock", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/yarn", rootPath)
@@ -374,7 +374,7 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("finds mix.lock", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/elixir/mix.lock", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/elixir/mix.lock", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/elixir", rootPath)
@@ -398,7 +398,7 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("finds pom.xml", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/maven/pom.xml", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/maven/pom.xml", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/maven", rootPath)
@@ -422,10 +422,10 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("finds requirements.txt and package-lock.json", func(t *testing.T) {
-		requirementsChecksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/multiple-files/requirements.txt", rootPath))
+		requirementsChecksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/multiple-files/requirements.txt", rootPath))
 		assert.Nil(t, err)
 
-		packageLockChecksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/multiple-files/package-lock.json", rootPath))
+		packageLockChecksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/multiple-files/package-lock.json", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/multiple-files", rootPath)
@@ -454,7 +454,7 @@ func Test__LookupRestore(t *testing.T) {
 	})
 
 	t.Run("returns only 2 keys if branch is master", func(t *testing.T) {
-		checksum, err := generateChecksum(fmt.Sprintf("%s/test/autocache/npm/package-lock.json", rootPath))
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/npm/package-lock.json", rootPath))
 		assert.Nil(t, err)
 
 		lookupDirectory := fmt.Sprintf("%s/test/autocache/npm", rootPath)

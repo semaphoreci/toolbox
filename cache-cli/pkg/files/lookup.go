@@ -124,7 +124,7 @@ func buildResult(filePath string, options LookupOptions, entries []buildResultRe
 		gitBranch = "master"
 	}
 
-	checksum, err := generateChecksum(filePath)
+	checksum, err := GenerateChecksum(filePath)
 	if err != nil {
 		fmt.Printf("Error generating checksum for %s: %v\n", filePath, err)
 		return nil
