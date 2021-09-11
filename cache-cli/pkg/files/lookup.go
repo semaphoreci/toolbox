@@ -52,6 +52,10 @@ func Lookup(restore bool) []LookupResult {
 
 func resultForfile(file string, restore bool) *LookupResult {
 	gitBranch := os.Getenv("SEMAPHORE_GIT_BRANCH")
+	if gitBranch == "" {
+		gitBranch = "master"
+	}
+
 	homedir, _ := os.UserHomeDir()
 
 	switch file {
