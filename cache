@@ -294,9 +294,9 @@ cache::autorestore() {
           "go.sum")
             cache::log
             cache::log "* Detected $lockfile."
-            cache::log "* Fetching 'Pods' directory with cache keys 'go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum),go-$SEMAPHORE_GIT_BRANCH-,go-master-'."
+            cache::log "* Fetching '$HOME/go/pkg/mod' directory with cache keys 'go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum),go-$SEMAPHORE_GIT_BRANCH-,go-master-'."
             SEMAPHORE_LOCAL_CACHE_PATHS="$HOME/go/pkg/mod"
-            cache::restore go-$SEMAPHORE_GIT_BRANCH-$(checksum Podfile.lock),go-$SEMAPHORE_GIT_BRANCH-,go-master-
+            cache::restore go-$SEMAPHORE_GIT_BRANCH-$(checksum go.sum),go-$SEMAPHORE_GIT_BRANCH-,go-master-
             ;;
           *)
             cache::log "* Nothing to fetch from cache";;
