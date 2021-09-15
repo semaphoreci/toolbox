@@ -2,8 +2,6 @@ package storage
 
 import (
 	"context"
-	"fmt"
-	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
@@ -17,22 +15,11 @@ type S3Storage struct {
 	project    string
 }
 
-func NewS3Storage() (*S3Storage, error) {
-	project := os.Getenv("SEMAPHORE_PROJECT_NAME")
-	if project == "" {
-		return nil, fmt.Errorf("no SEMAPHORE_PROJECT_NAME set")
-	}
-
-	s3Bucket := os.Getenv("SEMAPHORE_CACHE_S3_BUCKET")
-	if s3Bucket == "" {
-		return nil, fmt.Errorf("no SEMAPHORE_CACHE_S3_BUCKET set")
-	}
-
-	s3Url := os.Getenv("SEMAPHORE_CACHE_S3_URL")
-	if s3Url != "" {
-		return createS3StorageUsingEndpoint(s3Bucket, project, s3Url)
+func NewS3Storage(url, bucket, project string) (*S3Storage, error) {
+	if url != "" {
+		return createS3StorageUsingEndpoint(bucket, project, url)
 	} else {
-		return createDefaultS3Storage(s3Bucket, project)
+		return createDefaultS3Storage(bucket, project)
 	}
 }
 

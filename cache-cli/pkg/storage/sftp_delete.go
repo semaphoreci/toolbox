@@ -1,5 +1,12 @@
 package storage
 
+import "strings"
+
 func (s *SFTPStorage) Delete(key string) error {
-	return s.Client.Remove(key)
+	err := s.Client.Remove(key)
+	if err != nil && strings.Contains(err.Error(), "file does not exist") {
+		return nil
+	}
+
+	return err
 }

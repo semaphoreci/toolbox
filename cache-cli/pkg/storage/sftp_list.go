@@ -1,5 +1,7 @@
 package storage
 
+import "sort"
+
 func (s *SFTPStorage) List() ([]CacheKey, error) {
 	files, err := s.Client.ReadDir(".")
 	if err != nil {
@@ -15,6 +17,10 @@ func (s *SFTPStorage) List() ([]CacheKey, error) {
 			StoredAt: &storedAt,
 		})
 	}
+
+	sort.SliceStable(keys, func(i, j int) bool {
+		return keys[i].StoredAt.After(*keys[j].StoredAt)
+	})
 
 	return keys, nil
 }

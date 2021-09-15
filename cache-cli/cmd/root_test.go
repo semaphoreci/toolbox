@@ -10,6 +10,7 @@ import (
 
 var testBackend = map[string]map[string]string{
 	"s3": {
+		"SEMAPHORE_PROJECT_NAME":    "cache-cli",
 		"SEMAPHORE_CACHE_BACKEND":   "s3",
 		"SEMAPHORE_CACHE_S3_URL":    "http://s3:9000",
 		"SEMAPHORE_CACHE_S3_BUCKET": "semaphore-cache",

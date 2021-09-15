@@ -8,16 +8,6 @@ services:
       - s3
       - sftp-server
     tty: true
-    environment:
-      SEMAPHORE_GIT_BRANCH: master
-      SEMAPHORE_PROJECT_NAME: cache-cli
-      # SEMAPHORE_CACHE_BACKEND: s3
-      SEMAPHORE_CACHE_BACKEND: sftp
-      SEMAPHORE_CACHE_S3_URL: http://s3:9000
-      SEMAPHORE_CACHE_S3_BUCKET: semaphore-cache
-      SEMAPHORE_CACHE_URL: sftp-server
-      SEMAPHORE_CACHE_USERNAME: tester
-      SEMAPHORE_CACHE_PRIVATE_KEY_PATH: /root/.ssh/semaphore_cache_key
     command: "/app/bin/cache"
     container_name: 'cache-cli'
     volumes:

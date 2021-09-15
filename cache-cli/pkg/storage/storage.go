@@ -35,7 +35,18 @@ func InitStorage() (Storage, error) {
 
 	switch backend {
 	case "s3":
-		return NewS3Storage()
+		project := os.Getenv("SEMAPHORE_PROJECT_NAME")
+		if project == "" {
+			return nil, fmt.Errorf("no SEMAPHORE_PROJECT_NAME set")
+		}
+
+		s3Bucket := os.Getenv("SEMAPHORE_CACHE_S3_BUCKET")
+		if s3Bucket == "" {
+			return nil, fmt.Errorf("no SEMAPHORE_CACHE_S3_BUCKET set")
+		}
+
+		url := os.Getenv("SEMAPHORE_CACHE_S3_URL")
+		return NewS3Storage(url, s3Bucket, project)
 	case "sftp":
 		url := os.Getenv("SEMAPHORE_CACHE_URL")
 		if url == "" {
