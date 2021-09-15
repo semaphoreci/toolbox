@@ -36,22 +36,6 @@ func InitStorage() (Storage, error) {
 	switch backend {
 	case "s3":
 		return NewS3Storage()
-	case "lftp":
-		url := os.Getenv("SEMAPHORE_CACHE_URL")
-		if url == "" {
-			return nil, fmt.Errorf("no SEMAPHORE_CACHE_URL set")
-		}
-
-		username := os.Getenv("SEMAPHORE_CACHE_USERNAME")
-		if username == "" {
-			return nil, fmt.Errorf("no SEMAPHORE_CACHE_USERNAME set")
-		}
-
-		privateKeyPath := os.Getenv("SEMAPHORE_CACHE_PRIVATE_KEY_PATH")
-		if privateKeyPath == "" {
-			return nil, fmt.Errorf("no SEMAPHORE_CACHE_PRIVATE_KEY_PATH set")
-		}
-		return NewLFTPStorage(url, username, privateKeyPath)
 	case "sftp":
 		url := os.Getenv("SEMAPHORE_CACHE_URL")
 		if url == "" {
