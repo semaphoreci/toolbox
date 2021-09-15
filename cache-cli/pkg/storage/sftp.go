@@ -8,6 +8,8 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+var SFTPStorageLimit int64 = 9 * 1024 * 1024 * 1024
+
 type SFTPStorage struct {
 	URL            string
 	Username       string

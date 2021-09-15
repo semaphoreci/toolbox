@@ -1,6 +1,10 @@
 package storage
 
 func (s *SFTPStorage) HasKey(key string) (bool, error) {
-	// TODO
-	return false, nil
+	file, err := s.Client.Stat(key)
+	if file == nil {
+		return false, err
+	}
+
+	return true, nil
 }
