@@ -17,7 +17,7 @@ var testBackend = map[string]map[string]string{
 	},
 	"sftp": {
 		"SEMAPHORE_CACHE_BACKEND":          "sftp",
-		"SEMAPHORE_CACHE_URL":              "sftp-server",
+		"SEMAPHORE_CACHE_URL":              "sftp-server:22",
 		"SEMAPHORE_CACHE_USERNAME":         "tester",
 		"SEMAPHORE_CACHE_PRIVATE_KEY_PATH": "/root/.ssh/semaphore_cache_key",
 	},

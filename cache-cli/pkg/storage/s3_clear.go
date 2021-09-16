@@ -18,10 +18,10 @@ func (s *S3Storage) Clear() error {
 		return nil
 	}
 
-	output, err := s.client.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
-		Bucket: &s.bucketName,
+	output, err := s.Client.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
+		Bucket: &s.Bucket,
 		Delete: &types.Delete{
-			Objects: cacheKeysToObjectIdentifiers(s.project, keys),
+			Objects: cacheKeysToObjectIdentifiers(s.Project, keys),
 		},
 	})
 

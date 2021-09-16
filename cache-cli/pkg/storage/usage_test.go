@@ -21,7 +21,7 @@ func Test__Usage(t *testing.T) {
 			case "s3":
 				assert.Equal(t, int64(-1), usage.Free)
 			case "sftp":
-				assert.Equal(t, SFTPStorageLimit, usage.Free)
+				assert.Equal(t, storage.Config().MaxSpace, usage.Free)
 			}
 		})
 
@@ -41,7 +41,7 @@ func Test__Usage(t *testing.T) {
 			case "s3":
 				assert.Equal(t, int64(-1), usage.Free)
 			case "sftp":
-				free := SFTPStorageLimit - int64(len(fileContents))
+				free := storage.Config().MaxSpace - int64(len(fileContents))
 				assert.Equal(t, free, usage.Free)
 			}
 

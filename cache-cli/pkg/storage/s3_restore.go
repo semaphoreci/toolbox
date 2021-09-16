@@ -18,10 +18,10 @@ func (s *S3Storage) Restore(key string) (*os.File, error) {
 
 	defer tempFile.Close()
 
-	bucketKey := fmt.Sprintf("%s/%s", s.project, key)
-	downloader := manager.NewDownloader(s.client)
+	bucketKey := fmt.Sprintf("%s/%s", s.Project, key)
+	downloader := manager.NewDownloader(s.Client)
 	_, err = downloader.Download(context.TODO(), tempFile, &s3.GetObjectInput{
-		Bucket: &s.bucketName,
+		Bucket: &s.Bucket,
 		Key:    &bucketKey,
 	})
 

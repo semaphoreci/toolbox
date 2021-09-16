@@ -8,59 +8,64 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-var SFTPStorageLimit int64 = 9 * 1024 * 1024 * 1024
-
 type SFTPStorage struct {
+	Client        *sftp.Client
+	StorageConfig StorageConfig
+}
+
+type SFTPStorageOptions struct {
 	URL            string
 	Username       string
 	PrivateKeyPath string
-	Client         *sftp.Client
+	Config         StorageConfig
 }
 
-func NewSFTPStorage(url, username, privateKeyPath string) (*SFTPStorage, error) {
-	storage := SFTPStorage{
-		URL:            url,
-		Username:       username,
-		PrivateKeyPath: privateKeyPath,
-	}
-
-	err := storage.Connect()
+func NewSFTPStorage(options SFTPStorageOptions) (*SFTPStorage, error) {
+	client, err := connect(options.URL, options.Username, options.PrivateKeyPath)
 	if err != nil {
 		return nil, err
+	}
+
+	storage := SFTPStorage{
+		Client:        client,
+		StorageConfig: options.Config,
 	}
 
 	return &storage, nil
 }
 
-func (s *SFTPStorage) Connect() error {
-	pk, _ := ioutil.ReadFile(s.PrivateKeyPath)
+func (s *SFTPStorage) Config() StorageConfig {
+	return s.StorageConfig
+}
+
+func connect(url, username, privateKeyPath string) (*sftp.Client, error) {
+	pk, _ := ioutil.ReadFile(privateKeyPath)
 	signer, err := ssh.ParsePrivateKey(pk)
 	if err != nil {
 		fmt.Printf("Error parsing private key: %v\n", err)
-		return err
+		return nil, err
 	}
 
 	config := &ssh.ClientConfig{
-		User: s.Username,
+		User: username,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	sshClient, err := ssh.Dial("tcp", "sftp-server:22", config)
+	sshClient, err := ssh.Dial("tcp", url, config)
 	if err != nil {
 		fmt.Printf("Error dialing ssh: %v\n", err)
-		return err
+		return nil, err
 	}
 
 	client, err := sftp.NewClient(sshClient)
 	if err != nil {
 		fmt.Printf("Error creating sftp client: %v\n", err)
 		sshClient.Close()
-		return err
+		return nil, err
 	}
 
-	s.Client = client
-	return nil
+	return client, nil
 }

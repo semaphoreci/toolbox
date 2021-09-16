@@ -13,6 +13,6 @@ func (s *SFTPStorage) Usage() (*UsageSummary, error) {
 
 	return &UsageSummary{
 		Used: totalUsed,
-		Free: SFTPStorageLimit - totalUsed,
+		Free: s.Config().MaxSpace - totalUsed,
 	}, nil
 }

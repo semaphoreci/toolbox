@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
+	"time"
 
 	assert "github.com/stretchr/testify/assert"
 )
@@ -48,6 +50,40 @@ func Test__Store(t *testing.T) {
 
 			os.Remove(file.Name())
 			os.Remove(restoredFile.Name())
+		})
+	})
+
+	runTestForSingleStorageType("sftp", t, func(storage Storage) {
+		t.Run("sftp storage deletes old keys if no space left to store", func(t *testing.T) {
+			_ = storage.Clear()
+
+			file1, _ := ioutil.TempFile("/tmp", "*")
+			file1.WriteString(strings.Repeat("x", 400))
+			storage.Store("abc001", file1.Name())
+
+			time.Sleep(time.Second)
+
+			file2, _ := ioutil.TempFile("/tmp", "*")
+			file2.WriteString(strings.Repeat("x", 400))
+			storage.Store("abc002", file2.Name())
+
+			time.Sleep(time.Second)
+
+			file3, _ := ioutil.TempFile("/tmp", "*")
+			file3.WriteString(strings.Repeat("x", 400))
+			storage.Store("abc003", file3.Name())
+
+			keys, _ := storage.List()
+			assert.Len(t, keys, 2)
+
+			firstKey := keys[0]
+			assert.Equal(t, "abc003", firstKey.Name)
+			secondKey := keys[1]
+			assert.Equal(t, "abc002", secondKey.Name)
+
+			os.Remove(file1.Name())
+			os.Remove(file2.Name())
+			os.Remove(file3.Name())
 		})
 	})
 }

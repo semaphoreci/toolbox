@@ -8,10 +8,10 @@ import (
 )
 
 func (s *S3Storage) Delete(key string) error {
-	bucketKey := fmt.Sprintf("%s/%s", s.project, key)
+	bucketKey := fmt.Sprintf("%s/%s", s.Project, key)
 
-	_, err := s.client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
-		Bucket: &s.bucketName,
+	_, err := s.Client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
+		Bucket: &s.Bucket,
 		Key:    &bucketKey,
 	})
 

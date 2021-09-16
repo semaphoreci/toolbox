@@ -12,16 +12,16 @@ import (
 
 func (s *S3Storage) List() ([]CacheKey, error) {
 	input := s3.ListObjectsInput{
-		Bucket: &s.bucketName,
-		Prefix: &s.project,
+		Bucket: &s.Bucket,
+		Prefix: &s.Project,
 	}
 
-	output, err := s.client.ListObjects(context.TODO(), &input)
+	output, err := s.Client.ListObjects(context.TODO(), &input)
 	if err != nil {
 		return nil, err
 	}
 
-	return createListResult(s.project, output.Contents), nil
+	return createListResult(s.Project, output.Contents), nil
 }
 
 func createListResult(project string, objects []types.Object) []CacheKey {

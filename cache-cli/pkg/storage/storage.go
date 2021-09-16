@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"time"
 )
@@ -14,6 +15,11 @@ type Storage interface {
 	Delete(key string) error
 	Clear() error
 	Usage() (*UsageSummary, error)
+	Config() StorageConfig
+}
+
+type StorageConfig struct {
+	MaxSpace int64
 }
 
 type CacheKey struct {
@@ -45,8 +51,12 @@ func InitStorage() (Storage, error) {
 			return nil, fmt.Errorf("no SEMAPHORE_CACHE_S3_BUCKET set")
 		}
 
-		url := os.Getenv("SEMAPHORE_CACHE_S3_URL")
-		return NewS3Storage(url, s3Bucket, project)
+		return NewS3Storage(S3StorageOptions{
+			URL:     os.Getenv("SEMAPHORE_CACHE_S3_URL"),
+			Bucket:  s3Bucket,
+			Project: project,
+			Config:  StorageConfig{MaxSpace: math.MaxInt64},
+		})
 	case "sftp":
 		url := os.Getenv("SEMAPHORE_CACHE_URL")
 		if url == "" {
@@ -62,7 +72,13 @@ func InitStorage() (Storage, error) {
 		if privateKeyPath == "" {
 			return nil, fmt.Errorf("no SEMAPHORE_CACHE_PRIVATE_KEY_PATH set")
 		}
-		return NewSFTPStorage(url, username, privateKeyPath)
+
+		return NewSFTPStorage(SFTPStorageOptions{
+			URL:            url,
+			Username:       username,
+			PrivateKeyPath: privateKeyPath,
+			Config:         StorageConfig{MaxSpace: 9 * 1024 * 1024 * 1024},
+		})
 	default:
 		return nil, fmt.Errorf("cache backend '%s' is not available", backend)
 	}

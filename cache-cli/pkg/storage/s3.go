@@ -10,33 +10,42 @@ import (
 )
 
 type S3Storage struct {
-	client     *s3.Client
-	bucketName string
-	project    string
+	Client        *s3.Client
+	Bucket        string
+	Project       string
+	StorageConfig StorageConfig
 }
 
-func NewS3Storage(url, bucket, project string) (*S3Storage, error) {
-	if url != "" {
-		return createS3StorageUsingEndpoint(bucket, project, url)
+type S3StorageOptions struct {
+	URL     string
+	Bucket  string
+	Project string
+	Config  StorageConfig
+}
+
+func NewS3Storage(options S3StorageOptions) (*S3Storage, error) {
+	if options.URL != "" {
+		return createS3StorageUsingEndpoint(options.Bucket, options.Project, options.URL, options.Config)
 	} else {
-		return createDefaultS3Storage(bucket, project)
+		return createDefaultS3Storage(options.Bucket, options.Project, options.Config)
 	}
 }
 
-func createDefaultS3Storage(s3Bucket, project string) (*S3Storage, error) {
+func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfig) (*S3Storage, error) {
 	config, err := awsConfig.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		return nil, err
 	}
 
 	return &S3Storage{
-		client:     s3.NewFromConfig(config),
-		bucketName: s3Bucket,
-		project:    project,
+		Client:        s3.NewFromConfig(config),
+		Bucket:        s3Bucket,
+		Project:       project,
+		StorageConfig: storageConfig,
 	}, nil
 }
 
-func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string) (*S3Storage, error) {
+func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string, storageConfig StorageConfig) (*S3Storage, error) {
 	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
 		return aws.Endpoint{
 			URL: s3Url,
@@ -58,8 +67,13 @@ func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string) (*S3Storage, 
 	})
 
 	return &S3Storage{
-		client:     svc,
-		bucketName: s3Bucket,
-		project:    project,
+		Client:        svc,
+		Bucket:        s3Bucket,
+		Project:       project,
+		StorageConfig: storageConfig,
 	}, nil
+}
+
+func (s *S3Storage) Config() StorageConfig {
+	return s.StorageConfig
 }
