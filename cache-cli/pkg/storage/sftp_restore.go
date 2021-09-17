@@ -14,7 +14,7 @@ func (s *SFTPStorage) Restore(key string) (*os.File, error) {
 
 	defer localFile.Close()
 
-	remoteFile, err := s.Client.Open(key)
+	remoteFile, err := s.SFTPClient.Open(key)
 	if err != nil {
 		os.Remove(localFile.Name())
 		return nil, err

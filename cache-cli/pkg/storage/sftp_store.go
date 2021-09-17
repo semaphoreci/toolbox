@@ -23,7 +23,7 @@ func (s *SFTPStorage) Store(key, path string) error {
 
 	defer localFile.Close()
 
-	remoteFile, err := s.Client.Create(key)
+	remoteFile, err := s.SFTPClient.Create(key)
 	if err != nil {
 		return err
 	}

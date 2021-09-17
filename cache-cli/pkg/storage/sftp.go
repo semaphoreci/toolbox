@@ -9,7 +9,8 @@ import (
 )
 
 type SFTPStorage struct {
-	Client        *sftp.Client
+	SSHClient     *ssh.Client
+	SFTPClient    *sftp.Client
 	StorageConfig StorageConfig
 }
 
@@ -21,13 +22,21 @@ type SFTPStorageOptions struct {
 }
 
 func NewSFTPStorage(options SFTPStorageOptions) (*SFTPStorage, error) {
-	client, err := connect(options.URL, options.Username, options.PrivateKeyPath)
+	sshClient, err := createSSHClient(options)
 	if err != nil {
 		return nil, err
 	}
 
+	sftpClient, err := sftp.NewClient(sshClient)
+	if err != nil {
+		fmt.Printf("Error creating sftp client: %v\n", err)
+		sshClient.Close()
+		return nil, err
+	}
+
 	storage := SFTPStorage{
-		Client:        client,
+		SSHClient:     sshClient,
+		SFTPClient:    sftpClient,
 		StorageConfig: options.Config,
 	}
 
@@ -38,8 +47,8 @@ func (s *SFTPStorage) Config() StorageConfig {
 	return s.StorageConfig
 }
 
-func connect(url, username, privateKeyPath string) (*sftp.Client, error) {
-	pk, _ := ioutil.ReadFile(privateKeyPath)
+func createSSHClient(options SFTPStorageOptions) (*ssh.Client, error) {
+	pk, _ := ioutil.ReadFile(options.PrivateKeyPath)
 	signer, err := ssh.ParsePrivateKey(pk)
 	if err != nil {
 		fmt.Printf("Error parsing private key: %v\n", err)
@@ -47,25 +56,18 @@ func connect(url, username, privateKeyPath string) (*sftp.Client, error) {
 	}
 
 	config := &ssh.ClientConfig{
-		User: username,
+		User: options.Username,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	sshClient, err := ssh.Dial("tcp", url, config)
+	sshClient, err := ssh.Dial("tcp", options.URL, config)
 	if err != nil {
 		fmt.Printf("Error dialing ssh: %v\n", err)
 		return nil, err
 	}
 
-	client, err := sftp.NewClient(sshClient)
-	if err != nil {
-		fmt.Printf("Error creating sftp client: %v\n", err)
-		sshClient.Close()
-		return nil, err
-	}
-
-	return client, nil
+	return sshClient, nil
 }

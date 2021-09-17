@@ -3,7 +3,7 @@ package storage
 import "sort"
 
 func (s *SFTPStorage) List() ([]CacheKey, error) {
-	files, err := s.Client.ReadDir(".")
+	files, err := s.SFTPClient.ReadDir(".")
 	if err != nil {
 		return nil, err
 	}
