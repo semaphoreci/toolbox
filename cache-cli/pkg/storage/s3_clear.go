@@ -18,6 +18,20 @@ func (s *S3Storage) Clear() error {
 		return nil
 	}
 
+	// the s3 DeleteObjects operation only allows up to 1000 keys to be used
+	chunks := createChunks(keys, 1000)
+
+	for _, chunk := range chunks {
+		err := s.deleteChunk(chunk)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *S3Storage) deleteChunk(keys []CacheKey) error {
 	output, err := s.client.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
 		Bucket: &s.bucketName,
 		Delete: &types.Delete{
@@ -35,6 +49,21 @@ func (s *S3Storage) Clear() error {
 	}
 
 	return nil
+}
+
+func createChunks(keys []CacheKey, chunkSize int) [][]CacheKey {
+	var chunks [][]CacheKey
+	for i := 0; i < len(keys); i += chunkSize {
+		end := i + chunkSize
+
+		if end > len(keys) {
+			end = len(keys)
+		}
+
+		chunks = append(chunks, keys[i:end])
+	}
+
+	return chunks
 }
 
 func cacheKeysToObjectIdentifiers(project string, keys []CacheKey) []types.ObjectIdentifier {
