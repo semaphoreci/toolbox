@@ -13,7 +13,8 @@ import (
 func Test__Clear(t *testing.T) {
 	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s no keys", backend), func(*testing.T) {
-			storage.Clear()
+			err := storage.Clear()
+			assert.Nil(t, err)
 
 			capturer := utils.CreateOutputCapturer()
 			RunClear(clearCmd, []string{})
@@ -23,7 +24,9 @@ func Test__Clear(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s with keys", backend), func(*testing.T) {
-			storage.Clear()
+			err := storage.Clear()
+			assert.Nil(t, err)
+
 			tempFile, _ := ioutil.TempFile("/tmp", "*")
 			storage.Store("abc001", tempFile.Name())
 

@@ -33,7 +33,8 @@ func Test__Clear(t *testing.T) {
 		}
 
 		t.Run(fmt.Sprintf("%s no keys", storageType), func(t *testing.T) {
-			_ = storage.Clear()
+			err := storage.Clear()
+			assert.Nil(t, err)
 
 			keys, err := storage.List()
 			assert.Nil(t, err)
