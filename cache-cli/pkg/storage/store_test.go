@@ -22,12 +22,13 @@ func Test__Store(t *testing.T) {
 
 			keys, err := storage.List()
 			assert.Nil(t, err)
-			assert.Len(t, keys, 1)
 
-			key := keys[0]
-			assert.Equal(t, key.Name, "abc001")
-			assert.NotNil(t, key.StoredAt)
-			assert.NotNil(t, key.Size)
+			if assert.Len(t, keys, 1) {
+				key := keys[0]
+				assert.Equal(t, key.Name, "abc001")
+				assert.NotNil(t, key.StoredAt)
+				assert.NotNil(t, key.Size)
+			}
 
 			os.Remove(file.Name())
 		})

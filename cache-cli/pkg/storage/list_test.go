@@ -20,29 +20,33 @@ func Test__List(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s keys are ordered by creation date", storageType), func(t *testing.T) {
-			_ = storage.Clear()
+			err := storage.Clear()
+			assert.Nil(t, err)
 
 			file1, _ := ioutil.TempFile("/tmp", "*")
-			_ = storage.Store("abc001", file1.Name())
+			err = storage.Store("abc001", file1.Name())
+			assert.Nil(t, err)
 
 			time.Sleep(time.Second)
 
 			file2, _ := ioutil.TempFile("/tmp", "*")
-			_ = storage.Store("abc002", file2.Name())
+			err = storage.Store("abc002", file2.Name())
+			assert.Nil(t, err)
 
 			keys, err := storage.List()
 			assert.Nil(t, err)
-			assert.Len(t, keys, 2)
 
-			firstObject := keys[0]
-			assert.Equal(t, firstObject.Name, "abc002")
-			assert.NotNil(t, firstObject.StoredAt)
-			assert.NotNil(t, firstObject.Size)
+			if assert.Len(t, keys, 2) {
+				firstObject := keys[0]
+				assert.Equal(t, firstObject.Name, "abc002")
+				assert.NotNil(t, firstObject.StoredAt)
+				assert.NotNil(t, firstObject.Size)
 
-			secondObject := keys[1]
-			assert.Equal(t, secondObject.Name, "abc001")
-			assert.NotNil(t, secondObject.StoredAt)
-			assert.NotNil(t, secondObject.Size)
+				secondObject := keys[1]
+				assert.Equal(t, secondObject.Name, "abc001")
+				assert.NotNil(t, secondObject.StoredAt)
+				assert.NotNil(t, secondObject.Size)
+			}
 
 			os.Remove(file1.Name())
 			os.Remove(file2.Name())
