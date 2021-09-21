@@ -206,7 +206,7 @@ blocks:
           commands:
             - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
 
-  - name: "Cache CLI: Unit Test"
+  - name: "Cache CLI: Build & Test"
     dependencies: []
     run:
       when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
@@ -214,6 +214,7 @@ blocks:
       prologue:
         commands:
           - checkout && cd cache-cli
+          - make build
           - make test.setup
       jobs:
         - name: "Test"
@@ -224,20 +225,6 @@ blocks:
           commands:
             - docker-compose logs s3
             - test-results publish junit-report.xml
-
-  - name: "Cache CLI: Build"
-    dependencies: []
-    run:
-      when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
-    task:
-      prologue:
-        commands:
-          - checkout && cd cache-cli
-      jobs:
-        - name: Build
-          commands:
-            - make build
-            - artifact push workflow bin/cache -d bin/cache
 
 promotions:
   - name: Release
