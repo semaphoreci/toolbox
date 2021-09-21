@@ -1,5 +1,7 @@
 package storage
 
+import "os"
+
 func (s *SFTPStorage) Clear() error {
 	keys, err := s.List()
 	if err != nil {
@@ -17,7 +19,11 @@ func (s *SFTPStorage) Clear() error {
 
 	defer sshSession.Close()
 
-	err = sshSession.Run("rm ./*")
+	sshSession.Stderr = os.Stderr
+	sshSession.Stdin = os.Stdin
+	sshSession.Stdout = os.Stdout
+
+	err = sshSession.Run("bash -c 'ls -A1 | xargs rm -rf'")
 	if err != nil {
 		return err
 	}
