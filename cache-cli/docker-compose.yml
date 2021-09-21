@@ -14,7 +14,7 @@ services:
       - go-pkg-cache:/go
       - .:/app
   s3:
-    image: quay.io/minio/minio
+    image: quay.io/minio/minio:RELEASE.2021-09-15T04-54-25Z
     container_name: 's3'
     ports:
       - 9000:9000
