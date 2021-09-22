@@ -206,6 +206,13 @@ blocks:
           commands:
             - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
 
+after_pipeline:
+  task:
+    jobs:
+      - name: Submit Reports
+        commands:
+          - test-results gen-pipeline-report
+
 promotions:
   - name: Release
     pipeline_file: release.yml
@@ -213,7 +220,3 @@ promotions:
       - result: passed
         branch:
           - ^refs/tags/v*
-  - name: Pipeline report
-    pipeline_file: reports.yml
-    auto_promote:
-      when: true
