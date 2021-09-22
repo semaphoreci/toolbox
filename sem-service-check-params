@@ -3,8 +3,8 @@
 params-check::mysql () {
   default_params='--net=host --rm -d  -v /var/tmp/mysql:/var/lib/mysql --name mysql -v /var/run/mysqld:/var/run/mysqld '
   service_version="5.6"
-  sudo mkdir -p /var/run/mysqld ; sudo chmod -R 0777 /var/run/mysqld
-  sudo mkdir -p /var/tmp/mysqld ; sudo chmod -R 0777 /var/tmp/mysqld
+  sudo mkdir -p /var/run/mysqld && sudo chmod -R 0777 /var/run/mysqld
+  sudo mkdir -p /var/tmp/mysqld && sudo chmod -R 0777 /var/tmp/mysqld
   params=""
   local password="";
   local username="";
@@ -53,8 +53,8 @@ params-check::mysql () {
 params-check::postgres () {
   default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgres -v /var/tmp/postgres:/var/lib/postgresql/data -v /var/run/postgresql:/var/run/postgresql'
   service_version="9.6"
-  sudo mkdir -p /var/run/postgresql ; sudo chmod -R 0777 /var/run/postgresql
-  sudo mkdir -p /var/tmp/postgres ; sudo chmod -R 0777 /var/tmp/postgres
+  sudo mkdir -p /var/run/postgresql && sudo chmod -R 0777 /var/run/postgresql
+  sudo mkdir -p /var/tmp/postgres && sudo chmod -R 0777 /var/tmp/postgres
   params=""
   if [ "${1:0:1}" == "-" ];then
     params="$@"
@@ -90,8 +90,8 @@ params-check::postgis () {
   default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgis -v /var/tmp/postgres:/var/lib/postgresql/data -v /var/run/postgresql:/var/run/postgresql'
   service_version="9.6-2.5"
   sudo rm -rf /var/run/postgresql /var/tmp/postgres
-  sudo mkdir -p /var/run/postgresql ; sudo chmod -R 0777 /var/run/postgresql
-  sudo mkdir -p /var/tmp/postgres ; sudo chmod -R 0777 /var/tmp/postgres
+  sudo mkdir -p /var/run/postgresql && sudo chmod -R 0777 /var/run/postgresql
+  sudo mkdir -p /var/tmp/postgres && sudo chmod -R 0777 /var/tmp/postgres
   params=""
   if [ "${1:0:1}" == "-" ];then
     params="$@"
@@ -127,7 +127,7 @@ params-check::postgis () {
 params-check::redis () {
   default_params='--net=host --rm --name redis -d -v /var/tmp/redis:/data'
   service_version="4.0"
-  sudo mkdir -p /var/tmp/redis ; sudo chmod -R 0777 /var/tmp/redis
+  sudo mkdir -p /var/tmp/redis && sudo chmod -R 0777 /var/tmp/redis
   params=""
   if [ "${1:0:1}" == "-" ];then
     params="$@"
@@ -141,7 +141,8 @@ params-check::redis () {
 }
 
 params-check::mongodb () {
-  default_params='--net=host --rm --name mongodb -d'
+  default_params='--net=host --rm --name mongodb -d -v /var/tmp/mongodb:/home/mongo'
+  sudo mkdir -p /var/tmp/mongodb && sudo chmod -R 0777 /var/tmp/mongodb
   service_version="4.1"
   params=""
   if [ "${1:0:1}" == "-" ];then
