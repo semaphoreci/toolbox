@@ -49,6 +49,26 @@ blocks:
           commands:
             - bats tests/sem_version_bionic.bats
 
+  - name: 'Sem Version Tests container'
+    dependencies: []
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+        containers:
+          - name: main
+            image: 'registry.semaphoreci.com/android:30-flutter'
+      prologue:
+        commands:
+          - source tests/sftp_server/start_on_mac.sh
+          - source release/install_in_tests.sh
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+      jobs:
+        - name: 'Sem Version Flutter'
+          commands:
+            - bats tests/sem_version_container.bats
+
   - name: Sem Service Tests
     dependencies: []
     task:
