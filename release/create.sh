@@ -24,14 +24,18 @@ create_tarball() {
   tar --list --verbose --file=${tarball_name}
 }
 
-include_local_binaries() {
-  cd ~/$SEMAPHORE_GIT_DIR/cache-cli
+include_local_binary() {
+  project=$1
+  linux_binary_path=$2
+  darwin_binary_path=$3
+
+  cd ~/${SEMAPHORE_GIT_DIR}/${project}
 
   make build OS=linux
-  mv bin/cache /tmp/self-hosted-Linux/toolbox
+  mv bin/cache ${linux_binary_path}
 
   make build OS=darwin
-  mv bin/cache /tmp/self-hosted-Darwin/toolbox
+  mv bin/cache ${darwin_binary_path}
 
   cd - > /dev/null
 }
@@ -98,7 +102,8 @@ self_hosted::pack() {
   include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Darwin
   include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Linux
   include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Darwin
-  include_local_binaries
+  include_local_binary \
+    cache-cli /tmp/self-hosted-Linux/toolbox/cache /tmp/self-hosted-Darwin/toolbox/cache
 }
 
 hosted::pack() {
@@ -108,6 +113,8 @@ hosted::pack() {
   include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Linux
   include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Darwin
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux
+  include_local_binary \
+    cache-cli /tmp/Linux/toolbox/new-cache /tmp/Darwin/toolbox/new-cache
 
   echo "Downloading when CLI..."
   curl -s -L --retry 5 $WHEN_CLI_URL/when -o /tmp/Linux/toolbox/when
