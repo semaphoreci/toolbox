@@ -12,3 +12,4 @@ test.watch:
 
 build:
 	docker-compose run --rm --no-deps cli bash -c 'rm -rf bin && GOOS=$(OS) go build -o bin/cache main.go'
+	sudo chown -R $(id -u):$(id -g) bin/
