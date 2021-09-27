@@ -49,6 +49,26 @@ blocks:
           commands:
             - bats tests/sem_version_bionic.bats
 
+  - name: 'Sem Version Tests container'
+    dependencies: []
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+        containers:
+          - name: main
+            image: 'registry.semaphoreci.com/android:30-flutter'
+      prologue:
+        commands:
+          - source tests/sftp_server/start_on_mac.sh
+          - source release/install_in_tests.sh
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+      jobs:
+        - name: 'Sem Version Flutter'
+          commands:
+            - bats tests/sem_version_container.bats
+
   - name: Sem Service Tests
     dependencies: []
     task:
@@ -226,6 +246,13 @@ blocks:
             - docker-compose logs s3
             - test-results publish junit-report.xml
 
+after_pipeline:
+  task:
+    jobs:
+      - name: Submit Reports
+        commands:
+          - test-results gen-pipeline-report
+
 promotions:
   - name: Release
     pipeline_file: release.yml
@@ -233,7 +260,3 @@ promotions:
       - result: passed
         branch:
           - ^refs/tags/v*
-  - name: Pipeline report
-    pipeline_file: reports.yml
-    auto_promote:
-      when: true

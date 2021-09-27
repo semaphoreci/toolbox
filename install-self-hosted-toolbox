@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+set -o pipefail
+IFS=$'\n\t'
+
+DIST=$(uname)
+
+case $DIST in
+  Darwin)
+    INSTALL_PATH='/usr/local/bin'
+    ;;
+  Linux)
+    [[ -f /usr/bin/sudo ]] && sudo rm -f /etc/apt/sources.list.d/python_2.7-source.list
+    INSTALL_PATH='/usr/local/bin'
+   ;;
+  *)
+    echo "Unsupported distro $DIST"
+    exit 1
+  ;;
+esac
+
+install_cmd() {
+  local cmd=$@
+  if [ `whoami` == 'root' ]; then
+    `$@`
+  else
+    `sudo $@`
+  fi
+}
+
+echo "Installing the cache CLI"
+install_cmd ln -sf ~/.toolbox/cache $INSTALL_PATH/cache
+install_cmd chmod +x $INSTALL_PATH/cache
+if [[ $? -eq 0 ]];then
+  echo "cache installed"
+else
+  echo "Error installing the cache CLI at $INSTALL_PATH/cache"
+fi
+
+echo "Installing the artifacts CLI"
+install_cmd ln -sf ~/.toolbox/artifact $INSTALL_PATH/artifact
+install_cmd chmod +x $INSTALL_PATH/artifact
+if [[ $? -eq 0 ]];then
+  echo "artifacts installed"
+else
+  echo "Error installing the artifacts CLI at $INSTALL_PATH/artifact"
+fi
+
+echo "Installing the test results CLI"
+install_cmd ln -sf ~/.toolbox/test-results $INSTALL_PATH/test-results
+install_cmd chmod +x $INSTALL_PATH/test-results
+if [[ $? -eq 0 ]];then
+  echo "test-results installed"
+else
+  echo "Error installing the test-results CLI at $INSTALL_PATH/test-results"
+fi
+
+source ~/.toolbox/toolbox && echo 'source ~/.toolbox/toolbox' >> ~/.bash_profile
