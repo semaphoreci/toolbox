@@ -225,20 +225,6 @@ blocks:
             - docker-compose logs s3
             - test-results publish junit-report.xml
 
-  - name: "Cache CLI: Build"
-    dependencies: []
-    run:
-      when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
-    task:
-      prologue:
-        commands:
-          - checkout && cd cache-cli
-      jobs:
-        - name: Build
-          commands:
-            - make build
-            - artifact push workflow bin/cache -d bin/cache
-
 promotions:
   - name: Release
     pipeline_file: release.yml

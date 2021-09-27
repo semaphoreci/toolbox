@@ -114,10 +114,27 @@ hosted::pack() {
   chmod +x /tmp/Linux/toolbox/when
 }
 
+create_self_hosted=false
+while getopts ":a" option; do
+  case "${option}" in
+    a)
+      create_self_hosted=true
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" 1>&2
+      exit 1
+      ;;
+  esac
+done
+
+shift $((OPTIND -1))
+
 hosted::pack
 create_tarball "linux.tar" /tmp/Linux
 create_tarball "darwin.tar" /tmp/Darwin
 
-self_hosted::pack
-create_tarball "linux.tar" /tmp/self-hosted-Linux
-create_tarball "darwin.tar" /tmp/self-hosted-Darwin
+if [[ $create_self_hosted == "true" ]]; then
+  self_hosted::pack
+  create_tarball "linux.tar" /tmp/self-hosted-Linux
+  create_tarball "darwin.tar" /tmp/self-hosted-Darwin
+fi

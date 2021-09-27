@@ -6,7 +6,7 @@ set -euo pipefail
 #
 # How to use:
 #
-#   1. Create the tarballs by running release/create.sh, this will create:
+#   1. Create the tarballs by running release/create.sh -a, this will create:
 #      - /tmp/Linux/linux.tar
 #      - /tmp/Darwin/darwin.tar
 #      - /tmp/self-hosted-Linux/linux.tar
