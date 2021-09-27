@@ -24,6 +24,18 @@ create_tarball() {
   tar --list --verbose --file=${tarball_name}
 }
 
+include_local_binaries() {
+  cd ~/$SEMAPHORE_GIT_DIR/cache-cli
+
+  make build OS=linux
+  mv bin/cache /tmp/self-hosted-Linux/toolbox
+
+  make build OS=darwin
+  mv bin/cache /tmp/self-hosted-Darwin/toolbox
+
+  cd - > /dev/null
+}
+
 include_external_linux_binary() {
   url=$1
   binary_name=$2
@@ -86,8 +98,7 @@ self_hosted::pack() {
   include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Darwin
   include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Linux
   include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Darwin
-  cd ~/$SEMAPHORE_GIT_DIR/cache-cli && make build OS=linux && mv cache /tmp/self-hosted-Linux/toolbox && cd - > /dev/null
-  cd ~/$SEMAPHORE_GIT_DIR/cache-cli && make build OS=darwin && mv cache /tmp/self-hosted-Darwin/toolbox && cd - > /dev/null
+  include_local_binaries
 }
 
 hosted::pack() {
