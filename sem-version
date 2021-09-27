@@ -146,7 +146,19 @@ version::change_kubectl() {
   version::change "kubectl version --client | grep -q "
   return $?
 }
-
+version::change_flutter() {
+  if test -d "/opt/flutter_${software_version}"; then
+    rm -f /opt/flutter && ln -s /opt/flutter_$software_version /opt/flutter
+    version::change "/opt/flutter/bin/flutter --version | grep "
+    return $?
+  else
+    echo -e "
+###############################################################################
+    Flutter version ${software_version} not installed or not a container.
+"
+    return 1
+  fi
+}
 ################################################################################
 # End of software manager wrappers
 ################################################################################
