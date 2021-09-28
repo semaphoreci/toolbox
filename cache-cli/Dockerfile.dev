@@ -1,8 +1,5 @@
 FROM golang:1.16
 
-RUN apt-get update -y && \
-  apt-get install -y lftp
-
 RUN go get gotest.tools/gotestsum
 RUN mkdir /root/.ssh
 COPY id_rsa /root/.ssh/semaphore_cache_key

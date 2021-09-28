@@ -33,6 +33,7 @@ blocks:
       prologue:
         commands:
           - sudo apt-get install shellcheck
+          - checkout
       jobs:
         - name: ShellCheck
           commands:
