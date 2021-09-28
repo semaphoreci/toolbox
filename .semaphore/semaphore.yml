@@ -274,14 +274,12 @@ blocks:
             - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
 
   - name: "Cache CLI: Test"
-    dependencies:
-      - 'Build local CLIs'
+    dependencies: []
     run:
       when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
     task:
       prologue:
         commands:
-          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
           - checkout && cd cache-cli
           - make test.setup
       jobs:
