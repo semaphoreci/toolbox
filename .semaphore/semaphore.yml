@@ -8,17 +8,24 @@ agent:
 execution_time_limit:
   minutes: 10
 
-global_job_config:
-  prologue:
-    commands:
-      # Disconnect from cache server
-      - sem-version go 1.16
-      - "export GOPATH=~/go"
-      - "export PATH=/home/semaphore/go/bin:$PATH"
-      - checkout
-      - bash release/create.sh
-
 blocks:
+  - name: Build local CLIs
+    dependencies: []
+    task:
+      prologue:
+        commands:
+          - sem-version go 1.16
+          - "export GOPATH=~/go"
+          - "export PATH=/home/semaphore/go/bin:$PATH"
+      jobs:
+        - name: Build cache CLI
+          commands:
+            - cd cache-cli
+            - make build OS=linux
+            - make build OS=darwin
+            - artifact push workflow bin/linux/cache -d bin/linux/cache
+            - artifact push workflow bin/darwin/cache -d bin/darwin/cache
+
   - name: Static Code Analysis
     dependencies: []
     task:
@@ -39,10 +46,15 @@ blocks:
             - shellcheck install-package
 
   - name: Sem Version Tests bionic
-    dependencies: []
+    dependencies:
+      - 'Build local CLIs'
     task:
       prologue:
         commands:
+          - checkout
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
@@ -53,7 +65,8 @@ blocks:
             - bats tests/sem_version_bionic.bats
 
   - name: 'Sem Version Tests container'
-    dependencies: []
+    dependencies:
+      - 'Build local CLIs'
     task:
       agent:
         machine:
@@ -63,6 +76,10 @@ blocks:
             image: 'registry.semaphoreci.com/android:30-flutter'
       prologue:
         commands:
+          - checkout
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - bash release/create.sh
           - source tests/sftp_server/start_on_mac.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -73,10 +90,15 @@ blocks:
             - bats tests/sem_version_container.bats
 
   - name: Sem Service Tests
-    dependencies: []
+    dependencies:
+      - 'Build local CLIs'
     task:
       prologue:
         commands:
+          - checkout
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - bash release/create.sh
           - source release/create.sh
           - cd ~/$SEMAPHORE_GIT_DIR/
           - source release/install_in_tests.sh
@@ -99,7 +121,8 @@ blocks:
             - bash tests/sem_service/$TEST
 
   - name: 'Bats: Mac'
-    dependencies: []
+    dependencies:
+      - 'Build local CLIs'
     task:
       agent:
         machine:
@@ -108,6 +131,10 @@ blocks:
 
       prologue:
         commands:
+          - checkout
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - bash release/create.sh
           - source tests/sftp_server/start_on_mac.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -132,7 +159,8 @@ blocks:
             - 'test-results publish report.xml --name="Bats: Mac" --suite-prefix=$TEST'
 
   - name: 'Bats: Docker'
-    dependencies: []
+    dependencies:
+      - 'Build local CLIs'
     task:
       agent:
         machine:
@@ -143,6 +171,10 @@ blocks:
             image: 'semaphoreci/ruby:2.6.2'
       prologue:
         commands:
+          - checkout
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - bash release/create.sh
           - source tests/sftp_server/start_on_docker.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -164,7 +196,8 @@ blocks:
             - 'test-results publish report.xml --name="Bats: Docker" --suite-prefix=$TEST'
 
   - name: 'Bats: Minimal Docker'
-    dependencies: []
+    dependencies:
+      - 'Build local CLIs'
     task:
       agent:
         machine:
@@ -175,6 +208,10 @@ blocks:
             image: 'semaphoreci/alpine:3.9'
       prologue:
         commands:
+          - checkout
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - bash release/create.sh
           - apk add --update docker openrc
           - source tests/sftp_server/start_on_docker.sh
           - source release/install_in_tests.sh
@@ -197,10 +234,15 @@ blocks:
             - 'test-results publish report.xml --name="Bats: Minimal Docker" --suite-prefix=$TEST'
 
   - name: 'Bats: Linux'
-    dependencies: []
+    dependencies:
+      - 'Build local CLIs'
     task:
       prologue:
         commands:
+          - checkout
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - bash release/create.sh
           - source tests/sftp_server/start_on_linux.sh
           - sudo apt-get install -y python3.8-dev
           - sem-version python 3.8
@@ -229,7 +271,7 @@ blocks:
           commands:
             - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
 
-  - name: "Cache CLI: Build & Test"
+  - name: "Cache CLI: Test"
     dependencies: []
     run:
       when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
@@ -237,7 +279,6 @@ blocks:
       prologue:
         commands:
           - checkout && cd cache-cli
-          - make build
           - make test.setup
       jobs:
         - name: "Test"
