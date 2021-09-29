@@ -6,7 +6,7 @@ func (s *S3Storage) Usage() (*UsageSummary, error) {
 		return nil, err
 	}
 
-	var total int64 = 0
+	var total int64
 	for _, key := range keys {
 		total = total + key.Size
 	}

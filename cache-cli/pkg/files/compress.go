@@ -23,7 +23,7 @@ func Compress(key, path string) (string, error) {
 func compressionCommand(path, tempFileName string) *exec.Cmd {
 	if filepath.IsAbs(path) {
 		return exec.Command("tar", "czPf", tempFileName, path)
-	} else {
-		return exec.Command("tar", "czf", tempFileName, path)
 	}
+
+	return exec.Command("tar", "czf", tempFileName, path)
 }

@@ -32,9 +32,9 @@ func Unpack(path string) (string, error) {
 func unpackCommand(restorationPath, tempFile string) (*exec.Cmd, error) {
 	if filepath.IsAbs(restorationPath) {
 		return exec.Command("tar", "xzPf", tempFile, "-C", "."), nil
-	} else {
-		return exec.Command("tar", "xzf", tempFile, "-C", "."), nil
 	}
+
+	return exec.Command("tar", "xzf", tempFile, "-C", "."), nil
 }
 
 func findRestorationPath(path string) (string, error) {

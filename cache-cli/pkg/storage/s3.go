@@ -31,9 +31,9 @@ func NewS3Storage() (*S3Storage, error) {
 	s3Url := os.Getenv("SEMAPHORE_CACHE_S3_URL")
 	if s3Url != "" {
 		return createS3StorageUsingEndpoint(s3Bucket, project, s3Url)
-	} else {
-		return createDefaultS3Storage(s3Bucket, project)
 	}
+
+	return createDefaultS3Storage(s3Bucket, project)
 }
 
 func createDefaultS3Storage(s3Bucket, project string) (*S3Storage, error) {

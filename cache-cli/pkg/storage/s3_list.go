@@ -39,11 +39,11 @@ func (s *S3Storage) listObjectsInput(nextMarker *string) *s3.ListObjectsInput {
 			Prefix: &s.project,
 			Marker: nextMarker,
 		}
-	} else {
-		return &s3.ListObjectsInput{
-			Bucket: &s.bucketName,
-			Prefix: &s.project,
-		}
+	}
+
+	return &s3.ListObjectsInput{
+		Bucket: &s.bucketName,
+		Prefix: &s.project,
 	}
 }
 
@@ -67,9 +67,9 @@ func (s *S3Storage) appendToListResult(keys []CacheKey, objects []types.Object) 
 func findNextMarker(output *s3.ListObjectsOutput) string {
 	if output.NextMarker != nil {
 		return *output.NextMarker
-	} else {
-		contents := output.Contents
-		lastElement := contents[len(contents)-1]
-		return *lastElement.Key
 	}
+
+	contents := output.Contents
+	lastElement := contents[len(contents)-1]
+	return *lastElement.Key
 }
