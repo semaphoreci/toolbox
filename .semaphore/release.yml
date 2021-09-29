@@ -13,5 +13,5 @@ blocks:
         - name: Create and Upload assets
           commands:
             - checkout
-            - bash release/create.sh
+            - bash release/create.sh -a
             - bash release/upload.sh
