@@ -55,4 +55,13 @@ else
   echo "Error installing the test-results CLI at $INSTALL_PATH/test-results"
 fi
 
+echo "Installing retry"
+install_cmd ln -sf ~/.toolbox/retry $INSTALL_PATH/retry
+install_cmd chmod +x $INSTALL_PATH/retry
+if [[ $? -eq 0 ]];then
+  echo "retry installed"
+else
+  echo "Error installing retry at $INSTALL_PATH/retry"
+fi
+
 source ~/.toolbox/toolbox && echo 'source ~/.toolbox/toolbox' >> ~/.bash_profile
