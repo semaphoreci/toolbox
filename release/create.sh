@@ -88,8 +88,12 @@ self_hosted::create_initial_content() {
   cp ~/$SEMAPHORE_GIT_DIR/install-self-hosted-toolbox /tmp/self-hosted-Darwin/toolbox/install-toolbox
   cp ~/$SEMAPHORE_GIT_DIR/self-hosted-toolbox /tmp/self-hosted-Linux/toolbox/toolbox
   cp ~/$SEMAPHORE_GIT_DIR/self-hosted-toolbox /tmp/self-hosted-Darwin/toolbox/toolbox
-  cp ~/$SEMAPHORE_GIT_DIR/libcheckout /tmp/self-hosted-Linux/toolbox/
-  cp ~/$SEMAPHORE_GIT_DIR/libcheckout /tmp/self-hosted-Darwin/toolbox/
+
+  inclusions=(libcheckout libchecksum retry)
+  for inclusion in "${inclusions[@]}"; do
+    cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Linux/toolbox/
+    cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Darwin/toolbox/
+  done
 }
 
 self_hosted::pack() {
