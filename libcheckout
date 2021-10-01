@@ -5,7 +5,7 @@ function checkout() {
     return 1
   fi
 
-  rm -rf $SEMAPHORE_GIT_DIR
+  rm -rf "$SEMAPHORE_GIT_DIR"
 
   if [ "$1" = "--use-cache" ]; then
     echo "[Experimental stability] Using cached Git repository."
