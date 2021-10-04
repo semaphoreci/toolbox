@@ -188,7 +188,7 @@ setup() {
   assert_line --partial "Elixir 1.11.4"
 }
 
-@test "change elixir to 1.12.34" {
+@test "change elixir to 1.12.3" {
   sem-version elixir 1.12.3
   run elixir --version
   assert_line --partial "Elixir 1.12.3"
@@ -207,8 +207,8 @@ setup() {
   assert_line --partial "1.15.3"
 }
 #  erlang
-@test "change erlang to 24.1" {
-  sem-version erlang 24.1
+@test "change erlang to 24.0" {
+  sem-version erlang 24.0
   run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
   assert_line --partial "24"
 }
