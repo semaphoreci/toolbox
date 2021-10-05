@@ -83,7 +83,7 @@ func createSSHClient(options SFTPStorageOptions) (*ssh.Client, error) {
 func resolvePath(path string) string {
 	if strings.HasPrefix(path, "~") {
 		return strings.Replace(path, "~", os.Getenv("HOME"), 1)
-	} else {
-		return path
 	}
+
+	return path
 }

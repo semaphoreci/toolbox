@@ -11,7 +11,7 @@ test.watch:
 	docker-compose run --rm cli gotestsum --watch --format short-verbose --junitfile junit-report.xml --packages="./..." -- -p 1
 
 build:
-	GOOS=$(OS) go build -o bin/$(OS)/cache main.go
+	CGO_ENABLED=0 GOOS=$(OS) go build -o bin/$(OS)/cache main.go
 
 lint:
 	revive -formatter friendly -config lint.toml ./...
