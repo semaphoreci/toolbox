@@ -22,14 +22,14 @@ teardown() {
   run cache store
 
   assert_success
-  assert_output --partial "* Detected Gemfile.lock."
+  assert_output --partial "Detected Gemfile.lock."
   assert_output --partial "Upload complete."
 
   rm -rf vendor/bundle
 
   run cache restore
   assert_success
-  assert_output --partial  "* Fetching 'vendor/bundle' directory with cache keys"
+  assert_output --partial  "Fetching 'vendor/bundle' directory with cache keys"
   assert_output --partial "Restored: vendor/bundle/"
 }
 
@@ -40,14 +40,14 @@ teardown() {
   run cache store
 
   assert_success
-  assert_output --partial "* Detected package-lock.json"
+  assert_output --partial "Detected package-lock.json"
   assert_output --partial "Upload complete."
 
   rm -rf node_modules
 
   run cache restore
   assert_success
-  assert_output --partial "* Fetching 'node_modules' directory with cache keys"
+  assert_output --partial "Fetching 'node_modules' directory with cache keys"
   assert_output --partial "Restored: node_modules/"
 }
 
@@ -62,13 +62,13 @@ teardown() {
   run cache store
 
   assert_success
-  assert_output --partial "* Detected Podfile.lock"
+  assert_output --partial "Detected Podfile.lock"
   assert_output --partial "Upload complete."
 
   rm -rf Pods
 
   run cache restore
   assert_success
-  assert_output --partial "* Fetching 'Pods' directory with cache keys"
+  assert_output --partial "Fetching 'Pods' directory with cache keys"
   assert_output --partial "Restored: Pods/"
 }
