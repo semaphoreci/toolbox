@@ -2,6 +2,8 @@ package storage
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
@@ -10,42 +12,44 @@ import (
 )
 
 type S3Storage struct {
-	Client        *s3.Client
-	Bucket        string
-	Project       string
-	StorageConfig StorageConfig
+	client     *s3.Client
+	bucketName string
+	project    string
 }
 
-type S3StorageOptions struct {
-	URL     string
-	Bucket  string
-	Project string
-	Config  StorageConfig
-}
-
-func NewS3Storage(options S3StorageOptions) (*S3Storage, error) {
-	if options.URL != "" {
-		return createS3StorageUsingEndpoint(options.Bucket, options.Project, options.URL, options.Config)
+func NewS3Storage() (*S3Storage, error) {
+	project := os.Getenv("SEMAPHORE_PROJECT_NAME")
+	if project == "" {
+		return nil, fmt.Errorf("no SEMAPHORE_PROJECT_NAME set")
 	}
 
-	return createDefaultS3Storage(options.Bucket, options.Project, options.Config)
+	s3Bucket := os.Getenv("SEMAPHORE_CACHE_S3_BUCKET")
+	if s3Bucket == "" {
+		return nil, fmt.Errorf("no SEMAPHORE_CACHE_S3_BUCKET set")
+	}
+
+	s3Url := os.Getenv("SEMAPHORE_CACHE_S3_URL")
+	if s3Url != "" {
+		return createS3StorageUsingEndpoint(s3Bucket, project, s3Url)
+	}
+
+	return createDefaultS3Storage(s3Bucket, project)
 }
 
-func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfig) (*S3Storage, error) {
+func createDefaultS3Storage(s3Bucket, project string) (*S3Storage, error) {
 	config, err := awsConfig.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		return nil, err
 	}
 
 	return &S3Storage{
-		Client:        s3.NewFromConfig(config),
-		Bucket:        s3Bucket,
-		Project:       project,
-		StorageConfig: storageConfig,
+		client:     s3.NewFromConfig(config),
+		bucketName: s3Bucket,
+		project:    project,
 	}, nil
 }
 
-func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string, storageConfig StorageConfig) (*S3Storage, error) {
+func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string) (*S3Storage, error) {
 	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
 		return aws.Endpoint{
 			URL: s3Url,
@@ -67,13 +71,8 @@ func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string, storageConfig
 	})
 
 	return &S3Storage{
-		Client:        svc,
-		Bucket:        s3Bucket,
-		Project:       project,
-		StorageConfig: storageConfig,
+		client:     svc,
+		bucketName: s3Bucket,
+		project:    project,
 	}, nil
-}
-
-func (s *S3Storage) Config() StorageConfig {
-	return s.StorageConfig
 }

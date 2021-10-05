@@ -13,7 +13,5 @@ blocks:
         - name: Create and Upload assets
           commands:
             - checkout
-            - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
-            - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
             - bash release/create.sh -a
             - bash release/upload.sh

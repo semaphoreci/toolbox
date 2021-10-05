@@ -11,7 +11,7 @@ import (
 )
 
 func (s *S3Storage) List() ([]CacheKey, error) {
-	output, err := s.Client.ListObjects(context.TODO(), s.listObjectsInput(nil))
+	output, err := s.client.ListObjects(context.TODO(), s.listObjectsInput(nil))
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +21,7 @@ func (s *S3Storage) List() ([]CacheKey, error) {
 
 	for output.IsTruncated {
 		nextMarker := findNextMarker(output)
-		output, err = s.Client.ListObjects(context.TODO(), s.listObjectsInput(&nextMarker))
+		output, err = s.client.ListObjects(context.TODO(), s.listObjectsInput(&nextMarker))
 		if err != nil {
 			return nil, err
 		}
@@ -35,21 +35,21 @@ func (s *S3Storage) List() ([]CacheKey, error) {
 func (s *S3Storage) listObjectsInput(nextMarker *string) *s3.ListObjectsInput {
 	if nextMarker != nil {
 		return &s3.ListObjectsInput{
-			Bucket: &s.Bucket,
-			Prefix: &s.Project,
+			Bucket: &s.bucketName,
+			Prefix: &s.project,
 			Marker: nextMarker,
 		}
 	}
 
 	return &s3.ListObjectsInput{
-		Bucket: &s.Bucket,
-		Prefix: &s.Project,
+		Bucket: &s.bucketName,
+		Prefix: &s.project,
 	}
 }
 
 func (s *S3Storage) appendToListResult(keys []CacheKey, objects []types.Object) []CacheKey {
 	for _, object := range objects {
-		keyWithoutProject := strings.ReplaceAll(*object.Key, fmt.Sprintf("%s/", s.Project), "")
+		keyWithoutProject := strings.ReplaceAll(*object.Key, fmt.Sprintf("%s/", s.project), "")
 		keys = append(keys, CacheKey{
 			Name:     keyWithoutProject,
 			StoredAt: object.LastModified,
