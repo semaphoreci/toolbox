@@ -3,6 +3,8 @@ package storage
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
+	"strings"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -48,8 +50,14 @@ func (s *SFTPStorage) Config() StorageConfig {
 }
 
 func createSSHClient(options SFTPStorageOptions) (*ssh.Client, error) {
-	pk, _ := ioutil.ReadFile(options.PrivateKeyPath)
-	signer, err := ssh.ParsePrivateKey(pk)
+	sshKeyPath := resolvePath(options.PrivateKeyPath)
+	bytes, err := ioutil.ReadFile(sshKeyPath)
+	if err != nil {
+		fmt.Printf("Error reading file %s: %v\n", sshKeyPath, err)
+		return nil, err
+	}
+
+	privateKey, err := ssh.ParsePrivateKey(bytes)
 	if err != nil {
 		fmt.Printf("Error parsing private key: %v\n", err)
 		return nil, err
@@ -58,7 +66,7 @@ func createSSHClient(options SFTPStorageOptions) (*ssh.Client, error) {
 	config := &ssh.ClientConfig{
 		User: options.Username,
 		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
+			ssh.PublicKeys(privateKey),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
@@ -70,4 +78,12 @@ func createSSHClient(options SFTPStorageOptions) (*ssh.Client, error) {
 	}
 
 	return sshClient, nil
+}
+
+func resolvePath(path string) string {
+	if strings.HasPrefix(path, "~") {
+		return strings.Replace(path, "~", os.Getenv("HOME"), 1)
+	} else {
+		return path
+	}
 }
