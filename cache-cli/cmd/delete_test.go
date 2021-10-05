@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -11,25 +10,26 @@ import (
 )
 
 func Test__Delete(t *testing.T) {
-	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
-		t.Run(fmt.Sprintf("%s key is missing", backend), func(*testing.T) {
-			capturer := utils.CreateOutputCapturer()
-			RunDelete(hasKeyCmd, []string{"this-key-does-not-exist"})
-			output := capturer.Done()
+	storage, err := storage.InitStorage()
+	assert.Nil(t, err)
 
-			assert.Contains(t, output, "The key 'this-key-does-not-exist' doesn't exist in the cache store.")
-		})
+	t.Run("key is missing", func(*testing.T) {
+		capturer := utils.CreateOutputCapturer()
+		RunDelete(hasKeyCmd, []string{"this-key-does-not-exist"})
+		output := capturer.Done()
 
-		t.Run(fmt.Sprintf("%s key is present", backend), func(*testing.T) {
-			storage.Clear()
-			tempFile, _ := ioutil.TempFile("/tmp", "*")
-			storage.Store("abc001", tempFile.Name())
+		assert.Contains(t, output, "The key 'this-key-does-not-exist' doesn't exist in the cache store.")
+	})
 
-			capturer := utils.CreateOutputCapturer()
-			RunDelete(hasKeyCmd, []string{"abc001"})
-			output := capturer.Done()
+	t.Run("key is present", func(*testing.T) {
+		storage.Clear()
+		tempFile, _ := ioutil.TempFile("/tmp", "*")
+		storage.Store("abc001", tempFile.Name())
 
-			assert.Contains(t, output, "Key 'abc001' is deleted.")
-		})
+		capturer := utils.CreateOutputCapturer()
+		RunDelete(hasKeyCmd, []string{"abc001"})
+		output := capturer.Done()
+
+		assert.Contains(t, output, "Key 'abc001' is deleted.")
 	})
 }

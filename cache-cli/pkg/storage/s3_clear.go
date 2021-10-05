@@ -32,10 +32,10 @@ func (s *S3Storage) Clear() error {
 }
 
 func (s *S3Storage) deleteChunk(keys []CacheKey) error {
-	output, err := s.Client.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
-		Bucket: &s.Bucket,
+	output, err := s.client.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
+		Bucket: &s.bucketName,
 		Delete: &types.Delete{
-			Objects: cacheKeysToObjectIdentifiers(s.Project, keys),
+			Objects: cacheKeysToObjectIdentifiers(s.project, keys),
 		},
 	})
 
