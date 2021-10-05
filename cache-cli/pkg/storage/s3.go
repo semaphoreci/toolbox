@@ -26,9 +26,9 @@ type S3StorageOptions struct {
 func NewS3Storage(options S3StorageOptions) (*S3Storage, error) {
 	if options.URL != "" {
 		return createS3StorageUsingEndpoint(options.Bucket, options.Project, options.URL, options.Config)
-	} else {
-		return createDefaultS3Storage(options.Bucket, options.Project, options.Config)
 	}
+
+	return createDefaultS3Storage(options.Bucket, options.Project, options.Config)
 }
 
 func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfig) (*S3Storage, error) {

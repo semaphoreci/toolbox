@@ -6,7 +6,7 @@ func (s *SFTPStorage) Usage() (*UsageSummary, error) {
 		return nil, err
 	}
 
-	var totalUsed int64 = 0
+	var totalUsed int64
 	for _, file := range files {
 		totalUsed = totalUsed + file.Size()
 	}
