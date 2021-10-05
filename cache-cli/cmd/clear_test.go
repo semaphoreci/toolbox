@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -10,28 +11,30 @@ import (
 )
 
 func Test__Clear(t *testing.T) {
-	storage, err := storage.InitStorage()
-	assert.Nil(t, err)
+	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
+		t.Run(fmt.Sprintf("%s no keys", backend), func(*testing.T) {
+			err := storage.Clear()
+			assert.Nil(t, err)
 
-	t.Run("no keys", func(*testing.T) {
-		storage.Clear()
+			capturer := utils.CreateOutputCapturer()
+			RunClear(clearCmd, []string{})
+			output := capturer.Done()
 
-		capturer := utils.CreateOutputCapturer()
-		RunClear(clearCmd, []string{})
-		output := capturer.Done()
+			assert.Contains(t, output, "Cache is clear.")
+		})
 
-		assert.Contains(t, output, "Cache is clear.")
-	})
+		t.Run(fmt.Sprintf("%s with keys", backend), func(*testing.T) {
+			err := storage.Clear()
+			assert.Nil(t, err)
 
-	t.Run("with keys", func(*testing.T) {
-		storage.Clear()
-		tempFile, _ := ioutil.TempFile("/tmp", "*")
-		storage.Store("abc001", tempFile.Name())
+			tempFile, _ := ioutil.TempFile("/tmp", "*")
+			storage.Store("abc001", tempFile.Name())
 
-		capturer := utils.CreateOutputCapturer()
-		RunClear(hasKeyCmd, []string{})
-		output := capturer.Done()
+			capturer := utils.CreateOutputCapturer()
+			RunClear(hasKeyCmd, []string{})
+			output := capturer.Done()
 
-		assert.Contains(t, output, "Cache is clear.")
+			assert.Contains(t, output, "Cache is clear.")
+		})
 	})
 }

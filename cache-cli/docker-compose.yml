@@ -6,25 +6,27 @@ services:
       dockerfile: Dockerfile.dev
     depends_on:
       - s3
+      - sftp-server
     tty: true
-    environment:
-      SEMAPHORE_GIT_BRANCH: master
-      SEMAPHORE_PROJECT_NAME: cache-cli
-      SEMAPHORE_CACHE_BACKEND: s3
-      SEMAPHORE_CACHE_S3_URL: http://s3:9000
-      SEMAPHORE_CACHE_S3_BUCKET: semaphore-cache
-    command: "/app/bin/cache"
+    command: "sleep 0"
     container_name: 'cache-cli'
     volumes:
       - go-pkg-cache:/go
       - .:/app
   s3:
-    image: quay.io/minio/minio
+    image: quay.io/minio/minio:RELEASE.2021-09-15T04-54-25Z
     container_name: 's3'
     ports:
       - 9000:9000
     entrypoint: sh
     command: -c 'mkdir -p /tmp/s3-data/semaphore-cache && minio server /tmp/s3-data'
+  sftp-server:
+    container_name: sftp-server
+    ports:
+      - "2222:22"
+    build:
+      context: .
+      dockerfile: Dockerfile.sftp_server
 volumes:
   go-pkg-cache:
     driver: local

@@ -61,26 +61,46 @@ func compressAndStore(storage storage.Storage, key, path string) {
 			return
 		}
 
-		compressingStart := time.Now()
-		fmt.Printf("Compressing %s...\n", path)
-		compressed, err := files.Compress(key, path)
-		utils.Check(err)
+		compressedFilePath, compressedFileSize, err := compress(key, path)
+		if err != nil {
+			fmt.Printf("Error compressing %s: %v\n", path, err)
+			return
+		}
 
-		compressionDuration := time.Since(compressingStart)
-		info, _ := os.Stat(compressed)
-		fmt.Printf("Compression complete. Duration: %v. Size: %v bytes.\n", compressionDuration.String(), files.HumanReadableSize(info.Size()))
+		maxSpace := storage.Config().MaxSpace
+		if compressedFileSize > maxSpace {
+			fmt.Printf("Archive exceeds allocated %s for cache.\n", files.HumanReadableSize(maxSpace))
+			return
+		}
 
 		uploadStart := time.Now()
 		fmt.Printf("Uploading '%s' with cache key '%s'...\n", path, key)
-		err = storage.Store(key, compressed)
+		err = storage.Store(key, compressedFilePath)
 		utils.Check(err)
 
 		uploadDuration := time.Since(uploadStart)
 		fmt.Printf("Upload complete. Duration: %v.\n", uploadDuration)
-		os.Remove(compressed)
+		os.Remove(compressedFilePath)
 	} else {
 		fmt.Printf("Path %s does not exist.\n", path)
 	}
+}
+
+func compress(key, path string) (string, int64, error) {
+	compressingStart := time.Now()
+	fmt.Printf("Compressing %s...\n", path)
+	compressed, err := files.Compress(key, path)
+	utils.Check(err)
+
+	compressionDuration := time.Since(compressingStart)
+	info, err := os.Stat(compressed)
+	if err != nil {
+		os.Remove(compressed)
+		return "", -1, err
+	}
+
+	fmt.Printf("Compression complete. Duration: %v. Size: %v bytes.\n", compressionDuration.String(), files.HumanReadableSize(info.Size()))
+	return compressed, info.Size(), nil
 }
 
 func init() {
