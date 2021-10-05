@@ -6,7 +6,7 @@ agent:
     os_image: ubuntu1804
 
 execution_time_limit:
-  minutes: 10
+  minutes: 15
 
 blocks:
   - name: Build local CLIs
@@ -273,7 +273,7 @@ blocks:
           commands:
             - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
 
-  - name: "Cache CLI: Test"
+  - name: "Cache CLI: Tests"
     dependencies: []
     run:
       when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
@@ -291,6 +291,24 @@ blocks:
           commands:
             - docker-compose logs s3
             - test-results publish junit-report.xml
+
+  - name: "Cache CLI: Lint"
+    dependencies: []
+    run:
+      when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
+    task:
+      env_vars:
+        - name: GO111MODULE
+          value: "on"
+      prologue:
+        commands:
+          - sem-version go 1.16
+          - checkout && cd cache-cli
+      jobs:
+        - name: Lint
+          commands:
+            - go get -u github.com/mgechev/revive
+            - make lint
 
 after_pipeline:
   task:

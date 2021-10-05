@@ -5,7 +5,7 @@ set -euo pipefail
 ARTIFACT_CLI_VERSION="v0.4.6"
 WHEN_CLI_VERSION="v1.0.5"
 SPC_CLI_VERSION="v1.9.1"
-TEST_RESULTS_CLI_VERSION="v0.4.10"
+TEST_RESULTS_CLI_VERSION="v0.4.12"
 
 ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
 SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSION"
@@ -76,8 +76,12 @@ self_hosted::create_initial_content() {
   cp ~/$SEMAPHORE_GIT_DIR/install-self-hosted-toolbox /tmp/self-hosted-Darwin/toolbox/install-toolbox
   cp ~/$SEMAPHORE_GIT_DIR/self-hosted-toolbox /tmp/self-hosted-Linux/toolbox/toolbox
   cp ~/$SEMAPHORE_GIT_DIR/self-hosted-toolbox /tmp/self-hosted-Darwin/toolbox/toolbox
-  cp ~/$SEMAPHORE_GIT_DIR/libcheckout /tmp/self-hosted-Linux/toolbox/
-  cp ~/$SEMAPHORE_GIT_DIR/libcheckout /tmp/self-hosted-Darwin/toolbox/
+
+  inclusions=(libcheckout libchecksum retry)
+  for inclusion in "${inclusions[@]}"; do
+    cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Linux/toolbox/
+    cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Darwin/toolbox/
+  done
 }
 
 self_hosted::pack() {

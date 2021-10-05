@@ -128,27 +128,27 @@ func buildResult(filePath string, options LookupOptions, entries []buildResultRe
 	if err != nil {
 		fmt.Printf("Error generating checksum for %s: %v\n", filePath, err)
 		return nil
-	} else {
-		newEntries := []LookupResultEntry{}
-		for _, entry := range entries {
-			if options.Restore {
-				newEntries = append(newEntries, LookupResultEntry{
-					Path: entry.Path,
-					Keys: keysForRestore(entry.KeyPrefix, gitBranch, checksum),
-				})
-			} else {
-				key := fmt.Sprintf("%s-%s-%s", entry.KeyPrefix, gitBranch, checksum)
-				newEntries = append(newEntries, LookupResultEntry{
-					Keys: []string{normalizeKey(key)},
-					Path: entry.Path,
-				})
-			}
-		}
+	}
 
-		return &LookupResult{
-			DetectedFile: filepath.Base(filePath),
-			Entries:      newEntries,
+	newEntries := []LookupResultEntry{}
+	for _, entry := range entries {
+		if options.Restore {
+			newEntries = append(newEntries, LookupResultEntry{
+				Path: entry.Path,
+				Keys: keysForRestore(entry.KeyPrefix, gitBranch, checksum),
+			})
+		} else {
+			key := fmt.Sprintf("%s-%s-%s", entry.KeyPrefix, gitBranch, checksum)
+			newEntries = append(newEntries, LookupResultEntry{
+				Keys: []string{normalizeKey(key)},
+				Path: entry.Path,
+			})
 		}
+	}
+
+	return &LookupResult{
+		DetectedFile: filepath.Base(filePath),
+		Entries:      newEntries,
 	}
 }
 
