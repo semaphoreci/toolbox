@@ -83,7 +83,7 @@ func compressAndStore(storage storage.Storage, key, path string) {
 		fmt.Printf("Upload complete. Duration: %v.\n", uploadDuration)
 		os.Remove(compressedFilePath)
 	} else {
-		fmt.Printf("Path %s does not exist.\n", path)
+		fmt.Printf("'%s' doesn't exist locally.\n", path)
 	}
 }
 

@@ -24,7 +24,7 @@ func RunClear(cmd *cobra.Command, args []string) {
 
 	err = storage.Clear()
 	utils.Check(err)
-	fmt.Println("Cache is clear.")
+	fmt.Println("Deleted all caches.")
 }
 
 func init() {

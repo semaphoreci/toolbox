@@ -412,7 +412,7 @@ normalize_key() {
   run cache has_key $test_key
 
   assert_success
-  assert_output --partial "Key ${test_key} exists in the cache store."
+  assert_output --partial "Key '${test_key}' exists in the cache store."
   refute_output --partial "command not found"
 }
 
@@ -429,13 +429,13 @@ normalize_key() {
 
   assert_success
   assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
-  assert_output --partial "Key ${test_key} exists in the cache store."
+  assert_output --partial "Key '${test_key}' exists in the cache store."
   refute_output --partial "command not found"
 
   run cache has_key $test_key
 
   assert_success
-  assert_output --partial "Key ${test_key} exists in the cache store."
+  assert_output --partial "Key '${test_key}' exists in the cache store."
   refute_output --partial "command not found"
 }
 
@@ -455,7 +455,7 @@ normalize_key() {
   run cache has_key example-key
 
   assert_failure
-  assert_output --partial "Key example-key doesn't exist in the cache store."
+  assert_output --partial "Key 'example-key' doesn't exist in the cache store."
   refute_output --partial "command not found"
 }
 
@@ -472,7 +472,7 @@ normalize_key() {
   run cache delete $test_key
 
   assert_success
-  assert_output --partial "Key ${test_key} is deleted."
+  assert_output --partial "Key '${test_key}' is deleted."
   refute_output --partial "command not found"
 
   run cache has_key $test_key
@@ -493,14 +493,14 @@ normalize_key() {
 
   assert_success
   assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
-  assert_output --partial "Key ${test_key} is deleted."
+  assert_output --partial "Key '${test_key}' is deleted."
   refute_output --partial "command not found"
 
   run cache has_key bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_failure
   assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
-  assert_output --partial "Key ${test_key} doesn't exist in the cache store."
+  assert_output --partial "Key '${test_key}' doesn't exist in the cache store."
   refute_output --partial "command not found"
 }
 
@@ -512,7 +512,7 @@ normalize_key() {
   run cache delete example-nonexistent-key
 
   assert_success
-  assert_output --partial "Key example-nonexistent-key doesn't exist in the cache store."
+  assert_output --partial "Key 'example-nonexistent-key' doesn't exist in the cache store."
   refute_output --partial "command not found"
 }
 

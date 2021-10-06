@@ -28,7 +28,7 @@ func RunDelete(cmd *cobra.Command, args []string) {
 		utils.Check(err)
 		fmt.Printf("Key '%s' is deleted.\n", key)
 	} else {
-		fmt.Printf("The key '%s' doesn't exist in the cache store.\n", key)
+		fmt.Printf("Key '%s' doesn't exist in the cache store.\n", key)
 	}
 }
 

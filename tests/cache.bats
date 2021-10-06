@@ -54,14 +54,13 @@ normalize_key() {
 
   assert_success
   assert_line "Uploading 'tmp' with cache key '${test_key}'..."
-  assert_line "Upload complete."
-  assert_output --partial "Cache archive duration:"
+  assert_line --partial "Upload complete."
   refute_line ${test_key}
   refute_output --partial "command not found"
 
   run cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
 
-  assert_line "Key ${test_key} exists in the cache store."
+  assert_line "Key '${test_key}' exists in the cache store."
   assert_success
   refute_output --partial "command not found"
 
@@ -80,14 +79,13 @@ normalize_key() {
 
   assert_success
   assert_line "Uploading '/home/semaphore/tmp' with cache key '${test_key}'..."
-  assert_line "Upload complete."
-  assert_output --partial "Cache archive duration:"
+  assert_line --partial "Upload complete."
   refute_line ${test_key}
   refute_output --partial "command not found"
 
   run cache has_key bats-test-$SEMAPHORE_GIT_BRANCH
 
-  assert_line "Key ${test_key} exists in the cache store."
+  assert_line "Key '${test_key}' exists in the cache store."
   assert_success
   refute_output --partial "command not found"
 
@@ -108,7 +106,6 @@ normalize_key() {
   assert_line --partial "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
   assert_line --partial "Uploading 'tmp' with cache key '${test_key}'..."
   assert_line --partial "Upload complete."
-  assert_output --partial "Cache archive duration:"
   refute_line ${test_key}
   refute_output --partial "command not found"
 
@@ -141,7 +138,6 @@ normalize_key() {
   assert_success
   assert_line "Key '${test_key}' already exists."
   refute_line "Uploading 'tmp' with cache key '${tes_key}'..."
-  refute_output --partial "Cache archive duration:"
   refute_line ${test_key}
   refute_output --partial "command not found"
 
@@ -162,8 +158,8 @@ normalize_key() {
 
   run cache store $new_key tmp.larger_file
   assert_line "Not enough space, deleting the oldest keys."
-  assert_line "Key ${preexisting_key} is deleted."
-  assert_line "Key tmp-key is deleted."
+  assert_line "Key '${preexisting_key}' is deleted."
+  assert_line "Key 'tmp-key' is deleted."
   assert_line "Uploading 'tmp.larger_file' with cache key '${new_key}'..."
   refute_output --partial "command not found"
 
@@ -190,7 +186,6 @@ normalize_key() {
 
   run cache store $test_key tmp.file
   assert_success
-  assert_output --partial "Cache archive duration:"
   assert_line "Archive exceeds allocated 50K for cache."
   refute_output --partial "command not found"
 }
@@ -419,7 +414,7 @@ normalize_key() {
   run cache has_key $test_key
 
   assert_success
-  assert_output --partial "Key ${test_key} exists in the cache store."
+  assert_output --partial "Key '${test_key}' exists in the cache store."
   refute_output --partial "command not found"
 }
 
@@ -436,13 +431,13 @@ normalize_key() {
 
   assert_success
   assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
-  assert_output --partial "Key ${test_key} exists in the cache store."
+  assert_output --partial "Key '${test_key}' exists in the cache store."
   refute_output --partial "command not found"
 
   run cache has_key $test_key
 
   assert_success
-  assert_output --partial "Key ${test_key} exists in the cache store."
+  assert_output --partial "Key '${test_key}' exists in the cache store."
   refute_output --partial "command not found"
 }
 
@@ -462,7 +457,7 @@ normalize_key() {
   run cache has_key example-key
 
   assert_failure
-  assert_output --partial "Key example-key doesn't exist in the cache store."
+  assert_output --partial "Key 'example-key' doesn't exist in the cache store."
   refute_output --partial "command not found"
 }
 
@@ -479,7 +474,7 @@ normalize_key() {
   run cache delete $test_key
 
   assert_success
-  assert_output --partial "Key ${test_key} is deleted."
+  assert_output --partial "Key '${test_key}' is deleted."
   refute_output --partial "command not found"
 
   run cache has_key $test_key
@@ -500,14 +495,14 @@ normalize_key() {
 
   assert_success
   assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
-  assert_output --partial "Key ${test_key} is deleted."
+  assert_output --partial "Key '${test_key}' is deleted."
   refute_output --partial "command not found"
 
   run cache has_key bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_failure
   assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
-  assert_output --partial "Key ${test_key} doesn't exist in the cache store."
+  assert_output --partial "Key '${test_key}' doesn't exist in the cache store."
   refute_output --partial "command not found"
 }
 
@@ -519,7 +514,7 @@ normalize_key() {
   run cache delete example-nonexistent-key
 
   assert_success
-  assert_output --partial "Key example-nonexistent-key doesn't exist in the cache store."
+  assert_output --partial "Key 'example-nonexistent-key' doesn't exist in the cache store."
   refute_output --partial "command not found"
 }
 
