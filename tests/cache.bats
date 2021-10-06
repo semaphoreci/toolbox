@@ -186,7 +186,7 @@ normalize_key() {
 
   run cache store $test_key tmp.file
   assert_success
-  assert_line "Archive exceeds allocated 50K for cache."
+  assert_line "Archive exceeds allocated 50.0K for cache."
   refute_output --partial "command not found"
 }
 
@@ -576,8 +576,8 @@ normalize_key() {
   run cache usage
 
   assert_success
-  assert_line "FREE SPACE: 51K"
-  assert_line "USED SPACE: 50K"
+  assert_line "FREE SPACE: 50.1K"
+  assert_line "USED SPACE: 49.9K"
   refute_output --partial "command not found"
 
   rm -f tmp.file

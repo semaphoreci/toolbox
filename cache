@@ -425,7 +425,7 @@ cache::lftp_put() {
       cache::log "Cache archive duration: $archive_create_duration seconds. Size: ${archive_size} bytes."
       archive_size=$(ls -l /tmp/${tmp_key} | awk '{print $5}')
       if [ "${archive_size}" -gt "${limit}" ]; then
-        allocated_space=$(numfmt --to=iec ${limit})
+        allocated_space=$(numfmt --to=iec ${limit} --format="%.1f" --round=nearest)
         cache::log "Archive exceeds allocated ${allocated_space} for cache."
       else
         cache::allocate_space $archive_size
@@ -529,8 +529,8 @@ cache::usage() {
   used_space=$(cache::used_space $file)
   free_space=$(cache::free_space ${used_space})
 
-  hr_used_space=$(numfmt --to=iec ${used_space})
-  hr_free_space=$(numfmt --to=iec $free_space)
+  hr_used_space=$(numfmt --to=iec ${used_space} --format="%.1f" --round=nearest)
+  hr_free_space=$(numfmt --to=iec $free_space --format="%.1f" --round=nearest)
 
   cache::log "FREE SPACE: ${hr_free_space}"
   cache::log "USED SPACE: ${hr_used_space}"

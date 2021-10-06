@@ -1,6 +1,8 @@
 package files
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func HumanReadableSize(b int64) string {
 	const unit = 1024
@@ -15,5 +17,5 @@ func HumanReadableSize(b int64) string {
 		exp++
 	}
 
-	return fmt.Sprintf("%.0f%c", float64(b)/float64(div), "KMGTPE"[exp])
+	return fmt.Sprintf("%.1f%c", float64(b)/float64(div), "KMGTPE"[exp])
 }
