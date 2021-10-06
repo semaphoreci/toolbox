@@ -289,7 +289,7 @@ normalize_key() {
   assert_success
   assert_line "MISS: '${test_key_2}'."
   assert_line "HIT: 'bats-test', using key '${test_key_1}'."
-  assert_line "Restored: tmp.file"
+  assert_line --partial "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
   refute_output --partial "command not found"
 }
@@ -576,8 +576,8 @@ normalize_key() {
   run cache usage
 
   assert_success
-  assert_line "FREE SPACE: 50.1K"
-  assert_line "USED SPACE: 49.9K"
+  assert_line "FREE SPACE: 50.2K"
+  assert_line "USED SPACE: 49.8K"
   refute_output --partial "command not found"
 
   rm -f tmp.file
