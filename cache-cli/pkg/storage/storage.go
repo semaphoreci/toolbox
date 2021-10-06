@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -78,9 +79,24 @@ func InitStorage() (Storage, error) {
 			URL:            url,
 			Username:       username,
 			PrivateKeyPath: privateKeyPath,
-			Config:         StorageConfig{MaxSpace: 9 * 1024 * 1024 * 1024},
+			Config:         buildStorageConfig(9 * 1024 * 1024 * 1024),
 		})
 	default:
 		return nil, fmt.Errorf("cache backend '%s' is not available", backend)
 	}
+}
+
+func buildStorageConfig(defaultValue int64) StorageConfig {
+	cacheSizeEnvVar := os.Getenv("CACHE_SIZE")
+	if cacheSizeEnvVar == "" {
+		return StorageConfig{MaxSpace: defaultValue}
+	}
+
+	cacheSize, err := strconv.ParseInt(cacheSizeEnvVar, 10, 64)
+	if err != nil {
+		fmt.Printf("Couldn't parse CACHE_SIZE value of '%s' - using default value for storage backend\n", cacheSizeEnvVar)
+		return StorageConfig{MaxSpace: defaultValue}
+	}
+
+	return StorageConfig{MaxSpace: cacheSize}
 }
