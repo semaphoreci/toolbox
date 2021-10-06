@@ -6,7 +6,7 @@ func HumanReadableSize(b int64) string {
 	const unit = 1024
 
 	if b < unit {
-		return fmt.Sprintf("%d B", b)
+		return fmt.Sprintf("%dB", b)
 	}
 
 	div, exp := int64(unit), 0
@@ -15,5 +15,5 @@ func HumanReadableSize(b int64) string {
 		exp++
 	}
 
-	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "kMGTPE"[exp])
+	return fmt.Sprintf("%.0f%c", float64(b)/float64(div), "KMGTPE"[exp])
 }

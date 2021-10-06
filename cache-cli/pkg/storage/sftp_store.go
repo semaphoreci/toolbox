@@ -56,7 +56,7 @@ func (s *SFTPStorage) allocateSpace(space int64) error {
 				return err
 			}
 
-			fmt.Printf("Key '%s' is deleted\n", lastKey.Name)
+			fmt.Printf("Key '%s' is deleted.\n", lastKey.Name)
 			freeSpace = freeSpace + lastKey.Size
 			keys = keys[:len(keys)-1]
 		}
