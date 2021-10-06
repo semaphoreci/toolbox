@@ -8,7 +8,7 @@ func HumanReadableSize(b int64) string {
 	const unit = 1024
 
 	if b < unit {
-		return fmt.Sprintf("%dB", b)
+		return fmt.Sprintf("%.1f", float64(b))
 	}
 
 	div, exp := int64(unit), 0
