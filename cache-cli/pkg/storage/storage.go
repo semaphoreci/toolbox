@@ -15,6 +15,7 @@ type Storage interface {
 	Delete(key string) error
 	Clear() error
 	Usage() (*UsageSummary, error)
+	IsNotEmpty() (bool, error)
 	Config() StorageConfig
 }
 

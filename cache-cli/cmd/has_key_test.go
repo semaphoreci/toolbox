@@ -17,7 +17,7 @@ func Test__HasKey(t *testing.T) {
 			RunHasKey(hasKeyCmd, []string{"this-key-does-not-exist"})
 			output := capturer.Done()
 
-			assert.Contains(t, output, "The key 'this-key-does-not-exist' does not exist in the cache.")
+			assert.Contains(t, output, "Key 'this-key-does-not-exist' doesn't exist in the cache store.")
 		})
 
 		t.Run(fmt.Sprintf("%s key is present", backend), func(*testing.T) {
@@ -29,7 +29,7 @@ func Test__HasKey(t *testing.T) {
 			RunHasKey(hasKeyCmd, []string{"abc001"})
 			output := capturer.Done()
 
-			assert.Contains(t, output, "The key 'abc001' exists in the cache.")
+			assert.Contains(t, output, "Key 'abc001' exists in the cache store.")
 		})
 	})
 }

@@ -20,7 +20,7 @@ func Test__Clear(t *testing.T) {
 			RunClear(clearCmd, []string{})
 			output := capturer.Done()
 
-			assert.Contains(t, output, "Cache is clear.")
+			assert.Contains(t, output, "Deleted all caches.")
 		})
 
 		t.Run(fmt.Sprintf("%s with keys", backend), func(*testing.T) {
@@ -34,7 +34,7 @@ func Test__Clear(t *testing.T) {
 			RunClear(hasKeyCmd, []string{})
 			output := capturer.Done()
 
-			assert.Contains(t, output, "Cache is clear.")
+			assert.Contains(t, output, "Deleted all caches.")
 		})
 	})
 }

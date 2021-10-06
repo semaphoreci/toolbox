@@ -29,7 +29,7 @@ func Test__Store(t *testing.T) {
 			RunStore(storeCmd, []string{"abc001", "/tmp/this-path-does-not-exist"})
 			output := capturer.Done()
 
-			assert.Contains(t, output, "Path /tmp/this-path-does-not-exist does not exist")
+			assert.Contains(t, output, "'/tmp/this-path-does-not-exist' doesn't exist locally.")
 		})
 
 		t.Run(fmt.Sprintf("%s using key and valid path", backend), func(*testing.T) {
@@ -89,7 +89,7 @@ func Test__AutomaticStore(t *testing.T) {
 			RunStore(storeCmd, []string{})
 			output := capturer.Done()
 
-			assert.Contains(t, output, "Path vendor/bundle does not exist")
+			assert.Contains(t, output, "'vendor/bundle' doesn't exist locally.")
 		})
 
 		t.Run(fmt.Sprintf("%s detects and stores", backend), func(t *testing.T) {

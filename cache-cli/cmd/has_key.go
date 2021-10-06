@@ -15,11 +15,13 @@ var hasKeyCmd = &cobra.Command{
 	Long:  ``,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		RunHasKey(cmd, args)
+		if !RunHasKey(cmd, args) {
+			os.Exit(1)
+		}
 	},
 }
 
-func RunHasKey(cmd *cobra.Command, args []string) {
+func RunHasKey(cmd *cobra.Command, args []string) bool {
 	storage, err := storage.InitStorage()
 	utils.Check(err)
 
@@ -29,9 +31,10 @@ func RunHasKey(cmd *cobra.Command, args []string) {
 
 	if exists {
 		fmt.Printf("Key '%s' exists in the cache store.\n", key)
+		return true
 	} else {
 		fmt.Printf("Key '%s' doesn't exist in the cache store.\n", key)
-		os.Exit(1)
+		return false
 	}
 }
 
