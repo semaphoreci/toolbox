@@ -46,6 +46,7 @@ func RunRestore(cmd *cobra.Command, args []string) {
 		for _, lookupResult := range lookupResults {
 			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {
+				fmt.Printf("Fetching '%s' directory with cache keys '%s'...\n", entry.Path, strings.Join(entry.Keys, ","))
 				downloadAndUnpack(storage, entry.Keys)
 			}
 		}

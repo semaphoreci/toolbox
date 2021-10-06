@@ -215,7 +215,7 @@ normalize_key() {
 
   assert_success
   assert [ -e "tmp/first/second/example.file" ]
-  assert_line "HIT: ${test_key}, using key ${test_key}"
+  assert_line "HIT: '${test_key}', using key '${test_key}'"
   assert_output --partial "Restored: tmp/first/second/"
   refute_output --partial "/home/semaphore/toolbox"
   refute_output --partial "command not found"
@@ -241,7 +241,7 @@ normalize_key() {
 
   assert_success
   assert [ -e "/home/semaphore/tmp/first/second/example.file" ]
-  assert_line "HIT: ${test_key}, using key ${test_key}"
+  assert_line "HIT: '${test_key}', using key '${test_key}'"
   assert_output --partial "Restored: /home/semaphore/tmp/first/second/"
   refute_output --partial "/home/semaphore/toolbox"
   refute_output --partial "command not found"
@@ -264,8 +264,8 @@ normalize_key() {
   run ./cache restore $test_key_1
 
   assert_success
-  assert_line "HIT: ${test_key_1}, using key ${test_key_1}"
-  refute_output --partial "HIT: ${test_key_1}, using key ${test_key_2}"
+  assert_line "HIT: '${test_key_1}', using key '${test_key_1}'"
+  refute_output --partial "HIT: '${test_key_1}', using key '${test_key_2}'"
   assert_output --partial "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
   refute_output --partial "command not found"
@@ -278,7 +278,7 @@ normalize_key() {
   run ./cache restore test-12123
 
   assert_success
-  assert_line "MISS: test-12123"
+  assert_line "MISS: 'test-12123'"
   refute_output --partial "/home/semaphore/toolbox"
   refute_output --partial "command not found"
 }
@@ -292,8 +292,8 @@ normalize_key() {
   run ./cache restore bats-test-$SEMAPHORE_GIT_BRANCH-1,bats-test
 
   assert_success
-  assert_line "MISS: ${test_key_2}"
-  assert_line "HIT: bats-test, using key ${test_key_1}"
+  assert_line "MISS: '${test_key_2}'"
+  assert_line "HIT: 'bats-test', using key '${test_key_1}'"
   assert_line "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
   refute_output --partial "command not found"
@@ -308,7 +308,7 @@ normalize_key() {
 
   assert_success
   assert_line "Key bats/test-$SEMAPHORE_GIT_BRANCH is normalized to ${test_key}."
-  assert_line "HIT: ${test_key}, using key ${test_key}"
+  assert_line "HIT: '${test_key}', using key '${test_key}'"
   assert_output --partial "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
   refute_output --partial "command not found"
