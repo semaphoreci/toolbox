@@ -8,7 +8,7 @@ import (
 
 func Test__HumanReadableSize(t *testing.T) {
 	t.Run("bytes", func(t *testing.T) {
-		assert.Equal(t, "800B", HumanReadableSize(800))
+		assert.Equal(t, "800.0", HumanReadableSize(800))
 	})
 
 	t.Run("kilobytes", func(t *testing.T) {
