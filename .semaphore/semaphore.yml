@@ -140,7 +140,7 @@ blocks:
           - source tests/sftp_server/start_on_mac.sh
 
       jobs:
-        - name: 'Non-cache related bats tests'
+        - name: 'Non-cache tests'
           matrix:
             - env_var: TEST
               values:
@@ -153,7 +153,7 @@ blocks:
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
-        - name: 'Old cache CLI bats tests'
+        - name: 'Old cache tests'
           matrix:
             - env_var: TEST
               values:
@@ -167,7 +167,7 @@ blocks:
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
-        - name: 'New cache CLI bats tests'
+        - name: 'New cache tests'
           matrix:
             - env_var: TEST
               values:
@@ -204,7 +204,7 @@ blocks:
           - bash release/create.sh
           - source tests/sftp_server/start_on_docker.sh
       jobs:
-        - name: 'Non-cache related bats tests'
+        - name: 'Non-cache tests'
           matrix:
             - env_var: TEST
               values:
@@ -216,7 +216,7 @@ blocks:
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
-        - name: 'Old cache CLI bats tests'
+        - name: 'Old cache tests'
           matrix:
             - env_var: TEST
               values:
@@ -229,7 +229,7 @@ blocks:
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
-        - name: 'New cache CLI bats tests'
+        - name: 'New cache tests'
           matrix:
             - env_var: TEST
               values:
@@ -266,7 +266,7 @@ blocks:
           - apk add --update docker openrc
           - source tests/sftp_server/start_on_docker.sh
       jobs:
-        - name: 'Non-cache related bats tests'
+        - name: 'Non-cache tests'
           matrix:
             - env_var: TEST
               values:
@@ -278,7 +278,7 @@ blocks:
             - ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
-        - name: 'Old cache CLI bats tests'
+        - name: 'Old cache tests'
           matrix:
             - env_var: TEST
               values:
@@ -291,7 +291,7 @@ blocks:
             - ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
-        - name: 'New cache CLI bats tests'
+        - name: 'New cache tests'
           matrix:
             - env_var: TEST
               values:
@@ -324,7 +324,7 @@ blocks:
           - sem-version go 1.13
           - sem-version php 7.3.23
       jobs:
-        - name: 'Non-cache related bats tests'
+        - name: 'Non-cache tests'
           matrix:
             - env_var: TEST
               values:
@@ -339,7 +339,7 @@ blocks:
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
-        - name: 'Old cache CLI bats tests'
+        - name: 'Old cache tests'
           matrix:
             - env_var: TEST
               values:
@@ -353,7 +353,7 @@ blocks:
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
-        - name: 'New cache CLI bats tests'
+        - name: 'New cache tests'
           matrix:
             - env_var: TEST
               values:
