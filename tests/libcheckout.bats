@@ -218,7 +218,7 @@ teardown() {
 }
 
 @test "libcheckout - Checkout cache outdated" {
-  export SEMAPHORE_GIT_CACHE_AGE=1
+  export SEMAPHORE_GIT_CACHE_AGE=-1
 
   run checkout --use-cache
   assert_success
