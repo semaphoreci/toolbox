@@ -481,17 +481,17 @@ Fallback example:
         exact_match=$(grep -x ${cache_key} /tmp/cache_keys_$$)
 
         if [[ "${exact_match}" == "${cache_key}" ]]; then
-          cache::log "HIT: '${cache_key}', using key '${cache_key}'"
+          cache::log "HIT: '${cache_key}', using key '${cache_key}'."
           cache::lftp_get $cache_key
           break
         else
-          cache::log "HIT: '${cache_key}', using key '${match}'"
+          cache::log "HIT: '${cache_key}', using key '${match}'."
           cache::lftp_get $match
           break
         fi
 
       else
-        cache::log "MISS: '${cache_key}'"
+        cache::log "MISS: '${cache_key}'."
       fi
     done
 
