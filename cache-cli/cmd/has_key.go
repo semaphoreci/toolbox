@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
@@ -27,9 +28,10 @@ func RunHasKey(cmd *cobra.Command, args []string) {
 	utils.Check(err)
 
 	if exists {
-		fmt.Printf("The key '%s' exists in the cache.\n", key)
+		fmt.Printf("Key '%s' exists in the cache store.\n", key)
 	} else {
-		fmt.Printf("The key '%s' does not exist in the cache.\n", key)
+		fmt.Printf("Key '%s' doesn't exist in the cache store.\n", key)
+		os.Exit(1)
 	}
 }
 
