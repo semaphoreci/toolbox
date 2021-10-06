@@ -1,32 +1,37 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
-var clearCmd = &cobra.Command{
-	Use:   "clear",
-	Short: "Remove all keys in the cache.",
+var isNotEmptyCmd = &cobra.Command{
+	Use:   "is_not_empty",
+	Short: "Check if the cache is not empty.",
 	Long:  ``,
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		RunClear(cmd, args)
+		if RunIsNotEmpty(cmd, args) {
+			os.Exit(0)
+		} else {
+			os.Exit(1)
+		}
 	},
 }
 
-func RunClear(cmd *cobra.Command, args []string) {
+func RunIsNotEmpty(cmd *cobra.Command, args []string) bool {
 	storage, err := storage.InitStorage()
 	utils.Check(err)
 
-	err = storage.Clear()
+	isNotEmpty, err := storage.IsNotEmpty()
 	utils.Check(err)
-	fmt.Println("Deleted all caches.")
+
+	return isNotEmpty
 }
 
 func init() {
-	RootCmd.AddCommand(clearCmd)
+	RootCmd.AddCommand(isNotEmptyCmd)
 }

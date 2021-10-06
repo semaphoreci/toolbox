@@ -10,13 +10,13 @@ import (
 )
 
 func (s *S3Storage) HasKey(key string) (bool, error) {
-	s3Key := fmt.Sprintf("%s/%s", s.project, key)
+	s3Key := fmt.Sprintf("%s/%s", s.Project, key)
 	input := s3.HeadObjectInput{
-		Bucket: &s.bucketName,
+		Bucket: &s.Bucket,
 		Key:    &s3Key,
 	}
 
-	_, err := s.client.HeadObject(context.TODO(), &input)
+	_, err := s.Client.HeadObject(context.TODO(), &input)
 	if err != nil {
 		var apiErr *smithy.GenericAPIError
 		if errors.As(err, &apiErr) && apiErr.ErrorCode() == "NotFound" {

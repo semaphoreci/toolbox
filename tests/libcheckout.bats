@@ -82,9 +82,9 @@ teardown() {
 
   run checkout --use-cache
   assert_success
-  assert_output --partial "MISS: git-cache-"
+  assert_output --partial "MISS: 'git-cache-'"
   assert_output --partial "No git cache... caching"
-  refute_output --partial "HIT: git-cache-"
+  refute_output --partial "HIT: 'git-cache-'"
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA Release $SEMAPHORE_GIT_TAG_NAME"
 
   cd ~
@@ -95,9 +95,9 @@ teardown() {
 
   run checkout --use-cache
   assert_success
-  assert_output --partial "HIT: git-cache-"
+  assert_output --partial "HIT: 'git-cache-'"
   refute_output --partial "No git cache... caching"
-  refute_output --partial "MISS: git-cache-"
+  refute_output --partial "MISS: 'git-cache-'"
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA Release $SEMAPHORE_GIT_TAG_NAME"
 
   cache clear
@@ -132,9 +132,9 @@ teardown() {
 
   run checkout --use-cache
   assert_success
-  assert_output --partial "MISS: git-cache-"
+  assert_output --partial "MISS: 'git-cache-'"
   assert_output --partial "No git cache... caching"
-  refute_output --partial "HIT: git-cache-"
+  refute_output --partial "HIT: 'git-cache-'"
 
   cd ~
   cache list
@@ -144,9 +144,9 @@ teardown() {
 
   run checkout --use-cache
   assert_success
-  assert_output --partial "HIT: git-cache-"
+  assert_output --partial "HIT: 'git-cache-'"
   refute_output --partial "No git cache... caching"
-  refute_output --partial "MISS: git-cache-"
+  refute_output --partial "MISS: 'git-cache-'"
 
   cache clear
 }
@@ -202,30 +202,30 @@ teardown() {
 
   run checkout --use-cache
   assert_success
-  assert_output --partial "MISS: git-cache-"
+  assert_output --partial "MISS: 'git-cache-'"
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   assert_output --partial "No git cache... caching"
-  refute_output --partial "HIT: git-cache-"
+  refute_output --partial "HIT: 'git-cache-'"
 }
 
 @test "libcheckout - Checkout restore from cache" {
 
   run checkout --use-cache
   assert_success
-  assert_output --partial "HIT: git-cache-"
+  assert_output --partial "HIT: 'git-cache-'"
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
-  refute_output --partial "MISS: git-cache-"
+  refute_output --partial "MISS: 'git-cache-'"
 }
 
 @test "libcheckout - Checkout cache outdated" {
-  export SEMAPHORE_GIT_CACHE_AGE=1
+  export SEMAPHORE_GIT_CACHE_AGE=-1
 
   run checkout --use-cache
   assert_success
-  assert_output --partial "HIT: git-cache-"
+  assert_output --partial "HIT: 'git-cache-'"
   assert_output --partial "Git cache outdated, refreshing..."
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
-  refute_output --partial "MISS: git-cache-"
+  refute_output --partial "MISS: 'git-cache-'"
 }
 
 @test "libcheckout - Checkout and use cache" {
@@ -246,9 +246,9 @@ teardown() {
 
   run checkout --use-cache
   assert_success
-  assert_output --partial "MISS: git-cache-"
+  assert_output --partial "MISS: 'git-cache-'"
   assert_output --partial "No git cache... caching"
-  refute_output --partial "HIT: git-cache-"
+  refute_output --partial "HIT: 'git-cache-'"
 
   cache clear
 }

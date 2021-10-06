@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 var lockFiles = []string{
@@ -140,7 +139,7 @@ func buildResult(filePath string, options LookupOptions, entries []buildResultRe
 		} else {
 			key := fmt.Sprintf("%s-%s-%s", entry.KeyPrefix, gitBranch, checksum)
 			newEntries = append(newEntries, LookupResultEntry{
-				Keys: []string{normalizeKey(key)},
+				Keys: []string{key},
 				Path: entry.Path,
 			})
 		}
@@ -154,17 +153,13 @@ func buildResult(filePath string, options LookupOptions, entries []buildResultRe
 
 func keysForRestore(keyPrefix, gitBranch, checksum string) []string {
 	keys := []string{
-		normalizeKey(fmt.Sprintf("%s-%s-%s", keyPrefix, gitBranch, checksum)),
-		normalizeKey(fmt.Sprintf("%s-%s", keyPrefix, gitBranch)),
+		fmt.Sprintf("%s-%s-%s", keyPrefix, gitBranch, checksum),
+		fmt.Sprintf("%s-%s", keyPrefix, gitBranch),
 	}
 
 	if gitBranch != "master" {
-		keys = append(keys, normalizeKey(fmt.Sprintf("%s-master", keyPrefix)))
+		keys = append(keys, fmt.Sprintf("%s-master", keyPrefix))
 	}
 
 	return keys
-}
-
-func normalizeKey(key string) string {
-	return strings.ReplaceAll(key, "/", "-")
 }

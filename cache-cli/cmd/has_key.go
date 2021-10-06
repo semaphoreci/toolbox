@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
@@ -14,23 +15,28 @@ var hasKeyCmd = &cobra.Command{
 	Long:  ``,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		RunHasKey(cmd, args)
+		if !RunHasKey(cmd, args) {
+			os.Exit(1)
+		}
 	},
 }
 
-func RunHasKey(cmd *cobra.Command, args []string) {
+func RunHasKey(cmd *cobra.Command, args []string) bool {
 	storage, err := storage.InitStorage()
 	utils.Check(err)
 
-	key := args[0]
+	rawKey := args[0]
+	key := NormalizeKey(rawKey)
 	exists, err := storage.HasKey(key)
 	utils.Check(err)
 
 	if exists {
-		fmt.Printf("The key '%s' exists in the cache.\n", key)
-	} else {
-		fmt.Printf("The key '%s' does not exist in the cache.\n", key)
+		fmt.Printf("Key '%s' exists in the cache store.\n", key)
+		return true
 	}
+
+	fmt.Printf("Key '%s' doesn't exist in the cache store.\n", key)
+	return false
 }
 
 func init() {

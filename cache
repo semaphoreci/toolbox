@@ -38,7 +38,7 @@ cache::normalize_string() {
 
   result=${word//\//-}
   if [ "$result" != "$1" ]; then
-    cache::warn "Key ${1} is normalized to ${result}."
+    cache::warn "Key '${1}' is normalized to '${result}'."
   fi
 
   echo "$result"
@@ -357,7 +357,7 @@ cache::allocate_space() {
   rm -f "/tmp/usage_data_$$"
 
   if [ $free_space -lt $archive_size ]; then
-    cache::log "Not enough space, deleting the oldest keys."
+    cache::log "Not enough space, deleting the oldest keys..."
     while [ $free_space -lt $archive_size ]; do
       deleted_key_size=$(cache::delete_oldest_key)
       free_space=$(($free_space + $deleted_key_size))
@@ -378,7 +378,7 @@ cache::delete_oldest_key() {
  key=$(cat /tmp/size_key_$$ | tail -1 | awk '{ print $2 }')
  cache::lftp "glob rm -f ${key}"
 
- cache::warn "Key ${key} is deleted."
+ cache::warn "Key '${key}' is deleted."
  case $DIST in
    Darwin)
      sed -i "" '$d' $file
@@ -425,7 +425,7 @@ cache::lftp_put() {
       cache::log "Cache archive duration: $archive_create_duration seconds. Size: ${archive_size} bytes."
       archive_size=$(ls -l /tmp/${tmp_key} | awk '{print $5}')
       if [ "${archive_size}" -gt "${limit}" ]; then
-        allocated_space=$(numfmt --to=iec ${limit})
+        allocated_space=$(numfmt --to=iec ${limit} --format="%.1f" --round=nearest)
         cache::log "Archive exceeds allocated ${allocated_space} for cache."
       else
         cache::allocate_space $archive_size
@@ -481,17 +481,17 @@ Fallback example:
         exact_match=$(grep -x ${cache_key} /tmp/cache_keys_$$)
 
         if [[ "${exact_match}" == "${cache_key}" ]]; then
-          cache::log "HIT: ${cache_key}, using key ${cache_key}"
+          cache::log "HIT: '${cache_key}', using key '${cache_key}'."
           cache::lftp_get $cache_key
           break
         else
-          cache::log "HIT: ${cache_key}, using key ${match}"
+          cache::log "HIT: '${cache_key}', using key '${match}'."
           cache::lftp_get $match
           break
         fi
 
       else
-        cache::log "MISS: ${cache_key}"
+        cache::log "MISS: '${cache_key}'."
       fi
     done
 
@@ -529,8 +529,8 @@ cache::usage() {
   used_space=$(cache::used_space $file)
   free_space=$(cache::free_space ${used_space})
 
-  hr_used_space=$(numfmt --to=iec ${used_space})
-  hr_free_space=$(numfmt --to=iec $free_space)
+  hr_used_space=$(numfmt --to=iec ${used_space} --format="%.1f" --round=nearest)
+  hr_free_space=$(numfmt --to=iec $free_space --format="%.1f" --round=nearest)
 
   cache::log "FREE SPACE: ${hr_free_space}"
   cache::log "USED SPACE: ${hr_used_space}"
@@ -556,10 +556,10 @@ cache::delete() {
       if cache::file_is_present ${key}; then
         cache::log "Failed to delete the key.."
       else
-        cache::log "Key ${key} is deleted."
+        cache::log "Key '${key}' is deleted."
       fi
     else
-      cache::log "Key ${key} doesn't exist in the cache store."
+      cache::log "Key '${key}' doesn't exist in the cache store."
     fi
   fi
 }
@@ -578,11 +578,11 @@ cache::has_key() {
 
     if cache::file_is_present ${key}
     then
-      cache::log "Key ${key} exists in the cache store."
+      cache::log "Key '${key}' exists in the cache store."
 
       return 0
     else
-      cache::log "Key ${key} doesn't exist in the cache store."
+      cache::log "Key '${key}' doesn't exist in the cache store."
 
       return 1
     fi

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -10,26 +11,38 @@ import (
 )
 
 func Test__Delete(t *testing.T) {
-	storage, err := storage.InitStorage()
-	assert.Nil(t, err)
+	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
+		t.Run(fmt.Sprintf("%s key is missing", backend), func(*testing.T) {
+			capturer := utils.CreateOutputCapturer()
+			RunDelete(deleteCmd, []string{"this-key-does-not-exist"})
+			output := capturer.Done()
 
-	t.Run("key is missing", func(*testing.T) {
-		capturer := utils.CreateOutputCapturer()
-		RunDelete(hasKeyCmd, []string{"this-key-does-not-exist"})
-		output := capturer.Done()
+			assert.Contains(t, output, "Key 'this-key-does-not-exist' doesn't exist in the cache store.")
+		})
 
-		assert.Contains(t, output, "The key 'this-key-does-not-exist' doesn't exist in the cache store.")
-	})
+		t.Run(fmt.Sprintf("%s key is present", backend), func(*testing.T) {
+			storage.Clear()
+			tempFile, _ := ioutil.TempFile("/tmp", "*")
+			storage.Store("abc001", tempFile.Name())
 
-	t.Run("key is present", func(*testing.T) {
-		storage.Clear()
-		tempFile, _ := ioutil.TempFile("/tmp", "*")
-		storage.Store("abc001", tempFile.Name())
+			capturer := utils.CreateOutputCapturer()
+			RunDelete(deleteCmd, []string{"abc001"})
+			output := capturer.Done()
 
-		capturer := utils.CreateOutputCapturer()
-		RunDelete(hasKeyCmd, []string{"abc001"})
-		output := capturer.Done()
+			assert.Contains(t, output, "Key 'abc001' is deleted.")
+		})
 
-		assert.Contains(t, output, "Key 'abc001' is deleted.")
+		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
+			storage.Clear()
+			tempFile, _ := ioutil.TempFile("/tmp", "*")
+			RunStore(storeCmd, []string{"abc/00/33", tempFile.Name()})
+
+			capturer := utils.CreateOutputCapturer()
+			RunDelete(deleteCmd, []string{"abc/00/33"})
+			output := capturer.Done()
+
+			assert.Contains(t, output, "Key 'abc/00/33' is normalized to 'abc-00-33'")
+			assert.Contains(t, output, "Key 'abc-00-33' is deleted.")
+		})
 	})
 }

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
@@ -9,15 +10,22 @@ import (
 )
 
 func Test__Usage(t *testing.T) {
-	storage, err := storage.InitStorage()
-	assert.Nil(t, err)
+	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
+		t.Run(fmt.Sprintf("%s empty cache", backend), func(t *testing.T) {
+			storage.Clear()
 
-	storage.Clear()
+			capturer := utils.CreateOutputCapturer()
+			RunUsage(usageCmd, []string{})
+			output := capturer.Done()
 
-	capturer := utils.CreateOutputCapturer()
-	RunUsage(usageCmd, []string{})
-	output := capturer.Done()
-
-	assert.Contains(t, output, "FREE SPACE: (unlimited)")
-	assert.Contains(t, output, "USED SPACE: 0 B")
+			switch backend {
+			case "s3":
+				assert.Contains(t, output, "FREE SPACE: (unlimited)")
+				assert.Contains(t, output, "USED SPACE: 0B")
+			case "sftp":
+				assert.Contains(t, output, "FREE SPACE: 9.0G")
+				assert.Contains(t, output, "USED SPACE: 0B")
+			}
+		})
+	})
 }
