@@ -53,6 +53,26 @@ func Test__Restore(t *testing.T) {
 			os.Remove(tempDir)
 		})
 
+		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
+			storage.Clear()
+
+			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempFile, _ := ioutil.TempFile(tempDir, "*")
+
+			compressAndStore(storage, "abc/00/22", tempDir)
+
+			capturer := utils.CreateOutputCapturer()
+			RunRestore(restoreCmd, []string{"abc/00/22"})
+			output := capturer.Done()
+
+			assert.Contains(t, output, "Key 'abc/00/22' is normalized to 'abc-00-22'")
+			assert.Contains(t, output, "HIT: 'abc-00-22', using key 'abc-00-22'.")
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s/.", tempDir))
+
+			os.Remove(tempFile.Name())
+			os.Remove(tempDir)
+		})
+
 		t.Run(fmt.Sprintf("%s using single matching key", backend), func(*testing.T) {
 			storage.Clear()
 

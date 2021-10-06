@@ -31,5 +31,18 @@ func Test__HasKey(t *testing.T) {
 
 			assert.Contains(t, output, "Key 'abc001' exists in the cache store.")
 		})
+
+		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
+			storage.Clear()
+			tempFile, _ := ioutil.TempFile("/tmp", "*")
+			RunStore(storeCmd, []string{"abc/00/33", tempFile.Name()})
+
+			capturer := utils.CreateOutputCapturer()
+			RunHasKey(hasKeyCmd, []string{"abc/00/33"})
+			output := capturer.Done()
+
+			assert.Contains(t, output, "Key 'abc/00/33' is normalized to 'abc-00-33'")
+			assert.Contains(t, output, "Key 'abc-00-33' exists in the cache store.")
+		})
 	})
 }

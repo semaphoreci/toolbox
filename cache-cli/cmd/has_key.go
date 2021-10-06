@@ -25,17 +25,18 @@ func RunHasKey(cmd *cobra.Command, args []string) bool {
 	storage, err := storage.InitStorage()
 	utils.Check(err)
 
-	key := args[0]
+	rawKey := args[0]
+	key := NormalizeKey(rawKey)
 	exists, err := storage.HasKey(key)
 	utils.Check(err)
 
 	if exists {
 		fmt.Printf("Key '%s' exists in the cache store.\n", key)
 		return true
-	} else {
-		fmt.Printf("Key '%s' doesn't exist in the cache store.\n", key)
-		return false
 	}
+
+	fmt.Printf("Key '%s' doesn't exist in the cache store.\n", key)
+	return false
 }
 
 func init() {

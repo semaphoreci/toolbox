@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
@@ -55,7 +56,8 @@ func RunStore(cmd *cobra.Command, args []string) {
 	}
 }
 
-func compressAndStore(storage storage.Storage, key, path string) {
+func compressAndStore(storage storage.Storage, rawKey, path string) {
+	key := NormalizeKey(rawKey)
 	if _, err := os.Stat(path); err == nil {
 		if ok, _ := storage.HasKey(key); ok {
 			fmt.Printf("Key '%s' already exists.\n", key)
@@ -102,6 +104,15 @@ func compress(key, path string) (string, int64, error) {
 
 	fmt.Printf("Compression complete. Duration: %v. Size: %v bytes.\n", compressionDuration.String(), files.HumanReadableSize(info.Size()))
 	return compressed, info.Size(), nil
+}
+
+func NormalizeKey(key string) string {
+	normalizedKey := strings.ReplaceAll(key, "/", "-")
+	if normalizedKey != key {
+		fmt.Printf("Key '%s' is normalized to '%s'.\n", key, normalizedKey)
+	}
+
+	return normalizedKey
 }
 
 func init() {

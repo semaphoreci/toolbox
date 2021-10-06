@@ -103,7 +103,7 @@ normalize_key() {
   run cache store bats/test-$SEMAPHORE_GIT_BRANCH tmp
 
   assert_success
-  assert_line --partial "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
+  assert_line --partial "Key 'bats/test-${SEMAPHORE_GIT_BRANCH}' is normalized to '${test_key}'."
   assert_line --partial "Uploading 'tmp' with cache key '${test_key}'..."
   assert_line --partial "Upload complete."
   refute_line ${test_key}
@@ -302,7 +302,7 @@ normalize_key() {
   run cache restore modules-master-1234,bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_success
-  assert_line "Key bats/test-$SEMAPHORE_GIT_BRANCH is normalized to ${test_key}."
+  assert_line "Key 'bats/test-$SEMAPHORE_GIT_BRANCH' is normalized to '${test_key}'."
   assert_line "HIT: '${test_key}', using key '${test_key}'."
   assert_output --partial "Restored: tmp.file"
   refute_output --partial "/home/semaphore/toolbox"
@@ -430,7 +430,7 @@ normalize_key() {
   run cache has_key bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_success
-  assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
+  assert_line "Key 'bats/test-${SEMAPHORE_GIT_BRANCH}' is normalized to '${test_key}'."
   assert_output --partial "Key '${test_key}' exists in the cache store."
   refute_output --partial "command not found"
 
@@ -494,14 +494,14 @@ normalize_key() {
   run cache delete bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_success
-  assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
+  assert_line "Key 'bats/test-${SEMAPHORE_GIT_BRANCH}' is normalized to '${test_key}'."
   assert_output --partial "Key '${test_key}' is deleted."
   refute_output --partial "command not found"
 
   run cache has_key bats/test-$SEMAPHORE_GIT_BRANCH
 
   assert_failure
-  assert_line "Key bats/test-${SEMAPHORE_GIT_BRANCH} is normalized to ${test_key}."
+  assert_line "Key 'bats/test-${SEMAPHORE_GIT_BRANCH}' is normalized to '${test_key}'."
   assert_output --partial "Key '${test_key}' doesn't exist in the cache store."
   refute_output --partial "command not found"
 }

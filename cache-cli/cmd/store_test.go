@@ -45,6 +45,20 @@ func Test__Store(t *testing.T) {
 			assert.Contains(t, output, "Upload complete")
 		})
 
+		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
+			storage.Clear()
+			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			ioutil.TempFile(tempDir, "*")
+
+			capturer := utils.CreateOutputCapturer()
+			RunStore(storeCmd, []string{"abc/00/12", tempDir})
+			output := capturer.Done()
+
+			assert.Contains(t, output, "Key 'abc/00/12' is normalized to 'abc-00-12'")
+			assert.Contains(t, output, fmt.Sprintf("Uploading '%s' with cache key 'abc-00-12'", tempDir))
+			assert.Contains(t, output, "Upload complete")
+		})
+
 		t.Run(fmt.Sprintf("%s using duplicate key", backend), func(*testing.T) {
 			storage.Clear()
 			tempDir, _ := ioutil.TempDir("/tmp", "*")

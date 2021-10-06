@@ -38,7 +38,7 @@ cache::normalize_string() {
 
   result=${word//\//-}
   if [ "$result" != "$1" ]; then
-    cache::warn "Key ${1} is normalized to ${result}."
+    cache::warn "Key '${1}' is normalized to '${result}'."
   fi
 
   echo "$result"

@@ -22,7 +22,9 @@ func RunDelete(cmd *cobra.Command, args []string) {
 	storage, err := storage.InitStorage()
 	utils.Check(err)
 
-	key := args[0]
+	rawKey := args[0]
+	key := NormalizeKey(rawKey)
+
 	if ok, _ := storage.HasKey(key); ok {
 		err := storage.Delete(key)
 		utils.Check(err)
