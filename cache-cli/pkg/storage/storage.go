@@ -98,5 +98,6 @@ func buildStorageConfig(defaultValue int64) StorageConfig {
 		return StorageConfig{MaxSpace: defaultValue}
 	}
 
-	return StorageConfig{MaxSpace: cacheSize}
+	// CACHE_SIZE receives kb
+	return StorageConfig{MaxSpace: cacheSize * 1024}
 }

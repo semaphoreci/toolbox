@@ -287,7 +287,7 @@ normalize_key() {
   assert_success
   assert_line "MISS: '${test_key_2}'."
   assert_line "HIT: 'bats-test', using key '${test_key_1}'."
-  assert_line "Restored: tmp.file"
+  assert_line --partial "Restored: tmp.file"
   refute_output --partial "/Users/semaphore/toolbox"
   refute_output --partial "command not found"
 }

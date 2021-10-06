@@ -157,7 +157,7 @@ normalize_key() {
   cache list
 
   run cache store $new_key tmp.larger_file
-  assert_line "Not enough space, deleting the oldest keys."
+  assert_line "Not enough space, deleting the oldest keys..."
   assert_line "Key '${preexisting_key}' is deleted."
   assert_line "Key 'tmp-key' is deleted."
   assert_line "Uploading 'tmp.larger_file' with cache key '${new_key}'..."
