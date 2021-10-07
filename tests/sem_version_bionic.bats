@@ -132,47 +132,47 @@ setup() {
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
-@test "change php to 7.3.29" {
+@test "change php to 7.3.31" {
 
-  run sem-version php 7.3.29
+  run sem-version php 7.3.31
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 7.3.29"
+  assert_line --partial "PHP 7.3.31"
   run php -m
   assert_line --partial "magick"
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
-@test "change php to 7.4.21" {
+@test "change php to 7.4.24" {
 
-  run sem-version php 7.4.21
+  run sem-version php 7.4.24
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 7.4.21"
+  assert_line --partial "PHP 7.4.24"
   run php -m 
   assert_line --partial "magick"
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
-@test "change php to 8.0.8" {
+@test "change php to 8.0.11" {
 
-  run sem-version php 8.0.8
+  run sem-version php 8.0.11
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.0.8"
+  assert_line --partial "PHP 8.0.11"
   run php -m 
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
-@test "php check composer 8.0.8" {
+@test "php check composer 8.0.11" {
 
   run which composer
   assert_success
   source ~/.phpbrew/bashrc
-  assert_line --partial "8.0.8"
+  assert_line --partial "8.0.11"
 }
 
 #  Elixir
@@ -187,6 +187,13 @@ setup() {
   run elixir --version
   assert_line --partial "Elixir 1.11.4"
 }
+
+@test "change elixir to 1.12.3" {
+  sem-version elixir 1.12.3
+  run elixir --version
+  assert_line --partial "Elixir 1.12.3"
+}
+
 #  Node
 @test "change node to 12.16.1" {
   sem-version node 12.16.1
@@ -200,10 +207,10 @@ setup() {
   assert_line --partial "1.15.3"
 }
 #  erlang
-@test "change erlang to 23.2" {
-  sem-version erlang 23.2
+@test "change erlang to 24.0" {
+  sem-version erlang 24.0
   run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
-  assert_line --partial "23"
+  assert_line --partial "24"
 }
 #  scala
 @test "change scala to 2.11" {
@@ -242,5 +249,4 @@ setup() {
   run echo ${PATH}
   assert_line --partial "$(go env GOPATH)/bin"
 }
-
 
