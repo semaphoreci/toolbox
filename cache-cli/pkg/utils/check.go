@@ -9,7 +9,12 @@ func Check(err error) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err.Error())
 
-		os.Exit(1)
+		failOnError := os.Getenv("CACHE_FAIL_ON_ERROR")
+		if failOnError == "true" {
+			os.Exit(1)
+		} else {
+			os.Exit(0)
+		}
 	}
 }
 
