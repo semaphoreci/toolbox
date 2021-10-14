@@ -291,7 +291,7 @@ normalize_key() {
   run cache restore corrupted-file
   assert_failure
 
-  em -f corrupted-file
+  rm -f corrupted-file
   export CACHE_FAIL_ON_ERROR=false
 }
 
