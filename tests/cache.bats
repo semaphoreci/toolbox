@@ -279,7 +279,7 @@ normalize_key() {
 }
 
 @test "restoring corrupted archive from cache" {
-  echo "not a proper cache archive" > corrupted-file
+  echo "not a proper cache archive" | dd of=corrupted-file
   echo -e "put -c corrupted-file" | lftp \
     sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL \
     -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1
