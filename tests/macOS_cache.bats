@@ -276,6 +276,28 @@ normalize_key() {
   refute_output --partial "command not found"
 }
 
+@test "restoring corrupted archive from cache" {
+  echo "not a proper cache archive" | dd of=corrupted-file
+
+  export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
+  export SEMAPHORE_CACHE_PORT=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $2}')
+
+  sftp \
+    -i $SEMAPHORE_CACHE_PRIVATE_KEY_PATH \
+    -P $SEMAPHORE_CACHE_PORT \
+    $SEMAPHORE_CACHE_USERNAME@$SEMAPHORE_CACHE_IP:. <<< $'put corrupted-file'
+
+  run cache restore corrupted-file
+  assert_success
+
+  export CACHE_FAIL_ON_ERROR=true
+  run cache restore corrupted-file
+  assert_failure
+
+  rm -f corrupted-file
+  export CACHE_FAIL_ON_ERROR=false
+}
+
 @test "[macOS] fallback key option" {
   touch tmp.file
   test_key_1=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
