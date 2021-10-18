@@ -128,18 +128,18 @@ func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo,
 		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: "cache_user", Value: username})
 	}
 
-	cacheServerIp := getCacheServerIp()
-	if cacheServerIp != "" {
-		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: "cache_server", Value: cacheServerIp})
+	cacheServerIP := getCacheServerIP()
+	if cacheServerIP != "" {
+		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: "cache_server", Value: cacheServerIP})
 	}
 
 	return metricsManager.PublishBatch(metricsToPublish)
 }
 
-func getCacheServerIp() string {
-	cacheUrl := os.Getenv("SEMAPHORE_CACHE_URL")
-	if cacheUrl != "" {
-		ipAndPort := strings.Split(cacheUrl, ":")
+func getCacheServerIP() string {
+	cacheURL := os.Getenv("SEMAPHORE_CACHE_URL")
+	if cacheURL != "" {
+		ipAndPort := strings.Split(cacheURL, ":")
 		if len(ipAndPort) != 2 {
 			return ""
 		}
