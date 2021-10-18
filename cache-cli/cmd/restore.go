@@ -108,7 +108,7 @@ func downloadAndUnpackKey(storage storage.Storage, metricsManager metrics.Metric
 
 	unpackStart := time.Now()
 	fmt.Printf("Unpacking '%s'...\n", compressed.Name())
-	restorationPath, err := files.Unpack(compressed.Name())
+	restorationPath, err := files.Unpack(metricsManager, compressed.Name())
 	utils.Check(err)
 
 	unpackDuration := time.Since(unpackStart)
