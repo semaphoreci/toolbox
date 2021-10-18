@@ -762,8 +762,8 @@ cache::lftp() {
   local command_status
   local cache_ip
   local cache_port
-  cache_ip="$(echo $SEMAPHORE_CACHE_URL|cur -d':' -f1)"
-  cache_port={$(echo $SEMAPHORE_CACHE_URL|cur -d':' -f2):-22}
+  cache_ip="$(echo $SEMAPHORE_CACHE_URL|cut -d':' -f1)"
+  cache_port="{$(echo $SEMAPHORE_CACHE_URL|cut -d':' -f2):-22}"
   lftp_command=$1
   print_log=${2:-false}
 
@@ -772,7 +772,7 @@ cache::lftp() {
   fi
   
   #command_log=$(echo -e "${lftp_command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
-  command_log=$(echo -e "${lftp_command}" | sftp -i ${SEMAPHORE_CACHE_PRIVATE_KEY_PATH} -P ${cache_port} ${SEMAPHORE_CACHE_USERNAME}@${cache_ip}  2>&1)
+  command_log=$(echo -e "${lftp_command}" | sftp -i "${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}" -P "${cache_port}" "${SEMAPHORE_CACHE_USERNAME}"@"${cache_ip}"  2>&1)
   command_status=$?
 
   if [[ "${print_log}" == "with_logs" ]] && [ -n "$command_log" ]; then
