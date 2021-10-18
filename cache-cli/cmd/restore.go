@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
+	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
 	"github.com/spf13/cobra"
@@ -32,6 +34,9 @@ func RunRestore(cmd *cobra.Command, args []string) {
 	storage, err := storage.InitStorage()
 	utils.Check(err)
 
+	metricsManager, err := metrics.InitMetricsManager("local")
+	utils.Check(err)
+
 	if len(args) == 0 {
 		lookupResults := files.Lookup(files.LookupOptions{
 			GitBranch: os.Getenv("SEMAPHORE_GIT_BRANCH"),
@@ -47,21 +52,21 @@ func RunRestore(cmd *cobra.Command, args []string) {
 			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {
 				fmt.Printf("Fetching '%s' directory with cache keys '%s'...\n", entry.Path, strings.Join(entry.Keys, ","))
-				downloadAndUnpack(storage, entry.Keys)
+				downloadAndUnpack(storage, metricsManager, entry.Keys)
 			}
 		}
 	} else {
 		keys := strings.Split(args[0], ",")
-		downloadAndUnpack(storage, keys)
+		downloadAndUnpack(storage, metricsManager, keys)
 	}
 }
 
-func downloadAndUnpack(storage storage.Storage, keys []string) {
+func downloadAndUnpack(storage storage.Storage, metricsManager metrics.MetricsManager, keys []string) {
 	for _, rawKey := range keys {
 		key := NormalizeKey(rawKey)
 		if ok, _ := storage.HasKey(key); ok {
 			fmt.Printf("HIT: '%s', using key '%s'.\n", key, key)
-			downloadAndUnpackKey(storage, key)
+			downloadAndUnpackKey(storage, metricsManager, key)
 			break
 		}
 
@@ -71,7 +76,7 @@ func downloadAndUnpack(storage storage.Storage, keys []string) {
 		matchingKey := findMatchingKey(availableKeys, key)
 		if matchingKey != "" {
 			fmt.Printf("HIT: '%s', using key '%s'.\n", key, matchingKey)
-			downloadAndUnpackKey(storage, matchingKey)
+			downloadAndUnpackKey(storage, metricsManager, matchingKey)
 			break
 		} else {
 			fmt.Printf("MISS: '%s'.\n", key)
@@ -89,7 +94,7 @@ func findMatchingKey(availableKeys []storage.CacheKey, match string) string {
 	return ""
 }
 
-func downloadAndUnpackKey(storage storage.Storage, key string) {
+func downloadAndUnpackKey(storage storage.Storage, metricsManager metrics.MetricsManager, key string) {
 	downloadStart := time.Now()
 	fmt.Printf("Downloading key '%s'...\n", key)
 	compressed, err := storage.Restore(key)
@@ -97,7 +102,9 @@ func downloadAndUnpackKey(storage storage.Storage, key string) {
 
 	downloadDuration := time.Since(downloadStart)
 	info, _ := os.Stat(compressed.Name())
+
 	fmt.Printf("Download complete. Duration: %v. Size: %v bytes.\n", downloadDuration.String(), files.HumanReadableSize(info.Size()))
+	publishMetrics(metricsManager, info, downloadDuration)
 
 	unpackStart := time.Now()
 	fmt.Printf("Unpacking '%s'...\n", compressed.Name())
@@ -108,6 +115,39 @@ func downloadAndUnpackKey(storage storage.Storage, key string) {
 	fmt.Printf("Unpack complete. Duration: %v.\n", unpackDuration)
 	fmt.Printf("Restored: %s.\n", restorationPath)
 	os.Remove(compressed.Name())
+}
+
+func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo, downloadDuration time.Duration) error {
+	metricsToPublish := []metrics.Metric{
+		{Name: "cache_download_size", Value: fmt.Sprintf("%d", fileInfo.Size())},
+		{Name: "cache_download_time", Value: downloadDuration.String()},
+	}
+
+	username := os.Getenv("SEMAPHORE_CACHE_USERNAME")
+	if username != "" {
+		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: "cache_user", Value: username})
+	}
+
+	cacheServerIp := getCacheServerIp()
+	if cacheServerIp != "" {
+		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: "cache_server", Value: cacheServerIp})
+	}
+
+	return metricsManager.PublishBatch(metricsToPublish)
+}
+
+func getCacheServerIp() string {
+	cacheUrl := os.Getenv("SEMAPHORE_CACHE_URL")
+	if cacheUrl != "" {
+		ipAndPort := strings.Split(cacheUrl, ":")
+		if len(ipAndPort) != 2 {
+			return ""
+		}
+
+		return ipAndPort[0]
+	}
+
+	return ""
 }
 
 func init() {
