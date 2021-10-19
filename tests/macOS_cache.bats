@@ -299,6 +299,8 @@ normalize_key() {
 }
 
 @test "[macOS] restoring corrupted archive from cache" {
+  export SEMAPHORE_EXECUTION_ENVIRONMENT=hosted
+
   echo "not a proper cache archive" | dd of=corrupted-file
 
   export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
