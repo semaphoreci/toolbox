@@ -282,10 +282,8 @@ normalize_key() {
   test_key_1=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
   cache store $test_key_1 tmp
-
-  run cache restore $test_key_1
-  assert_success
-  assert_line "HIT: '${test_key_1}', using key '${test_key_1}'."
+  rm -rf tmp
+  cache restore $test_key_1
 
   export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
   run [ -f /tmp/cache_metrics ] \
