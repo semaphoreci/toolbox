@@ -269,6 +269,7 @@ normalize_key() {
 }
 
 @test "populates metrics file" {
+  export SEMAPHORE_EXECUTION_ENVIRONMENT=hosted
   test_key_1=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
   cache store $test_key_1 tmp
