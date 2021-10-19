@@ -287,7 +287,7 @@ normalize_key() {
   assert_success
 
   export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
-  [ -f /tmp/cache_metrics ] \
+  run [ -f /tmp/cache_metrics ] \
     && grep -q "cache_download_size" /tmp/cache_metrics \
     && grep -q "cache_download_time" /tmp/cache_metrics \
     && grep -q "cache_user $SEMAPHORE_CACHE_USERNAME" /tmp/cache_metrics \
