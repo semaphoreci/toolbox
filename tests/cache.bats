@@ -282,6 +282,8 @@ normalize_key() {
   assert_line "cache_download_time"
   assert_line "cache_user $SEMAPHORE_CACHE_USERNAME"
   assert_line "cache_server $SEMAPHORE_CACHE_IP"
+
+  run cat /tmp/toolbox_metrics
   assert_line "cache_total_rate 1"
 }
 
@@ -308,12 +310,10 @@ normalize_key() {
     -P $SEMAPHORE_CACHE_PORT \
     $SEMAPHORE_CACHE_USERNAME@$SEMAPHORE_CACHE_IP:. <<< $'put corrupted-file'
 
-  run cache restore corrupted-file
-  assert_success
+  cache restore corrupted-file
 
-  [ -f /tmp/toolbox_metrics ] \
-    && grep -q "cache_corruption_rate 1" "/tmp/toolbox_metrics"
-  assert_success
+  run cat /tmp/toolbox_metrics
+  assert_line "cache_corruption_rate 1"
 
   rm -rf /tmp/toolbox_metrics
   export CACHE_FAIL_ON_ERROR=true
