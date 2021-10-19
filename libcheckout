@@ -69,8 +69,7 @@ function checkout::reset_to_sha {
   checkout::checkrevision
   if [ "$?" -eq "0" ]; then
     git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
-    echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
-
+    checkout::metric "$(du -s . | awk {'print $1'})"
     return 0
   else
     return 1
@@ -95,7 +94,7 @@ function checkout::switch_revision() {
 
       return 1
     else
-      echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
+      checkout::metric "$(du -s . | awk {'print $1'})"
       echo "HEAD is now at ${SEMAPHORE_GIT_SHA} Release ${SEMAPHORE_GIT_TAG_NAME}"
 
       return 0
@@ -196,7 +195,8 @@ function checkout::shallow() {
       fi
     fi
   fi
-  echo "libcheckout_repo_size $(du -s . | awk {'print $1'})" >> /tmp/toolbox_metrics
+
+  checkout::metric "$(du -s . | awk {'print $1'})"
 }
 
 function checkout::refbased() {
@@ -236,6 +236,12 @@ function checkout::refbased() {
   fi
 
   checkout::shallow
+}
+
+function checkout::metric() {
+  if [[ "$SEMAPHORE_EXECUTION_ENVIRONMENT" -eq "hosted" ]]; then
+    echo "libcheckout_repo_size $1" >> /tmp/toolbox_metrics
+  fi
 }
 
 export -f checkout
