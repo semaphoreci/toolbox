@@ -9,6 +9,8 @@ teardown() {
   cache delete bats-test-$SEMAPHORE_GIT_BRANCH
   cache delete bats-test-$SEMAPHORE_GIT_BRANCH-1
   unset CACHE_SIZE
+  rm -rf /tmp/toolbox_metrics
+  rm -rf /tmp/cache_metrics
 }
 
 normalize_key() {
@@ -276,7 +278,25 @@ normalize_key() {
   refute_output --partial "command not found"
 }
 
-@test "restoring corrupted archive from cache" {
+@test "[macOS] populates metrics file" {
+  test_key_1=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  touch tmp.file
+  cache store $test_key_1 tmp.file
+
+  run cache restore $test_key_1
+  assert_success
+
+  export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
+  [ -f /tmp/cache_metrics ] \
+    && grep -q "cache_download_size" /tmp/cache_metrics \
+    && grep -q "cache_download_time" /tmp/cache_metrics \
+    && grep -q "cache_user $SEMAPHORE_CACHE_USERNAME" /tmp/cache_metrics \
+    && grep -q "cache_server $SEMAPHORE_CACHE_IP" /tmp/cache_metrics \
+    && grep -q "cache_total_rate 1" /tmp/cache_metrics
+  assert_success
+}
+
+@test "[macOS] restoring corrupted archive from cache" {
   echo "not a proper cache archive" | dd of=corrupted-file
 
   export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
@@ -288,6 +308,10 @@ normalize_key() {
     $SEMAPHORE_CACHE_USERNAME@$SEMAPHORE_CACHE_IP:. <<< $'put corrupted-file'
 
   run cache restore corrupted-file
+  assert_success
+
+  [ -f /tmp/toolbox_metrics ] \
+    && grep -q "cache_corruption_rate 1" "/tmp/toolbox_metrics"
   assert_success
 
   export CACHE_FAIL_ON_ERROR=true
