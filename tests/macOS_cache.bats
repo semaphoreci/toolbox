@@ -280,8 +280,8 @@ normalize_key() {
 
 @test "[macOS] populates metrics file" {
   test_key_1=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
-  touch tmp.file
-  cache store $test_key_1 tmp.file
+  mkdir tmp && touch tmp/example.file
+  cache store $test_key_1 tmp
 
   run cache restore $test_key_1
   assert_success
