@@ -44,7 +44,7 @@ blocks:
             - 'shellcheck sem-service -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -le 76 ]]'
             - 'shellcheck sem-version -f gcc | wc -l && [[ "$(shellcheck sem-version -f gcc | wc -l)" -le 21 ]]'
             - 'shellcheck cache       -f gcc | wc -l && [[ "$(shellcheck cache -f gcc | wc -l)" -le 152 ]]'
-            - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 89 ]]'
+            - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 85 ]]'
             - shellcheck install-package
 
   - name: Sem Version Tests bionic
