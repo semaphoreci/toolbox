@@ -275,6 +275,7 @@ normalize_key() {
 
   run cache restore $test_key_1
   assert_success
+  assert_line "HIT: '${test_key_1}', using key '${test_key_1}'."
 
   export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
   run [ -f /tmp/cache_metrics ] \
