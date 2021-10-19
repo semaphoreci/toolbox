@@ -286,13 +286,12 @@ normalize_key() {
   cache restore $test_key_1
 
   export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
-  run [ -f /tmp/cache_metrics ] \
-    && grep -q "cache_download_size" /tmp/cache_metrics \
-    && grep -q "cache_download_time" /tmp/cache_metrics \
-    && grep -q "cache_user $SEMAPHORE_CACHE_USERNAME" /tmp/cache_metrics \
-    && grep -q "cache_server $SEMAPHORE_CACHE_IP" /tmp/cache_metrics \
-    && grep -q "cache_total_rate 1" /tmp/cache_metrics
-  assert_success
+  run cat /tmp/cache_metrics
+  assert_line "cache_download_size"
+  assert_line "cache_download_time"
+  assert_line "cache_user $SEMAPHORE_CACHE_USERNAME"
+  assert_line "cache_server $SEMAPHORE_CACHE_IP"
+  assert_line "cache_total_rate 1"
 }
 
 @test "[macOS] restoring corrupted archive from cache" {
