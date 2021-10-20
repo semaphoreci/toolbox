@@ -34,7 +34,7 @@ func RunRestore(cmd *cobra.Command, args []string) {
 	storage, err := storage.InitStorage()
 	utils.Check(err)
 
-	metricsManager, err := metrics.InitMetricsManager("local")
+	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
 	utils.Check(err)
 
 	if len(args) == 0 {
@@ -119,21 +119,21 @@ func downloadAndUnpackKey(storage storage.Storage, metricsManager metrics.Metric
 
 func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo, downloadDuration time.Duration) error {
 	metricsToPublish := []metrics.Metric{
-		{Name: "cache_download_size", Value: fmt.Sprintf("%d", fileInfo.Size())},
-		{Name: "cache_download_time", Value: downloadDuration.String()},
+		{Name: metrics.CacheDownloadSize, Value: fmt.Sprintf("%d", fileInfo.Size())},
+		{Name: metrics.CacheDownloadTime, Value: downloadDuration.String()},
 	}
 
 	username := os.Getenv("SEMAPHORE_CACHE_USERNAME")
 	if username != "" {
-		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: "cache_user", Value: username})
+		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: metrics.CacheUser, Value: username})
 	}
 
 	cacheServerIP := getCacheServerIP()
 	if cacheServerIP != "" {
-		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: "cache_server", Value: cacheServerIP})
+		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: metrics.CacheServer, Value: cacheServerIP})
 	}
 
-	metricsToPublish = append(metricsToPublish, metrics.Metric{Name: "cache_total_rate", Value: "1"})
+	metricsToPublish = append(metricsToPublish, metrics.Metric{Name: metrics.CacheTotalRate, Value: "1"})
 
 	return metricsManager.PublishBatch(metricsToPublish)
 }

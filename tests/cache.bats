@@ -300,10 +300,30 @@ normalize_key() {
 }
 
 @test "restoring corrupted archive from cache" {
-  export SEMAPHORE_EXECUTION_ENVIRONMENT=hosted
-
   echo "not a proper cache archive" | dd of=corrupted-file
+  export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
+  export SEMAPHORE_CACHE_PORT=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $2}')
 
+  sftp \
+    -i $SEMAPHORE_CACHE_PRIVATE_KEY_PATH \
+    -P $SEMAPHORE_CACHE_PORT \
+    $SEMAPHORE_CACHE_USERNAME@$SEMAPHORE_CACHE_IP:. <<< $'put corrupted-file'
+
+  run cache restore corrupted-file
+  assert_success
+
+  export CACHE_FAIL_ON_ERROR=true
+  run cache restore corrupted-file
+  assert_failure
+
+  rm -f corrupted-file
+  export CACHE_FAIL_ON_ERROR=false
+  cache clear
+}
+
+@test "publishes metrics when restoring corrupted archive from cache" {
+  export SEMAPHORE_EXECUTION_ENVIRONMENT=hosted
+  echo "not a proper cache archive" | dd of=corrupted-file
   export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
   export SEMAPHORE_CACHE_PORT=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $2}')
 
@@ -323,14 +343,6 @@ normalize_key() {
   run cat /tmp/toolbox_metrics
   assert_line "cache_total_rate 1"
   assert_line "cache_corruption_rate 1"
-
-  rm -rf /tmp/toolbox_metrics
-  export CACHE_FAIL_ON_ERROR=true
-  run cache restore corrupted-file
-  assert_failure
-
-  rm -f corrupted-file
-  export CACHE_FAIL_ON_ERROR=false
 }
 
 @test "fallback key option" {

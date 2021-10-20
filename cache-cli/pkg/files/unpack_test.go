@@ -1,6 +1,7 @@
 package files
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -11,7 +12,7 @@ import (
 
 func Test__UnpackSendsMetricsOnFailure(t *testing.T) {
 	os.Setenv("SEMAPHORE_EXECUTION_ENVIRONMENT", "hosted")
-	metricsManager, err := metrics.InitMetricsManager("local")
+	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
 	assert.Nil(t, err)
 
 	tempFile, _ := ioutil.TempFile("/tmp", "*")
@@ -22,7 +23,7 @@ func Test__UnpackSendsMetricsOnFailure(t *testing.T) {
 
 	bytes, err := ioutil.ReadFile("/tmp/toolbox_metrics")
 	assert.Nil(t, err)
-	assert.Contains(t, string(bytes), "cache_corruption_rate 1")
+	assert.Contains(t, string(bytes), fmt.Sprintf("%s 1", metrics.CacheCorruptionRate))
 
 	os.Remove(tempFile.Name())
 	os.Remove("/tmp/toolbox_metrics")

@@ -42,9 +42,9 @@ func (b *LocalMetricsManager) Publish(metric Metric) error {
 	}
 
 	switch metric.Name {
-	case "cache_download_size", "cache_download_time", "cache_user", "cache_server":
+	case CacheDownloadSize, CacheDownloadTime, CacheUser, CacheServer:
 		return publishMetricToFile(b.CacheMetricsPath, metric.Name, metric.Value)
-	case "cache_total_rate", "cache_corruption_rate":
+	case CacheTotalRate, CacheCorruptionRate:
 		return publishMetricToFile(b.ToolboxMetricsPath, metric.Name, metric.Value)
 	}
 

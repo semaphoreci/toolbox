@@ -13,7 +13,7 @@ import (
 )
 
 func Test__CompressAndUnpack(t *testing.T) {
-	metricsManager, err := metrics.InitMetricsManager("local")
+	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
 	assert.Nil(t, err)
 
 	t.Run("file to compress is not present", func(t *testing.T) {
