@@ -133,6 +133,8 @@ func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo,
 		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: "cache_server", Value: cacheServerIP})
 	}
 
+	metricsToPublish = append(metricsToPublish, metrics.Metric{Name: "cache_total_rate", Value: "1"})
+
 	return metricsManager.PublishBatch(metricsToPublish)
 }
 
