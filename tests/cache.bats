@@ -314,7 +314,14 @@ normalize_key() {
 
   cache restore corrupted-file
 
+  run cat /tmp/cache_metrics
+  assert_line --partial "cache_download_size"
+  assert_line --partial "cache_download_time"
+  assert_line "cache_user $SEMAPHORE_CACHE_USERNAME"
+  assert_line "cache_server $SEMAPHORE_CACHE_IP"
+
   run cat /tmp/toolbox_metrics
+  assert_line "cache_total_rate 1"
   assert_line "cache_corruption_rate 1"
 
   rm -rf /tmp/toolbox_metrics
