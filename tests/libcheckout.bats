@@ -283,5 +283,5 @@ teardown() {
 
   run cat /tmp/toolbox_metrics
   assert_failure
-  assert_line "cat: /tmp/asdasd: No such file or directory"
+  assert_line "cat: /tmp/toolbox_metrics: No such file or directory"
 }
