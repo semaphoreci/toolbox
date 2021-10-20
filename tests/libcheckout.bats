@@ -23,6 +23,7 @@ setup() {
 
 teardown() {
   rm -rf $SEMAPHORE_GIT_DIR
+  rm -rf /tmp/toolbox_metrics
 }
 
 # Push
@@ -262,4 +263,25 @@ teardown() {
   run checkout --use-cache
   assert_failure
   assert_output --partial "Revision: $SEMAPHORE_GIT_SHA not found"
+}
+
+@test "libcheckout - populates metrics file if hosted environment" {
+  export SEMAPHORE_GIT_REF_TYPE="push"
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+  export SEMAPHORE_EXECUTION_ENVIRONMENT=hosted
+  checkout
+
+  run cat /tmp/toolbox_metrics
+  assert_line --partial "libcheckout_repo_size"
+}
+
+@test "libcheckout - does not populate metrics file if self-hosted environment" {
+  export SEMAPHORE_GIT_REF_TYPE="push"
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+  export SEMAPHORE_EXECUTION_ENVIRONMENT=self-hosted
+  checkout
+
+  run cat /tmp/toolbox_metrics
+  assert_failure
+  assert_line "cat: /tmp/asdasd: No such file or directory"
 }
