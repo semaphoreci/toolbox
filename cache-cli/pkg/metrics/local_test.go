@@ -10,7 +10,7 @@ import (
 )
 
 func Test__Publish(t *testing.T) {
-	os.Setenv("SEMAPHORE_EXECUTION_ENVIRONMENT", "hosted")
+	os.Setenv("SEMAPHORE_TOOLBOX_METRICS_ENABLED", "true")
 	metricsManager, err := NewLocalMetricsBackend()
 	assert.Nil(t, err)
 
@@ -73,7 +73,7 @@ func Test__Publish(t *testing.T) {
 	})
 
 	t.Run("ignores metrics if it is not enabled", func(t *testing.T) {
-		os.Setenv("SEMAPHORE_EXECUTION_ENVIRONMENT", "self-hosted")
+		os.Setenv("SEMAPHORE_TOOLBOX_METRICS_ENABLED", "false")
 
 		err = metricsManager.PublishBatch([]Metric{
 			{Name: CacheDownloadSize, Value: "1000"},

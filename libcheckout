@@ -239,7 +239,7 @@ function checkout::refbased() {
 }
 
 function checkout::metric() {
-  if [[ "$SEMAPHORE_EXECUTION_ENVIRONMENT" == "hosted" ]]; then
+  if [[ "$SEMAPHORE_TOOLBOX_METRICS_ENABLED" == "true" ]]; then
     echo "libcheckout_repo_size $1" >> /tmp/toolbox_metrics
   fi
 }

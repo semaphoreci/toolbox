@@ -268,7 +268,7 @@ teardown() {
 @test "libcheckout - populates metrics file if hosted environment" {
   export SEMAPHORE_GIT_REF_TYPE="push"
   export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
-  export SEMAPHORE_EXECUTION_ENVIRONMENT=hosted
+  export SEMAPHORE_TOOLBOX_METRICS_ENABLED=true
   checkout
 
   run cat /tmp/toolbox_metrics
@@ -278,7 +278,7 @@ teardown() {
 @test "libcheckout - does not populate metrics file if self-hosted environment" {
   export SEMAPHORE_GIT_REF_TYPE="push"
   export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
-  export SEMAPHORE_EXECUTION_ENVIRONMENT=self-hosted
+  export SEMAPHORE_TOOLBOX_METRICS_ENABLED=false
   checkout
 
   run cat /tmp/toolbox_metrics

@@ -18,7 +18,7 @@ func NewLocalMetricsBackend() (*LocalMetricsManager, error) {
 }
 
 func (b *LocalMetricsManager) Enabled() bool {
-	return os.Getenv("SEMAPHORE_EXECUTION_ENVIRONMENT") == "hosted"
+	return os.Getenv("SEMAPHORE_TOOLBOX_METRICS_ENABLED") == "true"
 }
 
 func (b *LocalMetricsManager) PublishBatch(metrics []Metric) error {

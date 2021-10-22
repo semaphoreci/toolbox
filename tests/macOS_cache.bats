@@ -279,7 +279,7 @@ normalize_key() {
 }
 
 @test "[macOS] populates metrics file" {
-  export SEMAPHORE_EXECUTION_ENVIRONMENT=hosted
+  export SEMAPHORE_TOOLBOX_METRICS_ENABLED=true
   test_key_1=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
   cache store $test_key_1 tmp
@@ -321,7 +321,7 @@ normalize_key() {
 }
 
 @test "[macOS] publishes metrics when restoring corrupted archive from cache" {
-  export SEMAPHORE_EXECUTION_ENVIRONMENT=hosted
+  export SEMAPHORE_TOOLBOX_METRICS_ENABLED=true
 
   echo "not a proper cache archive" | dd of=corrupted-file
 

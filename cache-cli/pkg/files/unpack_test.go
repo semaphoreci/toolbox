@@ -11,7 +11,7 @@ import (
 )
 
 func Test__UnpackSendsMetricsOnFailure(t *testing.T) {
-	os.Setenv("SEMAPHORE_EXECUTION_ENVIRONMENT", "hosted")
+	os.Setenv("SEMAPHORE_TOOLBOX_METRICS_ENABLED", "true")
 	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
 	assert.Nil(t, err)
 
