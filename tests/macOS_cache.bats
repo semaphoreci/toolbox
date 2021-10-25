@@ -9,6 +9,8 @@ teardown() {
   cache delete bats-test-$SEMAPHORE_GIT_BRANCH
   cache delete bats-test-$SEMAPHORE_GIT_BRANCH-1
   unset CACHE_SIZE
+  rm -rf /tmp/toolbox_metrics
+  rm -rf /tmp/cache_metrics
 }
 
 normalize_key() {
@@ -276,7 +278,27 @@ normalize_key() {
   refute_output --partial "command not found"
 }
 
-@test "restoring corrupted archive from cache" {
+@test "[macOS] populates metrics file" {
+  export SEMAPHORE_TOOLBOX_METRICS_ENABLED=true
+  test_key_1=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  mkdir tmp && touch tmp/example.file
+  cache store $test_key_1 tmp
+  rm -rf tmp
+  cache restore $test_key_1
+
+  export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
+
+  run cat /tmp/cache_metrics
+  assert_line --partial "cache_download_size"
+  assert_line --partial "cache_download_time"
+  assert_line "cache_user $SEMAPHORE_CACHE_USERNAME"
+  assert_line "cache_server $SEMAPHORE_CACHE_IP"
+
+  run cat /tmp/toolbox_metrics
+  assert_line "cache_total_rate 1"
+}
+
+@test "[macOS] restoring corrupted archive from cache" {
   echo "not a proper cache archive" | dd of=corrupted-file
 
   export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
@@ -296,6 +318,32 @@ normalize_key() {
 
   rm -f corrupted-file
   export CACHE_FAIL_ON_ERROR=false
+}
+
+@test "[macOS] publishes metrics when restoring corrupted archive from cache" {
+  export SEMAPHORE_TOOLBOX_METRICS_ENABLED=true
+
+  echo "not a proper cache archive" | dd of=corrupted-file
+
+  export SEMAPHORE_CACHE_IP=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $1}')
+  export SEMAPHORE_CACHE_PORT=$(echo "$SEMAPHORE_CACHE_URL" | awk -F ":" '{print $2}')
+
+  sftp \
+    -i $SEMAPHORE_CACHE_PRIVATE_KEY_PATH \
+    -P $SEMAPHORE_CACHE_PORT \
+    $SEMAPHORE_CACHE_USERNAME@$SEMAPHORE_CACHE_IP:. <<< $'put corrupted-file'
+
+  cache restore corrupted-file
+
+  run cat /tmp/cache_metrics
+  assert_line --partial "cache_download_size"
+  assert_line --partial "cache_download_time"
+  assert_line "cache_user $SEMAPHORE_CACHE_USERNAME"
+  assert_line "cache_server $SEMAPHORE_CACHE_IP"
+
+  run cat /tmp/toolbox_metrics
+  assert_line "cache_total_rate 1"
+  assert_line "cache_corruption_rate 1"
 }
 
 @test "[macOS] fallback key option" {

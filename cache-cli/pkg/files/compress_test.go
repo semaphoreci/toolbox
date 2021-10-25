@@ -8,10 +8,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 	assert "github.com/stretchr/testify/assert"
 )
 
 func Test__CompressAndUnpack(t *testing.T) {
+	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
+	assert.Nil(t, err)
+
 	t.Run("file to compress is not present", func(t *testing.T) {
 		compressedFileName, err := Compress("abc0001", "/tmp/this-file-does-not-exist")
 		assert.NotNil(t, err)
@@ -19,14 +23,14 @@ func Test__CompressAndUnpack(t *testing.T) {
 	})
 
 	t.Run("file to unpack is not present", func(t *testing.T) {
-		_, err := Unpack("/tmp/this-file-does-not-exist")
+		_, err := Unpack(metricsManager, "/tmp/this-file-does-not-exist")
 		assert.NotNil(t, err)
 	})
 
 	t.Run("using absolute paths", func(t *testing.T) {
 		tempDir, _ := ioutil.TempDir("/tmp", "*")
 		tempFile, _ := ioutil.TempFile(tempDir, "*")
-		assertCompressAndUnpack(t, tempDir, tempFile.Name())
+		assertCompressAndUnpack(t, metricsManager, tempDir, tempFile.Name())
 	})
 
 	t.Run("using relative paths", func(t *testing.T) {
@@ -34,7 +38,7 @@ func Test__CompressAndUnpack(t *testing.T) {
 		tempDir, _ := ioutil.TempDir(cwd, "*")
 		tempFile, _ := ioutil.TempFile(tempDir, "*")
 		tempDirBase := filepath.Base(tempDir)
-		assertCompressAndUnpack(t, tempDirBase, tempFile.Name())
+		assertCompressAndUnpack(t, metricsManager, tempDirBase, tempFile.Name())
 	})
 
 	t.Run("using single file", func(t *testing.T) {
@@ -53,7 +57,7 @@ func Test__CompressAndUnpack(t *testing.T) {
 		assert.Nil(t, err)
 
 		// unpacking
-		unpackedAt, err := Unpack(compressedFileName)
+		unpackedAt, err := Unpack(metricsManager, compressedFileName)
 		assert.Nil(t, err)
 		assert.Equal(t, tempFile.Name(), unpackedAt)
 
@@ -67,7 +71,7 @@ func Test__CompressAndUnpack(t *testing.T) {
 	})
 }
 
-func assertCompressAndUnpack(t *testing.T, tempDirectory, tempFile string) {
+func assertCompressAndUnpack(t *testing.T, metricsManager metrics.MetricsManager, tempDirectory, tempFile string) {
 	// compressing
 	compressedFileName, err := Compress("abc0003", tempDirectory)
 	assert.Nil(t, err)
@@ -82,7 +86,7 @@ func assertCompressAndUnpack(t *testing.T, tempDirectory, tempFile string) {
 	assert.Nil(t, err)
 
 	// unpacking
-	unpackedAt, err := Unpack(compressedFileName)
+	unpackedAt, err := Unpack(metricsManager, compressedFileName)
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("%s/", tempDirectory), unpackedAt)
 

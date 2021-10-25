@@ -8,33 +8,33 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 )
 
-func Unpack(path string) (string, error) {
+func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) {
 	restorationPath, err := findRestorationPath(path)
 	if err != nil {
+		metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"})
 		return "", err
 	}
 
-	cmd, err := unpackCommand(restorationPath, path)
-	if err != nil {
-		return "", err
-	}
-
+	cmd := unpackCommand(restorationPath, path)
 	_, err = cmd.Output()
 	if err != nil {
+		metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"})
 		return "", err
 	}
 
 	return restorationPath, nil
 }
 
-func unpackCommand(restorationPath, tempFile string) (*exec.Cmd, error) {
+func unpackCommand(restorationPath, tempFile string) *exec.Cmd {
 	if filepath.IsAbs(restorationPath) {
-		return exec.Command("tar", "xzPf", tempFile, "-C", "."), nil
+		return exec.Command("tar", "xzPf", tempFile, "-C", ".")
 	}
 
-	return exec.Command("tar", "xzf", tempFile, "-C", "."), nil
+	return exec.Command("tar", "xzf", tempFile, "-C", ".")
 }
 
 func findRestorationPath(path string) (string, error) {
