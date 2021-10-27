@@ -76,9 +76,6 @@ blocks:
         containers:
           - name: main
             image: 'registry.semaphoreci.com/android:30-flutter'
-#      env_vars:
-#        - name: SEMAPHORE_CACHE_NEW_CLI
-#          value: "false"
       prologue:
         commands:
           - checkout
