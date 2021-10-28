@@ -49,7 +49,7 @@ version::change_ruby() {
   if ! [ -d ~/.rbenv/versions/"${software_version}" ]; then
     sem-install ruby "${software_version}"
   fi
-  [ "$2" = "-f" ] && change_cmd="rbenv shell" || change_cmd="rbenv global"
+  [ "${2:-}" = "-f" ] && change_cmd="rbenv shell" || change_cmd="rbenv global"
   version::change "$change_cmd"
   return $?
 }
@@ -243,8 +243,8 @@ version::main() {
 
   software=$1
   software_version=$2
-  force=$3
-  ignore=$4
+  force=${3:-""}
+  ignore=${4:-""}
 
   if [[ "$force" == "-i" ]] || [[ "$force" == "--ignore" ]]; then
     ignore="--ignore"

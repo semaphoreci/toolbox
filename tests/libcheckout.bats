@@ -4,6 +4,7 @@ load "support/bats-support/load"
 load "support/bats-assert/load"
 
 setup() {
+
   unset SEMAPHORE_GIT_REF_TYPE
   unset SEMAPHORE_GIT_TAG_NAME
   unset SEMAPHORE_GIT_PR_SLUG
@@ -16,7 +17,8 @@ setup() {
   export SEMAPHORE_GIT_SHA=5608567
   export SEMAPHORE_GIT_REPO_SLUG="mojombo/grit"
   export SEMAPHORE_GIT_REF="refs/heads/master"
-
+  
+  set -u
   source ~/.toolbox/libcheckout
   rm -rf $SEMAPHORE_GIT_DIR
 }
