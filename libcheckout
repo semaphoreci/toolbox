@@ -1,5 +1,5 @@
 function checkout() {
-
+  local use_cache=${1:-""}
   if [ -z $SEMAPHORE_GIT_BRANCH ] || [ -z $SEMAPHORE_GIT_URL ] || [ -z $SEMAPHORE_GIT_DIR ] || [ -z $SEMAPHORE_GIT_SHA ]; then
     checkout::validation_message
     return 1
@@ -7,11 +7,11 @@ function checkout() {
 
   rm -rf "$SEMAPHORE_GIT_DIR"
 
-  if [ "$1" = "--use-cache" ]; then
+  if [ "$use_cache" = "--use-cache" ]; then
     echo "[Experimental stability] Using cached Git repository."
     checkout::use_cache
   else
-    if [ -n "$SEMAPHORE_GIT_REF_TYPE" ]; then
+    if [ ! -z ${SEMAPHORE_GIT_REF_TYPE:-} ]; then
       checkout::refbased
     else
       checkout::shallow
@@ -77,7 +77,7 @@ function checkout::reset_to_sha {
 }
 
 function checkout::switch_revision() {
-  if [ $SEMAPHORE_GIT_REF_TYPE = "pull-request" ]; then
+  if [ ${SEMAPHORE_GIT_REF_TYPE:-""} = "pull-request" ]; then
     git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "Reference: ${SEMAPHORE_GIT_REF} not found .... Exiting"
@@ -87,7 +87,7 @@ function checkout::switch_revision() {
       checkout::reset_to_sha
     fi
 
-  elif [ $SEMAPHORE_GIT_REF_TYPE = "tag" ]; then
+  elif [ ${SEMAPHORE_GIT_REF_TYPE:-""} = "tag" ]; then
     git checkout -qf $SEMAPHORE_GIT_TAG_NAME
     if [ $? -ne 0 ]; then
       echo "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
@@ -116,7 +116,7 @@ function checkout::switch_revision() {
 
 function checkout::cache_store() {
   # update cache if older then 72h -> 25920s
-  if [ -z ${SEMAPHORE_GIT_CACHE_AGE} ]; then
+  if [ -z ${SEMAPHORE_GIT_CACHE_AGE:-""} ]; then
     SEMAPHORE_GIT_CACHE_AGE=259200
   fi
 
@@ -145,7 +145,7 @@ function checkout::cache_store() {
 }
 
 function checkout::cleanupcache {
-  if [ -z ${SEMAPHORE_GIT_CACHE_KEEP} ]; then
+  if [ -z ${SEMAPHORE_GIT_CACHE_KEEP:-""} ]; then
     SEMAPHORE_GIT_CACHE_KEEP=0
   fi
   local k=$SEMAPHORE_GIT_CACHE_KEEP
@@ -166,7 +166,7 @@ function checkout::checkrevision {
 }
 
 function checkout::shallow() {
-  if [ -z ${SEMAPHORE_GIT_DEPTH} ]; then
+  if [ -z ${SEMAPHORE_GIT_DEPTH:-""} ]; then
     SEMAPHORE_GIT_DEPTH=50
   fi
   echo "Performing shallow clone with depth: $SEMAPHORE_GIT_DEPTH"
@@ -200,11 +200,11 @@ function checkout::shallow() {
 }
 
 function checkout::refbased() {
-  if [ -z ${SEMAPHORE_GIT_DEPTH} ]; then
+  if [ -z ${SEMAPHORE_GIT_DEPTH:-""} ]; then
     SEMAPHORE_GIT_DEPTH=50
   fi
 
-  if [ $SEMAPHORE_GIT_REF_TYPE = "pull-request" ]; then
+  if [ ${SEMAPHORE_GIT_REF_TYPE:-""} = "pull-request" ]; then
     git clone --depth $SEMAPHORE_GIT_DEPTH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>/dev/null
     cd $SEMAPHORE_GIT_DIR
     git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
@@ -220,7 +220,7 @@ function checkout::refbased() {
     fi
   fi
 
-  if [ $SEMAPHORE_GIT_REF_TYPE = "tag" ]; then
+  if [ ${SEMAPHORE_GIT_REF_TYPE:-""} = "tag" ]; then
     git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_TAG_NAME $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
@@ -239,7 +239,7 @@ function checkout::refbased() {
 }
 
 function checkout::metric() {
-  if [[ "$SEMAPHORE_TOOLBOX_METRICS_ENABLED" == "true" ]]; then
+  if [[ "${SEMAPHORE_TOOLBOX_METRICS_ENABLED:-''}" == "true" ]]; then
     echo "libcheckout_repo_size $1" >> /tmp/toolbox_metrics
   fi
 }

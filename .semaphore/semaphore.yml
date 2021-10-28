@@ -63,8 +63,23 @@ blocks:
 
       jobs:
         - name: Sem Version
+          matrix:
+            - env_var: TEST
+              values:
+                - elixir
+                - erlang
+                - firefox
+                - gcc
+                - go
+                - java
+                - kubectl
+                - node
+                - php
+                - python
+                - ruby
+                - scala
           commands:
-            - bats tests/sem_version_bionic.bats
+            - bats tests/sem_version_bionic/${TEST}.bats
 
   - name: 'Sem Version Tests container'
     dependencies:
