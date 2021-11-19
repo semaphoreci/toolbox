@@ -439,11 +439,6 @@ blocks:
         - name: Check dependencies
           commands:
             - make check.deps
-        - name: Check docker resources
-          commands:
-            - make build
-            - docker build -t loghub2 .
-            - make check.docker IMAGE=loghub2
         - name: Check code
           commands:
             - make check.static
