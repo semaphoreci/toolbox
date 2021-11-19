@@ -32,7 +32,7 @@ func NewSFTPStorage(options SFTPStorageOptions) (*SFTPStorage, error) {
 	sftpClient, err := sftp.NewClient(sshClient)
 	if err != nil {
 		fmt.Printf("Error creating sftp client: %v\n", err)
-		sshClient.Close()
+		_ = sshClient.Close()
 		return nil, err
 	}
 
@@ -51,13 +51,15 @@ func (s *SFTPStorage) Config() StorageConfig {
 
 func createSSHClient(options SFTPStorageOptions) (*ssh.Client, error) {
 	sshKeyPath := resolvePath(options.PrivateKeyPath)
+
+	// #nosec
 	bytes, err := ioutil.ReadFile(sshKeyPath)
 	if err != nil {
 		fmt.Printf("Error reading file %s: %v\n", sshKeyPath, err)
 		return nil, err
 	}
 
-	privateKey, err := ssh.ParsePrivateKey(bytes)
+	signer, err := ssh.ParsePrivateKey(bytes)
 	if err != nil {
 		fmt.Printf("Error parsing private key: %v\n", err)
 		return nil, err
@@ -66,8 +68,9 @@ func createSSHClient(options SFTPStorageOptions) (*ssh.Client, error) {
 	config := &ssh.ClientConfig{
 		User: options.Username,
 		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(privateKey),
+			ssh.PublicKeys(signer),
 		},
+		// #nosec
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 

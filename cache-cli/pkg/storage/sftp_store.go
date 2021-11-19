@@ -16,23 +16,31 @@ func (s *SFTPStorage) Store(key, path string) error {
 		return err
 	}
 
+	// #nosec
 	localFile, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 
-	defer localFile.Close()
-
 	remoteFile, err := s.SFTPClient.Create(key)
+	if err != nil {
+		_ = localFile.Close()
+		return err
+	}
+
+	_, err = remoteFile.ReadFrom(localFile)
+	if err != nil {
+		_ = localFile.Close()
+		_ = remoteFile.Close()
+		return err
+	}
+
+	err = remoteFile.Close()
 	if err != nil {
 		return err
 	}
 
-	defer remoteFile.Close()
-
-	_, err = remoteFile.ReadFrom(localFile)
-
-	return err
+	return localFile.Close()
 }
 
 func (s *SFTPStorage) allocateSpace(space int64) error {

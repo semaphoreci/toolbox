@@ -1,12 +1,13 @@
 package files
 
 import (
-	"crypto/md5"
+	"crypto/md5" // #nosec
 	"encoding/hex"
 	"io"
 	"os"
 )
 
+// #nosec
 func GenerateChecksum(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {

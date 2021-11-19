@@ -27,7 +27,7 @@ var restoreCmd = &cobra.Command{
 func RunRestore(cmd *cobra.Command, args []string) {
 	if len(args) > 1 {
 		fmt.Printf("Wrong number of arguments %d for restore command\n", len(args))
-		cmd.Help()
+		_ = cmd.Help()
 		return
 	}
 
@@ -114,10 +114,14 @@ func downloadAndUnpackKey(storage storage.Storage, metricsManager metrics.Metric
 	unpackDuration := time.Since(unpackStart)
 	fmt.Printf("Unpack complete. Duration: %v.\n", unpackDuration)
 	fmt.Printf("Restored: %s.\n", restorationPath)
-	os.Remove(compressed.Name())
+
+	err = os.Remove(compressed.Name())
+	if err != nil {
+		fmt.Printf("Error removing %s: %v", compressed.Name(), err)
+	}
 }
 
-func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo, downloadDuration time.Duration) error {
+func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo, downloadDuration time.Duration) {
 	metricsToPublish := []metrics.Metric{
 		{Name: metrics.CacheDownloadSize, Value: fmt.Sprintf("%d", fileInfo.Size())},
 		{Name: metrics.CacheDownloadTime, Value: downloadDuration.String()},
@@ -135,7 +139,10 @@ func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo,
 
 	metricsToPublish = append(metricsToPublish, metrics.Metric{Name: metrics.CacheTotalRate, Value: "1"})
 
-	return metricsManager.PublishBatch(metricsToPublish)
+	err := metricsManager.PublishBatch(metricsToPublish)
+	if err != nil {
+		fmt.Printf("Error publishing metrics: %v", err)
+	}
 }
 
 func getCacheServerIP() string {

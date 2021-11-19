@@ -423,6 +423,31 @@ blocks:
             - go get -u github.com/mgechev/revive
             - make lint
 
+  - name: "Cache CLI: Security checks"
+    dependencies: []
+    run:
+      when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
+    task:
+      secrets:
+        - name: security-toolbox-shared-read-access
+      prologue:
+        commands:
+          - checkout && cd cache-cli
+          - mv ~/.ssh/security-toolbox ~/.ssh/id_rsa
+          - sudo chmod 600 ~/.ssh/id_rsa
+      jobs:
+        - name: Check dependencies
+          commands:
+            - make check.deps
+        - name: Check docker resources
+          commands:
+            - make build
+            - docker build -t loghub2 .
+            - make check.docker IMAGE=loghub2
+        - name: Check code
+          commands:
+            - make check.static
+
 after_pipeline:
   task:
     jobs:
