@@ -3,9 +3,13 @@ package storage
 import (
 	"fmt"
 	"os"
+	"time"
 )
 
 func (s *SFTPStorage) Store(key, path string) error {
+	epochNanos := time.Now().Nanosecond()
+	tmpKey := fmt.Sprintf("%s-%d", key, epochNanos)
+
 	localFileInfo, err := os.Stat(path)
 	if err != nil {
 		return err
@@ -23,16 +27,26 @@ func (s *SFTPStorage) Store(key, path string) error {
 
 	defer localFile.Close()
 
-	remoteFile, err := s.SFTPClient.Create(key)
+	remoteTmpFile, err := s.SFTPClient.Create(tmpKey)
 	if err != nil {
 		return err
 	}
 
-	defer remoteFile.Close()
+	defer remoteTmpFile.Close()
 
-	_, err = remoteFile.ReadFrom(localFile)
+	_, err = remoteTmpFile.ReadFrom(localFile)
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	err = s.SFTPClient.PosixRename(tmpKey, key)
+	if err != nil {
+		_ = s.SFTPClient.Remove(tmpKey)
+		return err
+	}
+
+	return nil
 }
 
 func (s *SFTPStorage) allocateSpace(space int64) error {
