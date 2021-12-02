@@ -8,10 +8,11 @@ blocks:
   - name: Release
     task:
       secrets:
-        - name: sem-robot-ghtoken
+        - name: github-release-bot-toolbox
       jobs:
         - name: Create and Upload assets
           commands:
+            - export GITHUB_TOKEN=$ACCESS_TOKEN
             - checkout
             - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
             - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
