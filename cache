@@ -422,8 +422,8 @@ cache::lftp_put() {
       fi
       archive_end=$(date +'%s')
       archive_create_duration="$((archive_end - archive_start))"
-      cache::log "Cache archive duration: $archive_create_duration seconds. Size: ${archive_size} bytes."
       archive_size=$(ls -l /tmp/${tmp_key} | awk '{print $5}')
+      cache::log "Cache archive duration: $archive_create_duration seconds. Size: ${archive_size} bytes."
       if [ "${archive_size}" -gt "${limit}" ]; then
         allocated_space=$(numfmt --to=iec ${limit} --format="%.1f" --round=nearest)
         cache::log "Archive exceeds allocated ${allocated_space} for cache."
