@@ -771,11 +771,6 @@ cache::lftp() {
   command_log=$(echo -e "${lftp_command}" | lftp sftp://$SEMAPHORE_CACHE_USERNAME:DUMMY@$SEMAPHORE_CACHE_URL -e 'set net:max-retries 1; set sftp:connect-program "ssh -a -x -i '"${SEMAPHORE_CACHE_PRIVATE_KEY_PATH}"'"' 2>&1)
   command_status=$?
 
-  if [[ $command_status -ne 0 ]]; then
-    cache::log "Log:\n---\n${command_log}\n---\n"
-    cache::err "Error while executing LFTP command '$lftp_command'"
-  fi
-
   if [[ "${print_log}" == "with_logs" ]] && [ -n "$command_log" ]; then
     cache::log "$command_log"
   fi
@@ -811,6 +806,11 @@ cache::lftp() {
     W_FLAEX=1
 
     return
+  fi
+
+  if [[ $command_status -ne 0 ]]; then
+    cache::log "Log:\n---\n${command_log}\n---\n"
+    cache::err "Error while executing LFTP command '$lftp_command'"
   fi
 }
 
