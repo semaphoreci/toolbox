@@ -45,6 +45,7 @@ version::change_ruby() {
   [[ "$software_version" == "2.6" ]] && software_version="2.6.9"
   [[ "$software_version" == "2.7" ]] && software_version="2.7.5"
   [[ "$software_version" == "3.0" ]] && software_version="3.0.3"
+  [[ "$software_version" == "3.1" ]] && software_version="3.1.0"
 
   if ! [ -d ~/.rbenv/versions/"${software_version}" ]; then
     sem-install ruby "${software_version}"
@@ -58,14 +59,14 @@ version::change_node() {
   return $?
 }
 version::change_elixir() {
-
   [[ "$software_version" == "1.7" ]] && software_version="1.7.4"
   [[ "$software_version" == "1.8" ]] && software_version="1.8.2"
   [[ "$software_version" == "1.9" ]] && software_version="1.9.4"
   [[ "$software_version" == "1.10" ]] && software_version="1.10.4"
   [[ "$software_version" == "1.11" ]] && software_version="1.11.4"
   [[ "$software_version" == "1.12" ]] && software_version="1.12.3"
-  [[ "$software_version" == "1.13" ]] && software_version="1.13.0"
+  [[ "$software_version" == "1.13" ]] && software_version="1.13.1"
+
   if [[ $(kiex list) != *"${software_version}"* ]];then
     sem-install elixir "${software_version}"
   fi
@@ -87,9 +88,9 @@ version::change_php() {
   [[ "$software_version" == "7.1" ]] && software_version="7.1.33"
   [[ "$software_version" == "7.2" ]] && software_version="7.2.34"
   [[ "$software_version" == "7.3" ]] && software_version="7.3.33"
-  [[ "$software_version" == "7.4" ]] && software_version="7.4.26"
-  [[ "$software_version" == "8" ]] && software_version="8.0.13"
-  [[ "$software_version" == "8.0" ]] && software_version="8.0.13"
+  [[ "$software_version" == "7.4" ]] && software_version="7.4.27"
+  [[ "$software_version" == "8" ]] && software_version="8.0.14"
+  [[ "$software_version" == "8.0" ]] && software_version="8.0.14"
 
   if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
     sem-install php "${software_version}"
@@ -119,7 +120,8 @@ version::change_erlang() {
   [[ "$software_version" == "21" ]] && software_version="21.3"
   [[ "$software_version" == "22" ]] && software_version="22.3"
   [[ "$software_version" == "23" ]] && software_version="23.3"
-  [[ "$software_version" == "24" ]] && software_version="24.1"
+  [[ "$software_version" == "24" ]] && software_version="24.2"
+
   if [[ $(kerl list installations) != *"${software_version}"* ]]; then
     sem-install erlang "${software_version}"
   fi

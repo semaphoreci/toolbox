@@ -52,6 +52,14 @@ setup() {
   assert_line --partial "ruby 3.0.3"
 }
 
+@test "change ruby to 3.1.0" {
+
+  run sem-version ruby 3.1.0
+  assert_success
+  run ruby --version
+  assert_line --partial "ruby 3.1.0"
+}
+
 @test "ruby minor versions test" {
 
   run sem-version ruby 2.5
@@ -73,6 +81,11 @@ setup() {
   assert_success
   run ruby --version
   assert_line --partial "ruby 3.0.3"
+
+  run sem-version ruby 3.1
+  assert_success
+  run ruby --version
+  assert_line --partial "ruby 3.1.0"
 }
 
 @test "change ruby to 4.0.1" {
