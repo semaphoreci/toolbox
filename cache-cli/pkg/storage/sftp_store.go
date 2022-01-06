@@ -37,12 +37,19 @@ func (s *SFTPStorage) Store(key, path string) error {
 	_, err = remoteTmpFile.ReadFrom(localFile)
 
 	if err != nil {
+		if rmErr := s.SFTPClient.Remove(tmpKey); rmErr != nil {
+			fmt.Printf("Error removing temporary file %s: %v\n", tmpKey, rmErr)
+		}
+
 		return err
 	}
 
 	err = s.SFTPClient.PosixRename(tmpKey, key)
 	if err != nil {
-		_ = s.SFTPClient.Remove(tmpKey)
+		if rmErr := s.SFTPClient.Remove(tmpKey); rmErr != nil {
+			fmt.Printf("Error removing temporary file %s: %v\n", tmpKey, rmErr)
+		}
+
 		return err
 	}
 
