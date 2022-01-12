@@ -15,14 +15,20 @@ import (
 func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) {
 	restorationPath, err := findRestorationPath(path)
 	if err != nil {
-		_ = metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"})
+		if metricErr := metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
+			fmt.Printf("Error publishing %s metric: %v\n", metrics.CacheCorruptionRate, metricErr)
+		}
+
 		return "", err
 	}
 
 	cmd := unpackCommand(restorationPath, path)
 	_, err = cmd.Output()
 	if err != nil {
-		_ = metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"})
+		if metricErr := metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
+			fmt.Printf("Error publishing %s metric: %v\n", metrics.CacheCorruptionRate, metricErr)
+		}
+
 		return "", err
 	}
 

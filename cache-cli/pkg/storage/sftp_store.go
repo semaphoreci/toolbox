@@ -37,6 +37,7 @@ func (s *SFTPStorage) Store(key, path string) error {
 
 	err = remoteFile.Close()
 	if err != nil {
+		_ = localFile.Close()
 		return err
 	}
 

@@ -28,6 +28,7 @@ func (s *SFTPStorage) Restore(key string) (*os.File, error) {
 
 	err = remoteFile.Close()
 	if err != nil {
+		_ = localFile.Close()
 		return nil, err
 	}
 

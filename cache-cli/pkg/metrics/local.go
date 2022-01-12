@@ -63,6 +63,7 @@ func publishMetricToFile(file, metricName, metricValue string) error {
 
 	_, err = f.WriteString(line)
 	if err != nil {
+		_ = f.Close()
 		return err
 	}
 

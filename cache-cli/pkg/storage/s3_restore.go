@@ -24,6 +24,7 @@ func (s *S3Storage) Restore(key string) (*os.File, error) {
 	})
 
 	if err != nil {
+		_ = tempFile.Close()
 		return nil, err
 	}
 
