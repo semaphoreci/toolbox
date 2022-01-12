@@ -22,6 +22,7 @@ setup() {
 
   source ~/.toolbox/toolbox
 }
+
 # PHP
 @test "change php to 7.2.34" {
 
@@ -35,45 +36,49 @@ setup() {
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
-@test "change php to 7.3.31" {
 
-  run sem-version php 7.3.31
+@test "change php to 7.3.33" {
+
+  run sem-version php 7.3.33
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 7.3.31"
+  assert_line --partial "PHP 7.3.33"
   run php -m
   assert_line --partial "magick"
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
-@test "change php to 7.4.24" {
 
-  run sem-version php 7.4.24
+@test "change php to 7.4.27" {
+
+  run sem-version php 7.4.27
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 7.4.24"
+  assert_line --partial "PHP 7.4.27"
   run php -m 
   assert_line --partial "magick"
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
-@test "change php to 8.0.11" {
 
-  run sem-version php 8.0.11
+@test "change php to 8.0.14" {
+
+  run sem-version php 8.0.14
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.0.11"
+  assert_line --partial "PHP 8.0.14"
   run php -m 
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
-@test "php check composer 8.0.11" {
+
+@test "php check composer 8.0.14" {
 
   run which composer
   assert_success
   source ~/.phpbrew/bashrc
-  assert_line --partial "8.0.11"
+  assert_line --partial "8.0.14"
 }

@@ -15,6 +15,7 @@ import (
 func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) {
 	restorationPath, err := findRestorationPath(path)
 	if err != nil {
+		fmt.Printf("Could not find restoration path: %v\n", err)
 		if metricErr := metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
 			fmt.Printf("Error publishing %s metric: %v\n", metrics.CacheCorruptionRate, metricErr)
 		}
@@ -23,8 +24,9 @@ func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) 
 	}
 
 	cmd := unpackCommand(restorationPath, path)
-	_, err = cmd.Output()
+	output, err := cmd.Output()
 	if err != nil {
+		fmt.Printf("Unpacking command failed: %s\n", string(output))
 		if metricErr := metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
 			fmt.Printf("Error publishing %s metric: %v\n", metrics.CacheCorruptionRate, metricErr)
 		}

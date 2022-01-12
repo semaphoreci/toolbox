@@ -46,7 +46,7 @@ func RunStore(cmd *cobra.Command, args []string) {
 		for _, lookupResult := range lookupResults {
 			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {
-				fmt.Printf("Using default cache path '%s'.", entry.Path)
+				fmt.Printf("Using default cache path '%s'.\n", entry.Path)
 				key := entry.Keys[0]
 				compressAndStore(storage, key, entry.Path)
 			}

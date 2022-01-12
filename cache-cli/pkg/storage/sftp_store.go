@@ -3,9 +3,13 @@ package storage
 import (
 	"fmt"
 	"os"
+	"time"
 )
 
 func (s *SFTPStorage) Store(key, path string) error {
+	epochNanos := time.Now().Nanosecond()
+	tmpKey := fmt.Sprintf("%s-%d", key, epochNanos)
+
 	localFileInfo, err := os.Stat(path)
 	if err != nil {
 		return err
@@ -22,20 +26,36 @@ func (s *SFTPStorage) Store(key, path string) error {
 		return err
 	}
 
-	remoteFile, err := s.SFTPClient.Create(key)
+	remoteTmpFile, err := s.SFTPClient.Create(tmpKey)
 	if err != nil {
 		_ = localFile.Close()
 		return err
 	}
 
-	_, err = remoteFile.ReadFrom(localFile)
+	_, err = remoteTmpFile.ReadFrom(localFile)
+
 	if err != nil {
+		if rmErr := s.SFTPClient.Remove(tmpKey); rmErr != nil {
+			fmt.Printf("Error removing temporary file %s: %v\n", tmpKey, rmErr)
+		}
+
 		_ = localFile.Close()
-		_ = remoteFile.Close()
+		_ = remoteTmpFile.Close()
 		return err
 	}
 
-	err = remoteFile.Close()
+	err = s.SFTPClient.PosixRename(tmpKey, key)
+	if err != nil {
+		if rmErr := s.SFTPClient.Remove(tmpKey); rmErr != nil {
+			fmt.Printf("Error removing temporary file %s: %v\n", tmpKey, rmErr)
+		}
+
+		_ = localFile.Close()
+		_ = remoteTmpFile.Close()
+		return err
+	}
+
+	err = remoteTmpFile.Close()
 	if err != nil {
 		_ = localFile.Close()
 		return err

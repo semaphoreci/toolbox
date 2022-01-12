@@ -22,9 +22,17 @@ setup() {
 
   source ~/.toolbox/toolbox
 }
+
 #  erlang
 @test "change erlang to 24.0" {
   sem-version erlang 24.0
   run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
   assert_line --partial "24"
 }
+
+@test "change erlang to 24.2" {
+  sem-version erlang 24.2
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "24"
+}
+
