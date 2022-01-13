@@ -376,6 +376,18 @@ normalize_key() {
   refute_output --partial "command not found"
 }
 
+@test "key can be a regex" {
+  touch tmp.file
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  cache store bats-test-$SEMAPHORE_GIT_BRANCH tmp.file
+
+  run cache restore ^bats-test-$SEMAPHORE_GIT_BRANCH
+
+  assert_success
+  assert_line "HIT: '^${test_key}', using key '${test_key}'."
+  assert_output --partial "Restored: tmp.file"
+}
+
 ################################################################################
 # cache clear
 ################################################################################
