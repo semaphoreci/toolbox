@@ -132,6 +132,25 @@ func Test__Restore(t *testing.T) {
 			os.Remove(tempFile.Name())
 			os.Remove(tempDir)
 		})
+
+		t.Run(fmt.Sprintf("%s using regex key", backend), func(*testing.T) {
+			storage.Clear()
+
+			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempFile, _ := ioutil.TempFile(tempDir, "*")
+
+			compressAndStore(storage, "abc", tempDir)
+
+			capturer := utils.CreateOutputCapturer()
+			RunRestore(restoreCmd, []string{"^abc"})
+			output := capturer.Done()
+
+			assert.Contains(t, output, "HIT: '^abc', using key 'abc'.")
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s/.", tempDir))
+
+			os.Remove(tempFile.Name())
+			os.Remove(tempDir)
+		})
 	})
 }
 
