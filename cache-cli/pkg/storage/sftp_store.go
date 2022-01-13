@@ -20,19 +20,17 @@ func (s *SFTPStorage) Store(key, path string) error {
 		return err
 	}
 
+	// #nosec
 	localFile, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 
-	defer localFile.Close()
-
 	remoteTmpFile, err := s.SFTPClient.Create(tmpKey)
 	if err != nil {
+		_ = localFile.Close()
 		return err
 	}
-
-	defer remoteTmpFile.Close()
 
 	_, err = remoteTmpFile.ReadFrom(localFile)
 
@@ -41,6 +39,8 @@ func (s *SFTPStorage) Store(key, path string) error {
 			fmt.Printf("Error removing temporary file %s: %v\n", tmpKey, rmErr)
 		}
 
+		_ = localFile.Close()
+		_ = remoteTmpFile.Close()
 		return err
 	}
 
@@ -50,10 +50,18 @@ func (s *SFTPStorage) Store(key, path string) error {
 			fmt.Printf("Error removing temporary file %s: %v\n", tmpKey, rmErr)
 		}
 
+		_ = localFile.Close()
+		_ = remoteTmpFile.Close()
 		return err
 	}
 
-	return nil
+	err = remoteTmpFile.Close()
+	if err != nil {
+		_ = localFile.Close()
+		return err
+	}
+
+	return localFile.Close()
 }
 
 func (s *SFTPStorage) allocateSpace(space int64) error {

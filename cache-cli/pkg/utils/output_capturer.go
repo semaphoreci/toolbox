@@ -29,11 +29,11 @@ func (o *OutputCapturer) Done() string {
 
 	go func() {
 		var buf bytes.Buffer
-		io.Copy(&buf, o.reader)
+		_, _ = io.Copy(&buf, o.reader)
 		outC <- buf.String()
 	}()
 
-	o.writer.Close()
+	_ = o.writer.Close()
 	os.Stdout = o.oldStdout
 	output := <-outC
 

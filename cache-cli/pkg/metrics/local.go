@@ -53,15 +53,19 @@ func (b *LocalMetricsManager) Publish(metric Metric) error {
 }
 
 func publishMetricToFile(file, metricName, metricValue string) error {
+	// #nosec
 	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
 
-	defer f.Close()
-
 	line := fmt.Sprintf("%s %s\n", metricName, metricValue)
 
 	_, err = f.WriteString(line)
-	return err
+	if err != nil {
+		_ = f.Close()
+		return err
+	}
+
+	return f.Close()
 }

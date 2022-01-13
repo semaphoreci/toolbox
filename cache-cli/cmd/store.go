@@ -25,7 +25,7 @@ var storeCmd = &cobra.Command{
 func RunStore(cmd *cobra.Command, args []string) {
 	if len(args) != 0 && len(args) != 2 {
 		fmt.Printf("Wrong number of arguments %d for store command\n", len(args))
-		cmd.Help()
+		_ = cmd.Help()
 		return
 	}
 
@@ -83,7 +83,11 @@ func compressAndStore(storage storage.Storage, rawKey, path string) {
 
 		uploadDuration := time.Since(uploadStart)
 		fmt.Printf("Upload complete. Duration: %v.\n", uploadDuration)
-		os.Remove(compressedFilePath)
+
+		err = os.Remove(compressedFilePath)
+		if err != nil {
+			fmt.Printf("Error removing %s: %v", compressedFilePath, err)
+		}
 	} else {
 		fmt.Printf("'%s' doesn't exist locally.\n", path)
 	}
@@ -98,7 +102,7 @@ func compress(key, path string) (string, int64, error) {
 	compressionDuration := time.Since(compressingStart)
 	info, err := os.Stat(compressed)
 	if err != nil {
-		os.Remove(compressed)
+		_ = os.Remove(compressed)
 		return "", -1, err
 	}
 

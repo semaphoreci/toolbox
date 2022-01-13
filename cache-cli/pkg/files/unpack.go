@@ -16,7 +16,10 @@ func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) 
 	restorationPath, err := findRestorationPath(path)
 	if err != nil {
 		fmt.Printf("Could not find restoration path: %v\n", err)
-		metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"})
+		if metricErr := metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
+			fmt.Printf("Error publishing %s metric: %v\n", metrics.CacheCorruptionRate, metricErr)
+		}
+
 		return "", err
 	}
 
@@ -24,7 +27,10 @@ func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) 
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Printf("Unpacking command failed: %s\n", string(output))
-		metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"})
+		if metricErr := metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
+			fmt.Printf("Error publishing %s metric: %v\n", metrics.CacheCorruptionRate, metricErr)
+		}
+
 		return "", err
 	}
 
@@ -40,12 +46,14 @@ func unpackCommand(restorationPath, tempFile string) *exec.Cmd {
 }
 
 func findRestorationPath(path string) (string, error) {
+	// #nosec
 	file, err := os.Open(path)
 	if err != nil {
 		fmt.Printf("error opening %s: %v\n", path, err)
 		return "", err
 	}
 
+	// #nosec
 	defer file.Close()
 
 	gzipReader, err := gzip.NewReader(file)
@@ -54,19 +62,19 @@ func findRestorationPath(path string) (string, error) {
 		return "", err
 	}
 
-	defer gzipReader.Close()
-
 	tr := tar.NewReader(gzipReader)
 	header, err := tr.Next()
 	if err == io.EOF {
 		fmt.Printf("No files in archive.\n")
+		_ = gzipReader.Close()
 		return "", nil
 	}
 
 	if err != nil {
 		fmt.Printf("Error reading %s: %v\n", path, err)
+		_ = gzipReader.Close()
 		return "", err
 	}
 
-	return header.Name, nil
+	return header.Name, gzipReader.Close()
 }

@@ -10,6 +10,7 @@ import (
 )
 
 func (s *S3Storage) Store(key, path string) error {
+	// #nosec
 	file, err := os.Open(path)
 	if err != nil {
 		return err
