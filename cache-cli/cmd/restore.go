@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -86,7 +87,8 @@ func downloadAndUnpack(storage storage.Storage, metricsManager metrics.MetricsMa
 
 func findMatchingKey(availableKeys []storage.CacheKey, match string) string {
 	for _, availableKey := range availableKeys {
-		if strings.Contains(availableKey.Name, match) {
+		isMatch, _ := regexp.MatchString(match, availableKey.Name)
+		if isMatch {
 			return availableKey.Name
 		}
 	}
