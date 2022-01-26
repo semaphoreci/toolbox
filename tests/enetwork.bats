@@ -7,5 +7,4 @@ load "support/bats-assert/load"
 
   run enetwork start
   assert_success
-  assert_line --partial "Authentication error, not setting docker gateway"
 }
