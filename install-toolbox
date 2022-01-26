@@ -135,6 +135,16 @@ if [[ `uname` != "Darwin" ]]; then
     echo "toolbox_install_error{module='when'} 1" >> /tmp/toolbox_metrics
   fi
 
+  echo "Installing the enetwork CLI"
+  install_cmd mv ~/.toolbox/enetwork $INSTALL_PATH/enetwork
+  install_cmd chmod +x $INSTALL_PATH/enetwork
+  if [[ $? -eq 0 ]];then
+    echo "when installed"
+  else
+    echo "toolbox_install_error{module='enetwork'} 1" >> /tmp/toolbox_metrics
+  fi
+
+
   echo "Starting to collect System Metrics in /tmp/system-metrics"
 
   # failure won't be propagated to the caller in case of using &
