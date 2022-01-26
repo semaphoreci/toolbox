@@ -41,10 +41,12 @@ blocks:
             - shellcheck sem-version || true
             - shellcheck cache       || true
             - shellcheck libcheckout || true
+            - shellcheck enetwork    || true
             - 'shellcheck sem-service -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -le 76 ]]'
             - 'shellcheck sem-version -f gcc | wc -l && [[ "$(shellcheck sem-version -f gcc | wc -l)" -le 21 ]]'
             - 'shellcheck cache       -f gcc | wc -l && [[ "$(shellcheck cache -f gcc | wc -l)" -le 152 ]]'
             - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 85 ]]'
+            - 'shellcheck enetwork -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 10 ]]'
             - shellcheck install-package
 
   - name: Sem Version Tests bionic
@@ -348,6 +350,7 @@ blocks:
                 - tests/artifacts.bats
                 - tests/compiler.bats
                 - tests/test-results.bats
+                - tests/enetwork.bats
           commands:
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
