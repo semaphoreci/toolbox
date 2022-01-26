@@ -12,12 +12,12 @@ sudo mkdir -p /etc/systemd/system/docker.service.d
 ## Create proxy.conf
 en_start(){
 
-  CanSetProxy=$(curl --write-out %{http_code} --head --silent --output /dev/null -x http://$GatewayUsername:$GatewayPassword@$GatewayEndPoint:$GatewayEndPointPort https://www.google.com)
+  CanSetProxy=$(curl --write-out %{http_code} --head --silent --output /dev/null -x http://"$GatewayUsername":"$GatewayPassword"@"$GatewayEndPoint":"$GatewayEndPointPort" https://www.google.com)
 
   if [ $CanSetProxy -eq 200 ]; then
     echo "[Service]"                                                                                                       | sudo tee    /etc/systemd/system/docker.service.d/proxy.conf > /dev/null
-    echo 'Environment="HTTP_PROXY=http://'$GatewayUsername':'$GatewayPassword'@'$GatewayEndPoint':'$GatewayEndPointPort'"' | sudo tee -a /etc/systemd/system/docker.service.d/proxy.conf > /dev/null
-    echo 'Environment="HTTPS_PROXY=http://'$GatewayUsername':'$GatewayPassword'@'$GatewayEndPoint':'$GatewayEndPointPort'"'| sudo tee -a /etc/systemd/system/docker.service.d/proxy.conf > /dev/null
+    echo 'Environment="HTTP_PROXY=http://'"$GatewayUsername"':'"$GatewayPassword"'@'"$GatewayEndPoint"':'"$GatewayEndPointPort"'"' | sudo tee -a /etc/systemd/system/docker.service.d/proxy.conf > /dev/null
+    echo 'Environment="HTTPS_PROXY=http://'"$GatewayUsername"':'"$GatewayPassword"'@'"$GatewayEndPoint"':'"$GatewayEndPointPort"'"'| sudo tee -a /etc/systemd/system/docker.service.d/proxy.conf > /dev/null
     echo "Environment=\"NO_PROXY='*.semreg.com,registry.semaphoreci.com,localhost,127.0.0.1,::1'\""                        | sudo tee -a /etc/systemd/system/docker.service.d/proxy.conf > /dev/null
     echo 'Docker gateway is set, reloading docker daemon'
     en_reload && echo 'Docker daemon reloaded' || echo 'Failed to reload docker daemon'
@@ -44,7 +44,7 @@ en_reload(){
 
 
 if [[ "$(uname)" == "Darwin" ]]; then
-  echo "`enhanced` networking is not supported in this environment"
+  echo "'enhanced' networking is not supported in this environment"
   exit 1
 else
   if ! [[ $# -eq 1 ]]; then
