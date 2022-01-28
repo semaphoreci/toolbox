@@ -1,0 +1,75 @@
+#!/bin/bash
+
+GatewayUsername=${SEMAPHORE_DOCKERGW_USER,-''}
+GatewayPassword=${SEMAPHORE_DOCKERGW_PASSWORD,-''}
+GatewayEndPoint=${SEMAPHORE_DOCKERGW_ENDPOINT,-''}
+GatewayEndPointPort=${SEMAPHORE_DOCKERGW_ENDPOINT_PORT,-''}
+
+en_create_proxy_conf() {
+  sudo tee /etc/systemd/system/docker.service.d/proxy.conf <<EOF >/dev/null
+[Service]
+Environment="HTTP_PROXY=http://$GatewayUsername:$GatewayPassword@$GatewayEndPoint:$GatewayEndPointPort"
+Environment="HTTPS_PROXY=http://$GatewayUsername:$GatewayPassword@$GatewayEndPoint:$GatewayEndPointPort"
+Environment="NO_PROXY='*.semreg.com,registry.semaphoreci.com,localhost,127.0.0.1,::1'"
+EOF
+}
+
+en_start() {
+  proxy_url="http://${GatewayUsername}:${GatewayPassword}@${GatewayEndPoint}:${GatewayEndPointPort}"
+  can_set_proxy=$(curl --write-out '%{http_code}' --head --silent --output /dev/null -x "${proxy_url}" https://www.google.com)
+
+  if [[ "$can_set_proxy" == "200" ]]; then
+    sudo mkdir -p /etc/systemd/system/docker.service.d
+    en_create_proxy_conf
+    echo 'Docker gateway is set, reloading docker daemon'
+    en_reload && echo 'Docker daemon reloaded' || echo 'Failed to reload docker daemon'
+  else
+    echo 'Authentication error, not setting docker gateway'
+  fi
+}
+
+en_stop() {
+  sudo rm -f /etc/systemd/system/docker.service.d/proxy.conf
+  en_reload
+}
+
+en_reload() {
+  sudo systemctl daemon-reload
+  ret=$?
+  sudo systemctl restart docker.service
+  ret2=$?
+
+  if [[ "$ret" == "0" ]] && [[ "$ret2" == "0" ]]; then
+    echo 0
+  else
+    echo 1
+  fi
+}
+
+en_usage() {
+  echo 'Usage: ./enetwork [start|stop]'
+}
+
+if [[ "$(uname)" == "Darwin" ]]; then
+  echo "'enhanced' networking is not supported in this environment"
+  exit 1
+fi
+
+if [[ $# -ne 1 ]]; then
+  en_usage
+else
+  case "$1" in
+  "start")
+    en_start
+    exit 0
+    ;;
+  "stop")
+    en_stop
+    exit 0
+    ;;
+  "*")
+    en_usage
+    exit 0
+    ;;
+  esac
+fi

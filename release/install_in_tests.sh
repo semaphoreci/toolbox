@@ -17,7 +17,7 @@ prefix_cmd rm -f $(which artifact)
 prefix_cmd rm -f $(which spc)
 prefix_cmd rm -f $(which when)
 prefix_cmd rm -f $(which test-results)
-
+prefix_cmd rm -f $(which enetwork)
 cd ~
 
 case $(uname) in
