@@ -443,7 +443,6 @@ normalize_key() {
 @test "[macOS] bad arguments are ignored for list" {
   run cache list badarg1
   assert_success
-  assert_line "Wrong number of arguments."
 }
 
 @test "[macOS] listing cache store when it has cached keys" {
@@ -663,7 +662,6 @@ normalize_key() {
 @test "[macOS] bad arguments are ignored for usage" {
   run cache usage badarg1
   assert_success
-  assert_line "Wrong number of arguments."
 }
 
 @test "[macOS] usage for empty cache store" {

@@ -24,7 +24,7 @@ var storeCmd = &cobra.Command{
 
 func RunStore(cmd *cobra.Command, args []string) {
 	if len(args) != 0 && len(args) != 2 {
-		fmt.Printf("Wrong number of arguments %d for store command\n", len(args))
+		fmt.Printf("Incorrect number of arguments!\n")
 		_ = cmd.Help()
 		return
 	}

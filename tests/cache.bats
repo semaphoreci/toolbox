@@ -454,7 +454,6 @@ normalize_key() {
 @test "bad arguments are ignored for list" {
   run cache list badarg1
   assert_success
-  assert_line "Wrong number of arguments."
 }
 
 @test "listing cache store when it has cached keys" {
@@ -674,7 +673,6 @@ normalize_key() {
 @test "bad arguments are ignored for usage" {
   run cache usage badarg1
   assert_success
-  assert_line "Wrong number of arguments."
 }
 
 @test "usage for empty cache store" {

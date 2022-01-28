@@ -27,7 +27,7 @@ var restoreCmd = &cobra.Command{
 
 func RunRestore(cmd *cobra.Command, args []string) {
 	if len(args) > 1 {
-		fmt.Printf("Wrong number of arguments %d for restore command\n", len(args))
+		fmt.Printf("Incorrect number of arguments!\n")
 		_ = cmd.Help()
 		return
 	}

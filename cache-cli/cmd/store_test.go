@@ -21,7 +21,7 @@ func Test__Store(t *testing.T) {
 			RunStore(storeCmd, []string{"key", "value", "extra-bad-argument"})
 			output := capturer.Done()
 
-			assert.Contains(t, output, "Wrong number of arguments")
+			assert.Contains(t, output, "Incorrect number of arguments!")
 		})
 
 		t.Run(fmt.Sprintf("%s using key and invalid path", backend), func(*testing.T) {

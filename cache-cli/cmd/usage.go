@@ -13,7 +13,7 @@ var usageCmd = &cobra.Command{
 	Use:   "usage",
 	Short: "Get a summary of cache usage.",
 	Long:  ``,
-	Args:  cobra.NoArgs,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		RunUsage(cmd, args)
 	},
