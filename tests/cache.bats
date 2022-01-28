@@ -51,7 +51,7 @@ normalize_key() {
 @test "bad arguments for store return 0 exit code" {
   run cache store arg1 arg2 badarg1
   assert_success
-  assert_line "Incorrect number of arguments!"
+  assert_output --partial "Incorrect number of arguments!"
 }
 
 @test "save local file to cache store" {
@@ -207,7 +207,7 @@ normalize_key() {
 @test "bad arguments for restore return 0 exit code" {
   run cache restore arg1 badarg1
   assert_success
-  assert_line "Incorrect number of arguments!"
+  assert_output --partial "Incorrect number of arguments!"
 }
 
 @test "restoring existing directory from cache and perserving the directory hierarchy" {
@@ -505,9 +505,9 @@ normalize_key() {
 ################################################################################
 
 @test "bad arguments for has_key return 0 exit code" {
-  run cache has_key
+  run cache has_key badarg1 badarg2 badarg3
   assert_success
-  assert_line "Incorrect number of arguments!"
+  assert_output --partial "Incorrect number of arguments!"
 }
 
 @test "checking if an existing key is present in cache store" {
@@ -574,9 +574,9 @@ normalize_key() {
 ################################################################################
 
 @test "bad arguments for delete return 0 exit code" {
-  run cache delete
+  run cache delete badarg1 badarg2 badarg3
   assert_success
-  assert_line "Incorrect number of arguments!"
+  assert_output --partial "Incorrect number of arguments!"
 }
 
 @test "deletion of an existing key" {
@@ -637,6 +637,8 @@ normalize_key() {
 ################################################################################
 
 @test "bad arguments are ignored for is_not_empty" {
+  test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
+  cache store $test_key .semaphore
   run cache is_not_empty badarg1
   assert_success
 }
