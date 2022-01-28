@@ -566,6 +566,9 @@ normalize_key() {
   run cache delete badarg1 badarg2 badarg3
   assert_success
   assert_output --partial "Incorrect number of arguments!"
+
+  run cache delete
+  assert_success
 }
 
 @test "[macOS] deletion of an existing key" {
