@@ -48,6 +48,12 @@ normalize_key() {
 # cache store
 ################################################################################
 
+@test "bad arguments for store return 0 exit code" {
+  run cache store arg1 arg2 badarg1
+  assert_success
+  assert_line "Incorrect number of arguments!"
+}
+
 @test "save local file to cache store" {
   test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
@@ -197,6 +203,12 @@ normalize_key() {
 ################################################################################
 # cache restore
 ################################################################################
+
+@test "bad arguments for restore return 0 exit code" {
+  run cache restore arg1 badarg1
+  assert_success
+  assert_line "Incorrect number of arguments!"
+}
 
 @test "restoring existing directory from cache and perserving the directory hierarchy" {
   test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
@@ -392,6 +404,12 @@ normalize_key() {
 # cache clear
 ################################################################################
 
+@test "bad arguments are ignored for clear" {
+  run cache clear badarg1
+  assert_success
+  assert_line "Deleted all caches."
+}
+
 @test "emptying cache store when it isn't empty" {
   if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
     skip "- - avoiding cache clear on non master branch"
@@ -432,6 +450,12 @@ normalize_key() {
 ################################################################################
 # cache list
 ################################################################################
+
+@test "bad arguments are ignored for list" {
+  run cache list badarg1
+  assert_success
+  assert_line "Wrong number of arguments."
+}
 
 @test "listing cache store when it has cached keys" {
   test_key_1=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
@@ -480,6 +504,12 @@ normalize_key() {
 ################################################################################
 # cache has_key
 ################################################################################
+
+@test "bad arguments for has_key return 0 exit code" {
+  run cache has_key
+  assert_success
+  assert_line "Incorrect number of arguments!"
+}
 
 @test "checking if an existing key is present in cache store" {
   test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
@@ -544,6 +574,12 @@ normalize_key() {
 # cache delete
 ################################################################################
 
+@test "bad arguments for delete return 0 exit code" {
+  run cache delete
+  assert_success
+  assert_line "Incorrect number of arguments!"
+}
+
 @test "deletion of an existing key" {
   test_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH)
   mkdir tmp && touch tmp/example.file
@@ -601,6 +637,11 @@ normalize_key() {
 # cache is_not_empty
 ################################################################################
 
+@test "bad arguments are ignored for is_not_empty" {
+  run cache is_not_empty badarg1
+  assert_success
+}
+
 @test "is_not_empty should fail when cache store is empty" {
   if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
     skip "- avoiding cache clear on non master branch"
@@ -629,6 +670,12 @@ normalize_key() {
 ################################################################################
 # cache usage
 ################################################################################
+
+@test "bad arguments are ignored for usage" {
+  run cache usage badarg1
+  assert_success
+  assert_line "Wrong number of arguments."
+}
 
 @test "usage for empty cache store" {
   if [ "$SEMAPHORE_GIT_BRANCH" != "master" ]; then
