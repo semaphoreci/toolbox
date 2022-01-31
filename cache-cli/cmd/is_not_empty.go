@@ -12,7 +12,7 @@ var isNotEmptyCmd = &cobra.Command{
 	Use:   "is_not_empty",
 	Short: "Check if the cache is not empty.",
 	Long:  ``,
-	Args:  cobra.NoArgs,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if RunIsNotEmpty(cmd, args) {
 			os.Exit(0)
