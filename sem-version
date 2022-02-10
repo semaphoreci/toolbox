@@ -65,7 +65,7 @@ version::change_elixir() {
   [[ "$software_version" == "1.10" ]] && software_version="1.10.4"
   [[ "$software_version" == "1.11" ]] && software_version="1.11.4"
   [[ "$software_version" == "1.12" ]] && software_version="1.12.3"
-  [[ "$software_version" == "1.13" ]] && software_version="1.13.1"
+  [[ "$software_version" == "1.13" ]] && software_version="1.13.2"
 
   if [[ $(kiex list) != *"${software_version}"* ]];then
     sem-install elixir "${software_version}"
@@ -89,8 +89,8 @@ version::change_php() {
   [[ "$software_version" == "7.2" ]] && software_version="7.2.34"
   [[ "$software_version" == "7.3" ]] && software_version="7.3.33"
   [[ "$software_version" == "7.4" ]] && software_version="7.4.27"
-  [[ "$software_version" == "8" ]] && software_version="8.0.14"
-  [[ "$software_version" == "8.0" ]] && software_version="8.0.14"
+  [[ "$software_version" == "8" ]] && software_version="8.0.15"
+  [[ "$software_version" == "8.0" ]] && software_version="8.0.15"
 
   if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
     sem-install php "${software_version}"
