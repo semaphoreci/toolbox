@@ -16,6 +16,11 @@ EOF
 
 en_start() {
   proxy_url="http://${GatewayUsername}:${GatewayPassword}@${GatewayEndPoint}:${GatewayEndPointPort}"
+  [ -z "${GatewayUsername}" ] || \
+  [ -z "${GatewayPassword}" ] || \
+  [ -z "${GatewayEndPoint}" ] || \
+  [ -z "${GatewayEndPointPort}" ] && \
+  can_set_proxy=0 || \
   can_set_proxy=$(curl --write-out '%{http_code}' --head --silent --output /dev/null -x "${proxy_url}" https://www.google.com)
 
   if [[ "$can_set_proxy" == "200" ]]; then
