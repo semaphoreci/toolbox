@@ -19,4 +19,10 @@ createdb -U xxx  -h 0.0.0.0 fooo
 psql -h 0.0.0.0 -U xxx -c "\l"
 psql -U xxx -c "SELECT version()" | grep 11
 sem-service status postgres
+sem-service stop postgres
+sem-service start postgres 14
+createdb -U postgres -h 0.0.0.0 fooo
+psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 14
+sem-service status postgres
 cat /tmp/toolbox_semservice
