@@ -30,8 +30,8 @@ setup() {
   assert_line --partial "v12.16.1"
 }
 
-@test "change node to 16.13.1" {
-  sem-version node 16.13.1
+@test "change node to 16.14.0" {
+  sem-version node 16.14.0
   run node --version
-  assert_line --partial "v16.13.1"
+  assert_line --partial "v16.14.0"
 }
