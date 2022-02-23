@@ -24,7 +24,7 @@ setup() {
 }
 @test "sem-version go path check" {
 
-  sem-version go 1.16
+  sem-version go 1.17
   run echo ${PATH}
   assert_line --partial "$(go env GOPATH)/bin"
 }
