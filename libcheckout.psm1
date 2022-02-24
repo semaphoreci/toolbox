@@ -1,4 +1,6 @@
 function Checkout {
+  $ErrorActionPreference = "Stop"
+
   if ($null -eq $env:SEMAPHORE_GIT_BRANCH) {
     Write-Output "[ERROR] SEMAPHORE_GIT_BRANCH is required."
     Exit 1
@@ -107,5 +109,4 @@ function Ref-Based-Checkout {
   Shallow-Checkout
 }
 
-$ErrorActionPreference = "Stop"
-Checkout
+Export-ModuleMember -Function Checkout -Alias checkout
