@@ -14,7 +14,7 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all keys in the cache.",
 	Long:  ``,
-	Args:  cobra.NoArgs,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		RunList(cmd, args)
 	},

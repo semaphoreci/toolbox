@@ -12,7 +12,7 @@ var clearCmd = &cobra.Command{
 	Use:   "clear",
 	Short: "Remove all keys in the cache.",
 	Long:  ``,
-	Args:  cobra.NoArgs,
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		RunClear(cmd, args)
 	},

@@ -21,7 +21,7 @@ func Test__Restore(t *testing.T) {
 			RunRestore(restoreCmd, []string{"key", "extra-bad-argument"})
 			output := capturer.Done()
 
-			assert.Contains(t, output, "Wrong number of arguments")
+			assert.Contains(t, output, "Incorrect number of arguments!")
 		})
 
 		t.Run(fmt.Sprintf("%s using single missing key", backend), func(*testing.T) {

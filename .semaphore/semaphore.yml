@@ -6,7 +6,7 @@ agent:
     os_image: ubuntu1804
 
 execution_time_limit:
-  minutes: 20
+  minutes: 30
 
 blocks:
   - name: Build local CLIs
@@ -348,6 +348,7 @@ blocks:
                 - tests/artifacts.bats
                 - tests/compiler.bats
                 - tests/test-results.bats
+                - tests/enetwork.bats
           commands:
             - source release/install_in_tests.sh
             - git submodule init && git submodule update

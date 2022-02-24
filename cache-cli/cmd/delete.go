@@ -12,13 +12,19 @@ var deleteCmd = &cobra.Command{
 	Use:   "delete [key]",
 	Short: "Delete a key from the cache.",
 	Long:  ``,
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		RunDelete(cmd, args)
 	},
 }
 
 func RunDelete(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		fmt.Printf("Incorrect number of arguments!\n")
+		_ = cmd.Help()
+		return
+	}
+
 	storage, err := storage.InitStorage()
 	utils.Check(err)
 
