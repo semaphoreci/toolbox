@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $ModulePath = $Env:PSModulePath.Split(";")[0]
-Write-Output "Installing libcheckout module in $ModulePath..."
+Write-Output "Installing Checkout module in $ModulePath..."
 if (-not (Test-Path $ModulePath)) {
   Write-Output "No $ModulePath directory found. Creating it..."
   New-Item -ItemType Directory -Path $ModulePath > $null
@@ -13,11 +13,11 @@ if (-not (Test-Path $ModulePath)) {
 
 $CheckoutModulePath = $ModulePath + "\Checkout"
 if (Test-Path $CheckoutModulePath) {
-  Write-Output "libcheckout module directory already exists. Overriding it..."
+  Write-Output "Checkout module directory already exists. Overriding it..."
   Remove-Item -Path $CheckoutModulePath -Force -Recurse
 }
 
-Write-Output "Creating libcheckout module directory at $CheckoutModulePath..."
+Write-Output "Creating Checkout module directory at $CheckoutModulePath..."
 New-Item -ItemType Directory -Path $CheckoutModulePath > $null
 if (-not (Test-Path $CheckoutModulePath)) {
   Write-Output "Error creating $CheckoutModulePath"
