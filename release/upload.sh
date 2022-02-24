@@ -40,7 +40,7 @@ curl \
     -X POST \
     -H "Authorization: token $GITHUB_TOKEN" \
     -H "Accept: application/vnd.github.v3+json" \
-    -H "Content-Type: $(file -b --mime-type /tmp/Linux/self-hosted-linux.tar)" \
+    -H "Content-Type: $(file -b --mime-type /tmp/self-hosted-Linux/linux.tar)" \
     --data-binary @/tmp/self-hosted-Linux/linux.tar \
     "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=self-hosted-linux.tar"
 
@@ -60,11 +60,21 @@ curl \
     -X POST \
     -H "Authorization: token $GITHUB_TOKEN" \
     -H "Accept: application/vnd.github.v3+json" \
-    -H "Content-Type: $(file -b --mime-type /tmp/Darwin/self-hosted-darwin.tar)" \
+    -H "Content-Type: $(file -b --mime-type /tmp/self-hosted-Darwin/darwin.tar)" \
     --data-binary @/tmp/self-hosted-Darwin/darwin.tar \
     "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=self-hosted-darwin.tar"
 
 echo "self-hosted-darwin.tar uploaded"
+
+curl \
+    -X POST \
+    -H "Authorization: token $GITHUB_TOKEN" \
+    -H "Accept: application/vnd.github.v3+json" \
+    -H "Content-Type: $(file -b --mime-type /tmp/self-hosted-Windows/windows.tar)" \
+    --data-binary @/tmp/self-hosted-Windows/windows.tar \
+    "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=self-hosted-windows.tar"
+
+echo "self-hosted-windows.tar uploaded"
 
 echo "Everything DONE"
 echo "🍻"
