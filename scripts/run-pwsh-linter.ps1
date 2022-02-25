@@ -3,5 +3,5 @@ $ProgressPreference = 'SilentlyContinue'
 
 Install-Module -Name PSScriptAnalyzer -Force
 if ($?) {
-  Invoke-ScriptAnalyzer *
+  Invoke-ScriptAnalyzer * -EnableExit -ReportSummary
 }

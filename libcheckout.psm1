@@ -1,4 +1,14 @@
 function Checkout {
+  <#
+    .Description
+    The Checkout function clones and sets up your Git repository. It requires a few environment variables to work:
+      - SEMAPHORE_GIT_BRANCH
+      - SEMAPHORE_GIT_URL
+      - SEMAPHORE_GIT_DIR
+      - SEMAPHORE_GIT_SHA
+    if SEMAPHORE_GIT_REF_TYPE is set, a ref-based checkout will be done. If not, a shallow checkout.
+  #>
+
   $ErrorActionPreference = "Stop"
 
   Get-Command git > $null
@@ -57,7 +67,7 @@ function Shallow-Checkout() {
   if (-not $?) {
     Write-Output "Branch not found performing full clone"
     git clone $env:SEMAPHORE_GIT_URL $env:SEMAPHORE_GIT_DIR
-    cd $env:SEMAPHORE_GIT_DIR
+    Set-Location $env:SEMAPHORE_GIT_DIR
     Check-Revision
     if ($?) {
       git reset --hard $env:SEMAPHORE_GIT_SHA 2> $null
@@ -65,7 +75,7 @@ function Shallow-Checkout() {
       return 1
     }
   } else {
-    cd $env:SEMAPHORE_GIT_DIR
+    Set-Location $env:SEMAPHORE_GIT_DIR
     git reset --hard $env:SEMAPHORE_GIT_SHA 2> $null
     if (-not $?) {
       Write-Output "SHA: $env:SEMAPHORE_GIT_SHA not found performing full clone"
@@ -87,7 +97,7 @@ function Ref-Based-Checkout {
 
   if ($env:SEMAPHORE_GIT_REF_TYPE -eq "pull-request") {
     git clone --depth $env:SEMAPHORE_GIT_DEPTH $env:SEMAPHORE_GIT_URL $env:SEMAPHORE_GIT_DIR 2> $null
-    cd $env:SEMAPHORE_GIT_DIR
+    Set-Location $env:SEMAPHORE_GIT_DIR
     git fetch origin +$env:SEMAPHORE_GIT_REF: 2> $null
     if (-not $?) {
       Write-Output "Revision: $env:SEMAPHORE_GIT_SHA not found .... Exiting"
@@ -105,7 +115,7 @@ function Ref-Based-Checkout {
       Write-Output "Release $env:SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
       return 1
     } else {
-      cd $env:SEMAPHORE_GIT_DIR
+      Set-Location $env:SEMAPHORE_GIT_DIR
       git checkout -qf $env:SEMAPHORE_GIT_TAG_NAME
       Write-Output "HEAD is now at $env:SEMAPHORE_GIT_SHA Release $env:SEMAPHORE_GIT_TAG_NAME"
       return 0
