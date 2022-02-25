@@ -1,0 +1,11 @@
+version: '3.6'
+services:
+  toolbox:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    tty: true
+    command: "sleep 0"
+    container_name: 'toolbox'
+    volumes:
+      - .:/app
