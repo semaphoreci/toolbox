@@ -16,5 +16,5 @@ Copy-Item -Path .\install-self-hosted-toolbox.ps1 -Destination "$ToolboxPath\ins
 # Import and run tests using Pester
 Install-Module -Name Pester -Force
 if ($?) {
-  Invoke-Pester -Output Detailed .\tests\Checkout.Tests.ps1
+  Invoke-Pester -Output Detailed -CI
 }
