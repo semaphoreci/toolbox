@@ -1,5 +1,8 @@
 pwsh.lint:
-	docker-compose run --rm toolbox pwsh .\\scripts\\run-pwsh-linter.ps1
+	docker-compose run --rm toolbox pwsh .\\scripts\\run-linter.ps1
+
+pwsh.test:
+	docker-compose run --rm toolbox pwsh .\\scripts\\run-tests.ps1
 
 release.major:
 	git fetch --tags

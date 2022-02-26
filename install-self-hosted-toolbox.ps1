@@ -1,6 +1,11 @@
 $ErrorActionPreference = "Stop"
 
-$ModulePath = $Env:PSModulePath.Split(";")[0]
+if ($IsWindows) {
+  $ModulePath = $Env:PSModulePath.Split(";")[0]
+} else {
+  $ModulePath = $Env:PSModulePath.Split(":")[0]
+}
+
 Write-Output "Installing Checkout module in $ModulePath..."
 if (-not (Test-Path $ModulePath)) {
   Write-Output "No $ModulePath directory found. Creating it..."
@@ -27,7 +32,7 @@ if (-not (Test-Path $CheckoutModulePath)) {
 Write-Output "Copying .psm1 file to checkout module directory..."
 
 # The .psm1 file name needs to match the module directory name, otherwise powershell will ignore it
-Copy-Item $HOME\.toolbox\libcheckout.psm1 -Destination "$CheckoutModulePath\Checkout.psm1"
+Copy-Item $HOME\.toolbox\Checkout.psm1 -Destination "$CheckoutModulePath\Checkout.psm1"
 if (-not $?) {
   Write-Output "Error copying .psm1 module to $CheckoutModulePath"
   Exit 1
