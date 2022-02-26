@@ -50,6 +50,17 @@ blocks:
           commands:
             - make pwsh.lint
 
+  - name: 'PowerShell: tests'
+    dependencies: []
+    task:
+      prologue:
+        commands:
+          - checkout
+      jobs:
+        - name: checkout tests
+          commands:
+            - make pwsh.test
+
   - name: Sem Version Tests bionic
     dependencies:
       - 'Build local CLIs'
