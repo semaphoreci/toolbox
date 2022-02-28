@@ -38,7 +38,7 @@ function Initialize-Repository {
   switch ($env:SEMAPHORE_GIT_REF_TYPE) {
 
     "pull-request" {
-      Write-Information "Initializing repository for pull-request..."
+      Write-Output "Initializing repository for pull-request..."
       git clone --depth $env:SEMAPHORE_GIT_DEPTH $env:SEMAPHORE_GIT_URL $env:SEMAPHORE_GIT_DIR 2> $null
       Set-Location $env:SEMAPHORE_GIT_DIR
       git fetch origin +${env:SEMAPHORE_GIT_REF}: 2> $null
@@ -46,19 +46,19 @@ function Initialize-Repository {
         throw "Revision: $env:SEMAPHORE_GIT_SHA not found"
       } else {
         git checkout -qf FETCH_HEAD
-        Write-Information "HEAD is now at $env:SEMAPHORE_GIT_SHA"
+        Write-Output "HEAD is now at $env:SEMAPHORE_GIT_SHA"
       }
     }
 
     "tag" {
-      Write-Information "Initializing repository for tag $env:SEMAPHORE_GIT_TAG_NAME..."
+      Write-Output "Initializing repository for tag..."
       git clone --depth $env:SEMAPHORE_GIT_DEPTH -b $env:SEMAPHORE_GIT_TAG_NAME $env:SEMAPHORE_GIT_URL $env:SEMAPHORE_GIT_DIR 2> $null
       if (-not $?) {
         throw "Release $env:SEMAPHORE_GIT_TAG_NAME not found"
       } else {
         Set-Location $env:SEMAPHORE_GIT_DIR
         git checkout -qf $env:SEMAPHORE_GIT_TAG_NAME
-        Write-Information "HEAD is now at $env:SEMAPHORE_GIT_SHA Release $env:SEMAPHORE_GIT_TAG_NAME"
+        Write-Output "HEAD is now at $env:SEMAPHORE_GIT_SHA Release $env:SEMAPHORE_GIT_TAG_NAME"
       }
     }
 
@@ -69,11 +69,11 @@ function Initialize-Repository {
 }
 
 function Initialize-ShallowRepository() {
-  Write-Information "Performing shallow clone with depth: $env:SEMAPHORE_GIT_DEPTH"
+  Write-Output "Performing shallow clone with depth: $env:SEMAPHORE_GIT_DEPTH"
   git clone --depth $env:SEMAPHORE_GIT_DEPTH -b $env:SEMAPHORE_GIT_BRANCH $env:SEMAPHORE_GIT_URL $env:SEMAPHORE_GIT_DIR
 
   if (-not $?) {
-    Write-Warning "Branch not found, performing full clone"
+    Write-Output "Branch not found, performing full clone"
     git clone $env:SEMAPHORE_GIT_URL $env:SEMAPHORE_GIT_DIR
     Set-Location $env:SEMAPHORE_GIT_DIR
     if (Test-Revision) {
@@ -85,7 +85,7 @@ function Initialize-ShallowRepository() {
     Set-Location $env:SEMAPHORE_GIT_DIR
     git reset --hard $env:SEMAPHORE_GIT_SHA 2> $null
     if (-not $?) {
-      Write-Warning "SHA: $env:SEMAPHORE_GIT_SHA not found, performing full clone"
+      Write-Output "SHA: $env:SEMAPHORE_GIT_SHA not found, performing full clone"
       git fetch --unshallow
       if (Test-Revision) {
         git reset --hard $env:SEMAPHORE_GIT_SHA 2> $null

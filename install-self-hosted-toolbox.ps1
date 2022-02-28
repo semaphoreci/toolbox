@@ -16,7 +16,7 @@ if (-not (Test-Path $ModulePath)) {
   }
 }
 
-$CheckoutModulePath = $ModulePath + "\Checkout"
+$CheckoutModulePath = Join-Path -Path $ModulePath -ChildPath "Checkout"
 if (Test-Path $CheckoutModulePath) {
   Write-Output "Checkout module directory already exists. Overriding it..."
   Remove-Item -Path $CheckoutModulePath -Force -Recurse

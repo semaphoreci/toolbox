@@ -40,14 +40,20 @@ Describe 'Initialize-Repository' {
     It 'branch and SHA exists => success' {
       $env:SEMAPHORE_GIT_REF_TYPE = "push"
       $env:SEMAPHORE_GIT_SHA = "91940c2cc18ec08b751482f806f1b8bfa03d98a5"
-      { Initialize-Repository } | Should -Not -Throw
+      $output = Initialize-Repository
+      $output | Should -Contain "Performing shallow clone with depth: 50"
+      $output | Should -Contain "HEAD is now at 91940c2 Release 2.4.1"
+      $output | Should -Not -Contain "Branch not found, performing full clone"
     }
 
     It 'branch does not exist => full clone' {
       $env:SEMAPHORE_GIT_REF_TYPE = "push"
       $env:SEMAPHORE_GIT_SHA = "91940c2cc18ec08b751482f806f1b8bfa03d98a5"
       $env:SEMAPHORE_GIT_BRANCH = "this-branch-does-not-exist"
-      { Initialize-Repository } | Should -Not -Throw
+      $output = Initialize-Repository
+      $output | Should -Contain "Performing shallow clone with depth: 50"
+      $output | Should -Contain "HEAD is now at 91940c2 Release 2.4.1"
+      $output | Should -Contain "Branch not found, performing full clone"
     }
 
     It 'SHA does not exist => error' {
@@ -62,7 +68,9 @@ Describe 'Initialize-Repository' {
       $env:SEMAPHORE_GIT_REF_TYPE = "tag"
       $env:SEMAPHORE_GIT_TAG_NAME = "v2.4.1"
       $env:SEMAPHORE_GIT_SHA = "91940c2cc18ec08b751482f806f1b8bfa03d98a5"
-      { Initialize-Repository } | Should -Not -Throw
+      $output = Initialize-Repository
+      $output | Should -Contain "Initializing repository for tag..."
+      $output | Should -Contain "HEAD is now at 91940c2cc18ec08b751482f806f1b8bfa03d98a5 Release v2.4.1"
     }
 
     It 'tag does not exist => error' {
@@ -78,7 +86,9 @@ Describe 'Initialize-Repository' {
       $env:SEMAPHORE_GIT_REF_TYPE = "pull-request"
       $env:SEMAPHORE_GIT_REF = "refs/pull/186/merge"
       $env:SEMAPHORE_GIT_SHA = "30774365e11f2b1e18706c9ed0920369f6d7c205"
-      { Initialize-Repository } | Should -Not -Throw
+      $output = Initialize-Repository
+      $output | Should -Contain "Initializing repository for pull-request..."
+      $output | Should -Contain "HEAD is now at 30774365e11f2b1e18706c9ed0920369f6d7c205"
     }
 
     It 'SEMAPHORE_GIT_REF does not exist => error' {
@@ -92,19 +102,27 @@ Describe 'Initialize-Repository' {
     It "old revision => success" {
       $env:SEMAPHORE_GIT_BRANCH = "patch-id"
       $env:SEMAPHORE_GIT_SHA = "da70719"
-      { Initialize-Repository } | Should -Not -Throw
+      $output = Initialize-Repository
+      $output | Should -Contain "Performing shallow clone with depth: 50"
+      $output | Should -Contain "SHA: da70719 not found, performing full clone"
+      $output | Should -Contain "HEAD is now at da70719 Regenerated gemspec for version 2.0.0"
     }
 
     It "tag => success" {
       $env:SEMAPHORE_GIT_BRANCH = "v2.5.0"
       $env:SEMAPHORE_GIT_SHA = "7219ef6"
-      { Initialize-Repository } | Should -Not -Throw
+      $output = Initialize-Repository
+      $output | Should -Contain "Performing shallow clone with depth: 50"
+      $output | Should -Contain "HEAD is now at 7219ef6 Release 2.5.0"
     }
 
     It "refs/tags => success" {
       $env:SEMAPHORE_GIT_BRANCH = "refs/tags/v2.5.0"
       $env:SEMAPHORE_GIT_SHA = "7219ef6"
-      { Initialize-Repository } | Should -Not -Throw
+      $output = Initialize-Repository
+      $output | Should -Contain "Performing shallow clone with depth: 50"
+      $output | Should -Contain "Branch not found, performing full clone"
+      $output | Should -Contain "HEAD is now at 7219ef6 Release 2.5.0"
     }
 
     It "non-existing SHA => error" {
