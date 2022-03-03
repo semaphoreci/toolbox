@@ -88,7 +88,7 @@ self_hosted::create_initial_content() {
   done
 
   # Windows inclusions
-  cp ~/$SEMAPHORE_GIT_DIR/libcheckout.psm1 /tmp/self-hosted-Windows/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/Checkout.psm1 /tmp/self-hosted-Windows/toolbox/
 }
 
 self_hosted::pack() {
