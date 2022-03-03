@@ -1,3 +1,9 @@
+pwsh.lint:
+	docker-compose run --rm toolbox pwsh .\\scripts\\run-linter.ps1
+
+pwsh.test:
+	docker-compose run --rm toolbox pwsh .\\scripts\\run-tests.ps1
+
 release.major:
 	git fetch --tags
 	latest=$$(git tag | sort --version-sort | tail -n 1); new=$$(echo $$latest | cut -c 2- | awk -F '.' '{ print "v" $$1+1 ".0.0" }');          echo $$new; git tag $$new; git push origin $$new

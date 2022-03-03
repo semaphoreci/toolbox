@@ -68,20 +68,27 @@ self_hosted::create_initial_content() {
 
   rm -rf /tmp/self-hosted-Linux
   rm -rf /tmp/self-hosted-Darwin
+  rm -rf /tmp/self-hosted-Windows
 
   mkdir -p /tmp/self-hosted-Linux/toolbox
   mkdir -p /tmp/self-hosted-Darwin/toolbox
+  mkdir -p /tmp/self-hosted-Windows/toolbox
 
   cp ~/$SEMAPHORE_GIT_DIR/install-self-hosted-toolbox /tmp/self-hosted-Linux/toolbox/install-toolbox
   cp ~/$SEMAPHORE_GIT_DIR/install-self-hosted-toolbox /tmp/self-hosted-Darwin/toolbox/install-toolbox
+  cp ~/$SEMAPHORE_GIT_DIR/install-self-hosted-toolbox.ps1 /tmp/self-hosted-Windows/toolbox/install-toolbox.ps1
   cp ~/$SEMAPHORE_GIT_DIR/self-hosted-toolbox /tmp/self-hosted-Linux/toolbox/toolbox
   cp ~/$SEMAPHORE_GIT_DIR/self-hosted-toolbox /tmp/self-hosted-Darwin/toolbox/toolbox
 
+  # Linux/Darwin inclusions
   inclusions=(libcheckout libchecksum retry)
   for inclusion in "${inclusions[@]}"; do
     cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Linux/toolbox/
     cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Darwin/toolbox/
   done
+
+  # Windows inclusions
+  cp ~/$SEMAPHORE_GIT_DIR/libcheckout.psm1 /tmp/self-hosted-Windows/toolbox/
 }
 
 self_hosted::pack() {
@@ -132,4 +139,5 @@ if [[ $create_self_hosted == "true" ]]; then
   self_hosted::pack
   create_tarball "linux.tar" /tmp/self-hosted-Linux
   create_tarball "darwin.tar" /tmp/self-hosted-Darwin
+  create_tarball "windows.tar" /tmp/self-hosted-Windows
 fi

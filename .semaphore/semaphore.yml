@@ -35,7 +35,7 @@ blocks:
           - sudo apt-get install shellcheck
           - checkout
       jobs:
-        - name: ShellCheck
+        - name: Shell check
           commands:
             - shellcheck sem-service || true
             - shellcheck sem-version || true
@@ -46,6 +46,20 @@ blocks:
             - 'shellcheck cache       -f gcc | wc -l && [[ "$(shellcheck cache -f gcc | wc -l)" -le 152 ]]'
             - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 85 ]]'
             - shellcheck install-package
+        - name: PowerShell check
+          commands:
+            - make pwsh.lint
+
+  - name: 'PowerShell: tests'
+    dependencies: []
+    task:
+      prologue:
+        commands:
+          - checkout
+      jobs:
+        - name: checkout tests
+          commands:
+            - make pwsh.test
 
   - name: Sem Version Tests bionic
     dependencies:
