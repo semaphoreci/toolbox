@@ -105,4 +105,5 @@ function Test-Revision {
   return $true
 }
 
+New-Alias -name checkout -value Initialize-Repository
 Export-ModuleMember -Function Initialize-Repository -Alias checkout
