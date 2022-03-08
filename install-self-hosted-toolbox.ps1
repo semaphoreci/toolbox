@@ -1,6 +1,8 @@
 $ErrorActionPreference = "Stop"
 
-if ($IsWindows) {
+# PowerShell Core 6.0+ has $isWindows set, but older versions don't.
+# For those versions, we use the $env:OS variable, which is only set in Windows.
+if ($IsWindows -or $env:OS) {
   $ModulePath = $Env:PSModulePath.Split(";")[0]
 } else {
   $ModulePath = $Env:PSModulePath.Split(":")[0]
