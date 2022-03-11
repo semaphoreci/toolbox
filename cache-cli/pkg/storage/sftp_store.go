@@ -7,7 +7,7 @@ import (
 )
 
 func (s *SFTPStorage) Store(key, path string) error {
-	epochNanos := time.Now().Nanosecond()
+	epochNanos := time.Now().UnixNano()
 	tmpKey := fmt.Sprintf("%s-%d", key, epochNanos)
 
 	localFileInfo, err := os.Stat(path)
