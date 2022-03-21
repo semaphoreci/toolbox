@@ -7,7 +7,7 @@ install::package_url() {
       echo "http://packages.semaphoreci.com/$(lsb_release -cs)"
       ;;
     Darwin)
-      echo "http://packages.semaphoreci.com/mac"
+      echo "http://packagesmac.semaphoreci.com/mac"
       ;;
     *)
     echo "Unsupported distro $DIST"
