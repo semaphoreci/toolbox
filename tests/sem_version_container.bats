@@ -7,11 +7,11 @@ setup() {
   source ~/.toolbox/toolbox
 }
 
-@test "sem-version flutter 2.10.0" {
+@test "sem-version flutter 2.10.3" {
 
-  run sem-version flutter 2.10.0
+  run sem-version flutter 2.10.3
   assert_success
-  assert_line --partial "2.10.0"
+  assert_line --partial "2.10.3"
 }
 
 
@@ -19,7 +19,7 @@ setup() {
 
   run sem-version flutter 2.10
   assert_success
-  assert_line --partial "2.10.0"
+  assert_line --partial "2.10"
 }
 
 
