@@ -46,7 +46,7 @@ blocks:
           parallelism: 10
   - name: Integration Tests
     run:
-      when: "change_in("*")"
+      when: change_in("*")
     dependencies:
       - Unit Tests
     task:
