@@ -30,8 +30,8 @@ setup() {
   assert_line --partial "24"
 }
 
-@test "change erlang to 24.2" {
-  sem-version erlang 24.2
+@test "change erlang to 24.3" {
+  sem-version erlang 24.3
   run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
   assert_line --partial "24"
 }
