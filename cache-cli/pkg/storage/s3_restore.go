@@ -11,7 +11,7 @@ import (
 )
 
 func (s *S3Storage) Restore(key string) (*os.File, error) {
-	tempFile, err := ioutil.TempFile("/tmp", fmt.Sprintf("%s-*", key))
+	tempFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("%s-*", key))
 	if err != nil {
 		return nil, err
 	}

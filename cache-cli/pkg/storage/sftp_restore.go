@@ -7,7 +7,7 @@ import (
 )
 
 func (s *SFTPStorage) Restore(key string) (*os.File, error) {
-	localFile, err := ioutil.TempFile("/tmp", fmt.Sprintf("%s-*", key))
+	localFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("%s-*", key))
 	if err != nil {
 		return nil, err
 	}

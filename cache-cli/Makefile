@@ -29,8 +29,14 @@ test:
 test.watch:
 	docker-compose run --rm cli gotestsum --watch --format short-verbose --junitfile junit-report.xml --packages="./..." -- -p 1
 
-build:
-	CGO_ENABLED=0 GOOS=$(OS) go build -o bin/$(OS)/cache main.go
+build.darwin:
+	CGO_ENABLED=0 GOOS=darwin go build -o bin/darwin/cache main.go
+
+build.linux:
+	CGO_ENABLED=0 GOOS=linux go build -o bin/linux/cache main.go
+
+build.windows:
+	CGO_ENABLED=0 GOOS=windows go build -o bin/windows/cache.exe main.go
 
 lint:
 	revive -formatter friendly -config lint.toml ./...

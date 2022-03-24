@@ -15,16 +15,16 @@ func Test__UnpackSendsMetricsOnFailure(t *testing.T) {
 	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
 	assert.Nil(t, err)
 
-	tempFile, _ := ioutil.TempFile("/tmp", "*")
+	tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 	tempFile.WriteString("this is not a proper archive")
 
 	_, err = Unpack(metricsManager, tempFile.Name())
 	assert.NotNil(t, err)
 
-	bytes, err := ioutil.ReadFile("/tmp/toolbox_metrics")
+	bytes, err := ioutil.ReadFile(fmt.Sprintf("%s/toolbox_metrics", os.TempDir()))
 	assert.Nil(t, err)
 	assert.Contains(t, string(bytes), fmt.Sprintf("%s 1", metrics.CacheCorruptionRate))
 
 	os.Remove(tempFile.Name())
-	os.Remove("/tmp/toolbox_metrics")
+	os.Remove(fmt.Sprintf("%s/toolbox_metrics", os.TempDir()))
 }

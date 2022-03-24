@@ -28,7 +28,7 @@ func Test__CompressAndUnpack(t *testing.T) {
 	})
 
 	t.Run("using absolute paths", func(t *testing.T) {
-		tempDir, _ := ioutil.TempDir("/tmp", "*")
+		tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 		tempFile, _ := ioutil.TempFile(tempDir, "*")
 		assertCompressAndUnpack(t, metricsManager, tempDir, tempFile.Name())
 	})
@@ -48,7 +48,7 @@ func Test__CompressAndUnpack(t *testing.T) {
 		// compressing
 		compressedFileName, err := Compress("abc0003", tempFile.Name())
 		assert.Nil(t, err)
-		assert.True(t, strings.HasPrefix(compressedFileName, "/tmp/abc0003"))
+		assert.True(t, strings.HasPrefix(compressedFileName, fmt.Sprintf("%s/abc0003", os.TempDir())))
 
 		_, err = os.Stat(compressedFileName)
 		assert.Nil(t, err)
@@ -75,7 +75,7 @@ func assertCompressAndUnpack(t *testing.T, metricsManager metrics.MetricsManager
 	// compressing
 	compressedFileName, err := Compress("abc0003", tempDirectory)
 	assert.Nil(t, err)
-	assert.True(t, strings.HasPrefix(compressedFileName, "/tmp/abc0003"))
+	assert.True(t, strings.HasPrefix(compressedFileName, fmt.Sprintf("%s/abc0003", os.TempDir())))
 
 	_, err = os.Stat(compressedFileName)
 	assert.Nil(t, err)

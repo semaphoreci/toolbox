@@ -23,13 +23,13 @@ func Test__List(t *testing.T) {
 			err := storage.Clear()
 			assert.Nil(t, err)
 
-			file1, _ := ioutil.TempFile("/tmp", "*")
+			file1, _ := ioutil.TempFile(os.TempDir(), "*")
 			err = storage.Store("abc001", file1.Name())
 			assert.Nil(t, err)
 
 			time.Sleep(time.Second)
 
-			file2, _ := ioutil.TempFile("/tmp", "*")
+			file2, _ := ioutil.TempFile(os.TempDir(), "*")
 			err = storage.Store("abc002", file2.Name())
 			assert.Nil(t, err)
 

@@ -14,7 +14,7 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s key exists", storageType), func(t *testing.T) {
 			_ = storage.Clear()
 
-			file, _ := ioutil.TempFile("/tmp", "*")
+			file, _ := ioutil.TempFile(os.TempDir(), "*")
 			file.WriteString("restore - key exists")
 
 			err := storage.Store("abc001", file.Name())

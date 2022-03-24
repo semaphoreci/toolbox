@@ -12,8 +12,8 @@ type LocalMetricsManager struct {
 
 func NewLocalMetricsBackend() (*LocalMetricsManager, error) {
 	return &LocalMetricsManager{
-		ToolboxMetricsPath: "/tmp/toolbox_metrics",
-		CacheMetricsPath:   "/tmp/cache_metrics",
+		ToolboxMetricsPath: fmt.Sprintf("%s/toolbox_metrics", os.TempDir()),
+		CacheMetricsPath:   fmt.Sprintf("%s/cache_metrics", os.TempDir()),
 	}, nil
 }
 

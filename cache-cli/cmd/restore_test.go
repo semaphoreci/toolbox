@@ -37,7 +37,7 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s using single exact key", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 
 			compressAndStore(storage, "abc-001", tempDir)
@@ -56,7 +56,7 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 
 			compressAndStore(storage, "abc/00/22", tempDir)
@@ -76,7 +76,7 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s using single matching key", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 
 			compressAndStore(storage, "abc-001", tempDir)
@@ -95,7 +95,7 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s only first matching key is used", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 
 			compressAndStore(storage, "abc-001", tempDir)
@@ -116,7 +116,7 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s using fallback key", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 
 			compressAndStore(storage, "abc", tempDir)
@@ -136,7 +136,7 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s using regex key", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 
 			compressAndStore(storage, "abc", tempDir)

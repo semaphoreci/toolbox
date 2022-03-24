@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
@@ -27,7 +28,7 @@ func Test__Clear(t *testing.T) {
 			err := storage.Clear()
 			assert.Nil(t, err)
 
-			tempFile, _ := ioutil.TempFile("/tmp", "*")
+			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 			storage.Store("abc001", tempFile.Name())
 
 			capturer := utils.CreateOutputCapturer()

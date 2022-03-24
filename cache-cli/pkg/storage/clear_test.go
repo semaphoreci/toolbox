@@ -14,10 +14,10 @@ func Test__Clear(t *testing.T) {
 		setup := func(storage Storage) []string {
 			_ = storage.Clear()
 
-			file1, _ := ioutil.TempFile("/tmp", "*")
+			file1, _ := ioutil.TempFile(os.TempDir(), "*")
 			file1.WriteString("something, something")
 
-			file2, _ := ioutil.TempFile("/tmp", "*")
+			file2, _ := ioutil.TempFile(os.TempDir(), "*")
 			file2.WriteString("else, else")
 
 			_ = storage.Store("abc001", file1.Name())

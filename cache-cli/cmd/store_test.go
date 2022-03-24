@@ -34,7 +34,7 @@ func Test__Store(t *testing.T) {
 
 		t.Run(fmt.Sprintf("%s using key and valid path", backend), func(*testing.T) {
 			storage.Clear()
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			ioutil.TempFile(tempDir, "*")
 
 			capturer := utils.CreateOutputCapturer()
@@ -47,7 +47,7 @@ func Test__Store(t *testing.T) {
 
 		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
 			storage.Clear()
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			ioutil.TempFile(tempDir, "*")
 
 			capturer := utils.CreateOutputCapturer()
@@ -61,7 +61,7 @@ func Test__Store(t *testing.T) {
 
 		t.Run(fmt.Sprintf("%s using duplicate key", backend), func(*testing.T) {
 			storage.Clear()
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			ioutil.TempFile(tempDir, "*")
 
 			// Storing key for the first time
@@ -138,7 +138,7 @@ func Test__AutomaticStore(t *testing.T) {
 
 			checksum, _ := files.GenerateChecksum("Gemfile.lock")
 
-			tempFile, _ := ioutil.TempFile("/tmp", "*")
+			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 			key := fmt.Sprintf("gems-master-%s", checksum)
 			err := storage.Store(key, tempFile.Name())
 			assert.Nil(t, err)
