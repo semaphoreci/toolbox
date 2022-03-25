@@ -26,5 +26,6 @@ jobs:
         env:
           SEMAPHORE_CACHE_S3_URL: "http://127.0.0.1:9000"
         run: |
+          Get-Process minio
           cd cache-cli
           gotestsum --format short-verbose --packages="./..." -- -p 1
