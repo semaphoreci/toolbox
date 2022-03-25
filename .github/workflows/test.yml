@@ -1,0 +1,25 @@
+on: [push]
+name: Unit tests
+jobs:
+  unit-testing:
+    runs-on: windows-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.x
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@latest
+      - name: Install & run minio
+        run: |
+          New-Item C:\minio -ItemType Directory
+          Invoke-WebRequest "https://dl.min.io/server/minio/release/windows-amd64/minio.exe" -OutFile C:\minio\minio.exe
+          New-Item C:\minio\data\semaphore-cache -ItemType Directory
+          Start-Process C:\minio\minio.exe -ArgumentList 'server','C:\minio\data' -RedirectStandardOutput C:\minio\logs
+      - name: Test
+        run: |
+          cd cache-cli
+          $env:SEMAPHORE_CACHE_S3_URL = "http://localhost:9000"
+          gotestsum --format short-verbose --packages="./..." -- -p 1
