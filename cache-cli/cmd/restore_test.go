@@ -39,6 +39,7 @@ func Test__Restore(t *testing.T) {
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc-001", tempDir)
 
@@ -58,6 +59,7 @@ func Test__Restore(t *testing.T) {
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc/00/22", tempDir)
 
@@ -78,6 +80,7 @@ func Test__Restore(t *testing.T) {
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc-001", tempDir)
 
@@ -97,6 +100,7 @@ func Test__Restore(t *testing.T) {
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc-001", tempDir)
 			compressAndStore(storage, "abc-002", tempDir)
@@ -118,6 +122,7 @@ func Test__Restore(t *testing.T) {
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc", tempDir)
 
@@ -138,6 +143,7 @@ func Test__Restore(t *testing.T) {
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc", tempDir)
 
