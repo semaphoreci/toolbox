@@ -17,9 +17,10 @@ jobs:
           New-Item C:\minio -ItemType Directory
           Invoke-WebRequest "https://dl.min.io/server/minio/release/windows-amd64/minio.exe" -OutFile C:\minio\minio.exe
           New-Item C:\minio\data\semaphore-cache -ItemType Directory
-          Start-Process C:\minio\minio.exe -ArgumentList 'server','C:\minio\data' -RedirectStandardOutput C:\minio\logs -RedirectStandardError C:\minio\logs
+          Start-Process C:\minio\minio.exe -ArgumentList 'server','C:\minio\data' -RedirectStandardOutput C:\minio\logs -RedirectStandardError C:\minio\errors
           sleep 5
           type C:\minio\logs
+          type C:\minio\errors
           Get-Process minio
       - name: Test
         env:
