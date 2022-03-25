@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"math"
 	"os"
 	"runtime"
@@ -40,6 +41,7 @@ var testStorageTypes = map[string]TestStorageType{
 }
 
 func runTestForAllStorageTypes(t *testing.T, test func(string, Storage)) {
+	fmt.Printf("Using %s as s3 url\n", os.Getenv("SEMAPHORE_CACHE_S3_URL"))
 	for storageType, testStorage := range testStorageTypes {
 		if runtime.GOOS == "windows" && !testStorage.runInWindows {
 			continue

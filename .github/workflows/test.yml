@@ -20,6 +20,8 @@ jobs:
           Start-Process C:\minio\minio.exe -ArgumentList 'server','C:\minio\data' -RedirectStandardOutput C:\minio\logs
       - name: Test
         run: |
+          Get-Process minio
+          type C:\minio\logs
           cd cache-cli
           $env:SEMAPHORE_CACHE_S3_URL = "http://localhost:9000"
           gotestsum --format short-verbose --packages="./..." -- -p 1

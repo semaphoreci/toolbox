@@ -22,10 +22,12 @@ blocks:
         - name: Build cache CLI
           commands:
             - cd cache-cli
-            - make build OS=linux
-            - make build OS=darwin
+            - make build.linux
+            - make build.darwin
+            - make build.windows
             - artifact push workflow bin/linux/cache -d bin/linux/cache
             - artifact push workflow bin/darwin/cache -d bin/darwin/cache
+            - artifact push workflow bin/windows/cache.exe -d bin/windows/cache.exe
 
   - name: Static Code Analysis
     dependencies: []
