@@ -3,6 +3,7 @@ package metrics
 import (
 	"fmt"
 	"os"
+	"runtime"
 )
 
 type LocalMetricsManager struct {
@@ -11,9 +12,14 @@ type LocalMetricsManager struct {
 }
 
 func NewLocalMetricsBackend() (*LocalMetricsManager, error) {
+	basePath := "/tmp"
+	if runtime.GOOS == "windows" {
+		basePath = os.TempDir()
+	}
+
 	return &LocalMetricsManager{
-		ToolboxMetricsPath: fmt.Sprintf("%s/toolbox_metrics", os.TempDir()),
-		CacheMetricsPath:   fmt.Sprintf("%s/cache_metrics", os.TempDir()),
+		ToolboxMetricsPath: fmt.Sprintf("%s/toolbox_metrics", basePath),
+		CacheMetricsPath:   fmt.Sprintf("%s/cache_metrics", basePath),
 	}, nil
 }
 
