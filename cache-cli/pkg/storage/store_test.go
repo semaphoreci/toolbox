@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -65,6 +66,10 @@ func Test__Store(t *testing.T) {
 		 * have any lines from the smaller file.
 		 */
 		t.Run(fmt.Sprintf("%s concurrent writes keep the file that finished writing last", storageType), func(t *testing.T) {
+			if runtime.GOOS == "windows" {
+				t.Skip()
+			}
+
 			_ = storage.Clear()
 
 			smallerFile := fmt.Sprintf("%s/smaller.tmp", os.TempDir())

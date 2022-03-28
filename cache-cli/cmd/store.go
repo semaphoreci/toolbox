@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -52,7 +53,8 @@ func RunStore(cmd *cobra.Command, args []string) {
 			}
 		}
 	} else {
-		compressAndStore(storage, args[0], args[1])
+		path := filepath.FromSlash(args[1])
+		compressAndStore(storage, args[0], path)
 	}
 }
 

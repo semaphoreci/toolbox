@@ -76,5 +76,5 @@ func findRestorationPath(path string) (string, error) {
 		return "", err
 	}
 
-	return header.Name, gzipReader.Close()
+	return filepath.FromSlash(header.Name), gzipReader.Close()
 }
