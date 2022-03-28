@@ -91,7 +91,7 @@ func assertCompressAndUnpack(t *testing.T, metricsManager metrics.MetricsManager
 	// unpacking
 	unpackedAt, err := Unpack(metricsManager, compressedFileName)
 	assert.Nil(t, err)
-	assert.Equal(t, fmt.Sprintf("%s/", tempDirectory), unpackedAt)
+	assert.Equal(t, filepath.FromSlash(fmt.Sprintf("%s/", tempDirectory)), unpackedAt)
 
 	files, _ := ioutil.ReadDir(unpackedAt)
 	assert.Len(t, files, 1)
