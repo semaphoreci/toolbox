@@ -16,8 +16,6 @@ func (s *S3Storage) Store(key, path string) error {
 		return err
 	}
 
-	defer file.Close()
-
 	destination := fmt.Sprintf("%s/%s", s.Project, key)
 	uploader := manager.NewUploader(s.Client)
 	_, err = uploader.Upload(context.TODO(), &s3.PutObjectInput{
@@ -26,5 +24,10 @@ func (s *S3Storage) Store(key, path string) error {
 		Body:   file,
 	})
 
-	return err
+	if err != nil {
+		fmt.Printf("Error uploading: %v\n", err)
+		return err
+	}
+
+	return file.Close()
 }

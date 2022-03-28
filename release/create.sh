@@ -56,7 +56,19 @@ hosted::create_initial_content() {
   cp -R ~/$SEMAPHORE_GIT_DIR/* /tmp/Linux/toolbox
   cp -R ~/$SEMAPHORE_GIT_DIR/* /tmp/Darwin/toolbox
 
-  exclusions=(.git .gitignore Makefile release tests cache-cli install-self-hosted-toolbox self-hosted-toolbox)
+  exclusions=(
+    .git
+    .gitignore
+    Makefile
+    release
+    scripts
+    tests
+    cache-cli
+    install-self-hosted-toolbox
+    install-self-hosted-toolbox.ps1
+    Checkout.psm1
+    self-hosted-toolbox
+  )
   for exclusion in "${exclusions[@]}"; do
     rm -rf /tmp/Linux/toolbox/${exclusion}
     rm -rf /tmp/Darwin/toolbox/${exclusion}
@@ -89,7 +101,7 @@ self_hosted::create_initial_content() {
 
   # Windows inclusions
   cp ~/$SEMAPHORE_GIT_DIR/Checkout.psm1 /tmp/self-hosted-Windows/toolbox/
-  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/cache.exe /tmp/self-hosted-Linux/toolbox/cache.exe
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/windows/cache.exe /tmp/self-hosted-Windows/toolbox/cache.exe
 }
 
 self_hosted::pack() {
