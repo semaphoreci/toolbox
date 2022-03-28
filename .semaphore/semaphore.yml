@@ -21,8 +21,6 @@ blocks:
       jobs:
         - name: Build cache CLI
           commands:
-            # Add bad command to not run all these jobs when we are only interested in the Windows jobs
-            - asdasdasd
             - cd cache-cli
             - make build.linux
             - make build.darwin
