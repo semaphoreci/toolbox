@@ -46,7 +46,7 @@ function Install-PSModules {
 # To make the binaries available,
 # we include the .toolbox directory in the user's PATH.
 function Install-Binaries {
-  $toolboxPath = "$HOME\.toolbox"
+  $toolboxPath = Join-Path $HOME ".toolbox" | Join-Path -ChildPath "bin"
   Write-Output "Adding $toolboxPath to the PATH..."
 
   $currentPaths = [Environment]::GetEnvironmentVariable('PATH', 'User') -split ';'

@@ -63,6 +63,7 @@ hosted::create_initial_content() {
     release
     scripts
     tests
+    docker-compose.yml
     cache-cli
     install-self-hosted-toolbox
     install-self-hosted-toolbox.ps1
@@ -99,9 +100,15 @@ self_hosted::create_initial_content() {
     cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Darwin/toolbox/
   done
 
-  # Windows inclusions
+  # Windows PowerShell module inclusions
   cp ~/$SEMAPHORE_GIT_DIR/Checkout.psm1 /tmp/self-hosted-Windows/toolbox/
-  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/windows/cache.exe /tmp/self-hosted-Windows/toolbox/cache.exe
+
+  # For the windows toolbox, we put all the binaries in a bin folder.
+  # The reason for that is in Windows we don't have a location like /usr/local/bin
+  # to use to place all the binaries in. Instead, we add the '$HOME/.toolbox/bin'
+  # folder to the user's PATH.
+  mkdir -p /tmp/self-hosted-Windows/toolbox/bin
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/windows/cache.exe /tmp/self-hosted-Windows/toolbox/bin/cache.exe
 }
 
 self_hosted::pack() {
