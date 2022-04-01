@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
@@ -22,7 +23,7 @@ func Test__Delete(t *testing.T) {
 
 		t.Run(fmt.Sprintf("%s key is present", backend), func(*testing.T) {
 			storage.Clear()
-			tempFile, _ := ioutil.TempFile("/tmp", "*")
+			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 			storage.Store("abc001", tempFile.Name())
 
 			capturer := utils.CreateOutputCapturer()
@@ -34,7 +35,7 @@ func Test__Delete(t *testing.T) {
 
 		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
 			storage.Clear()
-			tempFile, _ := ioutil.TempFile("/tmp", "*")
+			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 			RunStore(storeCmd, []string{"abc/00/33", tempFile.Name()})
 
 			capturer := utils.CreateOutputCapturer()

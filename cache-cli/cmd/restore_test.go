@@ -37,8 +37,9 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s using single exact key", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc-001", tempDir)
 
@@ -46,8 +47,9 @@ func Test__Restore(t *testing.T) {
 			RunRestore(restoreCmd, []string{"abc-001"})
 			output := capturer.Done()
 
+			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "HIT: 'abc-001', using key 'abc-001'.")
-			assert.Contains(t, output, fmt.Sprintf("Restored: %s/.", tempDir))
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s.", restoredPath))
 
 			os.Remove(tempFile.Name())
 			os.Remove(tempDir)
@@ -56,8 +58,9 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc/00/22", tempDir)
 
@@ -65,9 +68,10 @@ func Test__Restore(t *testing.T) {
 			RunRestore(restoreCmd, []string{"abc/00/22"})
 			output := capturer.Done()
 
+			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "Key 'abc/00/22' is normalized to 'abc-00-22'")
 			assert.Contains(t, output, "HIT: 'abc-00-22', using key 'abc-00-22'.")
-			assert.Contains(t, output, fmt.Sprintf("Restored: %s/.", tempDir))
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s.", restoredPath))
 
 			os.Remove(tempFile.Name())
 			os.Remove(tempDir)
@@ -76,8 +80,9 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s using single matching key", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc-001", tempDir)
 
@@ -85,8 +90,9 @@ func Test__Restore(t *testing.T) {
 			RunRestore(restoreCmd, []string{"abc"})
 			output := capturer.Done()
 
+			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "HIT: 'abc', using key 'abc-001'.")
-			assert.Contains(t, output, fmt.Sprintf("Restored: %s/.", tempDir))
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s.", restoredPath))
 
 			os.Remove(tempFile.Name())
 			os.Remove(tempDir)
@@ -95,8 +101,9 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s only first matching key is used", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc-001", tempDir)
 			compressAndStore(storage, "abc-002", tempDir)
@@ -105,8 +112,9 @@ func Test__Restore(t *testing.T) {
 			RunRestore(restoreCmd, []string{"abc-001,abc-002"})
 			output := capturer.Done()
 
+			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "HIT: 'abc-001', using key 'abc-001'.")
-			assert.Contains(t, output, fmt.Sprintf("Restored: %s/.", tempDir))
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s.", restoredPath))
 			assert.NotContains(t, output, "HIT: 'abc-002', using key 'abc-002'.")
 
 			os.Remove(tempFile.Name())
@@ -116,8 +124,9 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s using fallback key", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc", tempDir)
 
@@ -125,9 +134,10 @@ func Test__Restore(t *testing.T) {
 			RunRestore(restoreCmd, []string{"abc-001,abc"})
 			output := capturer.Done()
 
+			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "MISS: 'abc-001'.")
 			assert.Contains(t, output, "HIT: 'abc', using key 'abc'.")
-			assert.Contains(t, output, fmt.Sprintf("Restored: %s/.", tempDir))
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s.", restoredPath))
 
 			os.Remove(tempFile.Name())
 			os.Remove(tempDir)
@@ -136,8 +146,9 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s using regex key", backend), func(*testing.T) {
 			storage.Clear()
 
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc", tempDir)
 
@@ -145,8 +156,9 @@ func Test__Restore(t *testing.T) {
 			RunRestore(restoreCmd, []string{"^abc"})
 			output := capturer.Done()
 
+			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "HIT: '^abc', using key 'abc'.")
-			assert.Contains(t, output, fmt.Sprintf("Restored: %s/.", tempDir))
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s.", restoredPath))
 
 			os.Remove(tempFile.Name())
 			os.Remove(tempDir)
@@ -191,7 +203,7 @@ func Test__AutomaticRestore(t *testing.T) {
 
 			assert.Contains(t, output, "Detected Gemfile.lock")
 			assert.Contains(t, output, fmt.Sprintf("Downloading key '%s'", key))
-			assert.Contains(t, output, "Restored: vendor/bundle")
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s", filepath.FromSlash("vendor/bundle")))
 
 			os.RemoveAll("vendor")
 			os.Remove(compressedFile)

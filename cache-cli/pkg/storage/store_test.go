@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -18,7 +19,7 @@ func Test__Store(t *testing.T) {
 		t.Run(fmt.Sprintf("%s stored objects can be listed", storageType), func(t *testing.T) {
 			_ = storage.Clear()
 
-			file, _ := ioutil.TempFile("/tmp", "*")
+			file, _ := ioutil.TempFile(os.TempDir(), "*")
 			err := storage.Store("abc001", file.Name())
 			assert.Nil(t, err)
 
@@ -38,7 +39,7 @@ func Test__Store(t *testing.T) {
 		t.Run(fmt.Sprintf("%s stored objects can be restored", storageType), func(t *testing.T) {
 			_ = storage.Clear()
 
-			file, _ := ioutil.TempFile("/tmp", "*")
+			file, _ := ioutil.TempFile(os.TempDir(), "*")
 			file.WriteString("stored objects can be restored")
 
 			err := storage.Store("abc002", file.Name())
@@ -65,14 +66,18 @@ func Test__Store(t *testing.T) {
 		 * have any lines from the smaller file.
 		 */
 		t.Run(fmt.Sprintf("%s concurrent writes keep the file that finished writing last", storageType), func(t *testing.T) {
+			if runtime.GOOS == "windows" {
+				t.Skip()
+			}
+
 			_ = storage.Clear()
 
-			smallerFile := "/tmp/smaller.tmp"
+			smallerFile := fmt.Sprintf("%s/smaller.tmp", os.TempDir())
 			err := createBigTempFile(smallerFile, 300*1000*1000) // 300M
 			assert.Nil(t, err)
 
 			// this one is bigger so it will take longer to finish
-			biggerFile := "/tmp/bigger.tmp"
+			biggerFile := fmt.Sprintf("%s/bigger.tmp", os.TempDir())
 			err = createBigTempFile(biggerFile, 600*1000*1000) // 600M
 			assert.Nil(t, err)
 
@@ -92,39 +97,41 @@ func Test__Store(t *testing.T) {
 		})
 	})
 
-	runTestForSingleStorageType("sftp", 1024, t, func(storage Storage) {
-		t.Run("sftp storage deletes old keys if no space left to store", func(t *testing.T) {
-			_ = storage.Clear()
+	if runtime.GOOS != "windows" {
+		runTestForSingleStorageType("sftp", 1024, t, func(storage Storage) {
+			t.Run("sftp storage deletes old keys if no space left to store", func(t *testing.T) {
+				_ = storage.Clear()
 
-			file1, _ := ioutil.TempFile("/tmp", "*")
-			file1.WriteString(strings.Repeat("x", 400))
-			storage.Store("abc001", file1.Name())
+				file1, _ := ioutil.TempFile(os.TempDir(), "*")
+				file1.WriteString(strings.Repeat("x", 400))
+				storage.Store("abc001", file1.Name())
 
-			time.Sleep(time.Second)
+				time.Sleep(time.Second)
 
-			file2, _ := ioutil.TempFile("/tmp", "*")
-			file2.WriteString(strings.Repeat("x", 400))
-			storage.Store("abc002", file2.Name())
+				file2, _ := ioutil.TempFile(os.TempDir(), "*")
+				file2.WriteString(strings.Repeat("x", 400))
+				storage.Store("abc002", file2.Name())
 
-			time.Sleep(time.Second)
+				time.Sleep(time.Second)
 
-			file3, _ := ioutil.TempFile("/tmp", "*")
-			file3.WriteString(strings.Repeat("x", 400))
-			storage.Store("abc003", file3.Name())
+				file3, _ := ioutil.TempFile(os.TempDir(), "*")
+				file3.WriteString(strings.Repeat("x", 400))
+				storage.Store("abc003", file3.Name())
 
-			keys, _ := storage.List()
-			assert.Len(t, keys, 2)
+				keys, _ := storage.List()
+				assert.Len(t, keys, 2)
 
-			firstKey := keys[0]
-			assert.Equal(t, "abc003", firstKey.Name)
-			secondKey := keys[1]
-			assert.Equal(t, "abc002", secondKey.Name)
+				firstKey := keys[0]
+				assert.Equal(t, "abc003", firstKey.Name)
+				secondKey := keys[1]
+				assert.Equal(t, "abc002", secondKey.Name)
 
-			os.Remove(file1.Name())
-			os.Remove(file2.Name())
-			os.Remove(file3.Name())
+				os.Remove(file1.Name())
+				os.Remove(file2.Name())
+				os.Remove(file3.Name())
+			})
 		})
-	})
+	}
 }
 
 func createBigTempFile(fileName string, size int64) error {

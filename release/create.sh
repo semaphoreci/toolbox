@@ -56,7 +56,20 @@ hosted::create_initial_content() {
   cp -R ~/$SEMAPHORE_GIT_DIR/* /tmp/Linux/toolbox
   cp -R ~/$SEMAPHORE_GIT_DIR/* /tmp/Darwin/toolbox
 
-  exclusions=(.git .gitignore Makefile release tests cache-cli install-self-hosted-toolbox self-hosted-toolbox)
+  exclusions=(
+    .git
+    .gitignore
+    Makefile
+    release
+    scripts
+    tests
+    docker-compose.yml
+    cache-cli
+    install-self-hosted-toolbox
+    install-self-hosted-toolbox.ps1
+    Checkout.psm1
+    self-hosted-toolbox
+  )
   for exclusion in "${exclusions[@]}"; do
     rm -rf /tmp/Linux/toolbox/${exclusion}
     rm -rf /tmp/Darwin/toolbox/${exclusion}
@@ -87,8 +100,15 @@ self_hosted::create_initial_content() {
     cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Darwin/toolbox/
   done
 
-  # Windows inclusions
+  # Windows PowerShell module inclusions
   cp ~/$SEMAPHORE_GIT_DIR/Checkout.psm1 /tmp/self-hosted-Windows/toolbox/
+
+  # For the windows toolbox, we put all the binaries in a bin folder.
+  # The reason for that is in Windows we don't have a location like /usr/local/bin
+  # to use to place all the binaries in. Instead, we add the '$HOME/.toolbox/bin'
+  # folder to the user's PATH.
+  mkdir -p /tmp/self-hosted-Windows/toolbox/bin
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/windows/cache.exe /tmp/self-hosted-Windows/toolbox/bin/cache.exe
 }
 
 self_hosted::pack() {

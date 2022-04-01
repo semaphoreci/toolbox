@@ -29,7 +29,7 @@ func Test__Usage(t *testing.T) {
 			_ = storage.Clear()
 
 			fileContents := "usage - some usage"
-			file, _ := ioutil.TempFile("/tmp", "*")
+			file, _ := ioutil.TempFile(os.TempDir(), "*")
 			file.WriteString(fileContents)
 			_ = storage.Store("abc001", file.Name())
 

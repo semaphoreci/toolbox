@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
@@ -18,7 +19,7 @@ func Test__IsNotEmpty(t *testing.T) {
 
 		t.Run(fmt.Sprintf("%s cache is not empty", backend), func(*testing.T) {
 			storage.Clear()
-			tempFile, _ := ioutil.TempFile("/tmp", "*")
+			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 			storage.Store("abc001", tempFile.Name())
 
 			assert.True(t, RunIsNotEmpty(isNotEmptyCmd, []string{}))

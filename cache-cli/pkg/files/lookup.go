@@ -133,14 +133,14 @@ func buildResult(filePath string, options LookupOptions, entries []buildResultRe
 	for _, entry := range entries {
 		if options.Restore {
 			newEntries = append(newEntries, LookupResultEntry{
-				Path: entry.Path,
+				Path: filepath.FromSlash(entry.Path),
 				Keys: keysForRestore(entry.KeyPrefix, gitBranch, checksum),
 			})
 		} else {
 			key := fmt.Sprintf("%s-%s-%s", entry.KeyPrefix, gitBranch, checksum)
 			newEntries = append(newEntries, LookupResultEntry{
 				Keys: []string{key},
-				Path: entry.Path,
+				Path: filepath.FromSlash(entry.Path),
 			})
 		}
 	}

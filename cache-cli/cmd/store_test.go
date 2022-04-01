@@ -29,12 +29,12 @@ func Test__Store(t *testing.T) {
 			RunStore(storeCmd, []string{"abc001", "/tmp/this-path-does-not-exist"})
 			output := capturer.Done()
 
-			assert.Contains(t, output, "'/tmp/this-path-does-not-exist' doesn't exist locally.")
+			assert.Contains(t, output, fmt.Sprintf("'%s' doesn't exist locally.", filepath.FromSlash("/tmp/this-path-does-not-exist")))
 		})
 
 		t.Run(fmt.Sprintf("%s using key and valid path", backend), func(*testing.T) {
 			storage.Clear()
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			ioutil.TempFile(tempDir, "*")
 
 			capturer := utils.CreateOutputCapturer()
@@ -47,7 +47,7 @@ func Test__Store(t *testing.T) {
 
 		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
 			storage.Clear()
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			ioutil.TempFile(tempDir, "*")
 
 			capturer := utils.CreateOutputCapturer()
@@ -61,7 +61,7 @@ func Test__Store(t *testing.T) {
 
 		t.Run(fmt.Sprintf("%s using duplicate key", backend), func(*testing.T) {
 			storage.Clear()
-			tempDir, _ := ioutil.TempDir("/tmp", "*")
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			ioutil.TempFile(tempDir, "*")
 
 			// Storing key for the first time
@@ -103,7 +103,7 @@ func Test__AutomaticStore(t *testing.T) {
 			RunStore(storeCmd, []string{})
 			output := capturer.Done()
 
-			assert.Contains(t, output, "'vendor/bundle' doesn't exist locally.")
+			assert.Contains(t, output, fmt.Sprintf("'%s' doesn't exist locally.", filepath.FromSlash("vendor/bundle")))
 		})
 
 		t.Run(fmt.Sprintf("%s detects and stores", backend), func(t *testing.T) {
@@ -122,8 +122,8 @@ func Test__AutomaticStore(t *testing.T) {
 			output := capturer.Done()
 
 			assert.Contains(t, output, "Detected Gemfile.lock")
-			assert.Contains(t, output, "Compressing vendor/bundle")
-			assert.Contains(t, output, fmt.Sprintf("Uploading 'vendor/bundle' with cache key '%s'", key))
+			assert.Contains(t, output, fmt.Sprintf("Compressing %s", filepath.FromSlash("vendor/bundle")))
+			assert.Contains(t, output, fmt.Sprintf("Uploading '%s' with cache key '%s'", filepath.FromSlash("vendor/bundle"), key))
 			assert.Contains(t, output, "Upload complete")
 
 			os.RemoveAll("vendor")
@@ -138,7 +138,7 @@ func Test__AutomaticStore(t *testing.T) {
 
 			checksum, _ := files.GenerateChecksum("Gemfile.lock")
 
-			tempFile, _ := ioutil.TempFile("/tmp", "*")
+			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 			key := fmt.Sprintf("gems-master-%s", checksum)
 			err := storage.Store(key, tempFile.Name())
 			assert.Nil(t, err)

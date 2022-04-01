@@ -2,6 +2,7 @@ package files
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
@@ -9,11 +10,13 @@ import (
 
 func Compress(key, path string) (string, error) {
 	epochNanos := time.Now().Nanosecond()
-	tempFileName := fmt.Sprintf("/tmp/%s-%d", key, epochNanos)
+	tempFileName := filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", key, epochNanos))
 
 	cmd := compressionCommand(path, tempFileName)
-	_, err := cmd.Output()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
+		fmt.Printf("Error compressing %s: %s\n", path, output)
+		fmt.Printf("Error: %v\n", err)
 		return tempFileName, err
 	}
 

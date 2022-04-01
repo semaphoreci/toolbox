@@ -10,7 +10,7 @@ import (
 
 func Test__GeneratesChecksum(t *testing.T) {
 	t.Run("file is present", func(t *testing.T) {
-		tempFile, _ := ioutil.TempFile("/tmp", "*")
+		tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 		tempFile.WriteString("hello, hello\n")
 
 		checksum, err := GenerateChecksum(tempFile.Name())

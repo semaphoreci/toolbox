@@ -2,33 +2,50 @@ package storage
 
 import (
 	"math"
+	"os"
+	"runtime"
 	"testing"
 
 	assert "github.com/stretchr/testify/assert"
 )
 
-var storageTypes = map[string]func(int64) (Storage, error){
-	"s3": func(storageSize int64) (Storage, error) {
-		return NewS3Storage(S3StorageOptions{
-			URL:     "http://s3:9000",
-			Bucket:  "semaphore-cache",
-			Project: "cache-cli",
-			Config:  StorageConfig{MaxSpace: math.MaxInt64},
-		})
+type TestStorageType struct {
+	runInWindows bool
+	initializer  func(storageSize int64) (Storage, error)
+}
+
+var testStorageTypes = map[string]TestStorageType{
+	"s3": {
+		runInWindows: true,
+		initializer: func(storageSize int64) (Storage, error) {
+			return NewS3Storage(S3StorageOptions{
+				URL:     os.Getenv("SEMAPHORE_CACHE_S3_URL"),
+				Bucket:  "semaphore-cache",
+				Project: "cache-cli",
+				Config:  StorageConfig{MaxSpace: math.MaxInt64},
+			})
+		},
 	},
-	"sftp": func(storageSize int64) (Storage, error) {
-		return NewSFTPStorage(SFTPStorageOptions{
-			URL:            "sftp-server:22",
-			Username:       "tester",
-			PrivateKeyPath: "/root/.ssh/semaphore_cache_key",
-			Config:         StorageConfig{MaxSpace: storageSize},
-		})
+	"sftp": {
+		runInWindows: false,
+		initializer: func(storageSize int64) (Storage, error) {
+			return NewSFTPStorage(SFTPStorageOptions{
+				URL:            "sftp-server:22",
+				Username:       "tester",
+				PrivateKeyPath: "/root/.ssh/semaphore_cache_key",
+				Config:         StorageConfig{MaxSpace: storageSize},
+			})
+		},
 	},
 }
 
 func runTestForAllStorageTypes(t *testing.T, test func(string, Storage)) {
-	for storageType, storageProvider := range storageTypes {
-		storage, err := storageProvider(9 * 1024 * 1024 * 1024)
+	for storageType, testStorage := range testStorageTypes {
+		if runtime.GOOS == "windows" && !testStorage.runInWindows {
+			continue
+		}
+
+		storage, err := testStorage.initializer(9 * 1024 * 1024 * 1024)
 		if assert.Nil(t, err) {
 			test(storageType, storage)
 		}
@@ -36,8 +53,8 @@ func runTestForAllStorageTypes(t *testing.T, test func(string, Storage)) {
 }
 
 func runTestForSingleStorageType(storageType string, storageSize int64, t *testing.T, test func(Storage)) {
-	storageProvider := storageTypes[storageType]
-	storage, err := storageProvider(storageSize)
+	storageProvider := testStorageTypes[storageType]
+	storage, err := storageProvider.initializer(storageSize)
 	if assert.Nil(t, err) {
 		test(storage)
 	}

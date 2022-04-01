@@ -21,7 +21,7 @@ func Test__IsNotEmpty(t *testing.T) {
 		t.Run(fmt.Sprintf("%s non-empty cache", storageType), func(t *testing.T) {
 			_ = storage.Clear()
 
-			file, _ := ioutil.TempFile("/tmp", "*")
+			file, _ := ioutil.TempFile(os.TempDir(), "*")
 			_ = storage.Store("abc001", file.Name())
 
 			isNotEmpty, err := storage.IsNotEmpty()

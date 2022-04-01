@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
@@ -24,7 +25,7 @@ func Test__List(t *testing.T) {
 
 		t.Run(fmt.Sprintf("%s with keys", backend), func(*testing.T) {
 			storage.Clear()
-			tempFile, _ := ioutil.TempFile("/tmp", "*")
+			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 			storage.Store("abc001", tempFile.Name())
 			storage.Store("abc002", tempFile.Name())
 			storage.Store("abc003", tempFile.Name())

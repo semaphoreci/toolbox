@@ -24,5 +24,10 @@ func (s *S3Storage) Store(key, path string) error {
 		Body:   file,
 	})
 
-	return err
+	if err != nil {
+		fmt.Printf("Error uploading: %v\n", err)
+		return err
+	}
+
+	return file.Close()
 }

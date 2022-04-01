@@ -33,7 +33,10 @@ func Test__LookupStore(t *testing.T) {
 			{
 				DetectedFile: ".nvmrc",
 				Entries: []LookupResultEntry{
-					{Path: fmt.Sprintf("%s/.nvm", homedir), Keys: []string{fmt.Sprintf("nvm-master-%s", checksum)}},
+					{
+						Path: filepath.FromSlash(fmt.Sprintf("%s/.nvm", homedir)),
+						Keys: []string{fmt.Sprintf("nvm-master-%s", checksum)},
+					},
 				},
 			},
 		})
@@ -48,7 +51,10 @@ func Test__LookupStore(t *testing.T) {
 			{
 				DetectedFile: "Gemfile.lock",
 				Entries: []LookupResultEntry{
-					{Path: "vendor/bundle", Keys: []string{fmt.Sprintf("gems-master-%s", checksum)}},
+					{
+						Path: filepath.FromSlash("vendor/bundle"),
+						Keys: []string{fmt.Sprintf("gems-master-%s", checksum)},
+					},
 				},
 			},
 		})
@@ -123,7 +129,10 @@ func Test__LookupStore(t *testing.T) {
 			{
 				DetectedFile: "go.sum",
 				Entries: []LookupResultEntry{
-					{Path: fmt.Sprintf("%s/go/pkg/mod", homedir), Keys: []string{fmt.Sprintf("go-master-%s", checksum)}},
+					{
+						Path: filepath.FromSlash(fmt.Sprintf("%s/go/pkg/mod", homedir)),
+						Keys: []string{fmt.Sprintf("go-master-%s", checksum)},
+					},
 				},
 			},
 		})
@@ -138,8 +147,14 @@ func Test__LookupStore(t *testing.T) {
 			{
 				DetectedFile: "yarn.lock",
 				Entries: []LookupResultEntry{
-					{Path: fmt.Sprintf("%s/.cache/yarn", homedir), Keys: []string{fmt.Sprintf("yarn-cache-master-%s", checksum)}},
-					{Path: "node_modules", Keys: []string{fmt.Sprintf("node-modules-master-%s", checksum)}},
+					{
+						Path: filepath.FromSlash(fmt.Sprintf("%s/.cache/yarn", homedir)),
+						Keys: []string{fmt.Sprintf("yarn-cache-master-%s", checksum)},
+					},
+					{
+						Path: "node_modules",
+						Keys: []string{fmt.Sprintf("node-modules-master-%s", checksum)},
+					},
 				},
 			},
 		})
@@ -225,11 +240,14 @@ func Test__LookupRestore(t *testing.T) {
 			{
 				DetectedFile: ".nvmrc",
 				Entries: []LookupResultEntry{
-					{Path: fmt.Sprintf("%s/.nvm", homedir), Keys: []string{
-						fmt.Sprintf("nvm-some-branch-%s", checksum),
-						"nvm-some-branch",
-						"nvm-master",
-					}},
+					{
+						Path: filepath.FromSlash(fmt.Sprintf("%s/.nvm", homedir)),
+						Keys: []string{
+							fmt.Sprintf("nvm-some-branch-%s", checksum),
+							"nvm-some-branch",
+							"nvm-master",
+						},
+					},
 				},
 			},
 		})
@@ -244,11 +262,14 @@ func Test__LookupRestore(t *testing.T) {
 			{
 				DetectedFile: "Gemfile.lock",
 				Entries: []LookupResultEntry{
-					{Path: "vendor/bundle", Keys: []string{
-						fmt.Sprintf("gems-some-branch-%s", checksum),
-						"gems-some-branch",
-						"gems-master",
-					}},
+					{
+						Path: filepath.FromSlash("vendor/bundle"),
+						Keys: []string{
+							fmt.Sprintf("gems-some-branch-%s", checksum),
+							"gems-some-branch",
+							"gems-master",
+						},
+					},
 				},
 			},
 		})
@@ -339,11 +360,14 @@ func Test__LookupRestore(t *testing.T) {
 			{
 				DetectedFile: "go.sum",
 				Entries: []LookupResultEntry{
-					{Path: fmt.Sprintf("%s/go/pkg/mod", homedir), Keys: []string{
-						fmt.Sprintf("go-some-branch-%s", checksum),
-						"go-some-branch",
-						"go-master",
-					}},
+					{
+						Path: filepath.FromSlash(fmt.Sprintf("%s/go/pkg/mod", homedir)),
+						Keys: []string{
+							fmt.Sprintf("go-some-branch-%s", checksum),
+							"go-some-branch",
+							"go-master",
+						},
+					},
 				},
 			},
 		})
@@ -358,16 +382,22 @@ func Test__LookupRestore(t *testing.T) {
 			{
 				DetectedFile: "yarn.lock",
 				Entries: []LookupResultEntry{
-					{Path: fmt.Sprintf("%s/.cache/yarn", homedir), Keys: []string{
-						fmt.Sprintf("yarn-cache-some-branch-%s", checksum),
-						"yarn-cache-some-branch",
-						"yarn-cache-master",
-					}},
-					{Path: "node_modules", Keys: []string{
-						fmt.Sprintf("node-modules-some-branch-%s", checksum),
-						"node-modules-some-branch",
-						"node-modules-master",
-					}},
+					{
+						Path: filepath.FromSlash(fmt.Sprintf("%s/.cache/yarn", homedir)),
+						Keys: []string{
+							fmt.Sprintf("yarn-cache-some-branch-%s", checksum),
+							"yarn-cache-some-branch",
+							"yarn-cache-master",
+						},
+					},
+					{
+						Path: "node_modules",
+						Keys: []string{
+							fmt.Sprintf("node-modules-some-branch-%s", checksum),
+							"node-modules-some-branch",
+							"node-modules-master",
+						},
+					},
 				},
 			},
 		})
