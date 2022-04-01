@@ -9,7 +9,10 @@ function Initialize-Repository {
     if SEMAPHORE_GIT_REF_TYPE is set, a ref-based checkout will be done. If not, a shallow checkout is done.
   #>
 
-  Get-Command git > $null
+  Get-Command git -ErrorAction 'SilentlyContinue' > $null
+  if (-not $?) {
+    throw "git is not available"
+  }
 
   if (-not (Test-Path env:SEMAPHORE_GIT_BRANCH)) {
     throw "SEMAPHORE_GIT_BRANCH is required"
