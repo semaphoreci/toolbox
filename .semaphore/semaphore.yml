@@ -460,6 +460,58 @@ blocks:
           commands:
             - make check.static
 
+  - name: SHM Test Bionic
+    dependencies:
+      - 'Build local CLIs'
+    task:
+      prologue:
+        commands:
+          - checkout
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - bash release/create.sh
+          - source release/install_in_tests.sh
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+
+      jobs:
+        - name: SHM Test Bionic
+          commands:
+            - sed -i "s/\/tmp\/system-metrics/\/tmp\/system-metrics2/g" ~/.toolbox/system-metrics-collector
+            - . ~/.toolbox/system-metrics-collector &
+            - sleep 2
+            - bats tests/shm/shm_ubuntu.bats
+            - cat /tmp/system-metrics2
+
+  - name: SHM Test Docker
+    dependencies:
+      - 'Build local CLIs'
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+        containers:
+          - name: main
+            image: 'registry.semaphoreci.com/ubuntu:18.04'
+      prologue:
+        commands:
+          - checkout
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - bash release/create.sh
+          - source release/install_in_tests.sh
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+
+      jobs:
+        - name: SHM Test Docker
+          commands:
+            - sed -i "s/\/tmp\/system-metrics/\/tmp\/system-metrics2/g" ~/.toolbox/system-metrics-collector
+            - . ~/.toolbox/system-metrics-collector &
+            - sleep 2
+            - bats tests/shm/shm_docker.bats
+            - cat /tmp/system-metrics2
+
 after_pipeline:
   task:
     jobs:
