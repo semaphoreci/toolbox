@@ -3,6 +3,12 @@
 load "../support/bats-support/load"
 load "../support/bats-assert/load"
 
+setup() {
+  curl http://packages.semaphoreci.com/tools/shm_512mb -o ~/toolbox/tests/shm/shm_512mb
+  curl http://packages.semaphoreci.com/tools/shm_1024mb -o ~/toolbox/tests/shm/shm_1024mb
+  chmod +x ~/toolbox/tests/shm/shm_*mb
+}
+
 @test "shm: write 512MB to shared memory" {
   run ~/toolbox/tests/shm/shm_512mb
   assert_line --partial "Writing Process: Shared Memory Write: Wrote 536870911 bytes"
