@@ -4,7 +4,7 @@ set -euo pipefail
 
 ARTIFACT_CLI_VERSION="v0.5.2"
 WHEN_CLI_VERSION="v1.0.5"
-SPC_CLI_VERSION="v1.9.1"
+SPC_CLI_VERSION="v1.9.2"
 TEST_RESULTS_CLI_VERSION="v0.4.12"
 
 ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
@@ -117,6 +117,8 @@ self_hosted::pack() {
   include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Darwin
   include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Linux
   include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Darwin
+  include_external_linux_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Linux
+  include_external_darwin_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Darwin
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/cache /tmp/self-hosted-Linux/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/cache /tmp/self-hosted-Darwin/toolbox/
 }
