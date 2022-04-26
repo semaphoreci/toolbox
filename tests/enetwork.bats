@@ -23,7 +23,7 @@ http_access deny all
 EOF
 
   htpasswd -bc /tmp/squid/htaccess user password
-  docker run --rm -d --name squid -p 3128:3128 -v /tmp/squid:/etc/squid ubuntu/squid:latest
+  docker run --rm -d --name squid -p 3128:3128 -v /tmp/squid:/etc/squid registry.semaphoreci.com/squid:latest
   sleep 10
 }
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Simple log system metrics collector. Polls the system state every 30s and

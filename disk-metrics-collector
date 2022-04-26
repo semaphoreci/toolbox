@@ -1,0 +1,56 @@
+#!/bin/bash
+
+OUTPUT="/tmp/disk-metrics"
+
+DISK1="sda"
+DISK2="sdb"
+DISK3="sdc"
+DISK4="nbd0"
+
+rio_prev_disk1=0
+wio_prev_disk1=0
+rio_prev_disk2=0
+wio_prev_disk2=0
+rio_prev_disk3=0
+wio_prev_disk3=0
+rio_prev_disk4=0
+wio_prev_disk4=0
+
+printf ''"$(date)"' | [Disk] rMB/s wMB/s \t[Disk] rMB/s wMB/s \t[Disk] rMB/s wMB/s \t[Disk] rMB/s wMB/s \n'  >> $OUTPUT
+
+while true ; do
+
+  curr=$(cat /proc/diskstats | awk '$3=="'$DISK1'" || $3=="'$DISK2'" || $3=="'$DISK3'" || $3=="'$DISK4'" {print $6" "$10}')
+
+  rio_curr_disk1=$(echo $curr | awk '{print $1}')
+  wio_curr_disk1=$(echo $curr | awk '{print $2}')
+  rio_curr_disk2=$(echo $curr | awk '{print $3}')
+  wio_curr_disk2=$(echo $curr | awk '{print $4}')
+  rio_curr_disk3=$(echo $curr | awk '{print $5}')
+  wio_curr_disk3=$(echo $curr | awk '{print $6}')
+  rio_curr_disk4=$(echo $curr | awk '{print $7}')
+  wio_curr_disk4=$(echo $curr | awk '{print $8}')
+
+  rio_disk1=$(((rio_curr_disk1 - rio_prev_disk1)*512/1024/1024))
+  wio_disk1=$(((wio_curr_disk1 - wio_prev_disk1)*512/1024/1024))
+  rio_disk2=$(((rio_curr_disk2 - rio_prev_disk2)*512/1024/1024))
+  wio_disk2=$(((wio_curr_disk2 - wio_prev_disk2)*512/1024/1024))
+  rio_disk3=$(((rio_curr_disk3 - rio_prev_disk3)*512/1024/1024))
+  wio_disk3=$(((wio_curr_disk3 - wio_prev_disk3)*512/1024/1024))
+  rio_disk4=$(((rio_curr_disk4 - rio_prev_disk4)*512/1024/1024))
+  wio_disk4=$(((wio_curr_disk4 - wio_prev_disk4)*512/1024/1024))
+
+  printf ''"$(date) | [$DISK1]"'%5s %5s \t'"[$DISK2]"'%5s %5s \t'"[$DISK3]"'%5s %5s \t'"[$DISK4]"'%5s %5s \n' "$rio_disk1" "$wio_disk1" "$rio_disk2" "$wio_disk2" "$rio_disk3" "$wio_disk3" "$rio_disk4" "$wio_disk4" >> $OUTPUT
+
+  rio_prev_disk1=$rio_curr_disk1
+  wio_prev_disk1=$wio_curr_disk1
+  rio_prev_disk2=$rio_curr_disk2
+  wio_prev_disk2=$wio_curr_disk2
+  rio_prev_disk3=$rio_curr_disk3
+  wio_prev_disk3=$wio_curr_disk3
+  rio_prev_disk4=$rio_curr_disk4
+  wio_prev_disk4=$wio_curr_disk4
+
+  sleep 1
+
+done

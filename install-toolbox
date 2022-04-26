@@ -146,9 +146,14 @@ if [[ `uname` != "Darwin" ]]; then
 
 
   echo "Starting to collect System Metrics in /tmp/system-metrics"
-
   # failure won't be propagated to the caller in case of using &
   sh ~/.toolbox/system-metrics-collector &
+
+
+  echo "Starting to collect Disk Metrics in /tmp/disk-metrics"
+  # failure won't be propagated to the caller in case of using &
+  sh ~/.toolbox/disk-metrics-collector &
+
 fi
 
 echo "toolbox_install_total 1" >> /tmp/toolbox_metrics

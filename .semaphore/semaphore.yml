@@ -480,7 +480,7 @@ blocks:
             - sed -i "s/\/tmp\/system-metrics/\/tmp\/system-metrics2/g" ~/.toolbox/system-metrics-collector
             - . ~/.toolbox/system-metrics-collector &
             - sleep 2
-            - bats tests/shm/shm_ubuntu.bats
+            - bats tests/shm.bats
             - cat /tmp/system-metrics2
 
   - name: SHM Test Docker
@@ -509,8 +509,63 @@ blocks:
             - sed -i "s/\/tmp\/system-metrics/\/tmp\/system-metrics2/g" ~/.toolbox/system-metrics-collector
             - . ~/.toolbox/system-metrics-collector &
             - sleep 2
-            - bats tests/shm/shm_docker.bats
+            - bats tests/shm.bats
             - cat /tmp/system-metrics2
+
+  - name: Disk IO Test Bionic
+    dependencies:
+      - 'Build local CLIs'
+    task:
+      prologue:
+        commands:
+          - checkout
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - bash release/create.sh
+          - source release/install_in_tests.sh
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+
+      jobs:
+        - name: Disk IO Test Bionic
+          commands:
+            - pkill -f disk-metrics-collector
+            - . ~/.toolbox/disk-metrics-collector &
+            - bats tests/disk_io_ubuntu.bats
+            - cat /tmp/disk-metrics
+            - cat /tmp/disk-metrics | awk '{sum1+=$9} {sum2+=$12} END {print sum1+sum2}'
+            - cat /tmp/disk-metrics | awk '{sum1+=$10} {sum2+=$13} END {print sum1+sum2}'
+
+
+  - name: Disk IO Test Docker
+    dependencies:
+      - 'Build local CLIs'
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+        containers:
+          - name: main
+            image: 'registry.semaphoreci.com/ubuntu:18.04'
+      prologue:
+        commands:
+          - checkout
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - bash release/create.sh
+          - source release/install_in_tests.sh
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+
+      jobs:
+        - name: Disk IO Test Docker
+          commands:
+            - pkill -f disk-metrics-collector
+            - . ~/.toolbox/disk-metrics-collector &
+            - bats tests/disk_io_docker.bats
+            - cat /tmp/disk-metrics
+            - cat /tmp/disk-metrics | awk '{sum+=$18} END {print sum}'
+            - cat /tmp/disk-metrics | awk '{sum+=$19} END {print sum}'
 
 after_pipeline:
   task:
