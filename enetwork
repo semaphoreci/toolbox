@@ -5,6 +5,8 @@ GatewayPassword=${SEMAPHORE_DOCKERGW_PASSWORD,-''}
 GatewayEndPoint=${SEMAPHORE_DOCKERGW_ENDPOINT,-''}
 GatewayEndPointPort=${SEMAPHORE_DOCKERGW_ENDPOINT_PORT,-''}
 
+sudo mkdir -p /etc/systemd/system/docker.service.d
+
 en_create_proxy_conf() {
   sudo tee /etc/systemd/system/docker.service.d/proxy.conf <<EOF >/dev/null
 [Service]
