@@ -18,7 +18,7 @@ var testBackends = map[string]TestBackend{
 	"s3": {
 		runInWindows: true,
 		envVars: map[string]string{
-			"SEMAPHORE_PROJECT_NAME":    "cache-cli",
+			"SEMAPHORE_PROJECT_ID":      "cache-cli",
 			"SEMAPHORE_CACHE_BACKEND":   "s3",
 			"SEMAPHORE_CACHE_S3_URL":    os.Getenv("SEMAPHORE_CACHE_S3_URL"),
 			"SEMAPHORE_CACHE_S3_BUCKET": "semaphore-cache",
