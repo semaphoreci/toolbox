@@ -111,7 +111,6 @@ func Test__AutomaticStore(t *testing.T) {
 
 			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
 			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
-			os.Setenv("SEMAPHORE_GIT_REF_TYPE", "branch")
 			os.Setenv("SEMAPHORE_GIT_PR_BRANCH", "")
 			os.MkdirAll("vendor/bundle", os.ModePerm)
 
@@ -136,7 +135,6 @@ func Test__AutomaticStore(t *testing.T) {
 
 			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
 			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
-			os.Setenv("SEMAPHORE_GIT_REF_TYPE", "pull-request")
 			os.Setenv("SEMAPHORE_GIT_PR_BRANCH", "some-development-branch")
 			os.MkdirAll("vendor/bundle", os.ModePerm)
 
@@ -161,7 +159,6 @@ func Test__AutomaticStore(t *testing.T) {
 
 			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
 			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
-			os.Setenv("SEMAPHORE_GIT_REF_TYPE", "branch")
 			os.Setenv("SEMAPHORE_GIT_PR_BRANCH", "")
 			os.MkdirAll("vendor/bundle", os.ModePerm)
 
