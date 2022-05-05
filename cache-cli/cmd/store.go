@@ -35,7 +35,7 @@ func RunStore(cmd *cobra.Command, args []string) {
 
 	if len(args) == 0 {
 		lookupResults := files.Lookup(files.LookupOptions{
-			GitBranch: os.Getenv("SEMAPHORE_GIT_BRANCH"),
+			GitBranch: FindGitBranch(),
 			Restore:   false,
 		})
 
@@ -119,6 +119,15 @@ func NormalizeKey(key string) string {
 	}
 
 	return normalizedKey
+}
+
+func FindGitBranch() string {
+	gitPrBranch := os.Getenv("SEMAPHORE_GIT_PR_BRANCH")
+	if gitPrBranch != "" {
+		return gitPrBranch
+	}
+
+	return os.Getenv("SEMAPHORE_GIT_BRANCH")
 }
 
 func init() {

@@ -106,11 +106,12 @@ func Test__AutomaticStore(t *testing.T) {
 			assert.Contains(t, output, fmt.Sprintf("'%s' doesn't exist locally.", filepath.FromSlash("vendor/bundle")))
 		})
 
-		t.Run(fmt.Sprintf("%s detects and stores", backend), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s detects and stores using SEMAPHORE_GIT_BRANCH", backend), func(t *testing.T) {
 			storage.Clear()
 
 			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
 			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
+			os.Setenv("SEMAPHORE_GIT_PR_BRANCH", "")
 			os.MkdirAll("vendor/bundle", os.ModePerm)
 
 			checksum, _ := files.GenerateChecksum("Gemfile.lock")
@@ -129,11 +130,36 @@ func Test__AutomaticStore(t *testing.T) {
 			os.RemoveAll("vendor")
 		})
 
+		t.Run(fmt.Sprintf("%s detects and stores using SEMAPHORE_GIT_PR_BRANCH", backend), func(t *testing.T) {
+			storage.Clear()
+
+			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
+			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
+			os.Setenv("SEMAPHORE_GIT_PR_BRANCH", "some-development-branch")
+			os.MkdirAll("vendor/bundle", os.ModePerm)
+
+			checksum, _ := files.GenerateChecksum("Gemfile.lock")
+
+			key := fmt.Sprintf("gems-some-development-branch-%s", checksum)
+
+			capturer := utils.CreateOutputCapturer()
+			RunStore(storeCmd, []string{})
+			output := capturer.Done()
+
+			assert.Contains(t, output, "Detected Gemfile.lock")
+			assert.Contains(t, output, fmt.Sprintf("Compressing %s", filepath.FromSlash("vendor/bundle")))
+			assert.Contains(t, output, fmt.Sprintf("Uploading '%s' with cache key '%s'", filepath.FromSlash("vendor/bundle"), key))
+			assert.Contains(t, output, "Upload complete")
+
+			os.RemoveAll("vendor")
+		})
+
 		t.Run(fmt.Sprintf("%s does not store if key already exist", backend), func(t *testing.T) {
 			storage.Clear()
 
 			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
 			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
+			os.Setenv("SEMAPHORE_GIT_PR_BRANCH", "")
 			os.MkdirAll("vendor/bundle", os.ModePerm)
 
 			checksum, _ := files.GenerateChecksum("Gemfile.lock")

@@ -183,16 +183,44 @@ func Test__AutomaticRestore(t *testing.T) {
 			assert.Contains(t, output, "Nothing to restore from cache")
 		})
 
-		t.Run(fmt.Sprintf("%s detects and restores", backend), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s detects and restores using SEMAPHORE_GIT_BRANCH", backend), func(t *testing.T) {
 			storage.Clear()
 
 			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
 			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
+			os.Setenv("SEMAPHORE_GIT_PR_BRANCH", "")
 			os.MkdirAll("vendor/bundle", os.ModePerm)
 
 			// storing
 			checksum, _ := files.GenerateChecksum("Gemfile.lock")
 			key := fmt.Sprintf("gems-master-%s", checksum)
+			compressedFile, _ := files.Compress(key, "vendor/bundle")
+			storage.Store(key, compressedFile)
+
+			// restoring
+			capturer := utils.CreateOutputCapturer()
+			RunRestore(restoreCmd, []string{})
+			output := capturer.Done()
+
+			assert.Contains(t, output, "Detected Gemfile.lock")
+			assert.Contains(t, output, fmt.Sprintf("Downloading key '%s'", key))
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s", filepath.FromSlash("vendor/bundle")))
+
+			os.RemoveAll("vendor")
+			os.Remove(compressedFile)
+		})
+
+		t.Run(fmt.Sprintf("%s detects and restores using SEMAPHORE_GIT_PR_BRANCH", backend), func(t *testing.T) {
+			storage.Clear()
+
+			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
+			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
+			os.Setenv("SEMAPHORE_GIT_PR_BRANCH", "some-development-branch")
+			os.MkdirAll("vendor/bundle", os.ModePerm)
+
+			// storing
+			checksum, _ := files.GenerateChecksum("Gemfile.lock")
+			key := fmt.Sprintf("gems-some-development-branch-%s", checksum)
 			compressedFile, _ := files.Compress(key, "vendor/bundle")
 			storage.Store(key, compressedFile)
 

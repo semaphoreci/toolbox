@@ -40,7 +40,7 @@ func RunRestore(cmd *cobra.Command, args []string) {
 
 	if len(args) == 0 {
 		lookupResults := files.Lookup(files.LookupOptions{
-			GitBranch: os.Getenv("SEMAPHORE_GIT_BRANCH"),
+			GitBranch: FindGitBranch(),
 			Restore:   true,
 		})
 
