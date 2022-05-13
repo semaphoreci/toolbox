@@ -42,9 +42,9 @@ function Initialize-Repository {
 
     "pull-request" {
       Write-Output "Initializing repository for pull-request..."
-      git clone --depth $env:SEMAPHORE_GIT_DEPTH $env:SEMAPHORE_GIT_URL $env:SEMAPHORE_GIT_DIR 2> $null
+      git clone --depth $env:SEMAPHORE_GIT_DEPTH $env:SEMAPHORE_GIT_URL $env:SEMAPHORE_GIT_DIR
       Set-Location $env:SEMAPHORE_GIT_DIR
-      git fetch origin +${env:SEMAPHORE_GIT_REF}: 2> $null
+      git fetch origin +${env:SEMAPHORE_GIT_REF}:
       if (-not $?) {
         throw "Revision: $env:SEMAPHORE_GIT_SHA not found"
       } else {
@@ -55,7 +55,7 @@ function Initialize-Repository {
 
     "tag" {
       Write-Output "Initializing repository for tag..."
-      git clone --depth $env:SEMAPHORE_GIT_DEPTH -b $env:SEMAPHORE_GIT_TAG_NAME $env:SEMAPHORE_GIT_URL $env:SEMAPHORE_GIT_DIR 2> $null
+      git clone --depth $env:SEMAPHORE_GIT_DEPTH -b $env:SEMAPHORE_GIT_TAG_NAME $env:SEMAPHORE_GIT_URL $env:SEMAPHORE_GIT_DIR
       if (-not $?) {
         throw "Release $env:SEMAPHORE_GIT_TAG_NAME not found"
       } else {
@@ -80,18 +80,18 @@ function Initialize-ShallowRepository() {
     git clone $env:SEMAPHORE_GIT_URL $env:SEMAPHORE_GIT_DIR
     Set-Location $env:SEMAPHORE_GIT_DIR
     if (Test-Revision) {
-      git reset --hard $env:SEMAPHORE_GIT_SHA 2> $null
+      git reset --hard $env:SEMAPHORE_GIT_SHA
     } else {
       throw "SHA: $env:SEMAPHORE_GIT_SHA not found"
     }
   } else {
     Set-Location $env:SEMAPHORE_GIT_DIR
-    git reset --hard $env:SEMAPHORE_GIT_SHA 2> $null
+    git reset --hard $env:SEMAPHORE_GIT_SHA
     if (-not $?) {
       Write-Output "SHA: $env:SEMAPHORE_GIT_SHA not found, performing full clone"
       git fetch --unshallow
       if (Test-Revision) {
-        git reset --hard $env:SEMAPHORE_GIT_SHA 2> $null
+        git reset --hard $env:SEMAPHORE_GIT_SHA
       } else {
         throw "SHA: $env:SEMAPHORE_GIT_SHA not found"
       }
@@ -100,7 +100,7 @@ function Initialize-ShallowRepository() {
 }
 
 function Test-Revision {
-  git rev-list HEAD..$env:SEMAPHORE_GIT_SHA 2> $null
+  git rev-list HEAD..$env:SEMAPHORE_GIT_SHA
   if (-not $?) {
     return $false
   }
