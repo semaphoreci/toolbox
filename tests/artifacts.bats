@@ -10,6 +10,7 @@ setup() {
 teardown() {
   rm -rf /tmp/unique-file-$SEMAPHORE_JOB_ID
   rm -rf from-stdin-$SEMAPHORE_JOB_ID
+  rm -rf unique-file-$SEMAPHORE_JOB_ID
 }
 
 @test "artifacts - uploading to project level" {
@@ -41,7 +42,7 @@ teardown() {
   run artifact push workflow /tmp/unique-file-$SEMAPHORE_JOB_ID -v
   assert_success
 
-  run artifact pull workflow unique-file-$SEMAPHORE_JOB_ID
+  run artifact pull workflow unique-file-$SEMAPHORE_JOB_ID -v
   assert_success
   run cat unique-file-$SEMAPHORE_JOB_ID
   assert_output "hello"
@@ -51,38 +52,38 @@ teardown() {
 }
 
 @test "artifacts - uploading to workflows level using stdin" {
-  echo "from stdin" | artifact push workflow - -d from-stdin-$SEMAPHORE_JOB_ID
+  echo "from stdin" | artifact push workflow - -d from-stdin-$SEMAPHORE_JOB_ID -v
 
-  run artifact pull workflow from-stdin-$SEMAPHORE_JOB_ID
+  run artifact pull workflow from-stdin-$SEMAPHORE_JOB_ID -v
   assert_success
-  run cat from-stdin-$SEMAPHORE_JOB_ID
+  run cat from-stdin-$SEMAPHORE_JOB_ID -v
   assert_output "from stdin"
 
-  run artifact yank workflow from-stdin-$SEMAPHORE_JOB_ID
+  run artifact yank workflow from-stdin-$SEMAPHORE_JOB_ID -v
   assert_success
 }
 
 @test "artifacts - uploading to job level" {
-  run artifact push job /tmp/unique-file-$SEMAPHORE_JOB_ID
+  run artifact push job /tmp/unique-file-$SEMAPHORE_JOB_ID -v
   assert_success
 
-  run artifact pull job unique-file-$SEMAPHORE_JOB_ID
+  run artifact pull job unique-file-$SEMAPHORE_JOB_ID -v
   assert_success
   run cat unique-file-$SEMAPHORE_JOB_ID
   assert_output "hello"
 
-  run artifact yank job unique-file-$SEMAPHORE_JOB_ID
+  run artifact yank job unique-file-$SEMAPHORE_JOB_ID -v
   assert_success
 }
 
 @test "artifacts - uploading to job level using stdin" {
-  echo "from stdin" | artifact push job - -d from-stdin-$SEMAPHORE_JOB_ID
+  echo "from stdin" | artifact push job - -d from-stdin-$SEMAPHORE_JOB_ID -v
 
-  run artifact pull job from-stdin-$SEMAPHORE_JOB_ID
+  run artifact pull job from-stdin-$SEMAPHORE_JOB_ID -v
   assert_success
   run cat from-stdin-$SEMAPHORE_JOB_ID
   assert_output "from stdin"
 
-  run artifact yank job from-stdin-$SEMAPHORE_JOB_ID
+  run artifact yank job from-stdin-$SEMAPHORE_JOB_ID -v
   assert_success
 }
