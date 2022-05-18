@@ -11,6 +11,8 @@ teardown() {
   rm -rf /tmp/unique-file-$SEMAPHORE_JOB_ID
   rm -rf from-stdin-$SEMAPHORE_JOB_ID
   rm -rf unique-file-$SEMAPHORE_JOB_ID
+  rm -rf image-$SEMAPHORE_JOB_ID.gz
+  rm -rf image-$SEMAPHORE_JOB_ID
 }
 
 @test "artifacts - uploading to project level" {
@@ -40,6 +42,20 @@ teardown() {
   assert_success
 }
 
+@test "artifacts - uploading bigger file to project level using stdin" {
+  run bash -c "docker image save alpine/helm | gzip | artifact push project - -d image-$SEMAPHORE_JOB_ID.gz -v"
+  assert_success
+
+  run artifact pull project image-$SEMAPHORE_JOB_ID.gz -v
+  assert_success
+
+  run gzip -d image-$SEMAPHORE_JOB_ID.gz
+  assert_success
+
+  run artifact yank project image-$SEMAPHORE_JOB_ID.gz -v
+  assert_success
+}
+
 @test "artifacts - uploading to workflow level" {
   run artifact push workflow /tmp/unique-file-$SEMAPHORE_JOB_ID -v
   assert_success
@@ -66,6 +82,20 @@ teardown() {
   assert_success
 }
 
+@test "artifacts - uploading bigger file to workflow level using stdin" {
+  run bash -c "docker image save alpine/helm | gzip | artifact push workflow - -d image-$SEMAPHORE_JOB_ID.gz -v"
+  assert_success
+
+  run artifact pull workflow image-$SEMAPHORE_JOB_ID.gz -v
+  assert_success
+
+  run gzip -d image-$SEMAPHORE_JOB_ID.gz
+  assert_success
+
+  run artifact yank workflow image-$SEMAPHORE_JOB_ID.gz -v
+  assert_success
+}
+
 @test "artifacts - uploading to job level" {
   run artifact push job /tmp/unique-file-$SEMAPHORE_JOB_ID -v
   assert_success
@@ -89,5 +119,19 @@ teardown() {
   assert_output "from stdin"
 
   run artifact yank job from-stdin-$SEMAPHORE_JOB_ID -v
+  assert_success
+}
+
+@test "artifacts - uploading bigger file to job level using stdin" {
+  run bash -c "docker image save alpine/helm | gzip | artifact push job - -d image-$SEMAPHORE_JOB_ID.gz -v"
+  assert_success
+
+  run artifact pull job image-$SEMAPHORE_JOB_ID.gz -v
+  assert_success
+
+  run gzip -d image-$SEMAPHORE_JOB_ID.gz
+  assert_success
+
+  run artifact yank job image-$SEMAPHORE_JOB_ID.gz -v
   assert_success
 }
