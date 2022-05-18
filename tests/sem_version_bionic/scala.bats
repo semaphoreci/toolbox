@@ -23,12 +23,12 @@ setup() {
   source ~/.toolbox/toolbox
 }
 #  scala
-@test "change scala to 2.11" {
+@test "change scala to 2.12" {
 
   run scala -version
   assert_line --partial "2.12"
 
-  sem-version scala 2.11
+  sem-version scala 2.12
   run scala -version
-  assert_line --partial "2.11"
+  assert_line --partial "2.12"
 }
