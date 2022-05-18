@@ -7,6 +7,11 @@ setup() {
   echo "hello" > /tmp/unique-file-$SEMAPHORE_JOB_ID
 }
 
+teardown() {
+  rm -rf /tmp/unique-file-$SEMAPHORE_JOB_ID
+  rm -rf from-stdin-$SEMAPHORE_JOB_ID
+}
+
 @test "artifacts - uploading to project level" {
   run artifact push project /tmp/unique-file-$SEMAPHORE_JOB_ID -v
   assert_success
@@ -21,11 +26,10 @@ setup() {
 }
 
 @test "artifacts - uploading to project level using stdin" {
-  run echo "from stdin" | artifact push project - -d from-stdin-$SEMAPHORE_JOB_ID -v
-  assert_success
-
+  echo "from stdin" | artifact push project - -d from-stdin-$SEMAPHORE_JOB_ID -v
   run artifact pull project from-stdin-$SEMAPHORE_JOB_ID -v
   assert_success
+
   run cat from-stdin-$SEMAPHORE_JOB_ID
   assert_output "from stdin"
 
@@ -47,8 +51,7 @@ setup() {
 }
 
 @test "artifacts - uploading to workflows level using stdin" {
-  run echo "from stdin" | artifact push workflow - -d from-stdin-$SEMAPHORE_JOB_ID
-  assert_success
+  echo "from stdin" | artifact push workflow - -d from-stdin-$SEMAPHORE_JOB_ID
 
   run artifact pull workflow from-stdin-$SEMAPHORE_JOB_ID
   assert_success
@@ -73,8 +76,7 @@ setup() {
 }
 
 @test "artifacts - uploading to job level using stdin" {
-  run echo "from stdin" | artifact push job - -d from-stdin-$SEMAPHORE_JOB_ID
-  assert_success
+  echo "from stdin" | artifact push job - -d from-stdin-$SEMAPHORE_JOB_ID
 
   run artifact pull job from-stdin-$SEMAPHORE_JOB_ID
   assert_success
