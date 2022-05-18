@@ -23,18 +23,18 @@ setup() {
 }
 
 
-@test "sem-version flutter 2.8.1" {
+@test "sem-version flutter 3.0.0" {
 
-  run sem-version flutter 2.8.1
+  run sem-version flutter 3.0.0
   assert_success
-  assert_line --partial "2.8.1"
+  assert_line --partial "3.0.0"
 }
 
-@test "sem-version flutter 2.8" {
+@test "sem-version flutter 3.0" {
 
-  run sem-version flutter 2.8
+  run sem-version flutter 3.0
   assert_success
-  assert_line --partial "2.8.1"
+  assert_line --partial "3.0.0"
 }
 
 
