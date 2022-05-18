@@ -27,7 +27,9 @@ teardown() {
 }
 
 @test "artifacts - uploading to project level using stdin" {
-  echo "from stdin" | artifact push project - -d from-stdin-$SEMAPHORE_JOB_ID -v
+  run bash -c "echo 'from stdin' | artifact push project - -d from-stdin-$SEMAPHORE_JOB_ID -v"
+  assert_success
+
   run artifact pull project from-stdin-$SEMAPHORE_JOB_ID -v
   assert_success
 
@@ -52,11 +54,12 @@ teardown() {
 }
 
 @test "artifacts - uploading to workflows level using stdin" {
-  echo "from stdin" | artifact push workflow - -d from-stdin-$SEMAPHORE_JOB_ID -v
+  run bash -c "echo 'from stdin' | artifact push workflow - -d from-stdin-$SEMAPHORE_JOB_ID -v"
+  assert_success
 
   run artifact pull workflow from-stdin-$SEMAPHORE_JOB_ID -v
   assert_success
-  run cat from-stdin-$SEMAPHORE_JOB_ID -v
+  run cat from-stdin-$SEMAPHORE_JOB_ID
   assert_output "from stdin"
 
   run artifact yank workflow from-stdin-$SEMAPHORE_JOB_ID -v
@@ -77,7 +80,8 @@ teardown() {
 }
 
 @test "artifacts - uploading to job level using stdin" {
-  echo "from stdin" | artifact push job - -d from-stdin-$SEMAPHORE_JOB_ID -v
+  run bash -c "echo 'from stdin' | artifact push job - -d from-stdin-$SEMAPHORE_JOB_ID -v"
+  assert_success
 
   run artifact pull job from-stdin-$SEMAPHORE_JOB_ID -v
   assert_success
