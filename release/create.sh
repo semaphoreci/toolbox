@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-ARTIFACT_CLI_VERSION="v0.5.3"
+ARTIFACT_CLI_VERSION="v0.5.5"
 WHEN_CLI_VERSION="v1.0.5"
 SPC_CLI_VERSION="v1.9.2"
 TEST_RESULTS_CLI_VERSION="v0.4.12"
@@ -42,6 +42,16 @@ include_external_darwin_binary() {
   echo "Downloading ${binary_name} for darwin..."
   curl -s -L --fail --retry 5 ${url}/${binary_name}_Darwin_x86_64.tar.gz -o ${destination_path}/${binary_name}_Darwin.tar.gz
   cd ${destination_path} && tar -zxf ${binary_name}_Darwin.tar.gz && mv ${binary_name} toolbox/ && cd - > /dev/null
+}
+
+include_external_windows_binary() {
+  url=$1
+  binary_name=$2
+  destination_path=$3
+
+  echo "Downloading ${binary_name} for windows..."
+  curl -s -L --fail --retry 5 ${url}/${binary_name}_Windows_x86_64.tar.gz -o ${destination_path}/${binary_name}_Windows.tar.gz
+  cd ${destination_path} && tar -zxf ${binary_name}_Windows.tar.gz && mv ${binary_name}.exe toolbox/bin/ && cd - > /dev/null
 }
 
 hosted::create_initial_content() {
@@ -115,6 +125,7 @@ self_hosted::pack() {
   self_hosted::create_initial_content
   include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Linux
   include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Darwin
+  include_external_windows_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Windows
   include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Linux
   include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Darwin
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Linux
