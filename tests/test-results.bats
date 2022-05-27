@@ -11,6 +11,7 @@ setup() {
 
   cp tests/test-results/junit-sample.xml /tmp/test-results-cli/junit-sample.xml
   cp tests/test-results/junit-sample.json /tmp/test-results-cli/junit-sample.json
+  cp tests/test-results/junit-summary.json /tmp/test-results-cli/junit-summary.json
 }
 
 
@@ -39,6 +40,12 @@ teardown_file() {
   assert_success
 
   run diff junit-sample.json junit.json
+  assert_success
+
+  run artifact pull job test-results/summary.json
+  assert_success
+
+  run diff junit-summary.json summary.json
   assert_success
 }
 
