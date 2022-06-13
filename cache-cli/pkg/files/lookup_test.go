@@ -246,6 +246,7 @@ func Test__LookupRestore(t *testing.T) {
 							fmt.Sprintf("nvm-some-branch-%s", checksum),
 							"nvm-some-branch",
 							"nvm-master",
+							"nvm-main",
 						},
 					},
 				},
@@ -268,6 +269,7 @@ func Test__LookupRestore(t *testing.T) {
 							fmt.Sprintf("gems-some-branch-%s", checksum),
 							"gems-some-branch",
 							"gems-master",
+							"gems-main",
 						},
 					},
 				},
@@ -288,6 +290,7 @@ func Test__LookupRestore(t *testing.T) {
 						fmt.Sprintf("node-modules-some-branch-%s", checksum),
 						"node-modules-some-branch",
 						"node-modules-master",
+						"node-modules-main",
 					}},
 				},
 			},
@@ -307,6 +310,7 @@ func Test__LookupRestore(t *testing.T) {
 						fmt.Sprintf("requirements-some-branch-%s", checksum),
 						"requirements-some-branch",
 						"requirements-master",
+						"requirements-main",
 					}},
 				},
 			},
@@ -326,6 +330,7 @@ func Test__LookupRestore(t *testing.T) {
 						fmt.Sprintf("composer-some-branch-%s", checksum),
 						"composer-some-branch",
 						"composer-master",
+						"composer-main",
 					}},
 				},
 			},
@@ -345,6 +350,7 @@ func Test__LookupRestore(t *testing.T) {
 						fmt.Sprintf("pods-some-branch-%s", checksum),
 						"pods-some-branch",
 						"pods-master",
+						"pods-main",
 					}},
 				},
 			},
@@ -366,6 +372,7 @@ func Test__LookupRestore(t *testing.T) {
 							fmt.Sprintf("go-some-branch-%s", checksum),
 							"go-some-branch",
 							"go-master",
+							"go-main",
 						},
 					},
 				},
@@ -388,6 +395,7 @@ func Test__LookupRestore(t *testing.T) {
 							fmt.Sprintf("yarn-cache-some-branch-%s", checksum),
 							"yarn-cache-some-branch",
 							"yarn-cache-master",
+							"yarn-cache-main",
 						},
 					},
 					{
@@ -396,6 +404,7 @@ func Test__LookupRestore(t *testing.T) {
 							fmt.Sprintf("node-modules-some-branch-%s", checksum),
 							"node-modules-some-branch",
 							"node-modules-master",
+							"node-modules-main",
 						},
 					},
 				},
@@ -416,11 +425,13 @@ func Test__LookupRestore(t *testing.T) {
 						fmt.Sprintf("mix-deps-some-branch-%s", checksum),
 						"mix-deps-some-branch",
 						"mix-deps-master",
+						"mix-deps-main",
 					}},
 					{Path: "_build", Keys: []string{
 						fmt.Sprintf("mix-build-some-branch-%s", checksum),
 						"mix-build-some-branch",
 						"mix-build-master",
+						"mix-build-main",
 					}},
 				},
 			},
@@ -440,11 +451,13 @@ func Test__LookupRestore(t *testing.T) {
 						fmt.Sprintf("maven-some-branch-%s", checksum),
 						"maven-some-branch",
 						"maven-master",
+						"maven-main",
 					}},
 					{Path: "target", Keys: []string{
 						fmt.Sprintf("maven-target-some-branch-%s", checksum),
 						"maven-target-some-branch",
 						"maven-target-master",
+						"maven-target-main",
 					}},
 				},
 			},
@@ -467,6 +480,7 @@ func Test__LookupRestore(t *testing.T) {
 						fmt.Sprintf("node-modules-some-branch-%s", packageLockChecksum),
 						"node-modules-some-branch",
 						"node-modules-master",
+						"node-modules-main",
 					}},
 				},
 			},
@@ -477,13 +491,14 @@ func Test__LookupRestore(t *testing.T) {
 						fmt.Sprintf("requirements-some-branch-%s", requirementsChecksum),
 						"requirements-some-branch",
 						"requirements-master",
+						"requirements-main",
 					}},
 				},
 			},
 		})
 	})
 
-	t.Run("returns only 2 keys if branch is master", func(t *testing.T) {
+	t.Run("no duplicated master suffixed key", func(t *testing.T) {
 		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/npm/package-lock.json", rootPath))
 		assert.Nil(t, err)
 
@@ -494,6 +509,26 @@ func Test__LookupRestore(t *testing.T) {
 				Entries: []LookupResultEntry{
 					{Path: "node_modules", Keys: []string{
 						fmt.Sprintf("node-modules-master-%s", checksum),
+						"node-modules-master",
+						"node-modules-main",
+					}},
+				},
+			},
+		})
+	})
+
+	t.Run("no duplicated main suffixed key", func(t *testing.T) {
+		checksum, err := GenerateChecksum(fmt.Sprintf("%s/test/autocache/npm/package-lock.json", rootPath))
+		assert.Nil(t, err)
+
+		lookupDirectory := fmt.Sprintf("%s/test/autocache/npm", rootPath)
+		assertLookupResults(t, Lookup(LookupOptions{Restore: true, GitBranch: "main", LookupDirectory: lookupDirectory}), []LookupResult{
+			{
+				DetectedFile: "package-lock.json",
+				Entries: []LookupResultEntry{
+					{Path: "node_modules", Keys: []string{
+						fmt.Sprintf("node-modules-main-%s", checksum),
+						"node-modules-main",
 						"node-modules-master",
 					}},
 				},
