@@ -25,9 +25,10 @@ type StorageConfig struct {
 }
 
 type CacheKey struct {
-	Name     string
-	StoredAt *time.Time
-	Size     int64
+	Name           string
+	StoredAt       *time.Time
+	LastAccessedAt *time.Time
+	Size           int64
 }
 
 type UsageSummary struct {

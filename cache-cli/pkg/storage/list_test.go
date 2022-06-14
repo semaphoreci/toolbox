@@ -40,11 +40,13 @@ func Test__List(t *testing.T) {
 				firstObject := keys[0]
 				assert.Equal(t, firstObject.Name, "abc002")
 				assert.NotNil(t, firstObject.StoredAt)
+				assert.NotNil(t, firstObject.LastAccessedAt)
 				assert.NotNil(t, firstObject.Size)
 
 				secondObject := keys[1]
 				assert.Equal(t, secondObject.Name, "abc001")
 				assert.NotNil(t, secondObject.StoredAt)
+				assert.NotNil(t, secondObject.LastAccessedAt)
 				assert.NotNil(t, secondObject.Size)
 			}
 

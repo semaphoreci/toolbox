@@ -51,9 +51,10 @@ func (s *S3Storage) appendToListResult(keys []CacheKey, objects []types.Object) 
 	for _, object := range objects {
 		keyWithoutProject := strings.ReplaceAll(*object.Key, fmt.Sprintf("%s/", s.Project), "")
 		keys = append(keys, CacheKey{
-			Name:     keyWithoutProject,
-			StoredAt: object.LastModified,
-			Size:     object.Size,
+			Name:           keyWithoutProject,
+			StoredAt:       object.LastModified,
+			LastAccessedAt: object.LastModified,
+			Size:           object.Size,
 		})
 	}
 
