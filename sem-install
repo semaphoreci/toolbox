@@ -90,7 +90,7 @@ install::install_elixir() {
         return 1;
         ;;
   esac
-  if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then 
+  if [[ $(kerl list installations) != *"${erlang_version}"* ]]; then
     language_before=${language}
     language_version_before=${language_version}
     language="erlang"
