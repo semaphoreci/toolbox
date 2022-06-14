@@ -28,28 +28,28 @@ setup() {
   assert_line --partial "ruby 2.5.3"
 }
 
-@test "change ruby to 2.6.9" {
+@test "change ruby to 2.6.10" {
 
-  run sem-version ruby 2.6.9
+  run sem-version ruby 2.6.10
   assert_success    
   run ruby --version
-  assert_line --partial "ruby 2.6.9"
+  assert_line --partial "ruby 2.6.10"
 }
 
-@test "change ruby to 2.7.5" {
+@test "change ruby to 2.7.6" {
 
-  run sem-version ruby 2.7.5
+  run sem-version ruby 2.7.6
   assert_success
   run ruby --version
-  assert_line --partial "ruby 2.7.5"
+  assert_line --partial "ruby 2.7.6"
 }
 
-@test "change ruby to 3.0.3" {
+@test "change ruby to 3.0.4" {
 
-  run sem-version ruby 3.0.3
+  run sem-version ruby 3.0.4
   assert_success
   run ruby --version
-  assert_line --partial "ruby 3.0.3"
+  assert_line --partial "ruby 3.0.4"
 }
 
 @test "change ruby to 3.1.0" {
@@ -70,22 +70,22 @@ setup() {
   run sem-version ruby 2.6
   assert_success
   run ruby --version
-  assert_line --partial "ruby 2.6.9"
+  assert_line --partial "ruby 2.6.10"
 
   run sem-version ruby 2.7
   assert_success
   run ruby --version
-  assert_line --partial "ruby 2.7.5"
+  assert_line --partial "ruby 2.7.6"
 
   run sem-version ruby 3.0
   assert_success
   run ruby --version
-  assert_line --partial "ruby 3.0.3"
+  assert_line --partial "ruby 3.0.4"
 
   run sem-version ruby 3.1
   assert_success
   run ruby --version
-  assert_line --partial "ruby 3.1.1"
+  assert_line --partial "ruby 3.1.2"
 }
 
 @test "change ruby to 4.0.1" {
