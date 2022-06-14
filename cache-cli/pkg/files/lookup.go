@@ -161,5 +161,9 @@ func keysForRestore(keyPrefix, gitBranch, checksum string) []string {
 		keys = append(keys, fmt.Sprintf("%s-master", keyPrefix))
 	}
 
+	if gitBranch != "main" {
+		keys = append(keys, fmt.Sprintf("%s-main", keyPrefix))
+	}
+
 	return keys
 }

@@ -50,35 +50,35 @@ setup() {
   assert_line --partial "imap"
 }
 
-@test "change php to 7.4.28" {
+@test "change php to 7.4.30" {
 
-  run sem-version php 7.4.28
+  run sem-version php 7.4.30
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 7.4.28"
+  assert_line --partial "PHP 7.4.30"
   run php -m 
   assert_line --partial "magick"
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
 
-@test "change php to 8.0.17" {
+@test "change php to 8.0.19" {
 
-  run sem-version php 8.0.17
+  run sem-version php 8.0.19
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.0.17"
+  assert_line --partial "PHP 8.0.19"
   run php -m 
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
 
-@test "php check composer 8.0.17" {
+@test "php check composer 8.0.19" {
 
   run which composer
   assert_success
   source ~/.phpbrew/bashrc
-  assert_line --partial "8.0.17"
+  assert_line --partial "8.0.19"
 }
