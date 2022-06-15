@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"testing"
 	"time"
 
@@ -97,45 +98,47 @@ func Test__List(t *testing.T) {
 		})
 	})
 
-	// s3 does not support access time sorting
-	runTestForSingleStorageType("sftp", 1024, SortByAccessTime, t, func(storage Storage) {
-		t.Run("sftp keys are ordered by access time", func(t *testing.T) {
-			err := storage.Clear()
-			assert.Nil(t, err)
+	if runtime.GOOS != "windows" {
+		// s3 does not support access time sorting
+		runTestForSingleStorageType("sftp", 1024, SortByAccessTime, t, func(storage Storage) {
+			t.Run("sftp keys are ordered by access time", func(t *testing.T) {
+				err := storage.Clear()
+				assert.Nil(t, err)
 
-			// store first key
-			tmpFile, _ := ioutil.TempFile(os.TempDir(), "*")
-			err = storage.Store("abc001", tmpFile.Name())
-			assert.Nil(t, err)
+				// store first key
+				tmpFile, _ := ioutil.TempFile(os.TempDir(), "*")
+				err = storage.Store("abc001", tmpFile.Name())
+				assert.Nil(t, err)
 
-			// wait a little bit, and then store second key
-			time.Sleep(2 * time.Second)
-			err = storage.Store("abc002", tmpFile.Name())
-			assert.Nil(t, err)
+				// wait a little bit, and then store second key
+				time.Sleep(2 * time.Second)
+				err = storage.Store("abc002", tmpFile.Name())
+				assert.Nil(t, err)
 
-			// wait a little bit, and then restore first key (access time will be updated)
-			time.Sleep(2 * time.Second)
-			_, err = storage.Restore("abc001")
-			assert.Nil(t, err)
+				// wait a little bit, and then restore first key (access time will be updated)
+				time.Sleep(2 * time.Second)
+				_, err = storage.Restore("abc001")
+				assert.Nil(t, err)
 
-			keys, err := storage.List()
-			assert.Nil(t, err)
+				keys, err := storage.List()
+				assert.Nil(t, err)
 
-			if assert.Len(t, keys, 2) {
-				firstObject := keys[0]
-				assert.Equal(t, firstObject.Name, "abc001")
-				assert.NotNil(t, firstObject.StoredAt)
-				assert.NotNil(t, firstObject.LastAccessedAt)
-				assert.NotNil(t, firstObject.Size)
+				if assert.Len(t, keys, 2) {
+					firstObject := keys[0]
+					assert.Equal(t, firstObject.Name, "abc001")
+					assert.NotNil(t, firstObject.StoredAt)
+					assert.NotNil(t, firstObject.LastAccessedAt)
+					assert.NotNil(t, firstObject.Size)
 
-				secondObject := keys[1]
-				assert.Equal(t, secondObject.Name, "abc002")
-				assert.NotNil(t, secondObject.StoredAt)
-				assert.NotNil(t, secondObject.LastAccessedAt)
-				assert.NotNil(t, secondObject.Size)
-			}
+					secondObject := keys[1]
+					assert.Equal(t, secondObject.Name, "abc002")
+					assert.NotNil(t, secondObject.StoredAt)
+					assert.NotNil(t, secondObject.LastAccessedAt)
+					assert.NotNil(t, secondObject.Size)
+				}
 
-			os.Remove(tmpFile.Name())
+				os.Remove(tmpFile.Name())
+			})
 		})
-	})
+	}
 }
