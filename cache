@@ -83,6 +83,7 @@ cache::autostore() {
             SEMAPHORE_LOCAL_CACHE_PATHS="vendor/bundle"
             cache::log "* Using default cache path '$SEMAPHORE_LOCAL_CACHE_PATHS'."
             if [[ -d $SEMAPHORE_LOCAL_CACHE_PATHS ]]; then
+              bundle clean --path "$SEMAPHORE_LOCAL_CACHE_PATHS"
               SEMAPHORE_CACHE_KEY=$(cache::normalize_string gems-$SEMAPHORE_GIT_BRANCH-$(checksum Gemfile.lock))
               cache::lftp_put
             else
