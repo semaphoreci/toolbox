@@ -12,6 +12,8 @@ import (
 )
 
 func Test__List(t *testing.T) {
+	listCmd := NewListCommand()
+
 	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s no keys", backend), func(*testing.T) {
 			storage.Clear()

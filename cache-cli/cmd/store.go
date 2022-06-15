@@ -24,7 +24,12 @@ func NewStoreCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().Bool("use-atime", false, "Use atime instead of mtime for cleaning up old cache keys if not enough space to store.")
+	cmd.Flags().Bool(
+		"cleanup-by-access-time",
+		false,
+		"Use access time instead of creation time for cleaning up old cache keys when cache does not have enough space for storing new key.",
+	)
+
 	return cmd
 }
 
@@ -35,10 +40,10 @@ func RunStore(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	useAccessTime, err := cmd.Flags().GetBool("use-atime")
+	cleanupByAccessTime, err := cmd.Flags().GetBool("cleanup-by-access-time")
 	utils.Check(err)
 
-	storage, err := storage.InitStorageWithConfig(storage.StorageConfig{SortKeysByAccessTime: useAccessTime})
+	storage, err := storage.InitStorageWithConfig(storage.StorageConfig{SortKeysByAccessTime: cleanupByAccessTime})
 	utils.Check(err)
 
 	if len(args) == 0 {

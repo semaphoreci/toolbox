@@ -10,18 +10,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all keys in the cache.",
-	Long:  ``,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		RunList(cmd, args)
-	},
+func NewListCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List all keys in the cache.",
+		Long:  ``,
+		Args:  cobra.ArbitraryArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			RunList(cmd, args)
+		},
+	}
+
+	cmd.Flags().Bool("sort-by-access-time", false, "Sort keys by access time instead of creation time.")
+	return cmd
 }
 
 func RunList(cmd *cobra.Command, args []string) {
-	storage, err := storage.InitStorage()
+	sortByAccessTime, err := cmd.Flags().GetBool("sort-by-access-time")
+	utils.Check(err)
+
+	storage, err := storage.InitStorageWithConfig(storage.StorageConfig{SortKeysByAccessTime: sortByAccessTime})
 	utils.Check(err)
 
 	keys, err := storage.List()
@@ -44,5 +52,5 @@ func RunList(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	RootCmd.AddCommand(listCmd)
+	RootCmd.AddCommand(NewListCommand())
 }
