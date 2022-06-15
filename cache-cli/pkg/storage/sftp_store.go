@@ -72,7 +72,7 @@ func (s *SFTPStorage) allocateSpace(space int64) error {
 
 	freeSpace := usage.Free
 	if freeSpace < space {
-		fmt.Printf("Not enough space, deleting the oldest keys...\n")
+		fmt.Printf("Not enough space, deleting keys based on %s...\n", s.Config().SortKeysBy)
 		keys, err := s.List()
 		if err != nil {
 			return err

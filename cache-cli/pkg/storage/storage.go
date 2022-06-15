@@ -20,9 +20,23 @@ type Storage interface {
 	Config() StorageConfig
 }
 
+const SortBySize = "SIZE"
+const SortByStoreTime = "STORE_TIME"
+const SortByAccessTime = "ACCESS_TIME"
+
+var ValidSortByKeys = []string{SortBySize, SortByStoreTime, SortByAccessTime}
+
 type StorageConfig struct {
-	MaxSpace             int64
-	SortKeysByAccessTime bool
+	MaxSpace   int64
+	SortKeysBy string
+}
+
+func (c *StorageConfig) Validate() error {
+	if contains(c.SortKeysBy, ValidSortByKeys) {
+		return nil
+	}
+
+	return fmt.Errorf("sorting keys by '%s' is not supported", c.SortKeysBy)
 }
 
 type CacheKey struct {
@@ -37,7 +51,16 @@ type UsageSummary struct {
 	Used int64
 }
 
+func InitStorage() (Storage, error) {
+	return InitStorageWithConfig(StorageConfig{SortKeysBy: SortByStoreTime})
+}
+
 func InitStorageWithConfig(config StorageConfig) (Storage, error) {
+	err := config.Validate()
+	if err != nil {
+		return nil, err
+	}
+
 	backend := os.Getenv("SEMAPHORE_CACHE_BACKEND")
 	if backend == "" {
 		return nil, fmt.Errorf("no SEMAPHORE_CACHE_BACKEND environment variable set")
@@ -59,7 +82,7 @@ func InitStorageWithConfig(config StorageConfig) (Storage, error) {
 			URL:     os.Getenv("SEMAPHORE_CACHE_S3_URL"),
 			Bucket:  s3Bucket,
 			Project: project,
-			Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysByAccessTime: false},
+			Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysBy: SortByStoreTime},
 		})
 	case "sftp":
 		url := os.Getenv("SEMAPHORE_CACHE_URL")
@@ -88,22 +111,28 @@ func InitStorageWithConfig(config StorageConfig) (Storage, error) {
 	}
 }
 
-func InitStorage() (Storage, error) {
-	return InitStorageWithConfig(StorageConfig{})
-}
-
 func buildStorageConfig(config StorageConfig, defaultValue int64) StorageConfig {
 	cacheSizeEnvVar := os.Getenv("CACHE_SIZE")
 	if cacheSizeEnvVar == "" {
-		return StorageConfig{MaxSpace: defaultValue, SortKeysByAccessTime: config.SortKeysByAccessTime}
+		return StorageConfig{MaxSpace: defaultValue, SortKeysBy: config.SortKeysBy}
 	}
 
 	cacheSize, err := strconv.ParseInt(cacheSizeEnvVar, 10, 64)
 	if err != nil {
 		fmt.Printf("Couldn't parse CACHE_SIZE value of '%s' - using default value for storage backend\n", cacheSizeEnvVar)
-		return StorageConfig{MaxSpace: defaultValue, SortKeysByAccessTime: config.SortKeysByAccessTime}
+		return StorageConfig{MaxSpace: defaultValue, SortKeysBy: config.SortKeysBy}
 	}
 
 	// CACHE_SIZE receives kb
-	return StorageConfig{MaxSpace: cacheSize * 1024, SortKeysByAccessTime: config.SortKeysByAccessTime}
+	return StorageConfig{MaxSpace: cacheSize * 1024, SortKeysBy: config.SortKeysBy}
+}
+
+func contains(item string, items []string) bool {
+	for _, i := range items {
+		if i == item {
+			return true
+		}
+	}
+
+	return false
 }

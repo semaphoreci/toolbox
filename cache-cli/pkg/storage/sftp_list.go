@@ -25,17 +25,26 @@ func (s *SFTPStorage) List() ([]CacheKey, error) {
 		})
 	}
 
-	if s.Config().SortKeysByAccessTime {
+	return s.sortKeys(keys), nil
+}
+
+func (s *SFTPStorage) sortKeys(keys []CacheKey) []CacheKey {
+	switch s.Config().SortKeysBy {
+	case SortBySize:
+		sort.SliceStable(keys, func(i, j int) bool {
+			return keys[i].Size > keys[j].Size
+		})
+	case SortByAccessTime:
 		sort.SliceStable(keys, func(i, j int) bool {
 			return keys[i].LastAccessedAt.After(*keys[j].LastAccessedAt)
 		})
-	} else {
+	default:
 		sort.SliceStable(keys, func(i, j int) bool {
 			return keys[i].StoredAt.After(*keys[j].StoredAt)
 		})
 	}
 
-	return keys, nil
+	return keys
 }
 
 // If we can't figure out the access time of the file,

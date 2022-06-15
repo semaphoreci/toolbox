@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
@@ -21,15 +22,20 @@ func NewListCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().Bool("sort-by-access-time", false, "Sort keys by access time instead of creation time.")
+	description := fmt.Sprintf(
+		`Sort keys by a specific field. Possible values are: %v.`,
+		strings.Join(storage.ValidSortByKeys, ","),
+	)
+
+	cmd.Flags().StringP("sort-by", "s", storage.SortByStoreTime, description)
 	return cmd
 }
 
 func RunList(cmd *cobra.Command, args []string) {
-	sortByAccessTime, err := cmd.Flags().GetBool("sort-by-access-time")
+	sortBy, err := cmd.Flags().GetString("sort-by")
 	utils.Check(err)
 
-	storage, err := storage.InitStorageWithConfig(storage.StorageConfig{SortKeysByAccessTime: sortByAccessTime})
+	storage, err := storage.InitStorageWithConfig(storage.StorageConfig{SortKeysBy: sortBy})
 	utils.Check(err)
 
 	keys, err := storage.List()
