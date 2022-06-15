@@ -10,7 +10,7 @@ import (
 )
 
 func Test__Restore(t *testing.T) {
-	runTestForAllStorageTypes(t, func(storageType string, storage Storage) {
+	runTestForAllStorageTypes(t, SortByStoreTime, func(storageType string, storage Storage) {
 		t.Run(fmt.Sprintf("%s key exists", storageType), func(t *testing.T) {
 			_ = storage.Clear()
 

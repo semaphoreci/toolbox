@@ -15,7 +15,7 @@ import (
 )
 
 func Test__Store(t *testing.T) {
-	runTestForAllStorageTypes(t, func(storageType string, storage Storage) {
+	runTestForAllStorageTypes(t, SortByStoreTime, func(storageType string, storage Storage) {
 		t.Run(fmt.Sprintf("%s stored objects can be listed", storageType), func(t *testing.T) {
 			_ = storage.Clear()
 
@@ -98,7 +98,7 @@ func Test__Store(t *testing.T) {
 	})
 
 	if runtime.GOOS != "windows" {
-		runTestForSingleStorageType("sftp", 1024, t, func(storage Storage) {
+		runTestForSingleStorageType("sftp", 1024, SortByStoreTime, t, func(storage Storage) {
 			t.Run("sftp storage deletes old keys if no space left to store", func(t *testing.T) {
 				_ = storage.Clear()
 

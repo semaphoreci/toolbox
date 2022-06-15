@@ -10,7 +10,7 @@ import (
 )
 
 func Test__HasKey(t *testing.T) {
-	runTestForAllStorageTypes(t, func(storageType string, storage Storage) {
+	runTestForAllStorageTypes(t, SortByStoreTime, func(storageType string, storage Storage) {
 		t.Run(fmt.Sprintf("%s non-existing key", storageType), func(t *testing.T) {
 			_ = storage.Clear()
 			exists, err := storage.HasKey("this-key-does-not-exist")

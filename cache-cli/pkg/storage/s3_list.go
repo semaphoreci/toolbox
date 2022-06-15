@@ -29,7 +29,23 @@ func (s *S3Storage) List() ([]CacheKey, error) {
 		keys = s.appendToListResult(keys, output.Contents)
 	}
 
-	return keys, nil
+	return s.sortKeys(keys), nil
+}
+
+// S3 backend does not support sorting keys by ACCESS_TIME
+func (s *S3Storage) sortKeys(keys []CacheKey) []CacheKey {
+	switch s.Config().SortKeysBy {
+	case SortBySize:
+		sort.SliceStable(keys, func(i, j int) bool {
+			return keys[i].Size > keys[j].Size
+		})
+	default:
+		sort.SliceStable(keys, func(i, j int) bool {
+			return keys[i].StoredAt.After(*keys[j].StoredAt)
+		})
+	}
+
+	return keys
 }
 
 func (s *S3Storage) listObjectsInput(nextMarker *string) *s3.ListObjectsInput {
@@ -57,10 +73,6 @@ func (s *S3Storage) appendToListResult(keys []CacheKey, objects []types.Object) 
 			Size:           object.Size,
 		})
 	}
-
-	sort.SliceStable(keys, func(i, j int) bool {
-		return keys[i].StoredAt.After(*keys[j].StoredAt)
-	})
 
 	return keys
 }

@@ -26,7 +26,8 @@ func NewStoreCommand() *cobra.Command {
 
 	description := fmt.Sprintf(`
 		If storage does not have enough space,
-		keys will be sorted in descending order and will be cleaned up starting from the last one.
+		keys will be sorted in descending order using the specified field,
+		and will be cleaned up starting from the last key on the list.
 		Possible values are: %v.
 	`, strings.Join(storage.ValidSortByKeys, ","))
 

@@ -10,7 +10,7 @@ import (
 )
 
 func Test__Clear(t *testing.T) {
-	runTestForAllStorageTypes(t, func(storageType string, storage Storage) {
+	runTestForAllStorageTypes(t, SortByStoreTime, func(storageType string, storage Storage) {
 		setup := func(storage Storage) []string {
 			_ = storage.Clear()
 

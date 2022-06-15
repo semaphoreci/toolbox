@@ -82,7 +82,7 @@ func InitStorageWithConfig(config StorageConfig) (Storage, error) {
 			URL:     os.Getenv("SEMAPHORE_CACHE_S3_URL"),
 			Bucket:  s3Bucket,
 			Project: project,
-			Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysBy: SortByStoreTime},
+			Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysBy: config.SortKeysBy},
 		})
 	case "sftp":
 		url := os.Getenv("SEMAPHORE_CACHE_URL")
