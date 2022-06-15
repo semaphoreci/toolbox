@@ -62,16 +62,16 @@ func Test__List(t *testing.T) {
 			assert.Nil(t, err)
 
 			biggerFile := fmt.Sprintf("%s/bigger.tmp", os.TempDir())
-			err = createBigTempFile(biggerFile, 150*1000*1000) // 300M
+			err = createBigTempFile(biggerFile, 100*1000*1000) // 100M
 			assert.Nil(t, err)
 			err = storage.Store("bigger", biggerFile)
 			assert.Nil(t, err)
 
 			// Just to make sure things are really being sorted by size
-			time.Sleep(5 * time.Second)
+			time.Sleep(2 * time.Second)
 
 			smallerFile := fmt.Sprintf("%s/smaller.tmp", os.TempDir())
-			err = createBigTempFile(smallerFile, 150*1000*1000) // 150M
+			err = createBigTempFile(smallerFile, 50*1000*1000) // 50M
 			assert.Nil(t, err)
 			err = storage.Store("smaller", smallerFile)
 			assert.Nil(t, err)
