@@ -13,14 +13,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var storeCmd = &cobra.Command{
-	Use:   "store [key path]",
-	Short: "Store keys in the cache.",
-	Long:  ``,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		RunStore(cmd, args)
-	},
+func NewStoreCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "store [key path]",
+		Short: "Store keys in the cache.",
+		Long:  ``,
+		Args:  cobra.ArbitraryArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			RunStore(cmd, args)
+		},
+	}
+
+	cmd.Flags().Bool("use-atime", false, "Use atime instead of mtime for cleaning up old cache keys if not enough space to store.")
+	return cmd
 }
 
 func RunStore(cmd *cobra.Command, args []string) {
@@ -30,7 +35,10 @@ func RunStore(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	storage, err := storage.InitStorage()
+	useAccessTime, err := cmd.Flags().GetBool("use-atime")
+	utils.Check(err)
+
+	storage, err := storage.InitStorageWithConfig(storage.StorageConfig{SortKeysByAccessTime: useAccessTime})
 	utils.Check(err)
 
 	if len(args) == 0 {
@@ -131,5 +139,5 @@ func FindGitBranch() string {
 }
 
 func init() {
-	RootCmd.AddCommand(storeCmd)
+	RootCmd.AddCommand(NewStoreCommand())
 }

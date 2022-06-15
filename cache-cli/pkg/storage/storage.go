@@ -21,7 +21,8 @@ type Storage interface {
 }
 
 type StorageConfig struct {
-	MaxSpace int64
+	MaxSpace             int64
+	SortKeysByAccessTime bool
 }
 
 type CacheKey struct {
@@ -36,7 +37,7 @@ type UsageSummary struct {
 	Used int64
 }
 
-func InitStorage() (Storage, error) {
+func InitStorageWithConfig(config StorageConfig) (Storage, error) {
 	backend := os.Getenv("SEMAPHORE_CACHE_BACKEND")
 	if backend == "" {
 		return nil, fmt.Errorf("no SEMAPHORE_CACHE_BACKEND environment variable set")
@@ -58,7 +59,7 @@ func InitStorage() (Storage, error) {
 			URL:     os.Getenv("SEMAPHORE_CACHE_S3_URL"),
 			Bucket:  s3Bucket,
 			Project: project,
-			Config:  StorageConfig{MaxSpace: math.MaxInt64},
+			Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysByAccessTime: false},
 		})
 	case "sftp":
 		url := os.Getenv("SEMAPHORE_CACHE_URL")
@@ -80,25 +81,29 @@ func InitStorage() (Storage, error) {
 			URL:            url,
 			Username:       username,
 			PrivateKeyPath: privateKeyPath,
-			Config:         buildStorageConfig(9 * 1024 * 1024 * 1024),
+			Config:         buildStorageConfig(config, 9*1024*1024*1024),
 		})
 	default:
 		return nil, fmt.Errorf("cache backend '%s' is not available", backend)
 	}
 }
 
-func buildStorageConfig(defaultValue int64) StorageConfig {
+func InitStorage() (Storage, error) {
+	return InitStorageWithConfig(StorageConfig{})
+}
+
+func buildStorageConfig(config StorageConfig, defaultValue int64) StorageConfig {
 	cacheSizeEnvVar := os.Getenv("CACHE_SIZE")
 	if cacheSizeEnvVar == "" {
-		return StorageConfig{MaxSpace: defaultValue}
+		return StorageConfig{MaxSpace: defaultValue, SortKeysByAccessTime: config.SortKeysByAccessTime}
 	}
 
 	cacheSize, err := strconv.ParseInt(cacheSizeEnvVar, 10, 64)
 	if err != nil {
 		fmt.Printf("Couldn't parse CACHE_SIZE value of '%s' - using default value for storage backend\n", cacheSizeEnvVar)
-		return StorageConfig{MaxSpace: defaultValue}
+		return StorageConfig{MaxSpace: defaultValue, SortKeysByAccessTime: config.SortKeysByAccessTime}
 	}
 
 	// CACHE_SIZE receives kb
-	return StorageConfig{MaxSpace: cacheSize * 1024}
+	return StorageConfig{MaxSpace: cacheSize * 1024, SortKeysByAccessTime: config.SortKeysByAccessTime}
 }

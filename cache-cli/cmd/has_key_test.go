@@ -36,7 +36,7 @@ func Test__HasKey(t *testing.T) {
 		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
 			storage.Clear()
 			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
-			RunStore(storeCmd, []string{"abc/00/33", tempFile.Name()})
+			RunStore(NewStoreCommand(), []string{"abc/00/33", tempFile.Name()})
 
 			capturer := utils.CreateOutputCapturer()
 			RunHasKey(hasKeyCmd, []string{"abc/00/33"})

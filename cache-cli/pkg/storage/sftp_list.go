@@ -25,9 +25,15 @@ func (s *SFTPStorage) List() ([]CacheKey, error) {
 		})
 	}
 
-	sort.SliceStable(keys, func(i, j int) bool {
-		return keys[i].LastAccessedAt.After(*keys[j].LastAccessedAt)
-	})
+	if s.Config().SortKeysByAccessTime {
+		sort.SliceStable(keys, func(i, j int) bool {
+			return keys[i].LastAccessedAt.After(*keys[j].LastAccessedAt)
+		})
+	} else {
+		sort.SliceStable(keys, func(i, j int) bool {
+			return keys[i].StoredAt.After(*keys[j].StoredAt)
+		})
+	}
 
 	return keys, nil
 }
