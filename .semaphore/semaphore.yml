@@ -459,6 +459,10 @@ blocks:
         - name: Check code
           commands:
             - make check.static
+      epilogue:
+        always:
+          commands:
+            - 'if [ -f results.xml ]; then test-results publish --name="Cache CLI: Security checks" results.xml; fi'
 
   - name: SHM Test Bionic
     dependencies:
