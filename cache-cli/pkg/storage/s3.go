@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -33,12 +34,16 @@ func NewS3Storage(options S3StorageOptions) (*S3Storage, error) {
 }
 
 func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfig) (*S3Storage, error) {
-	config, err := awsConfig.LoadDefaultConfig(
-		context.TODO(),
-		awsConfig.WithSharedConfigProfile(
-			os.Getenv("SEMAPHORE_CACHE_AWS_PROFILE"),
-		),
-	)
+	var config aws.Config
+	var err error
+
+	profile := os.Getenv("SEMAPHORE_CACHE_AWS_PROFILE")
+	if profile == "" {
+		config, err = awsConfig.LoadDefaultConfig(context.TODO())
+	} else {
+		fmt.Printf("Using '%s' AWS profile.\n", profile)
+		config, err = awsConfig.LoadDefaultConfig(context.TODO(), awsConfig.WithSharedConfigProfile(profile))
+	}
 
 	if err != nil {
 		return nil, err
