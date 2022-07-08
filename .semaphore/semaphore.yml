@@ -171,42 +171,17 @@ blocks:
           - source tests/sftp_server/start_on_mac.sh
 
       jobs:
-        - name: "Non-cache tests"
+        - name: "Tests"
           matrix:
             - env_var: TEST
               values:
                 - tests/artifacts.bats
                 - tests/test-results.bats
                 - tests/macOS_sem_version.bats
-          commands:
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: "Old cache tests"
-          matrix:
-            - env_var: TEST
-              values:
                 - tests/macos_cache.bats
                 - tests/macos_autocache.bats
                 - tests/libcheckout.bats
           commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=false
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: "New cache tests"
-          matrix:
-            - env_var: TEST
-              values:
-                - tests/macos_cache.bats
-                - tests/macos_autocache.bats
-                - tests/libcheckout.bats
-          commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=true
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
             - sudo ./tests/support/bats-core/install.sh /usr/local
@@ -235,39 +210,15 @@ blocks:
           - bash release/create.sh
           - source tests/sftp_server/start_on_docker.sh
       jobs:
-        - name: "Non-cache tests"
+        - name: "Tests"
           matrix:
             - env_var: TEST
               values:
                 - tests/artifacts.bats
                 - tests/test-results.bats
-          commands:
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: "Old cache tests"
-          matrix:
-            - env_var: TEST
-              values:
                 - tests/cache.bats
                 - tests/libcheckout.bats
           commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=false
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: "New cache tests"
-          matrix:
-            - env_var: TEST
-              values:
-                - tests/cache.bats
-                - tests/libcheckout.bats
-          commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=true
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
             - sudo ./tests/support/bats-core/install.sh /usr/local
@@ -297,39 +248,15 @@ blocks:
           - apk add --update docker openrc
           - source tests/sftp_server/start_on_docker.sh
       jobs:
-        - name: "Non-cache tests"
+        - name: "Tests"
           matrix:
             - env_var: TEST
               values:
                 - tests/artifacts.bats
                 - tests/test-results.bats
-          commands:
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: "Old cache tests"
-          matrix:
-            - env_var: TEST
-              values:
                 - tests/cache.bats
                 - tests/libcheckout.bats
           commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=false
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: "New cache tests"
-          matrix:
-            - env_var: TEST
-              values:
-                - tests/cache.bats
-                - tests/libcheckout.bats
-          commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=true
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
             - ./tests/support/bats-core/install.sh /usr/local
@@ -365,35 +292,10 @@ blocks:
                 - tests/compiler.bats
                 - tests/test-results.bats
                 - tests/enetwork.bats
-          commands:
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: "Old cache tests"
-          matrix:
-            - env_var: TEST
-              values:
                 - tests/autocache.bats
                 - tests/cache.bats
                 - tests/libcheckout.bats
           commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=false
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: "New cache tests"
-          matrix:
-            - env_var: TEST
-              values:
-                - tests/autocache.bats
-                - tests/cache.bats
-                - tests/libcheckout.bats
-          commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=true
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
             - sudo ./tests/support/bats-core/install.sh /usr/local

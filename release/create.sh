@@ -136,8 +136,8 @@ hosted::pack() {
   include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Linux
   include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Darwin
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux
-  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/cache /tmp/Linux/toolbox/new-cache
-  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/cache /tmp/Darwin/toolbox/new-cache
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/cache /tmp/Linux/toolbox/cache
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/cache /tmp/Darwin/toolbox/cache
 
   echo "Downloading when CLI..."
   curl -s -L --retry 5 $WHEN_CLI_URL/when -o /tmp/Linux/toolbox/when
