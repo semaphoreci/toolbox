@@ -287,7 +287,6 @@ blocks:
             - env_var: TEST
               values:
                 - tests/install_package.bats
-                - tests/base.bats
                 - tests/artifacts.bats
                 - tests/compiler.bats
                 - tests/test-results.bats
