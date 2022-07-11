@@ -52,7 +52,7 @@ blocks:
           commands:
             - make pwsh.lint
 
-  - name: 'PowerShell: tests'
+  - name: "PowerShell: tests"
     dependencies: []
     task:
       prologue:
@@ -65,7 +65,7 @@ blocks:
 
   - name: Sem Version Tests bionic
     dependencies:
-      - 'Build local CLIs'
+      - "Build local CLIs"
     task:
       prologue:
         commands:
@@ -97,16 +97,16 @@ blocks:
           commands:
             - bats tests/sem_version_bionic/${TEST}.bats
 
-  - name: 'Sem Version Tests container'
+  - name: "Sem Version Tests container"
     dependencies:
-      - 'Build local CLIs'
+      - "Build local CLIs"
     task:
       agent:
         machine:
           type: e1-standard-2
         containers:
           - name: main
-            image: 'registry.semaphoreci.com/android:30-flutter'
+            image: "registry.semaphoreci.com/android:30-flutter"
       prologue:
         commands:
           - checkout
@@ -118,13 +118,13 @@ blocks:
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
       jobs:
-        - name: 'Sem Version Flutter'
+        - name: "Sem Version Flutter"
           commands:
             - bats tests/sem_version_container.bats
 
   - name: Sem Service Tests
     dependencies:
-      - 'Build local CLIs'
+      - "Build local CLIs"
     task:
       prologue:
         commands:
@@ -153,9 +153,9 @@ blocks:
           commands:
             - bash tests/sem_service/$TEST
 
-  - name: 'Bats: Mac'
+  - name: "Bats: Mac"
     dependencies:
-      - 'Build local CLIs'
+      - "Build local CLIs"
     task:
       agent:
         machine:
@@ -171,42 +171,17 @@ blocks:
           - source tests/sftp_server/start_on_mac.sh
 
       jobs:
-        - name: 'Non-cache tests'
+        - name: "Tests"
           matrix:
             - env_var: TEST
               values:
                 - tests/artifacts.bats
                 - tests/test-results.bats
                 - tests/macOS_sem_version.bats
-          commands:
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: 'Old cache tests'
-          matrix:
-            - env_var: TEST
-              values:
                 - tests/macos_cache.bats
                 - tests/macos_autocache.bats
                 - tests/libcheckout.bats
           commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=false
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: 'New cache tests'
-          matrix:
-            - env_var: TEST
-              values:
-                - tests/macos_cache.bats
-                - tests/macos_autocache.bats
-                - tests/libcheckout.bats
-          commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=true
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
             - sudo ./tests/support/bats-core/install.sh /usr/local
@@ -216,9 +191,9 @@ blocks:
           commands:
             - 'test-results publish report.xml --name="Bats: Mac" --suite-prefix=$TEST'
 
-  - name: 'Bats: Docker'
+  - name: "Bats: Docker"
     dependencies:
-      - 'Build local CLIs'
+      - "Build local CLIs"
     task:
       agent:
         machine:
@@ -226,7 +201,7 @@ blocks:
           os_image: ubuntu1804
         containers:
           - name: main
-            image: 'semaphoreci/ruby:2.6.2'
+            image: "semaphoreci/ruby:2.6.2"
       prologue:
         commands:
           - checkout
@@ -235,39 +210,15 @@ blocks:
           - bash release/create.sh
           - source tests/sftp_server/start_on_docker.sh
       jobs:
-        - name: 'Non-cache tests'
+        - name: "Tests"
           matrix:
             - env_var: TEST
               values:
                 - tests/artifacts.bats
                 - tests/test-results.bats
-          commands:
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: 'Old cache tests'
-          matrix:
-            - env_var: TEST
-              values:
                 - tests/cache.bats
                 - tests/libcheckout.bats
           commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=false
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: 'New cache tests'
-          matrix:
-            - env_var: TEST
-              values:
-                - tests/cache.bats
-                - tests/libcheckout.bats
-          commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=true
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
             - sudo ./tests/support/bats-core/install.sh /usr/local
@@ -277,9 +228,9 @@ blocks:
           commands:
             - 'test-results publish report.xml --name="Bats: Docker" --suite-prefix=$TEST'
 
-  - name: 'Bats: Minimal Docker'
+  - name: "Bats: Minimal Docker"
     dependencies:
-      - 'Build local CLIs'
+      - "Build local CLIs"
     task:
       agent:
         machine:
@@ -287,7 +238,7 @@ blocks:
           os_image: ubuntu1804
         containers:
           - name: main
-            image: 'semaphoreci/alpine:3.9'
+            image: "semaphoreci/alpine:3.9"
       prologue:
         commands:
           - checkout
@@ -297,39 +248,15 @@ blocks:
           - apk add --update docker openrc
           - source tests/sftp_server/start_on_docker.sh
       jobs:
-        - name: 'Non-cache tests'
+        - name: "Tests"
           matrix:
             - env_var: TEST
               values:
                 - tests/artifacts.bats
                 - tests/test-results.bats
-          commands:
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: 'Old cache tests'
-          matrix:
-            - env_var: TEST
-              values:
                 - tests/cache.bats
                 - tests/libcheckout.bats
           commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=false
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: 'New cache tests'
-          matrix:
-            - env_var: TEST
-              values:
-                - tests/cache.bats
-                - tests/libcheckout.bats
-          commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=true
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
             - ./tests/support/bats-core/install.sh /usr/local
@@ -339,9 +266,9 @@ blocks:
           commands:
             - 'test-results publish report.xml --name="Bats: Minimal Docker" --suite-prefix=$TEST'
 
-  - name: 'Bats: Linux'
+  - name: "Bats: Linux"
     dependencies:
-      - 'Build local CLIs'
+      - "Build local CLIs"
     task:
       prologue:
         commands:
@@ -355,45 +282,19 @@ blocks:
           - sem-version go 1.13
           - sem-version php 7.3.23
       jobs:
-        - name: 'Non-cache tests'
+        - name: "Non-cache tests"
           matrix:
             - env_var: TEST
               values:
                 - tests/install_package.bats
-                - tests/base.bats
                 - tests/artifacts.bats
                 - tests/compiler.bats
                 - tests/test-results.bats
                 - tests/enetwork.bats
-          commands:
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: 'Old cache tests'
-          matrix:
-            - env_var: TEST
-              values:
                 - tests/autocache.bats
                 - tests/cache.bats
                 - tests/libcheckout.bats
           commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=false
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-        - name: 'New cache tests'
-          matrix:
-            - env_var: TEST
-              values:
-                - tests/autocache.bats
-                - tests/cache.bats
-                - tests/libcheckout.bats
-          commands:
-            - export SEMAPHORE_CACHE_NEW_CLI=true
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
             - sudo ./tests/support/bats-core/install.sh /usr/local
@@ -459,10 +360,14 @@ blocks:
         - name: Check code
           commands:
             - make check.static
+      epilogue:
+        always:
+          commands:
+            - 'if [ -f results.xml ]; then test-results publish --name="Cache CLI: Security checks" results.xml; fi'
 
   - name: SHM Test Bionic
     dependencies:
-      - 'Build local CLIs'
+      - "Build local CLIs"
     task:
       prologue:
         commands:
@@ -485,14 +390,14 @@ blocks:
 
   - name: SHM Test Docker
     dependencies:
-      - 'Build local CLIs'
+      - "Build local CLIs"
     task:
       agent:
         machine:
           type: e1-standard-2
         containers:
           - name: main
-            image: 'registry.semaphoreci.com/ubuntu:18.04'
+            image: "registry.semaphoreci.com/ubuntu:18.04"
       prologue:
         commands:
           - checkout

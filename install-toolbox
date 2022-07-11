@@ -50,12 +50,7 @@ else
   echo "toolbox_install_error{module='ssh-session-cli'} 1" >> /tmp/toolbox_metrics
 fi
 
-if [[ $SEMAPHORE_CACHE_NEW_CLI == "true" ]]; then
-  install_cmd ln -sf ~/.toolbox/new-cache $INSTALL_PATH/cache
-else
-  install_cmd ln -sf ~/.toolbox/cache $INSTALL_PATH/cache
-fi
-
+install_cmd ln -sf ~/.toolbox/cache $INSTALL_PATH/cache
 install_cmd chmod +x $INSTALL_PATH/cache
 if [[ $? -eq 0 ]];then
   echo "cache installed"
