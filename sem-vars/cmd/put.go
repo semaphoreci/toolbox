@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"fmt"
+	"strings"
 
+	"github.com/semaphoreci/toolbox/sem-vars/pkg/store"
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +14,10 @@ var putCmd = &cobra.Command{
 }
 
 func RunPutCmd(cmd *cobra.Command, args []string) {
-	fmt.Printf("putting stuff")
+	argument := args[0]
+	key_value := strings.Split(argument, "=")
+	key, value := key_value[0], key_value[1]
+	store.Put(key, value)
 }
 
 func init() {
