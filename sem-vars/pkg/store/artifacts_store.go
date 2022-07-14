@@ -1,76 +1,58 @@
 package store
 
 import (
-	"log"
+	"fmt"
+	"io/ioutil"
 	"os"
+	"os/exec"
 
-	errutil "github.com/semaphoreci/artifact/pkg/errors"
-	artifact_files "github.com/semaphoreci/artifact/pkg/files"
-	artifact_hub "github.com/semaphoreci/artifact/pkg/hub"
-	artifact_storage "github.com/semaphoreci/artifact/pkg/storage"
+	"github.com/semaphoreci/toolbox/sem-vars/pkg/utils"
 )
 
 func Put(key, value string) error {
-	hubClient, err := artifact_hub.NewClient()
-	errutil.Check(err)
-	// By passing empty string to resolver we are making sure SEMAPHORE_PROJECT_ID env variable is set, no fallback options
-	// TODO I assume resourceType should be workflow (or maybe entire project?)
-	resolver, err := artifact_files.NewPathResolver(artifact_files.ResourceTypeProject, "")
-	errutil.Check(err)
-	err = createLocalFile(key, value)
-	if err != nil {
-		errutil.Check(err)
-		return err
-	}
-	pushOptions := artifact_storage.PushOptions{
-		SourcePath:          key,
-		DestinationOverride: "",
-		Force:               true,
-	}
-	_, err = artifact_storage.Push(hubClient, resolver, pushOptions)
-	deleteLocalFile(key)
-	if err != nil {
-		return err
-	}
+	file, err := ioutil.TempFile("", "")
+	utils.CheckError(err, 2)
+	defer os.Remove(file.Name())
+	file.Write([]byte(value))
+
+	currentContextId := utils.GetPipelineContextHierarchy()[0]
+	execArtifactCommand(Push, file.Name(), currentContextId+"/"+key)
 	return nil
 }
 
 func Get(key string) string {
-	hubClient, err := artifact_hub.NewClient()
-	errutil.Check(err)
-	resolver, err := artifact_files.NewPathResolver(artifact_files.ResourceTypeProject, "")
-	errutil.Check(err)
-	pullOptions := artifact_storage.PullOptions{
-		SourcePath:          key,
-		DestinationOverride: key,
-		Force:               true,
-	}
-	_, err = artifact_storage.Pull(hubClient, resolver, pullOptions)
-	errutil.Check(err)
-	value, err := readFileContents(key)
-	errutil.Check(err)
-	deleteLocalFile(key)
-	return value
-}
+	file, err := ioutil.TempFile("", "")
+	utils.CheckError(err, 2)
+	defer os.Remove(file.Name())
 
-func createLocalFile(file_name, file_contents string) error {
-	err := os.WriteFile(file_name, []byte(file_contents), 0666)
+	contextHierarchy := utils.GetPipelineContextHierarchy()
+	for _, contextID := range contextHierarchy {
+		err = execArtifactCommand(Pull, contextID+"/"+key, file.Name())
+		if err == nil {
+			break
+		}
+	}
+
+	// If err exists after the last iteration of the for loop above, we can interpret
+	// that as "key value wasnt found in any pipeline context"
+	// TODO currently we cant distinguish between "we cant connect to artifact registry" and "key-file does not exist"
 	if err != nil {
-		log.Fatal(err)
-		return err
+		utils.CheckError(err, 1)
 	}
-	return nil
+
+	byte_key, _ := os.ReadFile(file.Name())
+	return string(byte_key)
 }
 
-func readFileContents(file_name string) (string, error) {
-	data, err := os.ReadFile(file_name)
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
-	return string(data[:]), nil
-}
+type ArtifactCommand string
 
-func deleteLocalFile(file_name string) {
-	os.Remove(file_name)
+const (
+	Push ArtifactCommand = "push"
+	Pull                 = "pull"
+)
+
+func execArtifactCommand(command ArtifactCommand, source, dest string) error {
+	cmd := exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source, "-d", dest, "--force")
+	_, err := cmd.CombinedOutput()
+	return err
 }
