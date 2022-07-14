@@ -6,11 +6,11 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/semaphoreci/toolbox/sem-vars/pkg/flags"
 	"github.com/semaphoreci/toolbox/sem-vars/pkg/utils"
-	flag "github.com/spf13/pflag"
 )
 
-func Put(key, value string, flags ...flag.Flag) error {
+func Put(key, value string) error {
 	file, err := ioutil.TempFile("", "")
 	utils.CheckError(err, 2)
 	defer os.Remove(file.Name())
@@ -21,7 +21,7 @@ func Put(key, value string, flags ...flag.Flag) error {
 	return nil
 }
 
-func Get(key string, flags ...flag.Flag) string {
+func Get(key string) string {
 	file, err := ioutil.TempFile("", "")
 	utils.CheckError(err, 2)
 	defer os.Remove(file.Name())
@@ -38,6 +38,9 @@ func Get(key string, flags ...flag.Flag) string {
 	// that as "key value wasnt found in any pipeline context"
 	// TODO currently we cant distinguish between "we cant connect to artifact registry" and "key-file does not exist"
 	if err != nil {
+		if flags.Fallback != "" {
+			return flags.Fallback
+		}
 		utils.CheckError(err, 1)
 	}
 

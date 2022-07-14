@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/semaphoreci/toolbox/sem-vars/pkg/flags"
 	"github.com/semaphoreci/toolbox/sem-vars/pkg/store"
 	"github.com/spf13/cobra"
 )
@@ -19,5 +20,6 @@ func RunGetCmd(cmd *cobra.Command, args []string) {
 }
 
 func init() {
+	getCmd.Flags().StringVar(&flags.Fallback, "fallback", "", "Default value to be returned if key does not exist.")
 	RootCmd.AddCommand(getCmd)
 }
