@@ -1,10 +1,7 @@
 package store
 
-import "fmt"
-
 type Store interface {
-	Get(string) (string, error)
-	Put(string, string) error
+	Get(string) string
+	Put(string, string)
+	Delete(string)
 }
-
-var NotFoundErr = fmt.Errorf("key not found")

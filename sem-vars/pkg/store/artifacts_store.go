@@ -10,16 +10,17 @@ import (
 	"github.com/semaphoreci/toolbox/sem-vars/pkg/utils"
 )
 
-func Put(key, value string) error {
+const keysInfoDirName = ".workflow-context/"
+
+func Put(key, value string) {
 	file, err := ioutil.TempFile("", "")
 	utils.CheckError(err, 2)
 	defer os.Remove(file.Name())
 	file.Write([]byte(value))
 
-	currentContextId := utils.GetPipelineContextHierarchy()[0]
-	err = execArtifactCommand(Push, file.Name(), currentContextId+"/"+key, flags.Force)
+	contextId := utils.GetPipelineContextHierarchy()[0]
+	err = execArtifactCommand(Push, file.Name(), keysInfoDirName+contextId+"/"+key, flags.Force)
 	utils.CheckError(err, 1)
-	return nil
 }
 
 func Get(key string) string {
@@ -29,7 +30,7 @@ func Get(key string) string {
 
 	contextHierarchy := utils.GetPipelineContextHierarchy()
 	for _, contextID := range contextHierarchy {
-		err = execArtifactCommand(Pull, contextID+"/"+key, file.Name(), true)
+		err = execArtifactCommand(Pull, keysInfoDirName+contextID+"/"+key, file.Name(), true)
 		if err == nil {
 			break
 		}
@@ -49,20 +50,42 @@ func Get(key string) string {
 	return string(byte_key)
 }
 
+func Delete(key string) {
+	file, err := ioutil.TempFile("", "")
+	utils.CheckError(err, 2)
+	defer os.Remove(file.Name())
+
+	contextId := utils.GetPipelineContextHierarchy()[0]
+	execArtifactCommand(Yank, keysInfoDirName+contextId+"/"+key, "", true)
+	//The key might be present in some of the parent pipline's context as well, but we cant delete them there, as they might be used by some other pipeline.
+	//We will just mark those keys as deleted inside this pipeline's context.
+	err = execArtifactCommand(Push, file.Name(), keysInfoDirName+contextId+"/.deleted/"+key, flags.Force)
+	utils.CheckError(err, 1)
+}
+
 type ArtifactCommand string
 
 const (
 	Push ArtifactCommand = "push"
 	Pull                 = "pull"
+	Yank                 = "yank"
 )
 
 func execArtifactCommand(command ArtifactCommand, source, dest string, force bool) error {
 	var cmd *exec.Cmd
-	if force {
-		cmd = exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source, "-d", dest, "--force")
+	if command == Push || command == Pull {
+		if force {
+			cmd = exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source, "-d", dest, "--force")
+		} else {
+			cmd = exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source, "-d", dest)
+		}
 	} else {
-		cmd = exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source, "-d", dest)
+		cmd = exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source)
 	}
 	_, err := cmd.CombinedOutput()
+	// fmt.Println(string(t))
+	// fmt.Println("------")
+	// fmt.Println(err)
+	// fmt.Println("------")
 	return err
 }
