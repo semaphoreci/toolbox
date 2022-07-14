@@ -17,7 +17,8 @@ func Put(key, value string) error {
 	file.Write([]byte(value))
 
 	currentContextId := utils.GetPipelineContextHierarchy()[0]
-	execArtifactCommand(Push, file.Name(), currentContextId+"/"+key)
+	err = execArtifactCommand(Push, file.Name(), currentContextId+"/"+key, flags.Force)
+	utils.CheckError(err, 1)
 	return nil
 }
 
@@ -28,7 +29,7 @@ func Get(key string) string {
 
 	contextHierarchy := utils.GetPipelineContextHierarchy()
 	for _, contextID := range contextHierarchy {
-		err = execArtifactCommand(Pull, contextID+"/"+key, file.Name())
+		err = execArtifactCommand(Pull, contextID+"/"+key, file.Name(), true)
 		if err == nil {
 			break
 		}
@@ -55,8 +56,13 @@ const (
 	Pull                 = "pull"
 )
 
-func execArtifactCommand(command ArtifactCommand, source, dest string) error {
-	cmd := exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source, "-d", dest, "--force")
+func execArtifactCommand(command ArtifactCommand, source, dest string, force bool) error {
+	var cmd *exec.Cmd
+	if force {
+		cmd = exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source, "-d", dest, "--force")
+	} else {
+		cmd = exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source, "-d", dest)
+	}
 	_, err := cmd.CombinedOutput()
 	return err
 }
