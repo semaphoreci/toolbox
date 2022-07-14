@@ -3,6 +3,7 @@ package cmd
 import (
 	"strings"
 
+	"github.com/semaphoreci/toolbox/sem-vars/pkg/flags"
 	"github.com/semaphoreci/toolbox/sem-vars/pkg/store"
 	"github.com/spf13/cobra"
 )
@@ -21,5 +22,6 @@ func RunPutCmd(cmd *cobra.Command, args []string) {
 }
 
 func init() {
+	putCmd.Flags().BoolVarP(&flags.Force, "force", "f", false, "If same key already exists, overwrite it.")
 	RootCmd.AddCommand(putCmd)
 }
