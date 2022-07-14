@@ -7,9 +7,10 @@ import (
 	"os/exec"
 
 	"github.com/semaphoreci/toolbox/sem-vars/pkg/utils"
+	flag "github.com/spf13/pflag"
 )
 
-func Put(key, value string) error {
+func Put(key, value string, flags ...flag.Flag) error {
 	file, err := ioutil.TempFile("", "")
 	utils.CheckError(err, 2)
 	defer os.Remove(file.Name())
@@ -20,7 +21,7 @@ func Put(key, value string) error {
 	return nil
 }
 
-func Get(key string) string {
+func Get(key string, flags ...flag.Flag) string {
 	file, err := ioutil.TempFile("", "")
 	utils.CheckError(err, 2)
 	defer os.Remove(file.Name())
