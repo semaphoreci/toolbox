@@ -194,6 +194,7 @@ blocks:
                 - tests/artifacts.bats
                 - tests/test-results.bats
                 - tests/macOS_sem_version.bats
+                - tests/sem-semantic-release.bats
                 - tests/macos_cache.bats
                 - tests/macos_autocache.bats
                 - tests/libcheckout.bats
@@ -313,6 +314,7 @@ blocks:
                 - tests/compiler.bats
                 - tests/test-results.bats
                 - tests/enetwork.bats
+                - tests/sem-semantic-release.bats
                 - tests/autocache.bats
                 - tests/cache.bats
                 - tests/libcheckout.bats
