@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -37,14 +36,20 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 	var config aws.Config
 	var err error
 
-	profile := os.Getenv("SEMAPHORE_CACHE_AWS_PROFILE")
-	if profile == "" {
-		config, err = awsConfig.LoadDefaultConfig(context.TODO())
-	} else {
-		fmt.Printf("Using '%s' AWS profile.\n", profile)
-		config, err = awsConfig.LoadDefaultConfig(context.TODO(), awsConfig.WithSharedConfigProfile(profile))
+	opts := []func(*awsConfig.LoadOptions) error{}
+
+	if os.Getenv("SEMAPHORE_CACHE_AWS_DEBUG") == "true" {
+		opts = append(opts, awsConfig.WithClientLogMode(
+			aws.LogRetries|aws.LogResponse|aws.LogSigning|aws.LogRequest,
+		))
 	}
 
+	profile := os.Getenv("SEMAPHORE_CACHE_AWS_PROFILE")
+	if profile != "" {
+		opts = append(opts, awsConfig.WithSharedConfigProfile(profile))
+	}
+
+	config, err = awsConfig.LoadDefaultConfig(context.TODO(), opts...)
 	if err != nil {
 		return nil, err
 	}
