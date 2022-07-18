@@ -29,17 +29,21 @@ func Get(key string) string {
 	defer os.Remove(file.Name())
 
 	contextHierarchy := utils.GetPipelineContextHierarchy()
+	found_the_key := false
 	for _, contextID := range contextHierarchy {
 		err = execArtifactCommand(Pull, keysInfoDirName+contextID+"/"+key, file.Name(), true)
 		if err == nil {
+			found_the_key = true
+			break
+		}
+		//If key is deleted, we dont need to go looking for it in parent contexts
+		key_deleted := checkIfKeyDeleted(contextID, key)
+		if key_deleted {
 			break
 		}
 	}
 
-	// If err exists after the last iteration of the for loop above, we can interpret
-	// that as "key value wasnt found in any pipeline context"
-	// TODO currently we cant distinguish between "we cant connect to artifact registry" and "key-file does not exist"
-	if err != nil {
+	if !found_the_key {
 		if flags.Fallback != "" {
 			return flags.Fallback
 		}
@@ -71,6 +75,22 @@ const (
 	Yank                 = "yank"
 )
 
+func checkIfKeyDeleted(contextID, key string) bool {
+	dir, err := ioutil.TempDir("", "")
+	utils.CheckError(err, 2)
+	defer os.RemoveAll(dir)
+
+	execArtifactCommand(Pull, keysInfoDirName+contextID+"/.deleted/", dir, true)
+
+	all_deleted_key_files, _ := ioutil.ReadDir(dir)
+	for _, deleted_key_file := range all_deleted_key_files {
+		if key == deleted_key_file.Name() {
+			return true
+		}
+	}
+	return false
+}
+
 func execArtifactCommand(command ArtifactCommand, source, dest string, force bool) error {
 	var cmd *exec.Cmd
 	if command == Push || command == Pull {
@@ -83,9 +103,5 @@ func execArtifactCommand(command ArtifactCommand, source, dest string, force boo
 		cmd = exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source)
 	}
 	_, err := cmd.CombinedOutput()
-	// fmt.Println(string(t))
-	// fmt.Println("------")
-	// fmt.Println(err)
-	// fmt.Println("------")
 	return err
 }
