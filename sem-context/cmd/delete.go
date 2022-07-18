@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/semaphoreci/toolbox/sem-vars/pkg/store"
+	"github.com/semaphoreci/toolbox/sem-context/pkg/store"
 	"github.com/spf13/cobra"
 )
 

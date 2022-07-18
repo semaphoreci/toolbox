@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/semaphoreci/toolbox/sem-vars/pkg/flags"
-	"github.com/semaphoreci/toolbox/sem-vars/pkg/store"
+	"github.com/semaphoreci/toolbox/sem-context/pkg/flags"
+	"github.com/semaphoreci/toolbox/sem-context/pkg/store"
 	"github.com/spf13/cobra"
 )
 

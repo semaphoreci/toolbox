@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/semaphoreci/toolbox/sem-vars/pkg/flags"
+	"github.com/semaphoreci/toolbox/sem-context/pkg/flags"
 	"github.com/spf13/cobra"
 )
 
 var IgnoreFailure bool
 
 var RootCmd = &cobra.Command{
-	Use:   "sem-vars",
+	Use:   "sem-context",
 	Short: "Share variables between your Semaphore jobs",
 }
 
