@@ -49,7 +49,6 @@ func Get(key string) string {
 
 	if !found_the_key {
 		if flags.Fallback != "" {
-			fmt.Fprintf(os.Stdout, "Could not find key '%s', using the fallback value", key)
 			return flags.Fallback
 		}
 		utils.CheckError(err, 1, fmt.Sprintf("Cant find the key '%s'", key))

@@ -3,11 +3,30 @@ package validators
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 var valueSizeLimit = 20000
 
-func IsKeyValid(key string) error {
+func ValidateGetAndDeleteArguments(args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("Exactly one argument expected")
+	}
+	return isKeyValid(args[0])
+}
+
+func ValidatePutArguments(args []string) error {
+	if len(args) != 1 || len(strings.Split(args[0], "=")) != 2 {
+		return fmt.Errorf("Put command expects one argument in form of key=value")
+	}
+	err := isKeyValid(strings.Split(args[0], "=")[0])
+	if err == nil {
+		err = isValueValid(strings.Split(args[0], "=")[1])
+	}
+	return err
+}
+
+func isKeyValid(key string) error {
 	keyRegex := regexp.MustCompile(`[A-Za-z0-9-_]{3,256}`)
 	if keyRegex.MatchString(key) {
 		return nil
@@ -18,7 +37,7 @@ func IsKeyValid(key string) error {
 	)
 }
 
-func IsValueValid(value string) error {
+func isValueValid(value string) error {
 	if value == "" {
 		return fmt.Errorf("Value cant be an empty string")
 	}
