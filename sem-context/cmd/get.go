@@ -5,6 +5,8 @@ import (
 
 	"github.com/semaphoreci/toolbox/sem-context/pkg/flags"
 	"github.com/semaphoreci/toolbox/sem-context/pkg/store"
+	"github.com/semaphoreci/toolbox/sem-context/pkg/utils"
+	"github.com/semaphoreci/toolbox/sem-context/pkg/validators"
 	"github.com/spf13/cobra"
 )
 
@@ -16,6 +18,7 @@ var getCmd = &cobra.Command{
 
 func RunGetCmd(cmd *cobra.Command, args []string) {
 	key := args[0]
+	utils.CheckError(validators.IsKeyValid(key), 3)
 	fmt.Println(store.Get(key))
 }
 

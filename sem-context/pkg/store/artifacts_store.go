@@ -8,7 +8,6 @@ import (
 
 	"github.com/semaphoreci/toolbox/sem-context/pkg/flags"
 	"github.com/semaphoreci/toolbox/sem-context/pkg/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 const keysInfoDirName = ".workflow-context/"
@@ -25,7 +24,7 @@ func Put(key, value string) {
 
 	//Since the key is stored, delete it from '.deleted' dir, in case it was marked as deleted before
 	execArtifactCommand(Yank, keysInfoDirName+contextId+"/.deleted/"+key, "", true)
-	log.Infof("Key-value pair successfully stored")
+	fmt.Fprintf(os.Stdout, "Key-value pair successfully stored")
 }
 
 func Get(key string) string {
@@ -50,7 +49,7 @@ func Get(key string) string {
 
 	if !found_the_key {
 		if flags.Fallback != "" {
-			log.Infof(fmt.Sprintf("Could not find key '%s', using the fallback value", key))
+			fmt.Fprintf(os.Stdout, "Could not find key '%s', using the fallback value", key)
 			return flags.Fallback
 		}
 		utils.CheckError(err, 1, fmt.Sprintf("Cant find the key '%s'", key))
