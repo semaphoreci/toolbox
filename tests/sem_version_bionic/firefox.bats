@@ -22,20 +22,24 @@ setup() {
 
   source ~/.toolbox/toolbox
 }
+
 #  Firefox
 
-@test "change firefox to 52" {
-
-  run sem-version firefox 52
-  assert_success
-  assert_line --partial "Mozilla Firefox 52"
-}
 @test "change firefox to 78" {
 
   run sem-version firefox 78
   assert_success
   assert_line --partial "Mozilla Firefox 78"
 }
+
+@test "change firefox to 102" {
+
+  run sem-version firefox 102
+  assert_success
+  assert_line --partial "Mozilla Firefox 102"
+}
+
+
 @test "change firefox to 90" {
 
   run sem-version firefox 90
