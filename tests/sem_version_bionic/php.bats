@@ -63,22 +63,22 @@ setup() {
   assert_line --partial "imap"
 }
 
-@test "change php to 8.0.19" {
+@test "change php to 8.0.21" {
 
-  run sem-version php 8.0.19
+  run sem-version php 8.0.21
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.0.19"
+  assert_line --partial "PHP 8.0.21"
   run php -m 
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
 
-@test "php check composer 8.0.19" {
+@test "php check composer 8.0.21" {
 
   run which composer
   assert_success
   source ~/.phpbrew/bashrc
-  assert_line --partial "8.0.19"
+  assert_line --partial "8.0.21"
 }

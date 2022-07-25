@@ -89,8 +89,8 @@ version::change_php() {
   [[ "$software_version" == "7.2" ]] && software_version="7.2.34"
   [[ "$software_version" == "7.3" ]] && software_version="7.3.33"
   [[ "$software_version" == "7.4" ]] && software_version="7.4.30"
-  [[ "$software_version" == "8" ]] && software_version="8.0.19"
-  [[ "$software_version" == "8.0" ]] && software_version="8.0.19"
+  [[ "$software_version" == "8" ]] && software_version="8.0.21"
+  [[ "$software_version" == "8.0" ]] && software_version="8.0.21"
 
   if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
     sem-install php "${software_version}"
@@ -132,10 +132,10 @@ version::change_erlang() {
 version::change_firefox() {
   local firefox_version=""
   case "${software_version}" in
-    "52")firefox_version="esr-prev";;
     "68")firefox_version="esr";;
     "78")firefox_version="esr-new";;
-    *)echo "Please choose one of 52, 68, 78";return 1;;
+    "102")firefox_version="esr-latest";;
+    *)echo "Please choose one of 68, 78, 102";return 1;;
   esac
   software_version="$firefox_version"
   version::change "change-firefox-version"
