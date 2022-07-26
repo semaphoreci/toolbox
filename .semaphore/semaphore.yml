@@ -28,6 +28,13 @@ blocks:
             - artifact push workflow bin/linux/cache -d bin/linux/cache
             - artifact push workflow bin/darwin/cache -d bin/darwin/cache
             - artifact push workflow bin/windows/cache.exe -d bin/windows/cache.exe
+        - name: Build sem-context CLI
+          commands:
+            - cd sem-context
+            - make build.linux
+            - make build.darwin
+            - artifact push workflow bin/linux/sem-context -d bin/linux/sem-context
+            - artifact push workflow bin/darwin/sem-context -d bin/darwin/sem-context
 
   - name: Static Code Analysis
     dependencies: []
@@ -42,6 +49,7 @@ blocks:
             - shellcheck sem-service || true
             - shellcheck sem-version || true
             - shellcheck cache       || true
+            - shellcheck sem-context || true
             - shellcheck libcheckout || true
             - 'shellcheck sem-service -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -le 76 ]]'
             - 'shellcheck sem-version -f gcc | wc -l && [[ "$(shellcheck sem-version -f gcc | wc -l)" -le 21 ]]'
@@ -72,6 +80,8 @@ blocks:
           - checkout
           - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
           - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
+          - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -112,6 +122,8 @@ blocks:
           - checkout
           - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
           - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
+          - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - bash release/create.sh
           - source tests/sftp_server/start_on_mac.sh
           - source release/install_in_tests.sh
@@ -131,6 +143,8 @@ blocks:
           - checkout
           - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
           - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
+          - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - bash release/create.sh
           - source release/create.sh
           - cd ~/$SEMAPHORE_GIT_DIR/
@@ -167,6 +181,8 @@ blocks:
           - checkout
           - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
           - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
+          - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - bash release/create.sh
           - source tests/sftp_server/start_on_mac.sh
 
@@ -207,6 +223,8 @@ blocks:
           - checkout
           - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
           - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
+          - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - bash release/create.sh
           - source tests/sftp_server/start_on_docker.sh
       jobs:
@@ -244,6 +262,8 @@ blocks:
           - checkout
           - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
           - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
+          - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - bash release/create.sh
           - apk add --update docker openrc
           - source tests/sftp_server/start_on_docker.sh
@@ -275,6 +295,8 @@ blocks:
           - checkout
           - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
           - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
+          - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - bash release/create.sh
           - source tests/sftp_server/start_on_linux.sh
           - sudo apt-get install -y python3.8-dev
@@ -374,6 +396,8 @@ blocks:
           - checkout
           - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
           - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
+          - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -403,6 +427,8 @@ blocks:
           - checkout
           - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
           - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
+          - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
