@@ -17,5 +17,7 @@ blocks:
             - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
             - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
             - artifact pull workflow bin/windows/cache.exe -d cache-cli/bin/windows/cache.exe
+            - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
+            - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
             - bash release/create.sh -a
             - bash release/upload.sh

@@ -1,0 +1,16 @@
+version: '3.6'
+services:
+  cli:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    tty: true
+    command: "sleep 0"
+    container_name: 'sem-context'
+    volumes:
+      - go-pkg-cache:/go
+      - .:/app
+
+volumes:
+  go-pkg-cache:
+    driver: local
