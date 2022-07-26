@@ -22,7 +22,9 @@ func RunPutCmd(cmd *cobra.Command, args []string) {
 	key, value := key_value[0], key_value[1]
 
 	existing_value, err := SearchForKeyInAllContexts(key)
-	utils.CheckError(err)
+	if err != nil && err.(*utils.Error).ExitCode == 2 {
+		utils.CheckError(err)
+	}
 	if existing_value != "" && !flags.Force {
 		utils.CheckError(&utils.Error{ErrorMessage: fmt.Sprintf("Key %s already exists", key), ExitCode: 1})
 	}
