@@ -45,6 +45,7 @@ func Get(key, contextID string) (string, error) {
 		// Since 'artifact' CLI always returns 1, this is the only way to check if
 		// communication with artifact server is the problem, of key just does not exist
 		if strings.Contains(artifact_output, "Artifact not found") {
+			return "", &utils.Error{ErrorMessage: fmt.Sprintf("Cant find the key '%s'", key), ExitCode: 1}
 		} else {
 			log.New(os.Stderr, "", 0).Panicln(artifact_output)
 			return "", &utils.Error{ErrorMessage: "Error with establishing connection with artifact server", ExitCode: 2}
