@@ -54,6 +54,7 @@ func Get(key string) (string, error) {
 			found_the_key = true
 			break
 		}
+
 		//If key is deleted, we dont need to go looking for it in parent contexts
 		key_deleted, err := checkIfKeyDeleted(contextID, key)
 		if err != nil {
@@ -65,10 +66,6 @@ func Get(key string) (string, error) {
 	}
 
 	if !found_the_key {
-		// TODO Artifacts implementation should not be considered with fallback option
-		// if flags.Fallback != "" {
-		// 	return flags.Fallback, nil
-		// }
 		return "", &utils.Error{ErrorMessage: fmt.Sprintf("Cant find the key '%s'", key), ExitCode: 1}
 	}
 

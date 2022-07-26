@@ -19,6 +19,10 @@ var getCmd = &cobra.Command{
 func RunGetCmd(cmd *cobra.Command, args []string) {
 	utils.CheckError(validators.ValidateGetAndDeleteArguments(args))
 	value, err := store.Get(args[0])
+	if err != nil && err.(*utils.Error).ExitCode == 1 && flags.Fallback != "" {
+		fmt.Println(flags.Fallback)
+		return
+	}
 	utils.CheckError(err)
 	fmt.Println(value)
 }
