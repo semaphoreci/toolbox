@@ -19,13 +19,14 @@ func RunDeleteCmd(cmd *cobra.Command, args []string) {
 	utils.CheckError(validators.ValidateGetAndDeleteArguments(args))
 	key := args[0]
 
-	value, err := store.Get(key)
+	value, err := SearchForKeyInAllContexts(key)
 	utils.CheckError(err)
 	if value == "" {
 		utils.CheckError(&utils.Error{ErrorMessage: fmt.Sprintf("Key %s does not exist", key), ExitCode: 1})
 	}
 
-	err = store.Delete(key)
+	contextId := utils.GetPipelineContextHierarchy()[0]
+	err = store.Delete(key, contextId)
 	utils.CheckError(err)
 	//TODO some feedback log
 }

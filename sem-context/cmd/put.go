@@ -22,12 +22,13 @@ func RunPutCmd(cmd *cobra.Command, args []string) {
 	key_value := strings.Split(args[0], "=")
 	key, value := key_value[0], key_value[1]
 
-	existing_value, err := store.Get(key)
+	existing_value, err := SearchForKeyInAllContexts(key)
 	utils.CheckError(err)
 	if existing_value != "" && !flags.Force {
 		utils.CheckError(&utils.Error{ErrorMessage: fmt.Sprintf("Key %s already exists", key), ExitCode: 1})
 	}
-	err = store.Put(key, value)
+	contextId := utils.GetPipelineContextHierarchy()[0]
+	err = store.Put(key, value, contextId)
 	utils.CheckError(err)
 	//TODO Maybe some feedback log
 }

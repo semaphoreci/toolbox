@@ -18,13 +18,39 @@ var getCmd = &cobra.Command{
 
 func RunGetCmd(cmd *cobra.Command, args []string) {
 	utils.CheckError(validators.ValidateGetAndDeleteArguments(args))
-	value, err := store.Get(args[0])
+	key := args[0]
+
+	value, err := SearchForKeyInAllContexts(key)
+	if value != "" {
+		fmt.Println(value)
+		return
+	}
 	if err != nil && err.(*utils.Error).ExitCode == 1 && flags.Fallback != "" {
 		fmt.Println(flags.Fallback)
 		return
 	}
 	utils.CheckError(err)
-	fmt.Println(value)
+}
+
+// Goes from current context all the way to the root context (context<=>pipeline) and
+// searches for given key.
+func SearchForKeyInAllContexts(key string) (string, error) {
+	contextHierarchy := utils.GetPipelineContextHierarchy()
+	var err error
+	for _, contextID := range contextHierarchy {
+		value, err := store.Get(key, contextID)
+		if err == nil {
+			return value, nil
+		}
+		if err.(*utils.Error).ExitCode == 2 {
+			return "", err
+		}
+		deleted, _ := store.CheckIfKeyDeleted(contextID, key)
+		if deleted {
+			return "", &utils.Error{ErrorMessage: fmt.Sprintf("Cant find the key '%s'", key), ExitCode: 1}
+		}
+	}
+	return "", err
 }
 
 func init() {
