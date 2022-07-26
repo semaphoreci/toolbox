@@ -13,6 +13,8 @@ import (
 
 const keysInfoDirName = ".workflow-context/"
 
+type ArtifactStore struct{}
+
 func Put(key, value, contextId string) error {
 	file, err := ioutil.TempFile("", "")
 	if err != nil {
@@ -29,7 +31,6 @@ func Put(key, value, contextId string) error {
 
 	//Since the key is stored, delete it from '.deleted' dir, in case it was marked as deleted before
 	execArtifactCommand(Yank, keysInfoDirName+contextId+"/.deleted/"+key, "")
-	fmt.Fprintf(os.Stdout, "Key-value pair successfully stored")
 	return nil
 }
 
@@ -99,7 +100,6 @@ func CheckIfKeyDeleted(contextID, key string) (bool, error) {
 	}
 	defer os.RemoveAll(dir)
 
-	//TODO check what this function returns
 	execArtifactCommand(Pull, keysInfoDirName+contextID+"/.deleted/", dir)
 
 	all_deleted_key_files, _ := ioutil.ReadDir(dir)

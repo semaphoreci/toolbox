@@ -45,7 +45,10 @@ func SearchForKeyInAllContexts(key string) (string, error) {
 		if err.(*utils.Error).ExitCode == 2 {
 			return "", err
 		}
-		deleted, _ := store.CheckIfKeyDeleted(contextID, key)
+		deleted, err := store.CheckIfKeyDeleted(contextID, key)
+		if err != nil {
+			utils.CheckError(err)
+		}
 		if deleted {
 			return "", &utils.Error{ErrorMessage: fmt.Sprintf("Cant find the key '%s'", key), ExitCode: 1}
 		}

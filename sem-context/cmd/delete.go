@@ -28,7 +28,7 @@ func RunDeleteCmd(cmd *cobra.Command, args []string) {
 	contextId := utils.GetPipelineContextHierarchy()[0]
 	err = store.Delete(key, contextId)
 	utils.CheckError(err)
-	//TODO some feedback log
+	fmt.Println("Key successfully deleted")
 }
 
 func init() {

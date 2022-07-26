@@ -30,7 +30,7 @@ func RunPutCmd(cmd *cobra.Command, args []string) {
 	contextId := utils.GetPipelineContextHierarchy()[0]
 	err = store.Put(key, value, contextId)
 	utils.CheckError(err)
-	//TODO Maybe some feedback log
+	fmt.Println("Key value pair successfully stored")
 }
 
 func init() {
