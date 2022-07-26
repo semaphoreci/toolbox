@@ -7,19 +7,24 @@ import (
 	"github.com/semaphoreci/toolbox/sem-context/pkg/flags"
 )
 
+type Error struct {
+	ErrorMessage string
+	ExitCode     int
+}
+
+func (err *Error) Error() string {
+	return err.ErrorMessage
+}
+
 // If error is present, exit and log error message, if it isn't, dont do anything.
 // If flag --ignore-failure is set, then exit with code 0, else exit with given error code
-func CheckError(err error, code int, optional_err_msg ...string) {
+// Error passed to this function must be of type Error defined inside this module
+func CheckError(err error) {
 	if err != nil {
-
-		err_msg := err.Error()
-		for _, optional_msg := range optional_err_msg {
-			err_msg = optional_msg
-		}
-
-		fmt.Fprintf(os.Stderr, err_msg)
+		castedError := err.(*Error)
+		fmt.Fprintf(os.Stderr, err.Error())
 		if !flags.IgnoreFailure {
-			os.Exit(code)
+			os.Exit(castedError.ExitCode)
 		} else {
 			os.Exit(0)
 		}

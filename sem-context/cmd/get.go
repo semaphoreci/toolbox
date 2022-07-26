@@ -17,8 +17,10 @@ var getCmd = &cobra.Command{
 }
 
 func RunGetCmd(cmd *cobra.Command, args []string) {
-	utils.CheckError(validators.ValidateGetAndDeleteArguments(args), 3)
-	fmt.Println(store.Get(args[0]))
+	utils.CheckError(validators.ValidateGetAndDeleteArguments(args))
+	value, err := store.Get(args[0])
+	utils.CheckError(err)
+	fmt.Println(value)
 }
 
 func init() {

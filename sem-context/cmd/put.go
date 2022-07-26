@@ -17,10 +17,12 @@ var putCmd = &cobra.Command{
 }
 
 func RunPutCmd(cmd *cobra.Command, args []string) {
-	utils.CheckError(validators.ValidatePutArguments(args), 3)
+	utils.CheckError(validators.ValidatePutArguments(args))
 	key_value := strings.Split(args[0], "=")
 	key, value := key_value[0], key_value[1]
-	store.Put(key, value)
+	err := store.Put(key, value)
+	utils.CheckError(err)
+	//TODO Maybe some feedback log
 }
 
 func init() {

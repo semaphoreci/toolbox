@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"github.com/semaphoreci/toolbox/sem-context/pkg/store"
+	"github.com/semaphoreci/toolbox/sem-context/pkg/utils"
+	"github.com/semaphoreci/toolbox/sem-context/pkg/validators"
 	"github.com/spf13/cobra"
 )
 
@@ -12,8 +14,11 @@ var deleteCmd = &cobra.Command{
 }
 
 func RunDeleteCmd(cmd *cobra.Command, args []string) {
+	utils.CheckError(validators.ValidateGetAndDeleteArguments(args))
 	key := args[0]
-	store.Delete(key)
+	err := store.Delete(key)
+	utils.CheckError(err)
+	//TODO some feedback log
 }
 
 func init() {
