@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/semaphoreci/toolbox/sem-context/pkg/flags"
-	"github.com/semaphoreci/toolbox/sem-context/pkg/store"
 	"github.com/semaphoreci/toolbox/sem-context/pkg/utils"
 	"github.com/semaphoreci/toolbox/sem-context/pkg/validators"
 	"github.com/spf13/cobra"
@@ -36,16 +35,15 @@ func RunGetCmd(cmd *cobra.Command, args []string) {
 // searches for given key.
 func SearchForKeyInAllContexts(key string) (string, error) {
 	contextHierarchy := utils.GetPipelineContextHierarchy()
-	var err error
 	for _, contextID := range contextHierarchy {
-		value, err := store.Get(key, contextID)
+		value, err := Store.Get(key, contextID)
 		if err == nil {
 			return value, nil
 		}
 		if err.(*utils.Error).ExitCode == 2 {
 			return "", err
 		}
-		deleted, err := store.CheckIfKeyDeleted(contextID, key)
+		deleted, err := Store.CheckIfKeyDeleted(key, contextID)
 		if err != nil {
 			utils.CheckError(err)
 		}
@@ -53,7 +51,7 @@ func SearchForKeyInAllContexts(key string) (string, error) {
 			return "", &utils.Error{ErrorMessage: fmt.Sprintf("Cant find the key '%s'", key), ExitCode: 1}
 		}
 	}
-	return "", err
+	return "", &utils.Error{ErrorMessage: fmt.Sprintf("Cant find the key '%s'", key), ExitCode: 1}
 }
 
 func init() {

@@ -5,10 +5,13 @@ import (
 	"os"
 
 	"github.com/semaphoreci/toolbox/sem-context/pkg/flags"
+	"github.com/semaphoreci/toolbox/sem-context/pkg/store"
 	"github.com/spf13/cobra"
 )
 
 var IgnoreFailure bool
+
+var Store store.Store
 
 var RootCmd = &cobra.Command{
 	Use:   "sem-context",
@@ -16,9 +19,13 @@ var RootCmd = &cobra.Command{
 }
 
 func Execute() {
-	RootCmd.PersistentFlags().BoolVar(&flags.IgnoreFailure, "ignore-failure", false, "Ignore if failure occures, and always return 0.")
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func init() {
+	Store = &store.ArtifactStore{}
+	RootCmd.PersistentFlags().BoolVar(&flags.IgnoreFailure, "ignore-failure", false, "Ignore if failure occures, and always return 0.")
 }

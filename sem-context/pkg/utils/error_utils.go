@@ -22,7 +22,7 @@ func (err *Error) Error() string {
 func CheckError(err error) {
 	if err != nil {
 		castedError := err.(*Error)
-		fmt.Fprintf(os.Stderr, err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
 		if !flags.IgnoreFailure {
 			os.Exit(castedError.ExitCode)
 		} else {

@@ -15,7 +15,7 @@ const keysInfoDirName = ".workflow-context/"
 
 type ArtifactStore struct{}
 
-func Put(key, value, contextId string) error {
+func (_ *ArtifactStore) Put(key, value, contextId string) error {
 	file, err := ioutil.TempFile("", "")
 	if err != nil {
 		return &utils.Error{ErrorMessage: "Cant create temp file to store contents from artifacts", ExitCode: 2}
@@ -34,14 +34,14 @@ func Put(key, value, contextId string) error {
 	return nil
 }
 
-func Get(key, contextID string) (string, error) {
+func (_ *ArtifactStore) Get(key, contextId string) (string, error) {
 	file, err := ioutil.TempFile("", "")
 	if err != nil {
 		return "", &utils.Error{ErrorMessage: "Cant create temp file to store contents from artifacts", ExitCode: 2}
 	}
 	defer os.Remove(file.Name())
 
-	artifact_output, err := execArtifactCommand(Pull, keysInfoDirName+contextID+"/"+key, file.Name())
+	artifact_output, err := execArtifactCommand(Pull, keysInfoDirName+contextId+"/"+key, file.Name())
 	if err != nil {
 		// Since 'artifact' CLI always returns 1, this is the only way to check if
 		// communication with artifact server is the problem, of key just does not exist
@@ -57,7 +57,7 @@ func Get(key, contextID string) (string, error) {
 	return string(byte_key), nil
 }
 
-func Delete(key, contextId string) error {
+func (_ *ArtifactStore) Delete(key, contextId string) error {
 	file, err := ioutil.TempFile("", "")
 	if err != nil {
 		return &utils.Error{
@@ -90,7 +90,7 @@ const (
 	Yank                 = "yank"
 )
 
-func CheckIfKeyDeleted(contextID, key string) (bool, error) {
+func (_ *ArtifactStore) CheckIfKeyDeleted(key, contextId string) (bool, error) {
 	dir, err := ioutil.TempDir("", "")
 	if err != nil {
 		return false, &utils.Error{
@@ -100,7 +100,7 @@ func CheckIfKeyDeleted(contextID, key string) (bool, error) {
 	}
 	defer os.RemoveAll(dir)
 
-	execArtifactCommand(Pull, keysInfoDirName+contextID+"/.deleted/", dir)
+	execArtifactCommand(Pull, keysInfoDirName+contextId+"/.deleted/", dir)
 
 	all_deleted_key_files, _ := ioutil.ReadDir(dir)
 	for _, deleted_key_file := range all_deleted_key_files {

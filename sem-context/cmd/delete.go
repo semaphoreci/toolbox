@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/semaphoreci/toolbox/sem-context/pkg/store"
 	"github.com/semaphoreci/toolbox/sem-context/pkg/utils"
 	"github.com/semaphoreci/toolbox/sem-context/pkg/validators"
 	"github.com/spf13/cobra"
@@ -26,7 +25,7 @@ func RunDeleteCmd(cmd *cobra.Command, args []string) {
 	}
 
 	contextId := utils.GetPipelineContextHierarchy()[0]
-	err = store.Delete(key, contextId)
+	err = Store.Delete(key, contextId)
 	utils.CheckError(err)
 	fmt.Println("Key successfully deleted")
 }
