@@ -18,11 +18,13 @@ var deleteCmd = &cobra.Command{
 func RunDeleteCmd(cmd *cobra.Command, args []string) {
 	utils.CheckError(validators.ValidateGetAndDeleteArguments(args))
 	key := args[0]
+
 	value, err := store.Get(key)
 	utils.CheckError(err)
 	if value == "" {
 		utils.CheckError(&utils.Error{ErrorMessage: fmt.Sprintf("Key %s does not exist", key), ExitCode: 1})
 	}
+
 	err = store.Delete(key)
 	utils.CheckError(err)
 	//TODO some feedback log

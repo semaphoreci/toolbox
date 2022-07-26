@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/semaphoreci/toolbox/sem-context/pkg/flags"
@@ -20,7 +21,13 @@ func RunPutCmd(cmd *cobra.Command, args []string) {
 	utils.CheckError(validators.ValidatePutArguments(args))
 	key_value := strings.Split(args[0], "=")
 	key, value := key_value[0], key_value[1]
-	err := store.Put(key, value)
+
+	existing_value, err := store.Get(key)
+	utils.CheckError(err)
+	if existing_value != "" && !flags.Force {
+		utils.CheckError(&utils.Error{ErrorMessage: fmt.Sprintf("Key %s already exists", key), ExitCode: 1})
+	}
+	err = store.Put(key, value)
 	utils.CheckError(err)
 	//TODO Maybe some feedback log
 }
