@@ -4,7 +4,6 @@ load "support/bats-support/load"
 load "support/bats-assert/load"
 
 setup() {
-  source sem-semantic-release
   export BATS=true
 }
 
