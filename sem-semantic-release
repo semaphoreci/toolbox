@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 SEMANTIC_RELEASE_PLUGINS=()
 SEMANTIC_RELEASE_OPTIONS=""
@@ -112,7 +114,7 @@ semantic-release::scrape_version() {
     
     if [[ -n $RELEASE_VERSION ]]
     then
-        export RELEASE_VERSION=$RELEASE_VERSION
+        sem-context put RELEASE_VERSION=$RELEASE_VERSION
         echo "sem-semantic-release: RELEASE_VERSION=$RELEASE_VERSION"
     else
         echo "sem-semantic-release: RELEASE_VERSION not found"
@@ -128,3 +130,5 @@ sem-semantic-release() {
 
     semantic-release::scrape_version
 }
+
+sem-semantic-release $@
