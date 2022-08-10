@@ -8,6 +8,7 @@ setup() {
 }
 
 @test "semantic-release::parse_args --help" {
+  source ~/.toolbox/sem-semantic-release
   run semantic-release::parse_args --help
 
   assert_success
@@ -15,6 +16,7 @@ setup() {
 }
 
 @test "semantic-release::parse_args --dry-run" {
+  source ~/.toolbox/sem-semantic-release
   run semantic-release::parse_args --dry-run
 
   assert_success
@@ -22,6 +24,7 @@ setup() {
 }
 
 @test "semantic-release::parse_args --version" {
+  source ~/.toolbox/sem-semantic-release
   run semantic-release::parse_args --version 19.0.2
 
   assert_success
@@ -29,6 +32,7 @@ setup() {
 }
 
 @test "semantic-release::parse_args --plugins" {
+  source ~/.toolbox/sem-semantic-release
   run semantic-release::parse_args --plugins @semantic-release/foo @semantic-release-bar
 
   assert_success
@@ -36,6 +40,7 @@ setup() {
 }
 
 @test "semantic-release::parse_args --branches" {
+  source ~/.toolbox/sem-semantic-release
   run semantic-release::parse_args --branches master develop release/\*
 
   assert_success
@@ -43,6 +48,7 @@ setup() {
 }
 
 @test "semantic-release::parse_args all options" {
+  source ~/.toolbox/sem-semantic-release
   run semantic-release::parse_args --dry-run --version 19.0.2 --plugins @semantic-release/git --branches master
 
   assert_success
@@ -52,6 +58,7 @@ setup() {
 }
 
 @test "semantic-release::install with empty version" {
+  source ~/.toolbox/sem-semantic-release
   run semantic-release::install
 
   assert_success
@@ -62,6 +69,7 @@ setup() {
 }
 
 @test "semantic-release::install with non-empty version" {
+  source ~/.toolbox/sem-semantic-release
   export SEMANTIC_RELEASE_VERSION=19.0.1
   run semantic-release::install
 
@@ -73,6 +81,7 @@ setup() {
 }
 
 @test "semantic-release::install with invalid version" {
+  source ~/.toolbox/sem-semantic-release
   export SEMANTIC_RELEASE_VERSION=2122.0.1
   run semantic-release::install
 
@@ -82,8 +91,8 @@ setup() {
   run rm -rf ./node_modules ./package.json ./package-lock.json
 }
 
-
 @test "semantic-release::install with plugins" {
+  source ~/.toolbox/sem-semantic-release
   export SEMANTIC_RELEASE_PLUGINS=("@semantic-release/git@10.0.0" "@semantic-release/changelog")
   run semantic-release::install
 
@@ -107,6 +116,7 @@ setup() {
 }
 
 @test "semantic-release::scrape_version with existing version line" {
+  source ~/.toolbox/sem-semantic-release
   echo "The next release version is 2.0.3" > /tmp/semantic-release.log
   run semantic-release::scrape_version
 
@@ -115,6 +125,7 @@ setup() {
 }
 
 @test "semantic-release::scrape_version with non-existing version line" {
+  source ~/.toolbox/sem-semantic-release
   echo "Nothing really happens..." > /tmp/semantic-release.log
   run semantic-release::scrape_version
 
