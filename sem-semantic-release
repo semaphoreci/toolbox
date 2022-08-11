@@ -2,28 +2,25 @@
 
 set -euo pipefail
 
-SEMANTIC_RELEASE_PLUGINS=()
-SEMANTIC_RELEASE_OPTIONS=""
-SEMANTIC_RELEASE_VERSION=""
-
 semantic-release::parse_args() {
     local PARSING_PLUGINS=1
     local PARSING_BRANCHES=1
     local DRY_RUN=1
 
-    local SEMANTIC_RELEASE_BRANCHES=()
-
+    local SEMANTIC_RELEASE_PLUGIN_LIST=()
+    local SEMANTIC_RELEASE_BRANCH_LIST=()
+    
     set -f
 
     while [[ $# -gt 0 ]]; do
         case $1 in
         --help)
-            echo "Usage: sem-semantic-release [OPTION]...\n"
-            echo "Options:"
-            echo "  --dry-run   \t runs semantic-release without publishing version"
-            echo "  --plugins   \t npm plugins and extensions to be installed"
-            echo "  --branches  \t branches to run semantic release for"
-            echo "  --version   \t semantic-release version"
+            printf "Usage: sem-semantic-release [OPTION]...\n\n"
+            printf "Options:\n"
+            printf "  --dry-run   \t runs semantic-release without publishing version"
+            printf "  --plugins   \t npm plugins and extensions to be installed"
+            printf "  --branches  \t branches to run semantic release for"
+            printf "  --version   \t semantic-release version"
             return 0;
             ;;
 
@@ -31,7 +28,7 @@ semantic-release::parse_args() {
             PARSING_PLUGINS=1
             PARSING_BRANCHES=1
 
-            SEMANTIC_VERSION="$2"
+            SEMANTIC_RELEASE_VERSION="$2"
             shift # past argument
             shift # past value
             ;;
@@ -53,7 +50,7 @@ semantic-release::parse_args() {
             shift
             ;;
 
-        -*|--*)
+        -*)
             echo "sem-semantic-release: Unknown option $1"
             return 1
             ;;
@@ -61,11 +58,11 @@ semantic-release::parse_args() {
         *)
             if [[ $PARSING_PLUGINS == 0 ]]; 
             then 
-                SEMANTIC_RELEASE_PLUGINS+=($1); 
+                SEMANTIC_RELEASE_PLUGIN_LIST+=("$1"); 
             fi
             if [[ $PARSING_BRANCHES == 0 ]]; 
             then
-                SEMANTIC_RELEASE_BRANCHES+=($1);
+                SEMANTIC_RELEASE_BRANCH_LIST+=("$1");
             fi
             shift
             ;;
@@ -78,17 +75,24 @@ semantic-release::parse_args() {
     then 
         SEMANTIC_RELEASE_OPTIONS+="--dry-run "; 
     fi
-    if [[ ${#SEMANTIC_RELEASE_BRANCHES[@]} -ne 0 ]]
+    if [[ ${#SEMANTIC_RELEASE_PLUGIN_LIST[@]} -ne 0 ]]
     then
-        SEMANTIC_RELEASE_OPTIONS+="--branches ${SEMANTIC_RELEASE_BRANCHES[@]} "
+        SEMANTIC_RELEASE_PLUGINS="${SEMANTIC_RELEASE_PLUGIN_LIST[*]} "
+    else
+        SEMANTIC_RELEASE_PLUGINS=""
     fi
-
+    if [[ ${#SEMANTIC_RELEASE_BRANCH_LIST[@]} -ne 0 ]]
+    then
+        SEMANTIC_RELEASE_OPTIONS+="--branches ${SEMANTIC_RELEASE_BRANCH_LIST[*]} "
+    fi
 
     if [[ $BATS ]]; then
-        echo "semantic-release version: $SEMANTIC_VERSION"
-        echo "semantic-release plugins: ${SEMANTIC_RELEASE_PLUGINS[@]}"
+        echo "semantic-release version: $SEMANTIC_RELEASE_VERSION"
+        echo "semantic-release plugins: $SEMANTIC_RELEASE_PLUGINS"
         echo "semantic-release options: $SEMANTIC_RELEASE_OPTIONS"
     fi
+
+    return 0;
 }
 
 semantic-release::install() {
@@ -99,36 +103,45 @@ semantic-release::install() {
         SEMANTIC_RELEASE_PACKAGE="semantic-release"
     fi
     
-    npm install $SEMANTIC_RELEASE_PACKAGE --silent || 
+    npm install "$SEMANTIC_RELEASE_PACKAGE" --silent || 
         { echo "sem-semantic-release: Unsupported semantic-release version: $SEMANTIC_RELEASE_VERSION"; return 1; }
     
-    if [[ ${#SEMANTIC_RELEASE_PLUGINS[@]} -ne 0 ]]
+    if [[ -n $SEMANTIC_RELEASE_PLUGINS ]]
     then
-        npm install ${SEMANTIC_RELEASE_PLUGINS[@]} --silent || 
+        npm install "$SEMANTIC_RELEASE_PLUGINS" --silent || 
             { echo "sem-semantic-release: Unable to install plugins: $SEMANTIC_RELEASE_PLUGINS"; return 1; }
     fi
+
+    return 0;
 }
 
 semantic-release::scrape_version() {
-    RELEASE_VERSION=$(cat /tmp/semantic-release.log | grep "The next release version" | grep -oE '([0-9]+\.[0-9]+\.[0-9]+)')
+    local RELEASE_VERSION=""
+    RELEASE_VERSION=$(grep "The next release version" /tmp/semantic-release.log | grep -oE '([0-9]+\.[0-9]+\.[0-9]+)')
     
     if [[ -n $RELEASE_VERSION ]]
     then
-        sem-context put RELEASE_VERSION=$RELEASE_VERSION
+        sem-context put RELEASE_VERSION="$RELEASE_VERSION"
         echo "sem-semantic-release: RELEASE_VERSION=$RELEASE_VERSION"
     else
-        echo "sem-semantic-release: RELEASE_VERSION not found"
+        echo "sem-semantic-release: RELEASE_VERSION not found. New release hasn't been generated."
     fi
 }
 
-sem-semantic-release() {
-    semantic-release::parse_args $@
+main() {
+    semantic-release::parse_args "$@"
     semantic-release::install
-    
-    { npx semantic-release $SEMANTIC_RELEASE_OPTIONS; SEMANTIC_RELEASE_RESULT=$?; } | tee /tmp/semantic-release.log 
-    if [[ $SEMANTIC_RELEASE_RESULT -ne 0 ]]; then return $SEMANTIC_RELEASE_RESULT; fi
+
+    npx semantic-release "$SEMANTIC_RELEASE_OPTIONS" | tee /tmp/semantic-release.log 
+    if [[ ! $? ]]; then return $?; fi
 
     semantic-release::scrape_version
 }
 
-sem-semantic-release $@
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    SEMANTIC_RELEASE_PLUGINS=()
+    SEMANTIC_RELEASE_OPTIONS=""
+    SEMANTIC_RELEASE_VERSION=""
+    
+    main "$@"
+fi

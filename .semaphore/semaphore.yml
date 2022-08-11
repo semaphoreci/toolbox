@@ -56,6 +56,7 @@ blocks:
             - 'shellcheck cache       -f gcc | wc -l && [[ "$(shellcheck cache -f gcc | wc -l)" -le 152 ]]'
             - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 85 ]]'
             - shellcheck install-package
+            - shellcheck sem-semantic-release
         - name: PowerShell check
           commands:
             - make pwsh.lint

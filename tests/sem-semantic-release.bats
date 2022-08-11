@@ -4,6 +4,10 @@ load "support/bats-support/load"
 load "support/bats-assert/load"
 
 setup() {
+  export SEMANTIC_RELEASE_PLUGINS=""
+  export SEMANTIC_RELEASE_OPTIONS=""
+  export SEMANTIC_RELEASE_VERSION=""
+
   export BATS=true
 }
 
@@ -59,6 +63,7 @@ setup() {
 
 @test "semantic-release::install with empty version" {
   source ~/.toolbox/sem-semantic-release
+  export SEMANTIC_RELEASE_PLUGINS=""
   run semantic-release::install
 
   assert_success
@@ -70,6 +75,7 @@ setup() {
 
 @test "semantic-release::install with non-empty version" {
   source ~/.toolbox/sem-semantic-release
+  export SEMANTIC_RELEASE_PLUGINS=""
   export SEMANTIC_RELEASE_VERSION=19.0.1
   run semantic-release::install
 
@@ -82,6 +88,7 @@ setup() {
 
 @test "semantic-release::install with invalid version" {
   source ~/.toolbox/sem-semantic-release
+  export SEMANTIC_RELEASE_PLUGINS=""
   export SEMANTIC_RELEASE_VERSION=2122.0.1
   run semantic-release::install
 
@@ -93,20 +100,21 @@ setup() {
 
 @test "semantic-release::install with plugins" {
   source ~/.toolbox/sem-semantic-release
-  export SEMANTIC_RELEASE_PLUGINS=("@semantic-release/git@10.0.0" "@semantic-release/changelog")
+  export SEMANTIC_RELEASE_PLUGINS="@semantic-release/git@10.0.1 @semantic-release/changelog"
   run semantic-release::install
 
   assert_success 
   assert [ -e "package.json" ]
 
-  assert [ $(npm list | grep -oE '@semantic-release/changelog') = "@semantic-release/changelog" ]
-  assert [ $(npm list | grep -oE '@semantic-release/git@(.*)') = "@semantic-release/git@10.0.0" ]
+  assert [ -n $(npm view @semantic-release/changelog version) ]
+  assert [ $(npm view @semantic-release/git version) = "10.0.1" ]
 
   run rm -rf ./node_modules ./package.json ./package-lock.json
 }
 
 @test "semantic-release::install with wrong plugins" {
-  export SEMANTIC_RELEASE_PLUGINS=("@semantic-release/foo@1.0.0")
+  source ~/.toolbox/sem-semantic-release
+  export SEMANTIC_RELEASE_PLUGINS="@semantic-release/foo@1.0.0"
   run semantic-release::install
 
   assert_failure 
@@ -118,17 +126,20 @@ setup() {
 @test "semantic-release::scrape_version with existing version line" {
   source ~/.toolbox/sem-semantic-release
   echo "The next release version is 2.0.3" > /tmp/semantic-release.log
+  export SEMANTIC_RELEASE_RESULT=0
   run semantic-release::scrape_version
 
   assert_success
-  assert_output "sem-semantic-release: RELEASE_VERSION=2.0.3"
+  assert_output --partial "sem-semantic-release: RELEASE_VERSION=2.0.3"
 }
 
 @test "semantic-release::scrape_version with non-existing version line" {
   source ~/.toolbox/sem-semantic-release
   echo "Nothing really happens..." > /tmp/semantic-release.log
+  export SEMANTIC_RELEASE_RESULT=0
   run semantic-release::scrape_version
 
   assert_success
-  assert_output "sem-semantic-release: RELEASE_VERSION not found"
+  assert_output --partial "sem-semantic-release: RELEASE_VERSION not found"
+  assert_output --partial "New release hasn't been generated"
 }
