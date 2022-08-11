@@ -21,7 +21,7 @@ semantic-release::parse_args() {
             printf "  --plugins   \t npm plugins and extensions to be installed"
             printf "  --branches  \t branches to run semantic release for"
             printf "  --version   \t semantic-release version"
-            return 0;
+            exit 0;
             ;;
 
         --version)
@@ -52,7 +52,7 @@ semantic-release::parse_args() {
 
         -*)
             echo "sem-semantic-release: Unknown option $1"
-            return 1
+            exit 1
             ;;
 
         *)
@@ -91,8 +91,6 @@ semantic-release::parse_args() {
         echo "semantic-release plugins: $SEMANTIC_RELEASE_PLUGINS"
         echo "semantic-release options: $SEMANTIC_RELEASE_OPTIONS"
     fi
-
-    return 0;
 }
 
 semantic-release::install() {
@@ -104,15 +102,13 @@ semantic-release::install() {
     fi
     
     npm install "$SEMANTIC_RELEASE_PACKAGE" --silent || 
-        { echo "sem-semantic-release: Unsupported semantic-release version: $SEMANTIC_RELEASE_VERSION"; return 1; }
+        { echo "sem-semantic-release: Unsupported semantic-release version: $SEMANTIC_RELEASE_VERSION"; exit 1; }
     
     if [[ -n $SEMANTIC_RELEASE_PLUGINS ]]
     then
         npm install "$SEMANTIC_RELEASE_PLUGINS" --silent || 
-            { echo "sem-semantic-release: Unable to install plugins: $SEMANTIC_RELEASE_PLUGINS"; return 1; }
+            { echo "sem-semantic-release: Unable to install plugins: $SEMANTIC_RELEASE_PLUGINS"; exit 1; }
     fi
-
-    return 0;
 }
 
 semantic-release::scrape_version() {
