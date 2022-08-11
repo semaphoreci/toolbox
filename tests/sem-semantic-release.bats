@@ -131,6 +131,17 @@ setup() {
 
   assert_success
   assert_output --partial "sem-semantic-release: RELEASE_VERSION=2.0.3"
+  assert [ $(sem-context get RELEASE_VERSION) = "2.0.3" ]
+}
+
+@test "semantic-release::scrape_version with sem-context get" {
+  source ~/.toolbox/sem-semantic-release
+  echo "The next release version is 2.0.3" > /tmp/semantic-release.log
+  export SEMANTIC_RELEASE_RESULT=0
+  run semantic-release::scrape_version
+
+  assert_success
+  assert [ $(sem-context get RELEASE_VERSION) = "2.0.3" ]
 }
 
 @test "semantic-release::scrape_version with non-existing version line" {
