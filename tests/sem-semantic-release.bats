@@ -7,8 +7,6 @@ setup() {
   export SEMANTIC_RELEASE_PLUGINS=""
   export SEMANTIC_RELEASE_OPTIONS=""
   export SEMANTIC_RELEASE_VERSION=""
-
-  export BATS=true
 }
 
 @test "semantic-release::parse_args --help" {

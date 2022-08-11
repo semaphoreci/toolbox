@@ -2,6 +2,15 @@
 
 set -euo pipefail
 
+semantic-release::print_usage() {
+    printf "Usage: sem-semantic-release [OPTION]...\n\n"
+    printf "Options:\n"
+    printf "  --dry-run   \t runs semantic-release without publishing version\n"
+    printf "  --plugins   \t npm plugins and extensions to be installed\n"
+    printf "  --branches  \t branches to run semantic release for\n"
+    printf "  --version   \t semantic-release version\n"
+}
+
 semantic-release::parse_args() {
     local PARSING_PLUGINS=1
     local PARSING_BRANCHES=1
@@ -15,13 +24,8 @@ semantic-release::parse_args() {
     while [[ $# -gt 0 ]]; do
         case $1 in
         --help)
-            printf "Usage: sem-semantic-release [OPTION]...\n\n"
-            printf "Options:\n"
-            printf "  --dry-run   \t runs semantic-release without publishing version"
-            printf "  --plugins   \t npm plugins and extensions to be installed"
-            printf "  --branches  \t branches to run semantic release for"
-            printf "  --version   \t semantic-release version"
-            exit 0;
+            semantic-release::print_usage
+            exit 0
             ;;
 
         --version)
@@ -51,7 +55,7 @@ semantic-release::parse_args() {
             ;;
 
         -*)
-            echo "sem-semantic-release: Unknown option $1"
+            semantic-release::print_usage
             exit 1
             ;;
 
@@ -86,7 +90,9 @@ semantic-release::parse_args() {
         SEMANTIC_RELEASE_OPTIONS+="--branches ${SEMANTIC_RELEASE_BRANCH_LIST[*]} "
     fi
 
-    if [[ $BATS ]]; then
+    set -f
+
+    if [[ -n $BATS_VERSION ]]; then
         echo "semantic-release version: $SEMANTIC_RELEASE_VERSION"
         echo "semantic-release plugins: $SEMANTIC_RELEASE_PLUGINS"
         echo "semantic-release options: $SEMANTIC_RELEASE_OPTIONS"
@@ -106,7 +112,10 @@ semantic-release::install() {
     
     if [[ -n $SEMANTIC_RELEASE_PLUGINS ]]
     then
-        npm install "$SEMANTIC_RELEASE_PLUGINS" --silent || 
+        # we cannot use arrays here (because of set -u) and
+        # we must not prevent word splitting in that case
+        # shellcheck disable=SC2086
+        npm install $SEMANTIC_RELEASE_PLUGINS --silent || 
             { echo "sem-semantic-release: Unable to install plugins: $SEMANTIC_RELEASE_PLUGINS"; exit 1; }
     fi
 }
@@ -124,11 +133,16 @@ semantic-release::scrape_version() {
     fi
 }
 
-main() {
+semantic-release::main() {
     semantic-release::parse_args "$@"
     semantic-release::install
 
-    npx semantic-release "$SEMANTIC_RELEASE_OPTIONS" | tee /tmp/semantic-release.log 
+    if [[ -n $SEMANTIC_RELEASE_OPTIONS ]]
+    then
+        npx semantic-release "$SEMANTIC_RELEASE_OPTIONS" | tee /tmp/semantic-release.log 
+    else
+        npx semantic-release | tee /tmp/semantic-release.log 
+    fi
     if [[ ! $? ]]; then return $?; fi
 
     semantic-release::scrape_version
@@ -138,6 +152,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     SEMANTIC_RELEASE_PLUGINS=()
     SEMANTIC_RELEASE_OPTIONS=""
     SEMANTIC_RELEASE_VERSION=""
+    BATS_VERSION=""
     
-    main "$@"
+    semantic-release::main "$@"
 fi
