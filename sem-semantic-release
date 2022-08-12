@@ -122,14 +122,25 @@ semantic-release::install() {
 
 semantic-release::scrape_version() {
     local RELEASE_VERSION=""
+    local RELEASE_NUMBERS=()
+
     RELEASE_VERSION=$(grep "The next release version" /tmp/semantic-release.log | grep -oE '([0-9]+\.[0-9]+\.[0-9]+)')
     
     if [[ -n $RELEASE_VERSION ]]
     then
-        sem-context put RELEASE_VERSION="$RELEASE_VERSION"
-        echo "sem-semantic-release: RELEASE_VERSION=$RELEASE_VERSION"
+        IFS='.' read -ra RELEASE_NUMBERS <<< "$RELEASE_VERSION"
+    
+        sem-context put ReleasePublished="true"
+        sem-context put ReleaseVersion="$RELEASE_VERSION"
+        sem-context put ReleaseMajorVersion="${RELEASE_NUMBERS[0]}"
+        sem-context put ReleaseMinorVersion="${RELEASE_NUMBERS[1]}"
+        sem-context put ReleasePatchVersion="${RELEASE_NUMBERS[2]}"
+        
+        echo "sem-semantic-release: Release $RELEASE_VERSION has been generated."
     else
-        echo "sem-semantic-release: RELEASE_VERSION not found. New release hasn't been generated."
+        sem-context put ReleasePublished="false"
+
+        echo "sem-semantic-release: New release hasn't been generated."
     fi
 }
 

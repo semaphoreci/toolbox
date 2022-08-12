@@ -128,8 +128,7 @@ setup() {
   run semantic-release::scrape_version
 
   assert_success
-  assert_output --partial "sem-semantic-release: RELEASE_VERSION=2.0.3"
-  assert [ $(sem-context get RELEASE_VERSION) = "2.0.3" ]
+  assert_output --partial "Release 2.0.3 has been generated"
 }
 
 @test "semantic-release::scrape_version with sem-context get" {
@@ -139,7 +138,11 @@ setup() {
   run semantic-release::scrape_version
 
   assert_success
-  assert [ $(sem-context get RELEASE_VERSION) = "2.0.3" ]
+  assert [ $(sem-context get ReleasePublished) = "true" ]
+  assert [ $(sem-context get ReleaseVersion) = "2.0.3" ]
+  assert [ $(sem-context get ReleaseMajorVersion) = "2" ]
+  assert [ $(sem-context get ReleaseMinorVersion) = "0" ]
+  assert [ $(sem-context get ReleasePatchVersion) = "3" ]
 }
 
 @test "semantic-release::scrape_version with non-existing version line" {
@@ -149,6 +152,5 @@ setup() {
   run semantic-release::scrape_version
 
   assert_success
-  assert_output --partial "sem-semantic-release: RELEASE_VERSION not found"
   assert_output --partial "New release hasn't been generated"
 }
