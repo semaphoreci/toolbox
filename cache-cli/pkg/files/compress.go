@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func Compress(key, path string) (string, error) {
@@ -15,8 +17,8 @@ func Compress(key, path string) (string, error) {
 	cmd := compressionCommand(path, tempFileName)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Printf("Error compressing %s: %s\n", path, output)
-		fmt.Printf("Error: %v\n", err)
+		log.Errorf("Error compressing %s: %s", path, output)
+		log.Errorf("Error: %v", err)
 		return tempFileName, err
 	}
 

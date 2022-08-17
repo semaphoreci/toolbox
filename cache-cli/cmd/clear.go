@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +23,7 @@ func RunClear(cmd *cobra.Command, args []string) {
 
 	err = storage.Clear()
 	utils.Check(err)
-	fmt.Println("Deleted all caches.")
+	log.Infof("Deleted all caches.")
 }
 
 func init() {

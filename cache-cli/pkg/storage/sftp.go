@@ -1,13 +1,14 @@
 package storage
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type SFTPStorage struct {
@@ -31,7 +32,7 @@ func NewSFTPStorage(options SFTPStorageOptions) (*SFTPStorage, error) {
 
 	sftpClient, err := sftp.NewClient(sshClient)
 	if err != nil {
-		fmt.Printf("Error creating sftp client: %v\n", err)
+		log.Errorf("Error creating sftp client: %v", err)
 		_ = sshClient.Close()
 		return nil, err
 	}
@@ -55,13 +56,13 @@ func createSSHClient(options SFTPStorageOptions) (*ssh.Client, error) {
 	// #nosec
 	bytes, err := ioutil.ReadFile(sshKeyPath)
 	if err != nil {
-		fmt.Printf("Error reading file %s: %v\n", sshKeyPath, err)
+		log.Errorf("Error reading file %s: %v", sshKeyPath, err)
 		return nil, err
 	}
 
 	signer, err := ssh.ParsePrivateKey(bytes)
 	if err != nil {
-		fmt.Printf("Error parsing private key: %v\n", err)
+		log.Errorf("Error parsing private key: %v", err)
 		return nil, err
 	}
 
@@ -76,7 +77,7 @@ func createSSHClient(options SFTPStorageOptions) (*ssh.Client, error) {
 
 	sshClient, err := ssh.Dial("tcp", options.URL, config)
 	if err != nil {
-		fmt.Printf("Error dialing ssh: %v\n", err)
+		log.Errorf("Error dialing ssh: %v", err)
 		return nil, err
 	}
 

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func (s *SFTPStorage) Store(key, path string) error {
@@ -36,7 +38,7 @@ func (s *SFTPStorage) Store(key, path string) error {
 
 	if err != nil {
 		if rmErr := s.SFTPClient.Remove(tmpKey); rmErr != nil {
-			fmt.Printf("Error removing temporary file %s: %v\n", tmpKey, rmErr)
+			log.Errorf("Error removing temporary file %s: %v", tmpKey, rmErr)
 		}
 
 		_ = localFile.Close()
@@ -47,7 +49,7 @@ func (s *SFTPStorage) Store(key, path string) error {
 	err = s.SFTPClient.PosixRename(tmpKey, key)
 	if err != nil {
 		if rmErr := s.SFTPClient.Remove(tmpKey); rmErr != nil {
-			fmt.Printf("Error removing temporary file %s: %v\n", tmpKey, rmErr)
+			log.Errorf("Error removing temporary file %s: %v", tmpKey, rmErr)
 		}
 
 		_ = localFile.Close()
@@ -72,7 +74,7 @@ func (s *SFTPStorage) allocateSpace(space int64) error {
 
 	freeSpace := usage.Free
 	if freeSpace < space {
-		fmt.Printf("Not enough space, deleting the oldest keys...\n")
+		log.Info("Not enough space, deleting the oldest keys...")
 		keys, err := s.List()
 		if err != nil {
 			return err
@@ -85,7 +87,7 @@ func (s *SFTPStorage) allocateSpace(space int64) error {
 				return err
 			}
 
-			fmt.Printf("Key '%s' is deleted.\n", lastKey.Name)
+			log.Infof("Key '%s' is deleted.", lastKey.Name)
 			freeSpace = freeSpace + lastKey.Size
 			keys = keys[:len(keys)-1]
 		}

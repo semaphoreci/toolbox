@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var lockFiles = []string{
@@ -125,7 +127,7 @@ func buildResult(filePath string, options LookupOptions, entries []buildResultRe
 
 	checksum, err := GenerateChecksum(filePath)
 	if err != nil {
-		fmt.Printf("Error generating checksum for %s: %v\n", filePath, err)
+		log.Errorf("Error generating checksum for %s: %v", filePath, err)
 		return nil
 	}
 

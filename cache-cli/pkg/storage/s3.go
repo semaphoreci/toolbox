@@ -2,13 +2,13 @@ package storage
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	log "github.com/sirupsen/logrus"
 )
 
 type S3Storage struct {
@@ -41,7 +41,7 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 	if profile == "" {
 		config, err = awsConfig.LoadDefaultConfig(context.TODO())
 	} else {
-		fmt.Printf("Using '%s' AWS profile.\n", profile)
+		log.Infof("Using '%s' AWS profile.", profile)
 		config, err = awsConfig.LoadDefaultConfig(context.TODO(), awsConfig.WithSharedConfigProfile(profile))
 	}
 

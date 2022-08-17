@@ -6,6 +6,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Storage interface {
@@ -94,7 +96,7 @@ func buildStorageConfig(defaultValue int64) StorageConfig {
 
 	cacheSize, err := strconv.ParseInt(cacheSizeEnvVar, 10, 64)
 	if err != nil {
-		fmt.Printf("Couldn't parse CACHE_SIZE value of '%s' - using default value for storage backend\n", cacheSizeEnvVar)
+		log.Errorf("Couldn't parse CACHE_SIZE value of '%s' - using default value for storage backend", cacheSizeEnvVar)
 		return StorageConfig{MaxSpace: defaultValue}
 	}
 
