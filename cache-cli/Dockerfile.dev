@@ -1,6 +1,6 @@
 FROM golang:1.18
 
-RUN go get gotest.tools/gotestsum
+RUN go install gotest.tools/gotestsum@latest
 RUN mkdir /root/.ssh
 COPY id_rsa /root/.ssh/semaphore_cache_key
 
