@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-ARTIFACT_CLI_VERSION="v0.5.7"
+ARTIFACT_CLI_VERSION="v0.6.0"
 WHEN_CLI_VERSION="v1.0.5"
 SPC_CLI_VERSION="v1.9.4"
 TEST_RESULTS_CLI_VERSION="v0.6.2"
@@ -65,6 +65,7 @@ hosted::create_initial_content() {
     tests
     docker-compose.yml
     cache-cli
+    sem-context
     install-self-hosted-toolbox
     install-self-hosted-toolbox.ps1
     Checkout.psm1
@@ -138,7 +139,9 @@ hosted::pack() {
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/cache /tmp/Linux/toolbox/cache
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/cache /tmp/Darwin/toolbox/cache
-
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/sem-context /tmp/Linux/toolbox/sem-context
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/sem-context /tmp/Darwin/toolbox/sem-context
+ 
   echo "Downloading when CLI..."
   curl -s -L --retry 5 $WHEN_CLI_URL/when -o /tmp/Linux/toolbox/when
   chmod +x /tmp/Linux/toolbox/when
