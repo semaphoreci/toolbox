@@ -90,6 +90,14 @@ else
   echo "toolbox_install_error{module='sem-service-check-params'} 1" >> /tmp/toolbox_metrics
 fi
 
+install_cmd ln -sf ~/.toolbox/sem-semantic-release $INSTALL_PATH/sem-semantic-release
+install_cmd chmod +x $INSTALL_PATH/sem-semantic-release
+if [[ $? -eq 0 ]];then
+  echo "sem-semantic-release installed"
+else
+  echo "toolbox_install_error{module='sem-semantic-release'} 1" >> /tmp/toolbox_metrics
+fi
+
 install_cmd ln -sf ~/.toolbox/install-package $INSTALL_PATH/install-package
 install_cmd ln -sf ~/.toolbox/install-package $INSTALL_PATH/install-package.sh
 install_cmd chmod +x $INSTALL_PATH/install-package
@@ -116,6 +124,7 @@ if [[ $? -eq 0 ]];then
 else
   echo "toolbox_install_error{module='test-results'} 1" >> /tmp/toolbox_metrics
 fi
+
 
 if [[ `uname` != "Darwin" ]]; then
 
