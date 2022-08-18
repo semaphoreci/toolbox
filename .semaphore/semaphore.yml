@@ -12,15 +12,13 @@ blocks:
   - name: Build local CLIs
     dependencies: []
     task:
-      prologue:
-        commands:
-          - sem-version go 1.16
-          - "export GOPATH=~/go"
-          - "export PATH=/home/semaphore/go/bin:$PATH"
-          - checkout
       jobs:
         - name: Build cache CLI
           commands:
+            - sem-version go 1.18
+            - "export GOPATH=~/go"
+            - "export PATH=/home/semaphore/go/bin:$PATH"
+            - checkout
             - cd cache-cli
             - make build.linux
             - make build.darwin
@@ -30,6 +28,10 @@ blocks:
             - artifact push workflow bin/windows/cache.exe -d bin/windows/cache.exe
         - name: Build sem-context CLI
           commands:
+            - sem-version go 1.17
+            - "export GOPATH=~/go"
+            - "export PATH=/home/semaphore/go/bin:$PATH"
+            - checkout
             - cd sem-context
             - make build.linux
             - make build.darwin
@@ -358,12 +360,12 @@ blocks:
           value: "on"
       prologue:
         commands:
-          - sem-version go 1.16
+          - sem-version go 1.18
           - checkout && cd cache-cli
       jobs:
         - name: Lint
           commands:
-            - go get -u github.com/mgechev/revive
+            - go install github.com/mgechev/revive@latest
             - make lint
 
   - name: "Cache CLI: Security checks"
