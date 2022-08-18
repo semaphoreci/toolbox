@@ -19,12 +19,16 @@ func main() {
 }
 
 func OpenLogfile() io.Writer {
-	// #nosec
 	filePath := filepath.Join(os.TempDir(), "cache_log")
 	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 
+	/*
+	 * We shouldn't fail if we can't create
+	 * the log file for whatever reason. Just proceed logging only to stdout.
+	 */
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("Error creating file '%s': %v - proceeding", filePath, err)
+		return os.Stdout
 	}
 
 	return io.MultiWriter(f, os.Stdout)
