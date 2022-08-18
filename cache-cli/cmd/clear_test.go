@@ -15,6 +15,7 @@ import (
 func Test__Clear(t *testing.T) {
 	log.SetFormatter(new(logging.CustomFormatter))
 	log.SetLevel(log.InfoLevel)
+	log.SetOutput(openLogfileForTests(t))
 
 	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s no keys", backend), func(*testing.T) {
