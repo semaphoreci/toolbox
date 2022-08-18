@@ -8,7 +8,6 @@ import (
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/logging"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
-	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	assert "github.com/stretchr/testify/assert"
 )
@@ -16,11 +15,12 @@ import (
 func Test__HasKey(t *testing.T) {
 	log.SetFormatter(new(logging.CustomFormatter))
 	log.SetLevel(log.InfoLevel)
+	log.SetOutput(openLogfileForTests(t))
+
 	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s key is missing", backend), func(*testing.T) {
-			capturer := utils.CreateOutputCapturer()
 			RunHasKey(hasKeyCmd, []string{"this-key-does-not-exist"})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			assert.Contains(t, output, "Key 'this-key-does-not-exist' doesn't exist in the cache store.")
 		})
@@ -30,9 +30,8 @@ func Test__HasKey(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 			storage.Store("abc001", tempFile.Name())
 
-			capturer := utils.CreateOutputCapturer()
 			RunHasKey(hasKeyCmd, []string{"abc001"})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			assert.Contains(t, output, "Key 'abc001' exists in the cache store.")
 		})
@@ -42,9 +41,8 @@ func Test__HasKey(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 			RunStore(storeCmd, []string{"abc/00/33", tempFile.Name()})
 
-			capturer := utils.CreateOutputCapturer()
 			RunHasKey(hasKeyCmd, []string{"abc/00/33"})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			assert.Contains(t, output, "Key 'abc/00/33' is normalized to 'abc-00-33'")
 			assert.Contains(t, output, "Key 'abc-00-33' exists in the cache store.")
