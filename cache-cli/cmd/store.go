@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +9,7 @@ import (
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +25,7 @@ var storeCmd = &cobra.Command{
 
 func RunStore(cmd *cobra.Command, args []string) {
 	if len(args) != 0 && len(args) != 2 {
-		fmt.Printf("Incorrect number of arguments!\n")
+		log.Error("Incorrect number of arguments!")
 		_ = cmd.Help()
 		return
 	}
@@ -40,14 +40,14 @@ func RunStore(cmd *cobra.Command, args []string) {
 		})
 
 		if len(lookupResults) == 0 {
-			fmt.Printf("Nothing to store in cache.\n")
+			log.Info("Nothing to store in cache.")
 			return
 		}
 
 		for _, lookupResult := range lookupResults {
-			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
+			log.Infof("Detected %s.", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {
-				fmt.Printf("Using default cache path '%s'.\n", entry.Path)
+				log.Infof("Using default cache path '%s'.", entry.Path)
 				key := entry.Keys[0]
 				compressAndStore(storage, key, entry.Path)
 			}
@@ -62,42 +62,42 @@ func compressAndStore(storage storage.Storage, rawKey, path string) {
 	key := NormalizeKey(rawKey)
 	if _, err := os.Stat(path); err == nil {
 		if ok, _ := storage.HasKey(key); ok {
-			fmt.Printf("Key '%s' already exists.\n", key)
+			log.Infof("Key '%s' already exists.", key)
 			return
 		}
 
 		compressedFilePath, compressedFileSize, err := compress(key, path)
 		if err != nil {
-			fmt.Printf("Error compressing %s: %v\n", path, err)
+			log.Errorf("Error compressing %s: %v", path, err)
 			return
 		}
 
 		maxSpace := storage.Config().MaxSpace
 		if compressedFileSize > maxSpace {
-			fmt.Printf("Archive exceeds allocated %s for cache.\n", files.HumanReadableSize(maxSpace))
+			log.Errorf("Archive exceeds allocated %s for cache.", files.HumanReadableSize(maxSpace))
 			return
 		}
 
 		uploadStart := time.Now()
-		fmt.Printf("Uploading '%s' with cache key '%s'...\n", path, key)
+		log.Infof("Uploading '%s' with cache key '%s'...", path, key)
 		err = storage.Store(key, compressedFilePath)
 		utils.Check(err)
 
 		uploadDuration := time.Since(uploadStart)
-		fmt.Printf("Upload complete. Duration: %v.\n", uploadDuration)
+		log.Infof("Upload complete. Duration: %v.", uploadDuration)
 
 		err = os.Remove(compressedFilePath)
 		if err != nil {
-			fmt.Printf("Error removing %s: %v", compressedFilePath, err)
+			log.Errorf("Error removing %s: %v", compressedFilePath, err)
 		}
 	} else {
-		fmt.Printf("'%s' doesn't exist locally.\n", path)
+		log.Infof("'%s' doesn't exist locally.", path)
 	}
 }
 
 func compress(key, path string) (string, int64, error) {
 	compressingStart := time.Now()
-	fmt.Printf("Compressing %s...\n", path)
+	log.Infof("Compressing %s...", path)
 	compressed, err := files.Compress(key, path)
 	utils.Check(err)
 
@@ -108,14 +108,14 @@ func compress(key, path string) (string, int64, error) {
 		return "", -1, err
 	}
 
-	fmt.Printf("Compression complete. Duration: %v. Size: %v bytes.\n", compressionDuration.String(), files.HumanReadableSize(info.Size()))
+	log.Infof("Compression complete. Duration: %v. Size: %v bytes.", compressionDuration.String(), files.HumanReadableSize(info.Size()))
 	return compressed, info.Size(), nil
 }
 
 func NormalizeKey(key string) string {
 	normalizedKey := strings.ReplaceAll(key, "/", "-")
 	if normalizedKey != key {
-		fmt.Printf("Key '%s' is normalized to '%s'.\n", key, normalizedKey)
+		log.Infof("Key '%s' is normalized to '%s'.", key, normalizedKey)
 	}
 
 	return normalizedKey

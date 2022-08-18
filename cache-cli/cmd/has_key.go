@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +23,7 @@ var hasKeyCmd = &cobra.Command{
 
 func RunHasKey(cmd *cobra.Command, args []string) bool {
 	if len(args) != 1 {
-		fmt.Printf("Incorrect number of arguments!\n")
+		log.Error("Incorrect number of arguments!")
 		_ = cmd.Help()
 		return true
 	}
@@ -37,11 +37,11 @@ func RunHasKey(cmd *cobra.Command, args []string) bool {
 	utils.Check(err)
 
 	if exists {
-		fmt.Printf("Key '%s' exists in the cache store.\n", key)
+		log.Infof("Key '%s' exists in the cache store.", key)
 		return true
 	}
 
-	fmt.Printf("Key '%s' doesn't exist in the cache store.\n", key)
+	log.Infof("Key '%s' doesn't exist in the cache store.", key)
 	return false
 }
 

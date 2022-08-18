@@ -9,17 +9,21 @@ import (
 	"testing"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
+	"github.com/semaphoreci/toolbox/cache-cli/pkg/logging"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
-	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	assert "github.com/stretchr/testify/assert"
 )
 
 func Test__Restore(t *testing.T) {
+	log.SetFormatter(new(logging.CustomFormatter))
+	log.SetLevel(log.InfoLevel)
+	log.SetOutput(openLogfileForTests(t))
+
 	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s wrong number of arguments", backend), func(t *testing.T) {
-			capturer := utils.CreateOutputCapturer()
 			RunRestore(restoreCmd, []string{"key", "extra-bad-argument"})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			assert.Contains(t, output, "Incorrect number of arguments!")
 		})
@@ -27,9 +31,8 @@ func Test__Restore(t *testing.T) {
 		t.Run(fmt.Sprintf("%s using single missing key", backend), func(*testing.T) {
 			storage.Clear()
 
-			capturer := utils.CreateOutputCapturer()
 			RunRestore(restoreCmd, []string{"this-key-does-not-exist"})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			assert.Contains(t, output, "MISS: 'this-key-does-not-exist'.")
 		})
@@ -42,10 +45,8 @@ func Test__Restore(t *testing.T) {
 			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc-001", tempDir)
-
-			capturer := utils.CreateOutputCapturer()
 			RunRestore(restoreCmd, []string{"abc-001"})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "HIT: 'abc-001', using key 'abc-001'.")
@@ -63,10 +64,8 @@ func Test__Restore(t *testing.T) {
 			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc/00/22", tempDir)
-
-			capturer := utils.CreateOutputCapturer()
 			RunRestore(restoreCmd, []string{"abc/00/22"})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "Key 'abc/00/22' is normalized to 'abc-00-22'")
@@ -85,10 +84,8 @@ func Test__Restore(t *testing.T) {
 			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc-001", tempDir)
-
-			capturer := utils.CreateOutputCapturer()
 			RunRestore(restoreCmd, []string{"abc"})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "HIT: 'abc', using key 'abc-001'.")
@@ -107,10 +104,8 @@ func Test__Restore(t *testing.T) {
 
 			compressAndStore(storage, "abc-001", tempDir)
 			compressAndStore(storage, "abc-002", tempDir)
-
-			capturer := utils.CreateOutputCapturer()
 			RunRestore(restoreCmd, []string{"abc-001,abc-002"})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "HIT: 'abc-001', using key 'abc-001'.")
@@ -129,10 +124,8 @@ func Test__Restore(t *testing.T) {
 			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc", tempDir)
-
-			capturer := utils.CreateOutputCapturer()
 			RunRestore(restoreCmd, []string{"abc-001,abc"})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "MISS: 'abc-001'.")
@@ -151,10 +144,8 @@ func Test__Restore(t *testing.T) {
 			_ = tempFile.Close()
 
 			compressAndStore(storage, "abc", tempDir)
-
-			capturer := utils.CreateOutputCapturer()
 			RunRestore(restoreCmd, []string{"^abc"})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
 			assert.Contains(t, output, "HIT: '^abc', using key 'abc'.")
@@ -171,14 +162,17 @@ func Test__AutomaticRestore(t *testing.T) {
 	cmdPath := filepath.Dir(file)
 	rootPath := filepath.Dir(cmdPath)
 
+	log.SetFormatter(new(logging.CustomFormatter))
+	log.SetLevel(log.InfoLevel)
+	log.SetOutput(openLogfileForTests(t))
+
 	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s nothing found", backend), func(t *testing.T) {
 			storage.Clear()
 			os.Chdir(cmdPath)
 
-			capturer := utils.CreateOutputCapturer()
 			RunRestore(restoreCmd, []string{})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			assert.Contains(t, output, "Nothing to restore from cache")
 		})
@@ -198,9 +192,8 @@ func Test__AutomaticRestore(t *testing.T) {
 			storage.Store(key, compressedFile)
 
 			// restoring
-			capturer := utils.CreateOutputCapturer()
 			RunRestore(restoreCmd, []string{})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			assert.Contains(t, output, "Detected Gemfile.lock")
 			assert.Contains(t, output, fmt.Sprintf("Downloading key '%s'", key))
@@ -225,9 +218,8 @@ func Test__AutomaticRestore(t *testing.T) {
 			storage.Store(key, compressedFile)
 
 			// restoring
-			capturer := utils.CreateOutputCapturer()
 			RunRestore(restoreCmd, []string{})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			assert.Contains(t, output, "Detected Gemfile.lock")
 			assert.Contains(t, output, fmt.Sprintf("Downloading key '%s'", key))

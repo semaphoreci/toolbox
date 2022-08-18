@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type LocalMetricsManager struct {
@@ -54,7 +56,7 @@ func (b *LocalMetricsManager) Publish(metric Metric) error {
 		return publishMetricToFile(b.ToolboxMetricsPath, metric.Name, metric.Value)
 	}
 
-	fmt.Printf("Ignoring metric %s\n", metric.Name)
+	log.Warnf("Ignoring metric %s", metric.Name)
 	return nil
 }
 

@@ -3,21 +3,21 @@ package files
 import (
 	"archive/tar"
 	"compress/gzip"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
+	log "github.com/sirupsen/logrus"
 )
 
 func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) {
 	restorationPath, err := findRestorationPath(path)
 	if err != nil {
-		fmt.Printf("Could not find restoration path: %v\n", err)
+		log.Errorf("Could not find restoration path: %v", err)
 		if metricErr := metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
-			fmt.Printf("Error publishing %s metric: %v\n", metrics.CacheCorruptionRate, metricErr)
+			log.Errorf("Error publishing %s metric: %v", metrics.CacheCorruptionRate, metricErr)
 		}
 
 		return "", err
@@ -26,9 +26,9 @@ func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) 
 	cmd := unpackCommand(restorationPath, path)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Printf("Unpacking command failed: %s\n", string(output))
+		log.Errorf("Unpacking command failed: %s", string(output))
 		if metricErr := metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
-			fmt.Printf("Error publishing %s metric: %v\n", metrics.CacheCorruptionRate, metricErr)
+			log.Errorf("Error publishing %s metric: %v", metrics.CacheCorruptionRate, metricErr)
 		}
 
 		return "", err
@@ -49,7 +49,7 @@ func findRestorationPath(path string) (string, error) {
 	// #nosec
 	file, err := os.Open(path)
 	if err != nil {
-		fmt.Printf("error opening %s: %v\n", path, err)
+		log.Errorf("error opening %s: %v", path, err)
 		return "", err
 	}
 
@@ -58,20 +58,20 @@ func findRestorationPath(path string) (string, error) {
 
 	gzipReader, err := gzip.NewReader(file)
 	if err != nil {
-		fmt.Printf("error creating gzip reader: %v\n", err)
+		log.Errorf("error creating gzip reader: %v", err)
 		return "", err
 	}
 
 	tr := tar.NewReader(gzipReader)
 	header, err := tr.Next()
 	if err == io.EOF {
-		fmt.Printf("No files in archive.\n")
+		log.Warning("No files in archive.")
 		_ = gzipReader.Close()
 		return "", nil
 	}
 
 	if err != nil {
-		fmt.Printf("Error reading %s: %v\n", path, err)
+		log.Errorf("Error reading %s: %v", path, err)
 		_ = gzipReader.Close()
 		return "", err
 	}

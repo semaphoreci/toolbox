@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	log "github.com/sirupsen/logrus"
 )
 
 func (s *S3Storage) Store(key, path string) error {
@@ -25,7 +26,7 @@ func (s *S3Storage) Store(key, path string) error {
 	})
 
 	if err != nil {
-		fmt.Printf("Error uploading: %v\n", err)
+		log.Errorf("Error uploading: %v", err)
 		return err
 	}
 
