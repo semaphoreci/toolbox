@@ -4,7 +4,7 @@ load "../support/bats-support/load"
 load "../support/bats-assert/load"
 
 setup() {
-  source /tmp/.env
+  source /tmp/.env-*
   source /opt/change-erlang-version.sh
   source /opt/change-python-version.sh
   source /opt/change-go-version.sh

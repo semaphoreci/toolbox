@@ -94,7 +94,7 @@ blocks:
               values:
                 - elixir
                 - erlang
-                - firefox
+                # - firefox
                 - gcc
                 - go
                 - java

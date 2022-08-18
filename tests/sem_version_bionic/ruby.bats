@@ -4,7 +4,7 @@ load "../support/bats-support/load"
 load "../support/bats-assert/load"
 
 setup() {
-  source /tmp/.env
+  source /tmp/.env-*
   export PATH="/home/semaphore/.rbenv/bin:$PATH"
   eval "$(rbenv init -)"
   set -u
