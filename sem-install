@@ -138,7 +138,7 @@ install::install_php() {
     mv php-${language_version} ~/.phpbrew/php/
     if [ ! -d "~/.phpbrew/build/php-{$language_version}" ]; then
       output=$(phpbrew download ${language_version} | tail -n1|awk -F'/' '{print $NF}')
-      if [[ $(du -sh ~/.phpbrew/distfiles/${output}) == "0" ]]; then 
+      if [[ $(du -sh ~/.phpbrew/distfiles/${output}) == "0" ]] || [ ! -f ~/.phpbrew/distfiles/php-${language_version}.tar.bz2 ]; then 
         wget http://packages.semaphoreci.com/php-sources/php-${language_version}.tar.bz2 -O ~/.phpbrew/distfiles/php-${language_version}.tar.bz2
         output="php-${language_version}.tar.bz2"
       fi
