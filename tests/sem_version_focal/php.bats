@@ -24,31 +24,7 @@ setup() {
 }
 
 # PHP
-@test "change php to 7.2.34" {
 
-  run sem-version php 7.2.34
-  assert_success
-  source ~/.phpbrew/bashrc
-  run php -v
-  assert_line --partial "PHP 7.2.34"
-  run php -m
-  assert_line --partial "magick"
-  assert_line --partial "gd"
-  assert_line --partial "imap"
-}
-
-@test "change php to 7.3.33" {
-
-  run sem-version php 7.3.33
-  assert_success
-  source ~/.phpbrew/bashrc
-  run php -v
-  assert_line --partial "PHP 7.3.33"
-  run php -m
-  assert_line --partial "magick"
-  assert_line --partial "gd"
-  assert_line --partial "imap"
-}
 
 @test "change php to 7.4.30" {
 
@@ -83,7 +59,7 @@ setup() {
   assert_line --partial "8.0.21"
 }
 
-@test "php check source 8.0.13" {
+@test "php check 8.0.13" {
 
   run sem-version php 8.0.13
   assert_success
@@ -93,3 +69,18 @@ setup() {
   assert_success
 }
 
+@test "php check sources 8.0.13" {
+
+  run sem-version php 8.0.13
+  assert_success
+  source ~/.phpbrew/bashrc
+
+  run ls -lah ~/.phpbrew/distfiles/
+  assert_line --partial "8.0.13"
+
+  run ls -lah ~/.phpbrew/build/
+  assert_line --partial "8.0.13"
+
+  run phpbrew ext install iconv
+  assert_success
+}
