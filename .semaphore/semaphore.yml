@@ -110,6 +110,39 @@ blocks:
           commands:
             - bats tests/sem_version_bionic/${TEST}.bats
 
+  - name: Sem version tests focal
+    dependencies:
+      - "Build local CLIs"
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+          os_image: ubuntu2004
+      prologue:
+        commands:
+          - checkout
+          - sudo apt-get update 
+          - sudo apt-get install -y libargon2-0
+          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
+          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
+          - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
+          - bash release/create.sh
+          - source release/install_in_tests.sh
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+
+      jobs:
+        - name: Sem Version
+          matrix:
+            - env_var: TEST
+              values:
+                - php
+          commands:
+            - bats tests/sem_version_focal/${TEST}.bats
+
+
+
   - name: "Sem Version Tests container"
     dependencies:
       - "Build local CLIs"
