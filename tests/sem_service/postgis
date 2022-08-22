@@ -22,4 +22,12 @@ createdb -U xxx  -h 0.0.0.0 fooo
 psql -h 0.0.0.0 -U xxx -c "\l"
 psql -U xxx -c "SELECT version()" | grep 11
 sem-service status postgis
+sem-service stop postgis
+sem-service start postgis 14-3.1
+createdb -U postgres -h 0.0.0.0 fooo
+psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 14
+psql -U postgres -h localhost -c 'SELECT * FROM pg_extension' | grep -i postgis
+sem-service status postgis
+sem-service stop postgis
 cat /tmp/toolbox_semservice
