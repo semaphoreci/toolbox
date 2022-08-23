@@ -28,9 +28,10 @@ include_external_linux_binary() {
   url=$1
   binary_name=$2
   destination_path=$3
+  arch=$4
 
-  echo "Downloading ${binary_name} for linux..."
-  curl -s -L --fail --retry 5 ${url}/${binary_name}_Linux_x86_64.tar.gz -o ${destination_path}/${binary_name}_Linux.tar.gz
+  echo "Downloading ${binary_name} for ${arch} for linux..."
+  curl -s -L --fail --retry 5 ${url}/${binary_name}_Linux_${arch}.tar.gz -o ${destination_path}/${binary_name}_Linux.tar.gz
   cd ${destination_path} && tar -zxf ${binary_name}_Linux.tar.gz && mv ${binary_name} toolbox/ && cd - > /dev/null
 }
 
@@ -38,9 +39,10 @@ include_external_darwin_binary() {
   url=$1
   binary_name=$2
   destination_path=$3
+  arch=$4
 
-  echo "Downloading ${binary_name} for darwin..."
-  curl -s -L --fail --retry 5 ${url}/${binary_name}_Darwin_x86_64.tar.gz -o ${destination_path}/${binary_name}_Darwin.tar.gz
+  echo "Downloading ${binary_name} for ${arch} for darwin..."
+  curl -s -L --fail --retry 5 ${url}/${binary_name}_Darwin_${arch}.tar.gz -o ${destination_path}/${binary_name}_Darwin.tar.gz
   cd ${destination_path} && tar -zxf ${binary_name}_Darwin.tar.gz && mv ${binary_name} toolbox/ && cd - > /dev/null
 }
 
@@ -91,24 +93,34 @@ self_hosted::create_initial_content() {
   echo "Creating initial content of the release directories for the self-hosted toolbox..."
 
   rm -rf /tmp/self-hosted-Linux
+  rm -rf /tmp/self-hosted-Linux-arm
   rm -rf /tmp/self-hosted-Darwin
+  rm -rf /tmp/self-hosted-Darwin-arm
   rm -rf /tmp/self-hosted-Windows
 
   mkdir -p /tmp/self-hosted-Linux/toolbox
+  mkdir -p /tmp/self-hosted-Linux-arm/toolbox
   mkdir -p /tmp/self-hosted-Darwin/toolbox
+  mkdir -p /tmp/self-hosted-Darwin-arm/toolbox
   mkdir -p /tmp/self-hosted-Windows/toolbox
 
   cp ~/$SEMAPHORE_GIT_DIR/install-self-hosted-toolbox /tmp/self-hosted-Linux/toolbox/install-toolbox
+  cp ~/$SEMAPHORE_GIT_DIR/install-self-hosted-toolbox /tmp/self-hosted-Linux-arm/toolbox/install-toolbox
   cp ~/$SEMAPHORE_GIT_DIR/install-self-hosted-toolbox /tmp/self-hosted-Darwin/toolbox/install-toolbox
+  cp ~/$SEMAPHORE_GIT_DIR/install-self-hosted-toolbox /tmp/self-hosted-Darwin-arm/toolbox/install-toolbox
   cp ~/$SEMAPHORE_GIT_DIR/install-self-hosted-toolbox.ps1 /tmp/self-hosted-Windows/toolbox/install-toolbox.ps1
   cp ~/$SEMAPHORE_GIT_DIR/self-hosted-toolbox /tmp/self-hosted-Linux/toolbox/toolbox
+  cp ~/$SEMAPHORE_GIT_DIR/self-hosted-toolbox /tmp/self-hosted-Linux-arm/toolbox/toolbox
   cp ~/$SEMAPHORE_GIT_DIR/self-hosted-toolbox /tmp/self-hosted-Darwin/toolbox/toolbox
+  cp ~/$SEMAPHORE_GIT_DIR/self-hosted-toolbox /tmp/self-hosted-Darwin-arm/toolbox/toolbox
 
   # Linux/Darwin inclusions
   inclusions=(libcheckout libchecksum retry)
   for inclusion in "${inclusions[@]}"; do
     cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Linux/toolbox/
+    cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Linux-arm/toolbox/
     cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Darwin/toolbox/
+    cp ~/$SEMAPHORE_GIT_DIR/${inclusion} /tmp/self-hosted-Darwin-arm/toolbox/
   done
 
   # Windows PowerShell module inclusions
@@ -124,32 +136,40 @@ self_hosted::create_initial_content() {
 
 self_hosted::pack() {
   self_hosted::create_initial_content
-  include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Linux
-  include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Darwin
+  include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Linux "x86_64"
+  include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Linux-arm "arm64"
+  include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Darwin "x86_64"
+  include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Darwin-arm "arm64"
   include_external_windows_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Windows
-  include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Linux
-  include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Darwin
-  include_external_linux_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Linux
-  include_external_darwin_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Darwin
+  include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Linux "x86_64"
+  include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Linux-arm "arm64"
+  include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Darwin "x86_64"
+  include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Darwin-arm "arm64"
+  include_external_linux_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Linux "x86_64"
+  include_external_linux_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Linux-arm "arm64"
+  include_external_darwin_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Darwin "x86_64"
+  include_external_darwin_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Darwin-arm "arm64"
 
   curl -s -L --retry 5 $WHEN_CLI_URL/when -o /tmp/self-hosted-Linux/toolbox/when
   chmod +x /tmp/self-hosted-Linux/toolbox/when
   curl -s -L --retry 5 $WHEN_CLI_URL/when -o /tmp/self-hosted-Darwin/toolbox/when
   chmod +x /tmp/self-hosted-Darwin/toolbox/when
 
-  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/cache /tmp/self-hosted-Linux/toolbox/
-  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/cache /tmp/self-hosted-Darwin/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/amd64/cache /tmp/self-hosted-Linux/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/arm64/cache /tmp/self-hosted-Linux-arm/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/amd64/cache /tmp/self-hosted-Darwin/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/arm64/cache /tmp/self-hosted-Darwin-arm/toolbox/
 }
 
 hosted::pack() {
   hosted::create_initial_content
-  include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/Linux
-  include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/Darwin
-  include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Linux
-  include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Darwin
-  include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux
-  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/cache /tmp/Linux/toolbox/cache
-  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/cache /tmp/Darwin/toolbox/cache
+  include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/Linux "x86_64"
+  include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/Darwin "x86_64"
+  include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Linux "x86_64"
+  include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Darwin "x86_64"
+  include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux "x86_64"
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/amd64/cache /tmp/Linux/toolbox/cache
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/amd64/cache /tmp/Darwin/toolbox/cache
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/sem-context /tmp/Linux/toolbox/sem-context
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/sem-context /tmp/Darwin/toolbox/sem-context
  

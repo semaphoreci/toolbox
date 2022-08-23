@@ -20,11 +20,15 @@ blocks:
             - "export PATH=/home/semaphore/go/bin:$PATH"
             - checkout
             - cd cache-cli
-            - make build.linux
-            - make build.darwin
+            - make build.linux ARCH=amd64
+            - make build.linux ARCH=arm64
+            - make build.darwin ARCH=amd64
+            - make build.darwin ARCH=arm64
             - make build.windows
-            - artifact push workflow bin/linux/cache -d bin/linux/cache
-            - artifact push workflow bin/darwin/cache -d bin/darwin/cache
+            - artifact push workflow bin/linux/amd64/cache -d bin/linux/amd64/cache
+            - artifact push workflow bin/linux/arm64/cache -d bin/linux/arm64/cache
+            - artifact push workflow bin/darwin/amd64/cache -d bin/darwin/amd64/cache
+            - artifact push workflow bin/darwin/arm64/cache -d bin/darwin/arm64/cache
             - artifact push workflow bin/windows/cache.exe -d bin/windows/cache.exe
         - name: Build sem-context CLI
           commands:
@@ -81,8 +85,8 @@ blocks:
       prologue:
         commands:
           - checkout
-          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
-          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
           - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - bash release/create.sh
@@ -123,8 +127,8 @@ blocks:
           - checkout
           - sudo apt-get update 
           - sudo apt-get install -y libargon2-0
-          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
-          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
           - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - bash release/create.sh
@@ -156,8 +160,8 @@ blocks:
       prologue:
         commands:
           - checkout
-          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
-          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
           - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - bash release/create.sh
@@ -177,8 +181,8 @@ blocks:
       prologue:
         commands:
           - checkout
-          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
-          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
           - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - bash release/create.sh
@@ -215,8 +219,8 @@ blocks:
       prologue:
         commands:
           - checkout
-          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
-          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
           - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - bash release/create.sh
@@ -258,8 +262,8 @@ blocks:
       prologue:
         commands:
           - checkout
-          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
-          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
           - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - bash release/create.sh
@@ -297,8 +301,8 @@ blocks:
       prologue:
         commands:
           - checkout
-          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
-          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
           - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - bash release/create.sh
@@ -330,8 +334,8 @@ blocks:
       prologue:
         commands:
           - checkout
-          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
-          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
           - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - bash release/create.sh
@@ -432,8 +436,8 @@ blocks:
       prologue:
         commands:
           - checkout
-          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
-          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
           - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - bash release/create.sh
@@ -463,8 +467,8 @@ blocks:
       prologue:
         commands:
           - checkout
-          - artifact pull workflow bin/linux/cache -d cache-cli/bin/linux/cache
-          - artifact pull workflow bin/darwin/cache -d cache-cli/bin/darwin/cache
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
           - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
           - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
           - bash release/create.sh
