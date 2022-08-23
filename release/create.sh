@@ -200,6 +200,8 @@ create_tarball "darwin.tar" /tmp/Darwin
 if [[ $create_self_hosted == "true" ]]; then
   self_hosted::pack
   create_tarball "linux.tar" /tmp/self-hosted-Linux
+  create_tarball "linux-arm.tar" /tmp/self-hosted-Linux-arm
   create_tarball "darwin.tar" /tmp/self-hosted-Darwin
+  create_tarball "darwin-arm.tar" /tmp/self-hosted-Darwin-arm
   create_tarball "windows.tar" /tmp/self-hosted-Windows
 fi
