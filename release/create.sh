@@ -12,6 +12,14 @@ SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSI
 TEST_RESULTS_CLI_URL="https://github.com/semaphoreci/test-results/releases/download/$TEST_RESULTS_CLI_VERSION"
 WHEN_CLI_URL="https://github.com/renderedtext/when/releases/download/$WHEN_CLI_VERSION"
 
+download_when_cli() {
+  rm -rf /tmp/when-cli
+  mkdir -p /tmp/when-cli
+  echo "Downloading when CLI..."
+  curl -L --retry 5 $WHEN_CLI_URL/when -o /tmp/when-cli/when
+  chmod +x /tmp/when-cli/when
+}
+
 create_tarball() {
   tarball_name=$1
   path=$2
@@ -150,10 +158,10 @@ self_hosted::pack() {
   include_external_darwin_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Darwin "x86_64"
   include_external_darwin_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Darwin-arm "arm64"
 
-  curl -s -L --retry 5 $WHEN_CLI_URL/when -o /tmp/self-hosted-Linux/toolbox/when
-  chmod +x /tmp/self-hosted-Linux/toolbox/when
-  curl -s -L --retry 5 $WHEN_CLI_URL/when -o /tmp/self-hosted-Darwin/toolbox/when
-  chmod +x /tmp/self-hosted-Darwin/toolbox/when
+  cp /tmp/when-cli/when /tmp/self-hosted-Linux/toolbox/when
+  cp /tmp/when-cli/when /tmp/self-hosted-Linux-arm/toolbox/when
+  cp /tmp/when-cli/when /tmp/self-hosted-Darwin/toolbox/when
+  cp /tmp/when-cli/when /tmp/self-hosted-Darwin-arm/toolbox/when
 
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/amd64/cache /tmp/self-hosted-Linux/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/arm64/cache /tmp/self-hosted-Linux-arm/toolbox/
@@ -172,10 +180,7 @@ hosted::pack() {
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/amd64/cache /tmp/Darwin/toolbox/cache
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/sem-context /tmp/Linux/toolbox/sem-context
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/sem-context /tmp/Darwin/toolbox/sem-context
- 
-  echo "Downloading when CLI..."
-  curl -s -L --retry 5 $WHEN_CLI_URL/when -o /tmp/Linux/toolbox/when
-  chmod +x /tmp/Linux/toolbox/when
+  cp /tmp/when-cli/when /tmp/Linux/toolbox/when
 }
 
 create_self_hosted=false
@@ -192,6 +197,10 @@ while getopts ":a" option; do
 done
 
 shift $((OPTIND -1))
+
+# The when CLI is a escript that runs on the Erlang VM,
+# so it doesn't change based on os/arch. We download it just once before anything else.
+download_when_cli
 
 hosted::pack
 create_tarball "linux.tar" /tmp/Linux
