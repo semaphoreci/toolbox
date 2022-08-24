@@ -16,7 +16,7 @@ download_when_cli() {
   rm -rf /tmp/when-cli
   mkdir -p /tmp/when-cli
   echo "Downloading when CLI..."
-  curl -L --retry 5 $WHEN_CLI_URL/when -o /tmp/when-cli/when
+  curl -sL --retry 5 $WHEN_CLI_URL/when -o /tmp/when-cli/when
   chmod +x /tmp/when-cli/when
 }
 
