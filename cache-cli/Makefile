@@ -30,10 +30,10 @@ test.watch:
 	docker-compose run --rm cli gotestsum --watch --format short-verbose --junitfile junit-report.xml --packages="./..." -- -p 1
 
 build.darwin:
-	CGO_ENABLED=0 GOOS=darwin go build -o bin/darwin/cache main.go
+	CGO_ENABLED=0 GOOS=darwin GOARCH=$(ARCH) go build -o bin/darwin/$(ARCH)/cache main.go
 
 build.linux:
-	CGO_ENABLED=0 GOOS=linux go build -o bin/linux/cache main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=$(ARCH) go build -o bin/linux/$(ARCH)/cache main.go
 
 build.windows:
 	CGO_ENABLED=0 GOOS=windows go build -o bin/windows/cache.exe main.go
