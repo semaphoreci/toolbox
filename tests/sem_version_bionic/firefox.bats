@@ -25,6 +25,13 @@ setup() {
 
 #  Firefox
 
+@test "change firefox to 68" {
+ 
+  run sem-version firefox 68
+  assert_success
+  assert_line --partial "Mozilla Firefox 68"
+}
+
 @test "change firefox to 78" {
 
   run sem-version firefox 78
@@ -37,11 +44,4 @@ setup() {
   run sem-version firefox 102
   assert_success
   assert_line --partial "Mozilla Firefox 102"
-}
-
-
-@test "change firefox to 90" {
-
-  run sem-version firefox 90
-  assert_failure
 }
