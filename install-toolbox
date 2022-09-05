@@ -151,7 +151,7 @@ if [[ `uname` != "Darwin" ]]; then
   install_cmd mv ~/.toolbox/enetwork $INSTALL_PATH/enetwork
   install_cmd chmod +x $INSTALL_PATH/enetwork
   if [[ $? -eq 0 ]];then
-    echo "when installed"
+    echo "enetwork installed"
   else
     echo "toolbox_install_error{module='enetwork'} 1" >> /tmp/toolbox_metrics
   fi
