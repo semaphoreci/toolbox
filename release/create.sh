@@ -5,7 +5,7 @@ set -euo pipefail
 ARTIFACT_CLI_VERSION="v0.6.0"
 WHEN_CLI_VERSION="v1.0.5"
 SPC_CLI_VERSION="v1.9.4"
-TEST_RESULTS_CLI_VERSION="v0.6.2"
+TEST_RESULTS_CLI_VERSION="v0.6.3"
 
 ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
 SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSION"
@@ -153,6 +153,7 @@ self_hosted::pack() {
   include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Linux-arm "arm64"
   include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Darwin "x86_64"
   include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Darwin-arm "arm64"
+  include_external_windows_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Windows
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Linux "x86_64"
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Linux-arm "arm64"
   include_external_darwin_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Darwin "x86_64"
