@@ -48,8 +48,8 @@ setup() {
   assert_line --partial "Elixir 1.13.4"
 }
 
-@test "change elixir to 1.14.0" {
-  sem-version elixir 1.14.0
+@test "change elixir to 1.14.1" {
+  sem-version elixir 1.14.1
   run elixir --version
-  assert_line --partial "Elixir 1.14.0"
+  assert_line --partial "Elixir 1.14.1"
 }
