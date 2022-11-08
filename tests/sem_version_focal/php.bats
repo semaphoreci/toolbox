@@ -39,48 +39,59 @@ setup() {
   assert_line --partial "imap"
 }
 
-@test "change php to 8.0.24" {
+@test "change php to 8.0.25" {
 
-  run sem-version php 8.0.24
+  run sem-version php 8.0.25
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.0.24"
+  assert_line --partial "PHP 8.0.25"
   run php -m 
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
 
-@test "php check composer 8.0.24" {
+@test "php check composer 8.0.25" {
 
   run which composer
   assert_success
   source ~/.phpbrew/bashrc
-  assert_line --partial "8.0.24"
+  assert_line --partial "8.0.25"
 }
 
-@test "php check 8.0.24" {
+@test "php check 8.0.25" {
 
-  run sem-version php 8.0.24
+  run sem-version php 8.0.25
   assert_success
   source ~/.phpbrew/bashrc
-  assert_line --partial "8.0.24"
+  assert_line --partial "8.0.25"
   run phpbrew ext install iconv
   assert_success
 }
 
-@test "php check sources 8.0.24" {
+@test "php check sources 8.0.25" {
 
-  run sem-version php 8.0.24
+  run sem-version php 8.0.25
   assert_success
   source ~/.phpbrew/bashrc
 
   run ls -lah ~/.phpbrew/distfiles/
-  assert_line --partial "8.0.24"
+  assert_line --partial "8.0.25"
 
   run ls -lah ~/.phpbrew/build/
-  assert_line --partial "8.0.24"
+  assert_line --partial "8.0.25"
 
   run phpbrew ext install iconv
   assert_success
+}
+
+@test "change php to 8.1.12" {
+
+  run sem-version php 8.1.12
+  assert_success
+  run php -v
+  assert_line --partial "PHP 8.1.12"
+  run php -m
+  assert_line --partial "gd"
+  assert_line --partial "imap"
 }
