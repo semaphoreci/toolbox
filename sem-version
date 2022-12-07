@@ -242,8 +242,8 @@ version::main() {
   software_version=$2
   force=${3:-""}
   ignore=${4:-""}
-  [ "$(uname)" == "Linux" ] && os_version="ubuntu$(grep RELEASE /etc/lsb-release | awk -F'[=.]' '{print $2}')"
-  [ "$(uname)" == "Darwin" ] && os_version="xcode$(xcodebuild -version | grep Xcode | awk -F'[ .]' '{print $2}')"
+  [ "$(uname)" == "Linux" ] && os_version="ubuntu$(lsb_release -rs)"
+  [ "$(uname)" == "Darwin" ] && os_version="macos$(sw_vers -productVersion)"
 
   if [[ "$force" == "-i" ]] || [[ "$force" == "--ignore" ]]; then
     ignore="--ignore"
