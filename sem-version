@@ -242,6 +242,8 @@ version::main() {
   software_version=$2
   force=${3:-""}
   ignore=${4:-""}
+  [ "$(uname)" == "Linux" ] && os_version="ubuntu$(lsb_release -rs)"
+  [ "$(uname)" == "Darwin" ] && os_version="macos$(sw_vers -productVersion)"
 
   if [[ "$force" == "-i" ]] || [[ "$force" == "--ignore" ]]; then
     ignore="--ignore"
@@ -261,10 +263,10 @@ version::main() {
     fn_status=$?
     if [[ fn_status -ne 0 ]]; then
       version::err "Failed to switch version.\n"
-      echo "semversion,software=$software,state=fail,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
+      echo "semversion,software=$software,state=fail,version=$software_version,osversion=$os_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
       [[ "$ignore" == "--ignore" ]] || exit 1
     else
-      echo "semversion,software=$software,state=success,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
+      echo "semversion,software=$software,state=success,version=$software_version,osversion=$os_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
       version::log "Switch successful."
     fi
     return 0
