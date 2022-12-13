@@ -43,9 +43,9 @@ version::change() {
 version::change_ruby() {
   [[ "$software_version" == "2.5" ]] && software_version="2.5.9"
   [[ "$software_version" == "2.6" ]] && software_version="2.6.10"
-  [[ "$software_version" == "2.7" ]] && software_version="2.7.6"
-  [[ "$software_version" == "3.0" ]] && software_version="3.0.4"
-  [[ "$software_version" == "3.1" ]] && software_version="3.1.2"
+  [[ "$software_version" == "2.7" ]] && software_version="2.7.7"
+  [[ "$software_version" == "3.0" ]] && software_version="3.0.5"
+  [[ "$software_version" == "3.1" ]] && software_version="3.1.3"
 
   if ! [ -d ~/.rbenv/versions/"${software_version}" ]; then
     sem-install ruby "${software_version}"
@@ -89,9 +89,9 @@ version::change_php() {
   [[ "$software_version" == "7.1" ]] && software_version="7.1.33"
   [[ "$software_version" == "7.2" ]] && software_version="7.2.34"
   [[ "$software_version" == "7.3" ]] && software_version="7.3.33"
-  [[ "$software_version" == "7.4" ]] && software_version="7.4.32"
-  [[ "$software_version" == "8" ]] && software_version="8.0.24"
-  [[ "$software_version" == "8.0" ]] && software_version="8.0.24"
+  [[ "$software_version" == "7.4" ]] && software_version="7.4.33"
+  [[ "$software_version" == "8" ]] && software_version="8.0.26"
+  [[ "$software_version" == "8.0" ]] && software_version="8.0.26"
 
   if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
     sem-install php "${software_version}"
@@ -242,8 +242,8 @@ version::main() {
   software_version=$2
   force=${3:-""}
   ignore=${4:-""}
-  [ "$(uname)" == "Linux" ] && os_version="ubuntu$(lsb_release -rs)"
-  [ "$(uname)" == "Darwin" ] && os_version="macos$(sw_vers -productVersion)"
+  [ "$(uname)" == "Linux" ] && os_version="$(lsb_release -rs)"
+  [ "$(uname)" == "Darwin" ] && os_version="$(sw_vers -productVersion)"
 
   if [[ "$force" == "-i" ]] || [[ "$force" == "--ignore" ]]; then
     ignore="--ignore"
