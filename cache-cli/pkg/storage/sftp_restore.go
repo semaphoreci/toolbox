@@ -1,36 +1,19 @@
 package storage
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
+	"io"
 )
 
-func (s *SFTPStorage) Restore(key string) (*os.File, error) {
-	localFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("%s-*", key))
-	if err != nil {
-		return nil, err
-	}
-
+func (s *SFTPStorage) Restore(key string, writer io.Writer) (int64, error) {
 	remoteFile, err := s.SFTPClient.Open(key)
 	if err != nil {
-		_ = localFile.Close()
-		_ = os.Remove(localFile.Name())
-		return nil, err
+		return 0, err
 	}
 
-	_, err = localFile.ReadFrom(remoteFile)
+	written, err := remoteFile.WriteTo(writer)
 	if err != nil {
-		_ = localFile.Close()
-		_ = remoteFile.Close()
-		return nil, err
+		return written, err
 	}
 
-	err = remoteFile.Close()
-	if err != nil {
-		_ = localFile.Close()
-		return nil, err
-	}
-
-	return localFile, localFile.Close()
+	return written, remoteFile.Close()
 }
