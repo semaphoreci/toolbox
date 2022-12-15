@@ -2,9 +2,10 @@ package files
 
 import (
 	"archive/tar"
-	"compress/gzip"
 	"io"
 	"os"
+
+	gzip "github.com/klauspost/pgzip"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 	log "github.com/sirupsen/logrus"
