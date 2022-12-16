@@ -101,6 +101,7 @@ func downloadAndUnpackKey(storage storage.Storage, metricsManager metrics.Metric
 	downloadStart := time.Now()
 	log.Infof("Downloading key '%s'...", key)
 	compressed, err := storage.Restore(key)
+	utils.Check(err)
 
 	downloadDuration := time.Since(downloadStart)
 	info, _ := os.Stat(compressed.Name())
