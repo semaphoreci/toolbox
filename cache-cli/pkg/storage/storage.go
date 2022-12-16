@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"io"
 	"math"
 	"os"
 	"strconv"
@@ -15,7 +14,7 @@ type Storage interface {
 	List() ([]CacheKey, error)
 	HasKey(key string) (bool, error)
 	Store(key, path string) error
-	Restore(key string, writer io.Writer) (int64, error)
+	Restore(key string) (*os.File, error)
 	Delete(key string) error
 	Clear() error
 	Usage() (*UsageSummary, error)

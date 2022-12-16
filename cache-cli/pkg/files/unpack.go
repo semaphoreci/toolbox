@@ -6,21 +6,28 @@ import (
 	"os"
 
 	gzip "github.com/klauspost/pgzip"
-
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 )
 
-func Unpack(metricsManager metrics.MetricsManager, reader io.Reader) error {
-	uncompressedStream, err := gzip.NewReader(reader)
+func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+
+	uncompressedStream, err := gzip.NewReader(file)
 	if err != nil {
 		log.Errorf("error creating gzip reader: %v", err)
-		return err
+		return "", err
 	}
 
 	defer uncompressedStream.Close()
 
 	tarReader := tar.NewReader(uncompressedStream)
+
+	i := 0
+	restorationPath := ""
 
 	for {
 		header, err := tarReader.Next()
@@ -34,28 +41,35 @@ func Unpack(metricsManager metrics.MetricsManager, reader io.Reader) error {
 				log.Errorf("Error publishing %s metric: %v", metrics.CacheCorruptionRate, metricErr)
 			}
 
-			return err
+			return "", err
+		}
+
+		// If it's the first file in archive, we keep track of its name.
+		if i == 0 {
+			restorationPath = header.Name
 		}
 
 		switch header.Typeflag {
 		case tar.TypeDir:
 			if err := os.MkdirAll(header.Name, 0755); err != nil {
-				return err
+				return "", err
 			}
 
 		case tar.TypeReg:
 			outFile, err := os.Create(header.Name)
 			if err != nil {
-				return err
+				return "", err
 			}
 
 			if _, err := io.Copy(outFile, tarReader); err != nil {
-				return err
+				return "", err
 			}
 
 			outFile.Close()
 		}
+
+		i++
 	}
 
-	return nil
+	return restorationPath, nil
 }

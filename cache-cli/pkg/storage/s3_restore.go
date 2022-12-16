@@ -3,21 +3,30 @@ package storage
 import (
 	"context"
 	"fmt"
-	"io"
+	"io/ioutil"
+	"os"
 
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-func (s *S3Storage) Restore(key string, writer io.Writer) (int64, error) {
+func (s *S3Storage) Restore(key string) (*os.File, error) {
+	tempFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("%s-*", key))
+	if err != nil {
+		return nil, err
+	}
+
 	bucketKey := fmt.Sprintf("%s/%s", s.Project, key)
-	response, err := s.Client.GetObject(context.TODO(), &s3.GetObjectInput{
+	downloader := manager.NewDownloader(s.Client)
+	_, err = downloader.Download(context.TODO(), tempFile, &s3.GetObjectInput{
 		Bucket: &s.Bucket,
 		Key:    &bucketKey,
 	})
 
 	if err != nil {
-		return 0, err
+		_ = tempFile.Close()
+		return nil, err
 	}
 
-	return io.Copy(writer, response.Body)
+	return tempFile, tempFile.Close()
 }

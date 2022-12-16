@@ -2,11 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"io"
+	"io/fs"
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
@@ -99,40 +98,34 @@ func findMatchingKey(availableKeys []storage.CacheKey, match string) string {
 }
 
 func downloadAndUnpackKey(storage storage.Storage, metricsManager metrics.MetricsManager, key string) {
-	start := time.Now()
-
-	reader, writer := io.Pipe()
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	// Download
-	go func() {
-		written, err := storage.Restore(key, writer)
-		log.Infof("Download complete. Size: %v bytes.", files.HumanReadableSize(written))
-		wg.Done()
-		utils.Check(err)
-	}()
-
-	// Decompress
-	go func() {
-		err := files.Unpack(metricsManager, reader)
-		wg.Done()
-		utils.Check(err)
-	}()
-
+	downloadStart := time.Now()
 	log.Infof("Downloading key '%s'...", key)
-	wg.Wait()
+	compressed, err := storage.Restore(key)
 
-	duration := time.Since(start)
-	log.Infof("Download complete. Duration: %v", duration.String())
+	downloadDuration := time.Since(downloadStart)
+	info, _ := os.Stat(compressed.Name())
 
-	// publishMetrics(metricsManager, written, duration)
-	// TODO: do I need to close the pipe?
+	log.Infof("Download complete. Duration: %v. Size: %v bytes.", downloadDuration.String(), files.HumanReadableSize(info.Size()))
+	publishMetrics(metricsManager, info, downloadDuration)
+
+	unpackStart := time.Now()
+	log.Infof("Unpacking '%s'...", compressed.Name())
+	restorationPath, err := files.Unpack(metricsManager, compressed.Name())
+	utils.Check(err)
+
+	unpackDuration := time.Since(unpackStart)
+	log.Infof("Unpack complete. Duration: %v.", unpackDuration)
+	log.Infof("Restored: %s.", restorationPath)
+
+	err = os.Remove(compressed.Name())
+	if err != nil {
+		log.Errorf("Error removing %s: %v", compressed.Name(), err)
+	}
 }
 
-func publishMetrics(metricsManager metrics.MetricsManager, downloadSize int64, downloadDuration time.Duration) {
+func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo, downloadDuration time.Duration) {
 	metricsToPublish := []metrics.Metric{
-		{Name: metrics.CacheDownloadSize, Value: fmt.Sprintf("%d", downloadSize)},
+		{Name: metrics.CacheDownloadSize, Value: fmt.Sprintf("%d", fileInfo.Size())},
 		{Name: metrics.CacheDownloadTime, Value: downloadDuration.String()},
 	}
 
