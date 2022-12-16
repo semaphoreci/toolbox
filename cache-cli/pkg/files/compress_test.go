@@ -15,17 +15,6 @@ func Test__CompressAndUnpack(t *testing.T) {
 	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
 	assert.Nil(t, err)
 
-	t.Run("file to compress is not present", func(t *testing.T) {
-		compressedFileName, err := Compress("abc0001", "/tmp/this-file-does-not-exist")
-		assert.NotNil(t, err)
-		os.Remove(compressedFileName)
-	})
-
-	t.Run("file to unpack is not present", func(t *testing.T) {
-		_, err := Unpack(metricsManager, "/tmp/this-file-does-not-exist")
-		assert.NotNil(t, err)
-	})
-
 	t.Run("using absolute paths", func(t *testing.T) {
 		tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 		tempFile, _ := ioutil.TempFile(tempDir, "*")

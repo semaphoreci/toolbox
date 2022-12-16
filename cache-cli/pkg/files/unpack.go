@@ -19,6 +19,7 @@ func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) 
 	uncompressedStream, err := gzip.NewReader(file)
 	if err != nil {
 		log.Errorf("error creating gzip reader: %v", err)
+		publishCorruptionMetric(metricsManager)
 		return "", err
 	}
 
@@ -37,10 +38,7 @@ func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) 
 
 		if err != nil {
 			log.Errorf("Error reading tar stream: %v", err)
-			if metricErr := metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
-				log.Errorf("Error publishing %s metric: %v", metrics.CacheCorruptionRate, metricErr)
-			}
-
+			publishCorruptionMetric(metricsManager)
 			return "", err
 		}
 
@@ -72,4 +70,10 @@ func Unpack(metricsManager metrics.MetricsManager, path string) (string, error) 
 	}
 
 	return restorationPath, nil
+}
+
+func publishCorruptionMetric(metricsManager metrics.MetricsManager) {
+	if metricErr := metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
+		log.Errorf("Error publishing %s metric: %v", metrics.CacheCorruptionRate, metricErr)
+	}
 }
