@@ -35,7 +35,12 @@ func Compress(key, path string) (string, error) {
 			return err
 		}
 
-		header.Name = filepath.ToSlash(file)
+		if fi.IsDir() {
+			header.Name = filepath.ToSlash(file + "/")
+		} else {
+			header.Name = filepath.ToSlash(file)
+		}
+
 		if err := tarWriter.WriteHeader(header); err != nil {
 			return err
 		}

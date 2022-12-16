@@ -67,7 +67,7 @@ func downloadAndUnpack(storage storage.Storage, metricsManager metrics.MetricsMa
 	for _, rawKey := range keys {
 		key := NormalizeKey(rawKey)
 		if ok, _ := storage.HasKey(key); ok {
-			log.Infof("HIT: '%s', using key '%s'.\n", key, key)
+			log.Infof("HIT: '%s', using key '%s'.", key, key)
 			downloadAndUnpackKey(storage, metricsManager, key)
 			break
 		}
