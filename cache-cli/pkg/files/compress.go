@@ -12,14 +12,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// TODO: assert absolute paths work as well
 func Compress(key, path string) (string, error) {
 	epochNanos := time.Now().Nanosecond()
 	tempFileName := filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", key, epochNanos))
 
 	tempFile, err := os.OpenFile(tempFileName, os.O_CREATE|os.O_RDWR, os.FileMode(0644))
 	if err != nil {
-		log.Errorf("Error creating temporary file '%s' for archive: %v", tempFile, err)
+		log.Errorf("Error opening temporary file '%s' for archive: %v", tempFile.Name(), err)
 		return "", err
 	}
 
