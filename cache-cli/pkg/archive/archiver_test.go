@@ -38,13 +38,13 @@ func Test__Compress(t *testing.T) {
 			assertCompressAndUnpack(t, archiver, tempDirBase, tempFile)
 		})
 
-		t.Run(archiverType+"using single file", func(t *testing.T) {
+		t.Run(archiverType+" using single file", func(t *testing.T) {
 			cwd, _ := os.Getwd()
 			tempFile, _ := ioutil.TempFile(cwd, "*")
 			_ = tempFile.Close()
 
 			// compressing
-			compressedFileName := tmpFileNameWithPrefix("abc003")
+			compressedFileName := tmpFileNameWithPrefix("abc0003")
 			err := archiver.Compress(compressedFileName, tempFile.Name())
 			assert.Nil(t, err)
 			assert.Contains(t, compressedFileName, filepath.FromSlash(fmt.Sprintf("%s/abc0003", os.TempDir())))
@@ -73,18 +73,20 @@ func Test__Compress(t *testing.T) {
 
 func Test__Decompress(t *testing.T) {
 	runTestForAllArchiverTypes(t, true, func(archiverType string, archiver Archiver) {
-		tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
-		tempFile.WriteString("this is not a proper archive")
+		t.Run(archiverType+" sends metric on failure", func(t *testing.T) {
+			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
+			tempFile.WriteString("this is not a proper archive")
 
-		_, err := archiver.Decompress(tempFile.Name())
-		assert.NotNil(t, err)
+			_, err := archiver.Decompress(tempFile.Name())
+			assert.NotNil(t, err)
 
-		bytes, err := ioutil.ReadFile(fmt.Sprintf("%s/toolbox_metrics", os.TempDir()))
-		assert.Nil(t, err)
-		assert.Contains(t, string(bytes), fmt.Sprintf("%s 1", metrics.CacheCorruptionRate))
+			bytes, err := ioutil.ReadFile(fmt.Sprintf("%s/toolbox_metrics", os.TempDir()))
+			assert.Nil(t, err)
+			assert.Contains(t, string(bytes), fmt.Sprintf("%s 1", metrics.CacheCorruptionRate))
 
-		os.Remove(tempFile.Name())
-		os.Remove(fmt.Sprintf("%s/toolbox_metrics", os.TempDir()))
+			os.Remove(tempFile.Name())
+			os.Remove(fmt.Sprintf("%s/toolbox_metrics", os.TempDir()))
+		})
 	})
 }
 
@@ -95,7 +97,7 @@ func tmpFileNameWithPrefix(prefix string) string {
 func assertCompressAndUnpack(t *testing.T, archiver Archiver, tempDirectory string, tempFile *os.File) {
 	// compressing
 	compressedFileName := tmpFileNameWithPrefix("abc0003")
-	err := archiver.Compress(tmpFileNameWithPrefix("abc0003"), tempDirectory)
+	err := archiver.Compress(compressedFileName, tempDirectory)
 	assert.Nil(t, err)
 	assert.Contains(t, compressedFileName, filepath.FromSlash(fmt.Sprintf("%s/abc0003", os.TempDir())))
 

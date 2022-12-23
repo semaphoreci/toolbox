@@ -22,6 +22,10 @@ func NewShellOutArchiver(metricsManager metrics.MetricsManager) *ShellOutArchive
 }
 
 func (a *ShellOutArchiver) Compress(dst, src string) error {
+	if _, err := os.Stat(src); err != nil {
+		return fmt.Errorf("error finding '%s': %v", src, err)
+	}
+
 	cmd := a.compressionCommand(dst, src)
 	output, err := cmd.CombinedOutput()
 	if err != nil {

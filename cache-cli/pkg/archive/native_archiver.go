@@ -3,6 +3,7 @@ package archive
 import (
 	"archive/tar"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -25,9 +26,12 @@ func NewNativeArchiver(metricsManager metrics.MetricsManager, useParallelism boo
 }
 
 func (a *NativeArchiver) Compress(dst, src string) error {
+	if _, err := os.Stat(src); err != nil {
+		return fmt.Errorf("error finding '%s': %v", src, err)
+	}
+
 	dstFile, err := os.OpenFile(dst, os.O_CREATE|os.O_RDWR, os.FileMode(0644))
 	if err != nil {
-		log.Errorf("Error opening compression source '%s': %v", dst, err)
 		return err
 	}
 
