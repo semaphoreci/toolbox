@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/semaphoreci/toolbox/cache-cli/pkg/archive"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
+	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
 	log "github.com/sirupsen/logrus"
@@ -33,6 +36,11 @@ func RunStore(cmd *cobra.Command, args []string) {
 	storage, err := storage.InitStorage()
 	utils.Check(err)
 
+	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
+	utils.Check(err)
+
+	archiver := archive.NewArchiver(metricsManager)
+
 	if len(args) == 0 {
 		lookupResults := files.Lookup(files.LookupOptions{
 			GitBranch: FindGitBranch(),
@@ -49,16 +57,16 @@ func RunStore(cmd *cobra.Command, args []string) {
 			for _, entry := range lookupResult.Entries {
 				log.Infof("Using default cache path '%s'.", entry.Path)
 				key := entry.Keys[0]
-				compressAndStore(storage, key, entry.Path)
+				compressAndStore(storage, archiver, key, entry.Path)
 			}
 		}
 	} else {
 		path := filepath.FromSlash(args[1])
-		compressAndStore(storage, args[0], path)
+		compressAndStore(storage, archiver, args[0], path)
 	}
 }
 
-func compressAndStore(storage storage.Storage, rawKey, path string) {
+func compressAndStore(storage storage.Storage, archiver archive.Archiver, rawKey, path string) {
 	key := NormalizeKey(rawKey)
 	if _, err := os.Stat(path); err == nil {
 		if ok, _ := storage.HasKey(key); ok {
@@ -66,7 +74,7 @@ func compressAndStore(storage storage.Storage, rawKey, path string) {
 			return
 		}
 
-		compressedFilePath, compressedFileSize, err := compress(key, path)
+		compressedFilePath, compressedFileSize, err := compress(archiver, key, path)
 		if err != nil {
 			log.Errorf("Error compressing %s: %v", path, err)
 			return
@@ -95,21 +103,23 @@ func compressAndStore(storage storage.Storage, rawKey, path string) {
 	}
 }
 
-func compress(key, path string) (string, int64, error) {
+func compress(archiver archive.Archiver, key, path string) (string, int64, error) {
 	compressingStart := time.Now()
 	log.Infof("Compressing %s...", path)
-	compressed, err := files.Compress(key, path)
+
+	dst := filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", key, time.Now().Nanosecond()))
+	err := archiver.Compress(dst, path)
 	utils.Check(err)
 
 	compressionDuration := time.Since(compressingStart)
-	info, err := os.Stat(compressed)
+	info, err := os.Stat(dst)
 	if err != nil {
-		_ = os.Remove(compressed)
+		_ = os.Remove(dst)
 		return "", -1, err
 	}
 
 	log.Infof("Compression complete. Duration: %v. Size: %v bytes.", compressionDuration.String(), files.HumanReadableSize(info.Size()))
-	return compressed, info.Size(), nil
+	return dst, info.Size(), nil
 }
 
 func NormalizeKey(key string) string {
