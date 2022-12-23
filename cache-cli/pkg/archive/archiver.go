@@ -12,7 +12,7 @@ type Archiver interface {
 }
 
 func NewArchiver(metricsManager metrics.MetricsManager) Archiver {
-	method := os.Getenv("SEMAPHORE_CACHE_CLI_ARCHIVE_METHOD")
+	method := os.Getenv("SEMAPHORE_CACHE_ARCHIVE_METHOD")
 	switch method {
 	case "native":
 		return NewNativeArchiver(metricsManager, false)

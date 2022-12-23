@@ -47,7 +47,7 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsBackend())
+			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
 			compressAndStore(storage, archiver, "abc-001", tempDir)
 			RunRestore(restoreCmd, []string{"abc-001"})
 			output := readOutputFromFile(t)
@@ -67,7 +67,7 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsBackend())
+			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
 			compressAndStore(storage, archiver, "abc/00/22", tempDir)
 			RunRestore(restoreCmd, []string{"abc/00/22"})
 			output := readOutputFromFile(t)
@@ -88,7 +88,7 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsBackend())
+			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
 			compressAndStore(storage, archiver, "abc-001", tempDir)
 			RunRestore(restoreCmd, []string{"abc"})
 			output := readOutputFromFile(t)
@@ -108,7 +108,7 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsBackend())
+			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
 			compressAndStore(storage, archiver, "abc-001", tempDir)
 			compressAndStore(storage, archiver, "abc-002", tempDir)
 			RunRestore(restoreCmd, []string{"abc-001,abc-002"})
@@ -130,7 +130,7 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsBackend())
+			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
 			compressAndStore(storage, archiver, "abc", tempDir)
 			RunRestore(restoreCmd, []string{"abc-001,abc"})
 			output := readOutputFromFile(t)
@@ -151,7 +151,7 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsBackend())
+			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
 			compressAndStore(storage, archiver, "abc", tempDir)
 			RunRestore(restoreCmd, []string{"^abc"})
 			output := readOutputFromFile(t)
@@ -198,7 +198,7 @@ func Test__AutomaticRestore(t *testing.T) {
 			checksum, _ := files.GenerateChecksum("Gemfile.lock")
 			key := fmt.Sprintf("gems-master-%s", checksum)
 			compressedFile := filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", key, time.Now().Nanosecond()))
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsBackend())
+			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
 			archiver.Compress(compressedFile, "vendor/bundle")
 			storage.Store(key, compressedFile)
 
@@ -225,7 +225,7 @@ func Test__AutomaticRestore(t *testing.T) {
 			// storing
 			checksum, _ := files.GenerateChecksum("Gemfile.lock")
 			key := fmt.Sprintf("gems-some-development-branch-%s", checksum)
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsBackend())
+			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
 			compressedFile := filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", key, time.Now().Nanosecond()))
 			archiver.Compress(compressedFile, "vendor/bundle")
 			storage.Store(key, compressedFile)

@@ -36,7 +36,7 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 	tarWriter := tar.NewWriter(gzipWriter)
 
 	// We walk through every file in the specified path, adding them to the tar archive.
-	filepath.Walk(src, func(file string, fileInfo os.FileInfo, e error) error {
+	err = filepath.Walk(src, func(file string, fileInfo os.FileInfo, e error) error {
 		header, err := tar.FileInfoHeader(fileInfo, file)
 		if err != nil {
 			return err
@@ -74,11 +74,7 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 		return err
 	}
 
-	if err := gzipWriter.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return gzipWriter.Close()
 }
 
 func (a *NativeArchiver) Decompress(src string) (string, error) {

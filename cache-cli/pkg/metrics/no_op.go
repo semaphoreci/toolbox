@@ -3,8 +3,8 @@ package metrics
 type NoOpMetricsManager struct {
 }
 
-func NewNoOpMetricsBackend() *LocalMetricsManager {
-	return &LocalMetricsManager{}
+func NewNoOpMetricsManager() *NoOpMetricsManager {
+	return &NoOpMetricsManager{}
 }
 
 func (b *NoOpMetricsManager) Enabled() bool {
