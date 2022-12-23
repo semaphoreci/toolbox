@@ -159,7 +159,7 @@ normalize_key() {
   new_key=$(normalize_key bats-test-$SEMAPHORE_GIT_BRANCH-1)
   dd if=/dev/zero of=tmp.file bs=1m count=50
   dd if=/dev/zero of=tmp.larger_file bs=1m count=70
-  export CACHE_SIZE=110
+  export CACHE_SIZE=150
   cache store $preexisting_key tmp.file
   cache store tmp-key tmp.file
   cache list
@@ -696,8 +696,8 @@ normalize_key() {
   run cache usage
 
   assert_success
-  assert_line "FREE SPACE: 50.1K"
-  assert_line "USED SPACE: 49.9K"
+  assert_line "FREE SPACE: 28.1K"
+  assert_line "USED SPACE: 71.9K"
   refute_output --partial "command not found"
 
   rm -f tmp.file
