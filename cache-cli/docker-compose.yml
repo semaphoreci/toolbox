@@ -15,7 +15,7 @@ services:
       - .:/app
     environment:
       SEMAPHORE_CACHE_S3_URL: "http://s3:9000"
-      SEMAPHORE_TOOLBOX_METRICS_ENABLED: true
+      SEMAPHORE_TOOLBOX_METRICS_ENABLED: "true"
   s3:
     image: quay.io/minio/minio:RELEASE.2021-09-15T04-54-25Z
     container_name: 's3'
