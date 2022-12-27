@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 	"time"
@@ -51,9 +52,7 @@ func Test__Compress(t *testing.T) {
 
 			_, err = os.Stat(compressedFileName)
 			assert.Nil(t, err)
-
-			err = os.Remove(tempFile.Name())
-			assert.Nil(t, err)
+			assert.NoError(t, os.Remove(tempFile.Name()))
 
 			// unpacking
 			unpackedAt, err := archiver.Decompress(compressedFileName)
@@ -63,10 +62,8 @@ func Test__Compress(t *testing.T) {
 			_, err = os.Stat(unpackedAt)
 			assert.Nil(t, err)
 
-			err = os.Remove(tempFile.Name())
-			assert.Nil(t, err)
-			err = os.Remove(compressedFileName)
-			assert.Nil(t, err)
+			assert.NoError(t, os.Remove(tempFile.Name()))
+			assert.NoError(t, os.Remove(compressedFileName))
 		})
 	})
 }
@@ -76,16 +73,18 @@ func Test__Decompress(t *testing.T) {
 		t.Run(archiverType+" sends metric on failure", func(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 			tempFile.WriteString("this is not a proper archive")
+			_ = tempFile.Close()
 
 			_, err := archiver.Decompress(tempFile.Name())
 			assert.NotNil(t, err)
 
-			bytes, err := ioutil.ReadFile(fmt.Sprintf("%s/toolbox_metrics", os.TempDir()))
+			metricsFile := path.Join(os.TempDir(), "toolbox_metrics")
+			bytes, err := ioutil.ReadFile(metricsFile)
 			assert.Nil(t, err)
 			assert.Contains(t, string(bytes), fmt.Sprintf("%s 1", metrics.CacheCorruptionRate))
 
 			os.Remove(tempFile.Name())
-			os.Remove(fmt.Sprintf("%s/toolbox_metrics", os.TempDir()))
+			os.Remove(metricsFile)
 		})
 	})
 }
@@ -95,22 +94,20 @@ func tmpFileNameWithPrefix(prefix string) string {
 }
 
 func assertCompressAndUnpack(t *testing.T, archiver Archiver, tempDirectory string, tempFile *os.File) {
+	_ = tempFile.Close()
+
 	// compressing
 	compressedFileName := tmpFileNameWithPrefix("abc0003")
-	err := archiver.Compress(compressedFileName, tempDirectory)
-	assert.Nil(t, err)
-	assert.Contains(t, compressedFileName, filepath.FromSlash(fmt.Sprintf("%s/abc0003", os.TempDir())))
+	assert.NoError(t, archiver.Compress(compressedFileName, tempDirectory))
+	assert.Contains(t, compressedFileName, path.Join(os.TempDir(), "abc0003"))
 
-	_, err = os.Stat(compressedFileName)
+	_, err := os.Stat(compressedFileName)
 	assert.Nil(t, err)
 
 	// make sure file and directory are deleted
 	// before trying to unpack.
-	_ = tempFile.Close()
-	err = os.Remove(tempFile.Name())
-	assert.Nil(t, err)
-	err = os.Remove(tempDirectory)
-	assert.Nil(t, err)
+	assert.NoError(t, os.Remove(tempFile.Name()))
+	assert.NoError(t, os.Remove(tempDirectory))
 
 	// unpacking
 	unpackedAt, err := archiver.Decompress(compressedFileName)
@@ -122,12 +119,9 @@ func assertCompressAndUnpack(t *testing.T, archiver Archiver, tempDirectory stri
 	file := files[0]
 	assert.Equal(t, filepath.Base(tempFile.Name()), file.Name())
 
-	err = os.Remove(tempFile.Name())
-	assert.Nil(t, err)
-	err = os.Remove(unpackedAt)
-	assert.Nil(t, err)
-	err = os.Remove(compressedFileName)
-	assert.Nil(t, err)
+	assert.NoError(t, os.Remove(tempFile.Name()))
+	assert.NoError(t, os.Remove(unpackedAt))
+	assert.NoError(t, os.Remove(compressedFileName))
 }
 
 type archiverInitFn func(metricsManager metrics.MetricsManager) Archiver

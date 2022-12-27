@@ -3,6 +3,7 @@ package metrics
 import (
 	"fmt"
 	"os"
+	"path"
 	"runtime"
 
 	log "github.com/sirupsen/logrus"
@@ -20,8 +21,8 @@ func NewLocalMetricsBackend() (*LocalMetricsManager, error) {
 	}
 
 	return &LocalMetricsManager{
-		ToolboxMetricsPath: fmt.Sprintf("%s/toolbox_metrics", basePath),
-		CacheMetricsPath:   fmt.Sprintf("%s/cache_metrics", basePath),
+		ToolboxMetricsPath: path.Join(basePath, "toolbox_metrics"),
+		CacheMetricsPath:   path.Join(basePath, "cache_metrics"),
 	}, nil
 }
 

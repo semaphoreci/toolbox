@@ -78,7 +78,11 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 		return err
 	}
 
-	return gzipWriter.Close()
+	if err := gzipWriter.Close(); err != nil {
+		return err
+	}
+
+	return dstFile.Close()
 }
 
 func (a *NativeArchiver) Decompress(src string) (string, error) {
@@ -86,6 +90,8 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	defer srcFile.Close()
 
 	uncompressedStream, err := a.newGzipReader(srcFile)
 	if err != nil {
