@@ -15,6 +15,7 @@ jobs:
       - name: Run tests
         env:
           SEMAPHORE_CACHE_S3_URL: "http://127.0.0.1:9000"
+          SEMAPHORE_TOOLBOX_METRICS_ENABLED: "true"
         run: |
           New-Item C:\minio -ItemType Directory > $null
           Invoke-WebRequest "https://dl.min.io/server/minio/release/windows-amd64/minio.exe" -OutFile C:\minio\minio.exe
