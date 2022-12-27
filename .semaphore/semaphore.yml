@@ -231,8 +231,6 @@ blocks:
           matrix:
             - env_var: TEST
               values:
-                - tests/macos_cache.bats
-                - tests/macos_autocache.bats
                 - tests/libcheckout.bats
             - env_var: SEMAPHORE_CACHE_ARCHIVE_METHOD
               values:
@@ -288,7 +286,6 @@ blocks:
           matrix:
             - env_var: TEST
               values:
-                - tests/cache.bats
                 - tests/libcheckout.bats
             - env_var: SEMAPHORE_CACHE_ARCHIVE_METHOD
               values:
@@ -343,7 +340,6 @@ blocks:
           matrix:
             - env_var: TEST
               values:
-                - tests/cache.bats
                 - tests/libcheckout.bats
             - env_var: SEMAPHORE_CACHE_ARCHIVE_METHOD
               values:
@@ -394,8 +390,6 @@ blocks:
           matrix:
             - env_var: TEST
               values:
-                - tests/autocache.bats
-                - tests/cache.bats
                 - tests/libcheckout.bats
             - env_var: SEMAPHORE_CACHE_ARCHIVE_METHOD
               values:
