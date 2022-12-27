@@ -356,7 +356,7 @@ blocks:
             - ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
-        - name: "Cache tests"
+        - name: "Non-cache tests"
           matrix:
             - env_var: TEST
               values:
