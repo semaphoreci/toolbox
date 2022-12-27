@@ -47,9 +47,9 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 		}
 
 		if fileInfo.IsDir() {
-			header.Name = filepath.ToSlash(file + "/")
+			header.Name = file + string(os.PathSeparator)
 		} else {
-			header.Name = filepath.ToSlash(file)
+			header.Name = file
 		}
 
 		if err := tarWriter.WriteHeader(header); err != nil {
