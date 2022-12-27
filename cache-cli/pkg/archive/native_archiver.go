@@ -40,55 +40,61 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 	tarWriter := tar.NewWriter(gzipWriter)
 
 	// We walk through every file in the specified path, adding them to the tar archive.
-	err = filepath.Walk(src, func(file string, fileInfo os.FileInfo, e error) error {
-		header, err := tar.FileInfoHeader(fileInfo, file)
+	err = filepath.Walk(src, func(fileName string, fileInfo os.FileInfo, e error) error {
+		header, err := tar.FileInfoHeader(fileInfo, fileName)
 		if err != nil {
-			return err
+			return fmt.Errorf("error creating tar header for '%s': %v", fileName, err)
 		}
 
 		if fileInfo.IsDir() {
-			header.Name = file + string(os.PathSeparator)
+			header.Name = fileName + string(os.PathSeparator)
 		} else {
-			header.Name = file
+			header.Name = fileName
 		}
 
 		if err := tarWriter.WriteHeader(header); err != nil {
-			return err
+			return fmt.Errorf("error writing tar header: %v", err)
 		}
 
 		if !fileInfo.IsDir() {
-			data, err := os.Open(file)
+			file, err := os.Open(fileName)
 			if err != nil {
-				return err
+				return fmt.Errorf("error opening file '%s': %v", fileName, err)
 			}
 
-			if _, err := io.Copy(tarWriter, data); err != nil {
-				return err
+			if _, err := io.Copy(tarWriter, file); err != nil {
+				return fmt.Errorf("error writing file '%s' to tar archive: %v", fileName, err)
 			}
+
+			_ = file.Close()
 		}
 
 		return nil
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf("error walking tar archive: %v", err)
 	}
 
 	if err := tarWriter.Close(); err != nil {
-		return err
+		return fmt.Errorf("error closing tar writer: %v", err)
 	}
 
 	if err := gzipWriter.Close(); err != nil {
-		return err
+		return fmt.Errorf("error closing gzip writer: %v", err)
 	}
 
-	return dstFile.Close()
+	if err := dstFile.Close(); err != nil {
+		return fmt.Errorf("error closing destination file '%s', %v", dst, err)
+	}
+
+	return nil
 }
 
 func (a *NativeArchiver) Decompress(src string) (string, error) {
 	srcFile, err := os.Open(src)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error opening '%s': %v", src, err)
 	}
 
 	defer srcFile.Close()
@@ -101,9 +107,9 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 	}
 
 	defer uncompressedStream.Close()
-	tarReader := tar.NewReader(uncompressedStream)
 
 	i := 0
+	tarReader := tar.NewReader(uncompressedStream)
 	restorationPath := ""
 
 	for {
@@ -113,9 +119,8 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 		}
 
 		if err != nil {
-			log.Errorf("Error reading tar stream: %v", err)
 			a.publishCorruptionMetric()
-			return "", err
+			return "", fmt.Errorf("error reading tar stream: %v", err)
 		}
 
 		// If it's the first file in archive, we keep track of its name.
@@ -126,20 +131,22 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 		switch header.Typeflag {
 		case tar.TypeDir:
 			if err := os.MkdirAll(header.Name, 0755); err != nil {
-				return "", err
+				return "", fmt.Errorf("error creating directory '%s': %v", header.Name, err)
 			}
 
 		case tar.TypeReg:
 			outFile, err := os.Create(header.Name)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("error creating file '%s': %v", header.Name, err)
 			}
 
 			if _, err := io.Copy(outFile, tarReader); err != nil {
-				return "", err
+				return "", fmt.Errorf("error copying to file '%s': %v", header.Name, err)
 			}
 
-			outFile.Close()
+			if err := outFile.Close(); err != nil {
+				return "", fmt.Errorf("error closing file '%s': %v", header.Name, err)
+			}
 		}
 
 		i++
