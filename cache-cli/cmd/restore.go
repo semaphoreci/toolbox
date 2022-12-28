@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/semaphoreci/toolbox/cache-cli/pkg/archive"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
@@ -39,6 +40,8 @@ func RunRestore(cmd *cobra.Command, args []string) {
 	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
 	utils.Check(err)
 
+	archiver := archive.NewArchiver(metricsManager)
+
 	if len(args) == 0 {
 		lookupResults := files.Lookup(files.LookupOptions{
 			GitBranch: FindGitBranch(),
@@ -54,21 +57,21 @@ func RunRestore(cmd *cobra.Command, args []string) {
 			log.Infof("Detected %s.", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {
 				log.Infof("Fetching '%s' directory with cache keys '%s'...", entry.Path, strings.Join(entry.Keys, ","))
-				downloadAndUnpack(storage, metricsManager, entry.Keys)
+				downloadAndUnpack(storage, archiver, metricsManager, entry.Keys)
 			}
 		}
 	} else {
 		keys := strings.Split(args[0], ",")
-		downloadAndUnpack(storage, metricsManager, keys)
+		downloadAndUnpack(storage, archiver, metricsManager, keys)
 	}
 }
 
-func downloadAndUnpack(storage storage.Storage, metricsManager metrics.MetricsManager, keys []string) {
+func downloadAndUnpack(storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, keys []string) {
 	for _, rawKey := range keys {
 		key := NormalizeKey(rawKey)
 		if ok, _ := storage.HasKey(key); ok {
-			log.Infof("HIT: '%s', using key '%s'.\n", key, key)
-			downloadAndUnpackKey(storage, metricsManager, key)
+			log.Infof("HIT: '%s', using key '%s'.", key, key)
+			downloadAndUnpackKey(storage, archiver, metricsManager, key)
 			break
 		}
 
@@ -78,7 +81,7 @@ func downloadAndUnpack(storage storage.Storage, metricsManager metrics.MetricsMa
 		matchingKey := findMatchingKey(availableKeys, key)
 		if matchingKey != "" {
 			log.Infof("HIT: '%s', using key '%s'.", key, matchingKey)
-			downloadAndUnpackKey(storage, metricsManager, matchingKey)
+			downloadAndUnpackKey(storage, archiver, metricsManager, matchingKey)
 			break
 		} else {
 			log.Infof("MISS: '%s'.", key)
@@ -97,7 +100,7 @@ func findMatchingKey(availableKeys []storage.CacheKey, match string) string {
 	return ""
 }
 
-func downloadAndUnpackKey(storage storage.Storage, metricsManager metrics.MetricsManager, key string) {
+func downloadAndUnpackKey(storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, key string) {
 	downloadStart := time.Now()
 	log.Infof("Downloading key '%s'...", key)
 	compressed, err := storage.Restore(key)
@@ -111,7 +114,7 @@ func downloadAndUnpackKey(storage storage.Storage, metricsManager metrics.Metric
 
 	unpackStart := time.Now()
 	log.Infof("Unpacking '%s'...", compressed.Name())
-	restorationPath, err := files.Unpack(metricsManager, compressed.Name())
+	restorationPath, err := archiver.Decompress(compressed.Name())
 	utils.Check(err)
 
 	unpackDuration := time.Since(unpackStart)
