@@ -141,11 +141,19 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(header.Name, 0755); err != nil {
+			if err := os.MkdirAll(header.Name, header.FileInfo().Mode()); err != nil {
 				return "", fmt.Errorf("error creating directory '%s': %v", header.Name, err)
 			}
 
 		case tar.TypeSymlink:
+			// we have to remove the symlink first, if it exists.
+			// Otherwise os.Symlink will complain.
+			if _, err := os.Lstat(header.Name); err == nil {
+				if err := os.Remove(header.Name); err != nil {
+					return "", fmt.Errorf("error removing symlink '%s': %v", header.Name, err)
+				}
+			}
+
 			if err := os.Symlink(header.Linkname, header.Name); err != nil {
 				return "", fmt.Errorf("error creating symlink '%s': %v", header.Name, err)
 			}
