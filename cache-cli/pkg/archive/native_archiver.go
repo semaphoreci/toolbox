@@ -196,14 +196,17 @@ func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*o
 		if err := os.Remove(header.Name); err != nil {
 			return nil, fmt.Errorf("error removing file '%s': %v", header.Name, err)
 		}
+
+		outFile, err = os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, header.FileInfo().Mode())
+		if err != nil {
+			return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
+		}
+
+		return outFile, nil
 	}
 
-	outFile, err = os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, header.FileInfo().Mode())
-	if err != nil {
-		return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
-	}
-
-	return outFile, nil
+	// If we're dealing with a different error, just return it
+	return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
 }
 
 func (a *NativeArchiver) newGzipWriter(dstFile *os.File) io.WriteCloser {
