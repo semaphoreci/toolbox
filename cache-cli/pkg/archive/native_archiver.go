@@ -41,7 +41,14 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 
 	// We walk through every file in the specified path, adding them to the tar archive.
 	err = filepath.Walk(src, func(fileName string, fileInfo os.FileInfo, e error) error {
-		header, err := tar.FileInfoHeader(fileInfo, fileName)
+		var link string
+		if fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink {
+			if link, err = os.Readlink(fileName); err != nil {
+				return fmt.Errorf("error reading symlink for '%s': %v", fileName, err)
+			}
+		}
+
+		header, err := tar.FileInfoHeader(fileInfo, link)
 		if err != nil {
 			return fmt.Errorf("error creating tar header for '%s': %v", fileName, err)
 		}
@@ -56,18 +63,22 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 			return fmt.Errorf("error writing tar header: %v", err)
 		}
 
-		if !fileInfo.IsDir() {
-			file, err := os.Open(fileName)
-			if err != nil {
-				return fmt.Errorf("error opening file '%s': %v", fileName, err)
-			}
-
-			if _, err := io.Copy(tarWriter, file); err != nil {
-				return fmt.Errorf("error writing file '%s' to tar archive: %v", fileName, err)
-			}
-
-			_ = file.Close()
+		// If the file is not a regular file, nothing else to do for it
+		if !fileInfo.Mode().IsRegular() {
+			return nil
 		}
+
+		// If it is a regular file, we need to copy its contents to the archive
+		file, err := os.Open(fileName)
+		if err != nil {
+			return fmt.Errorf("error opening file '%s': %v", fileName, err)
+		}
+
+		if _, err := io.Copy(tarWriter, file); err != nil {
+			return fmt.Errorf("error writing file '%s' to tar archive: %v", fileName, err)
+		}
+
+		_ = file.Close()
 
 		return nil
 	})
@@ -134,8 +145,13 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 				return "", fmt.Errorf("error creating directory '%s': %v", header.Name, err)
 			}
 
+		case tar.TypeSymlink:
+			if err := os.Symlink(header.Linkname, header.Name); err != nil {
+				return "", fmt.Errorf("error creating symlink '%s': %v", header.Name, err)
+			}
+
 		case tar.TypeReg:
-			outFile, err := os.Create(header.Name)
+			outFile, err := os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, header.FileInfo().Mode())
 			if err != nil {
 				return "", fmt.Errorf("error creating file '%s': %v", header.Name, err)
 			}
