@@ -3,6 +3,7 @@ package archive
 import (
 	"archive/tar"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -159,9 +160,9 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 			}
 
 		case tar.TypeReg:
-			outFile, err := os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, header.FileInfo().Mode())
+			outFile, err := a.openFile(header, tarReader)
 			if err != nil {
-				return "", fmt.Errorf("error creating file '%s': %v", header.Name, err)
+				return "", err
 			}
 
 			if _, err := io.Copy(outFile, tarReader); err != nil {
@@ -177,6 +178,35 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 	}
 
 	return restorationPath, nil
+}
+
+func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*os.File, error) {
+	outFile, err := os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, header.FileInfo().Mode())
+
+	// File was opened successfully, just return it.
+	if err == nil {
+		return outFile, nil
+	}
+
+	// Check if this is a permission error.
+	// This error could happen when trying to open an existing read-only file.
+	// If that's the case, we try to remove the file, and open it again.
+	// If the file can't be removed, then there's nothing we can do.
+	if errors.Is(err, os.ErrPermission) {
+		if err := os.Remove(header.Name); err != nil {
+			return nil, fmt.Errorf("error removing file '%s': %v", header.Name, err)
+		}
+
+		outFile, err = os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, header.FileInfo().Mode())
+		if err != nil {
+			return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
+		}
+
+		return outFile, nil
+	}
+
+	// If we're dealing with a different error, just return it
+	return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
 }
 
 func (a *NativeArchiver) newGzipWriter(dstFile *os.File) io.WriteCloser {
