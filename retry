@@ -8,6 +8,7 @@
 #   -t, --times  - Number of times to retry the command (default: 3)
 #   -s, --sleep  - Number of seconds to sleep between retries (default: 0)
 #
+source ~/.toolbox/toolbox
 
 function retry_execution {
   local __n__=3;       # retry 3 times by default
