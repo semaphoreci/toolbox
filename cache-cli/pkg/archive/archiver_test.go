@@ -128,7 +128,10 @@ func Test__Compress(t *testing.T) {
 			if assert.Len(t, files, 1) {
 				file := files[0]
 				assert.Equal(t, filepath.Base(tempFile.Name()), file.Name())
-				assert.Equal(t, fs.FileMode(0444), file.Mode())
+				if runtime.GOOS != "windows" {
+					assert.Equal(t, fs.FileMode(0444), file.Mode())
+				}
+
 				assert.NoError(t, os.Chmod(unpackedAt, 0755))
 				assert.NoError(t, os.RemoveAll(unpackedAt))
 				assert.NoError(t, os.Remove(compressedFileName))
