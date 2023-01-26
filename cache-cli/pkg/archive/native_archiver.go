@@ -124,6 +124,10 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 	tarReader := tar.NewReader(uncompressedStream)
 	restorationPath := ""
 
+	// Sometimes, directories can have read-only permissions,
+	// but be filled with files. See: https://github.com/golang/go/issues/27161.
+	delayedDirectoryModes := []*tar.Header{}
+
 	for {
 		header, err := tarReader.Next()
 		if err == io.EOF {
@@ -142,7 +146,16 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(header.Name, header.FileInfo().Mode()); err != nil {
+			mode := header.FileInfo().Mode()
+
+			// If the directory is not writable, we create it with 0770 permissions,
+			// and when we are done writing the files inside of it, we apply the actual permissions.
+			if header.FileInfo().Mode()&0200 == 0 {
+				delayedDirectoryModes = append(delayedDirectoryModes, header)
+				mode = 0770
+			}
+
+			if err := os.MkdirAll(header.Name, mode); err != nil {
 				return "", fmt.Errorf("error creating directory '%s': %v", header.Name, err)
 			}
 
@@ -175,6 +188,12 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 		}
 
 		i++
+	}
+
+	for _, d := range delayedDirectoryModes {
+		if err := os.Chmod(d.Name, d.FileInfo().Mode()); err != nil {
+			return "", fmt.Errorf("error changing mode of directory '%s': %v", d.Name, err)
+		}
 	}
 
 	return restorationPath, nil
