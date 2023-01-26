@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -82,6 +83,7 @@ func Test__Compress(t *testing.T) {
 			cwd, _ := os.Getwd()
 			tempDir, _ := ioutil.TempDir(cwd, "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 			assert.NoError(t, os.Chmod(tempFile.Name(), 0700))
 
 			tempDirBase := filepath.Base(tempDir)
@@ -258,8 +260,7 @@ func assertCompressAndUnpack(t *testing.T, archiver Archiver, tempDirectory stri
 			f := files[i]
 			assert.Equal(t, filepath.Base(a.name), f.Name())
 			assert.Equal(t, a.symlink, f.Mode()&os.ModeSymlink == os.ModeSymlink)
-
-			if !a.symlink {
+			if !a.symlink && runtime.GOOS != "windows" {
 				assert.Equal(t, a.mode, f.Mode())
 			}
 		}
