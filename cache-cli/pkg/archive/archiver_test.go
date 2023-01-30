@@ -2,9 +2,11 @@ package archive
 
 import (
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -27,7 +29,15 @@ func Test__Compress(t *testing.T) {
 		t.Run(archiverType+" using absolute paths", func(t *testing.T) {
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
-			assertCompressAndUnpack(t, archiver, tempDir, tempFile)
+			_ = tempFile.Close()
+
+			assertCompressAndUnpack(t, archiver, tempDir, []fileAssertion{
+				{
+					name:    tempFile.Name(),
+					mode:    fs.FileMode(0600),
+					symlink: false,
+				},
+			})
 		})
 
 		t.Run(archiverType+" using relative paths", func(t *testing.T) {
@@ -35,7 +45,141 @@ func Test__Compress(t *testing.T) {
 			tempDir, _ := ioutil.TempDir(cwd, "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			tempDirBase := filepath.Base(tempDir)
-			assertCompressAndUnpack(t, archiver, tempDirBase, tempFile)
+			_ = tempFile.Close()
+
+			assertCompressAndUnpack(t, archiver, tempDirBase, []fileAssertion{
+				{
+					name:    tempFile.Name(),
+					mode:    fs.FileMode(0600),
+					symlink: false,
+				},
+			})
+		})
+
+		t.Run(archiverType+" with symlink", func(t *testing.T) {
+			cwd, _ := os.Getwd()
+			tempDir, _ := ioutil.TempDir(cwd, "*")
+			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			tempDirBase := filepath.Base(tempDir)
+			_ = tempFile.Close()
+
+			symlinkName := tempFile.Name() + "-link"
+			assert.NoError(t, os.Symlink(tempFile.Name(), symlinkName))
+			assertCompressAndUnpack(t, archiver, tempDirBase, []fileAssertion{
+				{
+					name:    tempFile.Name(),
+					mode:    fs.FileMode(0600),
+					symlink: false,
+				},
+				{
+					name:    symlinkName,
+					mode:    os.ModeSymlink,
+					symlink: true,
+				},
+			})
+		})
+
+		t.Run(archiverType+" permissions bits are respected", func(t *testing.T) {
+			cwd, _ := os.Getwd()
+			tempDir, _ := ioutil.TempDir(cwd, "*")
+			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
+			assert.NoError(t, os.Chmod(tempFile.Name(), 0700))
+
+			tempDirBase := filepath.Base(tempDir)
+			assertCompressAndUnpack(t, archiver, tempDirBase, []fileAssertion{
+				{
+					name:    tempFile.Name(),
+					mode:    fs.FileMode(0700),
+					symlink: false,
+				},
+			})
+		})
+
+		t.Run(archiverType+" using read-only file", func(t *testing.T) {
+			cwd, _ := os.Getwd()
+			tempDir, _ := ioutil.TempDir(cwd, "*")
+			tempFile, _ := ioutil.TempFile(tempDir, "*")
+
+			// change file mode to read-only
+			assert.NoError(t, os.Chmod(tempFile.Name(), 0444))
+
+			tempDirBase := filepath.Base(tempDir)
+			_ = tempFile.Close()
+
+			// compressing
+			compressedFileName := tmpFileNameWithPrefix("abc0003")
+			assert.NoError(t, archiver.Compress(compressedFileName, tempDirBase))
+			assert.Contains(t, compressedFileName, filepath.Join(os.TempDir(), "abc0003"))
+			_, err := os.Stat(compressedFileName)
+			assert.Nil(t, err)
+
+			// make sure file and directory are deleted before trying to unpack.
+			// Note: here we need to chmod before removing it.
+			assert.NoError(t, os.Chmod(tempFile.Name(), 0755))
+			assert.NoError(t, os.RemoveAll(tempDirBase))
+
+			// unpacking
+			unpackedAt, err := archiver.Decompress(compressedFileName)
+			assert.Nil(t, err)
+			assert.Equal(t, tempDirBase+string(os.PathSeparator), unpackedAt)
+
+			files, _ := ioutil.ReadDir(unpackedAt)
+			if assert.Len(t, files, 1) {
+				file := files[0]
+				assert.Equal(t, filepath.Base(tempFile.Name()), file.Name())
+				if runtime.GOOS != "windows" {
+					assert.Equal(t, fs.FileMode(0444), file.Mode())
+				}
+
+				assert.NoError(t, os.Chmod(unpackedAt, 0755))
+				assert.NoError(t, os.RemoveAll(unpackedAt))
+				assert.NoError(t, os.Remove(compressedFileName))
+			}
+		})
+
+		t.Run(archiverType+" using read-only directory", func(t *testing.T) {
+			cwd, _ := os.Getwd()
+			tempDir, _ := ioutil.TempDir(cwd, "*")
+			tempFile, _ := ioutil.TempFile(tempDir, "*")
+
+			// change directory mode now that file is written
+			assert.NoError(t, os.Chmod(tempDir, 0555))
+
+			tempDirBase := filepath.Base(tempDir)
+			_ = tempFile.Close()
+
+			// compressing
+			compressedFileName := tmpFileNameWithPrefix("abc0003")
+			assert.NoError(t, archiver.Compress(compressedFileName, tempDirBase))
+			assert.Contains(t, compressedFileName, filepath.Join(os.TempDir(), "abc0003"))
+			_, err := os.Stat(compressedFileName)
+			assert.Nil(t, err)
+
+			// make sure file and directory are deleted before trying to unpack.
+			// Note: here we need to chmod before removing it.
+			assert.NoError(t, os.Chmod(tempDir, 0755))
+			assert.NoError(t, os.RemoveAll(tempDirBase))
+
+			// unpacking
+			unpackedAt, err := archiver.Decompress(compressedFileName)
+			assert.Nil(t, err)
+			assert.Equal(t, tempDirBase+string(os.PathSeparator), unpackedAt)
+
+			// Assert directory is read-only
+			dirInfo, err := os.Stat(unpackedAt)
+			assert.NoError(t, err)
+			assert.Equal(t, fs.ModeDir|fs.FileMode(0555), dirInfo.Mode())
+
+			// Assert files inside read-only directory are correct
+			files, _ := ioutil.ReadDir(unpackedAt)
+			if assert.Len(t, files, 1) {
+				file := files[0]
+				assert.Equal(t, filepath.Base(tempFile.Name()), file.Name())
+				assert.NoError(t, os.Chmod(unpackedAt, 0755))
+				assert.NoError(t, os.RemoveAll(unpackedAt))
+				assert.NoError(t, os.Remove(compressedFileName))
+			}
 		})
 
 		t.Run(archiverType+" using single file", func(t *testing.T) {
@@ -47,7 +191,6 @@ func Test__Compress(t *testing.T) {
 			compressedFileName := tmpFileNameWithPrefix("abc0003")
 			err := archiver.Compress(compressedFileName, tempFile.Name())
 			assert.Nil(t, err)
-			assert.Contains(t, compressedFileName, filepath.FromSlash(fmt.Sprintf("%s/abc0003", os.TempDir())))
 
 			_, err = os.Stat(compressedFileName)
 			assert.Nil(t, err)
@@ -92,9 +235,13 @@ func tmpFileNameWithPrefix(prefix string) string {
 	return filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", prefix, time.Now().Nanosecond()))
 }
 
-func assertCompressAndUnpack(t *testing.T, archiver Archiver, tempDirectory string, tempFile *os.File) {
-	_ = tempFile.Close()
+type fileAssertion struct {
+	name    string
+	mode    fs.FileMode
+	symlink bool
+}
 
+func assertCompressAndUnpack(t *testing.T, archiver Archiver, tempDirectory string, assertions []fileAssertion) {
 	// compressing
 	compressedFileName := tmpFileNameWithPrefix("abc0003")
 	assert.NoError(t, archiver.Compress(compressedFileName, tempDirectory))
@@ -111,9 +258,17 @@ func assertCompressAndUnpack(t *testing.T, archiver Archiver, tempDirectory stri
 	assert.Equal(t, tempDirectory+string(os.PathSeparator), unpackedAt)
 
 	files, _ := ioutil.ReadDir(unpackedAt)
-	assert.Len(t, files, 1)
-	file := files[0]
-	assert.Equal(t, filepath.Base(tempFile.Name()), file.Name())
+	if assert.Len(t, files, len(assertions)) {
+		for i, a := range assertions {
+			f := files[i]
+			assert.Equal(t, filepath.Base(a.name), f.Name())
+			assert.Equal(t, a.symlink, f.Mode()&os.ModeSymlink == os.ModeSymlink)
+			if !a.symlink && runtime.GOOS != "windows" {
+				assert.Equal(t, a.mode, f.Mode())
+			}
+		}
+	}
+
 	assert.NoError(t, os.RemoveAll(unpackedAt))
 	assert.NoError(t, os.Remove(compressedFileName))
 }

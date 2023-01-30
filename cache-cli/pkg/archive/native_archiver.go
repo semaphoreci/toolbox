@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -103,6 +104,11 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 	return nil
 }
 
+type directoryStat struct {
+	name string
+	mode fs.FileMode
+}
+
 func (a *NativeArchiver) Decompress(src string) (string, error) {
 	srcFile, err := os.Open(src)
 	if err != nil {
@@ -123,6 +129,7 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 	i := 0
 	tarReader := tar.NewReader(uncompressedStream)
 	restorationPath := ""
+	delayedDirectoryStats := []directoryStat{}
 
 	for {
 		header, err := tarReader.Next()
@@ -142,7 +149,23 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(header.Name, header.FileInfo().Mode()); err != nil {
+			mode := header.FileInfo().Mode()
+
+			// Directories can be filled with files, but not be writable.
+			// See: https://github.com/golang/go/issues/27161.
+			// So, if we create the directory with the permissions on the tar header,
+			// we are not able to create the files inside of it afterwards.
+			// In those cases, we create the directory with 0770 permissions,
+			// and delay setting the proper permissions on the directory after all files are extracted.
+			if header.FileInfo().Mode()&0200 == 0 {
+				mode = 0770
+				delayedDirectoryStats = append(delayedDirectoryStats, directoryStat{
+					name: header.Name,
+					mode: header.FileInfo().Mode(),
+				})
+			}
+
+			if err := os.MkdirAll(header.Name, mode); err != nil {
 				return "", fmt.Errorf("error creating directory '%s': %v", header.Name, err)
 			}
 
@@ -177,36 +200,38 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 		i++
 	}
 
+	for _, d := range delayedDirectoryStats {
+		if err := os.Chmod(d.name, d.mode); err != nil {
+			return "", fmt.Errorf("error changing mode of directory '%s': %v", d.name, err)
+		}
+	}
+
 	return restorationPath, nil
 }
 
 func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*os.File, error) {
-	outFile, err := os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, header.FileInfo().Mode())
+	outFile, err := os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_EXCL, header.FileInfo().Mode())
 
 	// File was opened successfully, just return it.
 	if err == nil {
 		return outFile, nil
 	}
 
-	// Check if this is a permission error.
-	// This error could happen when trying to open an existing read-only file.
-	// If that's the case, we try to remove the file, and open it again.
-	// If the file can't be removed, then there's nothing we can do.
-	if errors.Is(err, os.ErrPermission) {
+	// Since we are using O_EXCL, this error could mean that the file already exists.
+	// If that is the case, we attempt to remove it before attempting to open it again.
+	if errors.Is(err, os.ErrExist) {
 		if err := os.Remove(header.Name); err != nil {
 			return nil, fmt.Errorf("error removing file '%s': %v", header.Name, err)
 		}
-
-		outFile, err = os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, header.FileInfo().Mode())
-		if err != nil {
-			return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
-		}
-
-		return outFile, nil
 	}
 
-	// If we're dealing with a different error, just return it
-	return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
+	// Try to open file again now that we are sure it does not exist.
+	outFile, err = os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_EXCL, header.FileInfo().Mode())
+	if err != nil {
+		return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
+	}
+
+	return outFile, nil
 }
 
 func (a *NativeArchiver) newGzipWriter(dstFile *os.File) io.WriteCloser {
