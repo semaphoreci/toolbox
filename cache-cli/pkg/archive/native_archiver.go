@@ -129,6 +129,7 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 	i := 0
 	tarReader := tar.NewReader(uncompressedStream)
 	restorationPath := ""
+	hadError := false
 	delayedDirectoryStats := []directoryStat{}
 
 	// We read all blocks in the tar archive.
@@ -173,6 +174,7 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 
 			if err := os.MkdirAll(header.Name, mode); err != nil {
 				log.Errorf("Error creating directory '%s': %v", header.Name, err)
+				hadError = true
 				continue
 			}
 
@@ -185,6 +187,7 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 
 			if err := os.Symlink(header.Linkname, header.Name); err != nil {
 				log.Errorf("Error creating symlink '%s'-'%s': %v", header.Name, header.Linkname, err)
+				hadError = true
 				continue
 			}
 
@@ -192,17 +195,20 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 			outFile, err := a.openFile(header, tarReader)
 			if err != nil {
 				log.Errorf("Error opening file '%s': %v", header.Name, err)
+				hadError = true
 				continue
 			}
 
 			if _, err := io.Copy(outFile, tarReader); err != nil {
 				log.Errorf("Error writing to file '%s': %v", header.Name, err)
+				hadError = true
 				_ = outFile.Close()
 				continue
 			}
 
 			if err := outFile.Close(); err != nil {
 				log.Errorf("Error closing file handle for '%s': %v", header.Name, err)
+				hadError = true
 				continue
 			}
 		}
@@ -210,8 +216,13 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 
 	for _, d := range delayedDirectoryStats {
 		if err := os.Chmod(d.name, d.mode); err != nil {
-			return "", fmt.Errorf("error changing mode of directory '%s': %v", d.name, err)
+			log.Errorf("error changing mode of directory '%s': %v", d.name, err)
+			hadError = true
 		}
+	}
+
+	if hadError {
+		return restorationPath, fmt.Errorf("tar archive was not completely decompressed without errors")
 	}
 
 	return restorationPath, nil
