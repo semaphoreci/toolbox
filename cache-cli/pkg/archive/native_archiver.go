@@ -129,8 +129,14 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 	i := 0
 	tarReader := tar.NewReader(uncompressedStream)
 	restorationPath := ""
+	hadError := false
 	delayedDirectoryStats := []directoryStat{}
 
+	// We read all blocks in the tar archive.
+	// If an error is found when processing a particular tar block,
+	// it is logged, and we move to the next tar block.
+	// The only reason we return an error, and stop execution,
+	// is if we have issues reading the tar archive.
 	for {
 		header, err := tarReader.Next()
 		if err == io.EOF {
@@ -147,6 +153,7 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 			restorationPath = header.Name
 		}
 
+		i++
 		switch header.Typeflag {
 		case tar.TypeDir:
 			mode := header.FileInfo().Mode()
@@ -166,44 +173,56 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 			}
 
 			if err := os.MkdirAll(header.Name, mode); err != nil {
-				return "", fmt.Errorf("error creating directory '%s': %v", header.Name, err)
+				log.Errorf("Error creating directory '%s': %v", header.Name, err)
+				hadError = true
+				continue
 			}
 
 		case tar.TypeSymlink:
 			// we have to remove the symlink first, if it exists.
 			// Otherwise os.Symlink will complain.
 			if _, err := os.Lstat(header.Name); err == nil {
-				if err := os.Remove(header.Name); err != nil {
-					return "", fmt.Errorf("error removing symlink '%s': %v", header.Name, err)
-				}
+				_ = os.Remove(header.Name)
 			}
 
 			if err := os.Symlink(header.Linkname, header.Name); err != nil {
-				return "", fmt.Errorf("error creating symlink '%s': %v", header.Name, err)
+				log.Errorf("Error creating symlink '%s'-'%s': %v", header.Name, header.Linkname, err)
+				hadError = true
+				continue
 			}
 
 		case tar.TypeReg:
 			outFile, err := a.openFile(header, tarReader)
 			if err != nil {
-				return "", err
+				log.Errorf("Error opening file '%s': %v", header.Name, err)
+				hadError = true
+				continue
 			}
 
 			if _, err := io.Copy(outFile, tarReader); err != nil {
-				return "", fmt.Errorf("error copying to file '%s': %v", header.Name, err)
+				log.Errorf("Error writing to file '%s': %v", header.Name, err)
+				hadError = true
+				_ = outFile.Close()
+				continue
 			}
 
 			if err := outFile.Close(); err != nil {
-				return "", fmt.Errorf("error closing file '%s': %v", header.Name, err)
+				log.Errorf("Error closing file handle for '%s': %v", header.Name, err)
+				hadError = true
+				continue
 			}
 		}
-
-		i++
 	}
 
 	for _, d := range delayedDirectoryStats {
 		if err := os.Chmod(d.name, d.mode); err != nil {
-			return "", fmt.Errorf("error changing mode of directory '%s': %v", d.name, err)
+			log.Errorf("error changing mode of directory '%s': %v", d.name, err)
+			hadError = true
 		}
+	}
+
+	if hadError {
+		return restorationPath, fmt.Errorf("tar archive was not completely decompressed without errors")
 	}
 
 	return restorationPath, nil
@@ -221,7 +240,7 @@ func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*o
 	// If that is the case, we attempt to remove it before attempting to open it again.
 	if errors.Is(err, os.ErrExist) {
 		if err := os.Remove(header.Name); err != nil {
-			return nil, fmt.Errorf("error removing file '%s': %v", header.Name, err)
+			return nil, fmt.Errorf("file '%s' already exists and can't be removed: %v", header.Name, err)
 		}
 	}
 
