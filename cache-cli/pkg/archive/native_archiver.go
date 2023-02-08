@@ -244,7 +244,17 @@ func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*o
 		}
 	}
 
-	// Try to open file again now that we are sure it does not exist.
+	// If a ErrNotExist is returned, it means the parent directory does not exist.
+	// That means the file was included in the archive, but not its parent directory.
+	// If that happens, we create the parent directory here, and try to open the file again.
+	if errors.Is(err, os.ErrNotExist) {
+		parentDir := filepath.Dir(header.Name)
+		if err := os.MkdirAll(parentDir, 0755); err != nil {
+			return nil, fmt.Errorf("error creating directory '%s' for '%s': %v", parentDir, header.Name, err)
+		}
+	}
+
+	// Try to open file again now that we handled some possible errors.
 	outFile, err = os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_EXCL, header.FileInfo().Mode())
 	if err != nil {
 		return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
