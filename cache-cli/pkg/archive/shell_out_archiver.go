@@ -52,7 +52,7 @@ func (a *ShellOutArchiver) Decompress(src string) (string, error) {
 			log.Errorf("Error publishing %s metric: %v", metrics.CacheCorruptionRate, metricErr)
 		}
 
-		return "", fmt.Errorf("error execution decompressio command: %s, %v", string(output), err)
+		return "", fmt.Errorf("error executing decompression command: %s, %v", string(output), err)
 	}
 
 	return restorationPath, nil

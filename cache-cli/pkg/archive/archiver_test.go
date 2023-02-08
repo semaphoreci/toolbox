@@ -163,12 +163,18 @@ func Test__Compress(t *testing.T) {
 
 			// unpacking
 			unpackedAt, err := archiver.Decompress(compressedFileName)
-			assert.Nil(t, err)
+			if !assert.Nil(t, err) {
+				return
+			}
+
 			assert.Equal(t, tempDirBase+string(os.PathSeparator), unpackedAt)
 
 			// Assert directory is read-only
 			dirInfo, err := os.Stat(unpackedAt)
-			assert.NoError(t, err)
+			if !assert.NoError(t, err) {
+				return
+			}
+
 			assert.Equal(t, fs.ModeDir|fs.FileMode(0555), dirInfo.Mode())
 
 			// Assert files inside read-only directory are correct
@@ -195,6 +201,33 @@ func Test__Compress(t *testing.T) {
 			_, err = os.Stat(compressedFileName)
 			assert.Nil(t, err)
 			assert.NoError(t, os.Remove(tempFile.Name()))
+
+			// unpacking
+			unpackedAt, err := archiver.Decompress(compressedFileName)
+			assert.Nil(t, err)
+			assert.Equal(t, tempFile.Name(), unpackedAt)
+
+			_, err = os.Stat(unpackedAt)
+			assert.Nil(t, err)
+
+			assert.NoError(t, os.Remove(tempFile.Name()))
+			assert.NoError(t, os.Remove(compressedFileName))
+		})
+
+		t.Run(archiverType+" using single file in directory -> creates directory", func(t *testing.T) {
+			cwd, _ := os.Getwd()
+			tempDir, _ := ioutil.TempDir(cwd, "*")
+			tempFile, _ := ioutil.TempFile(tempDir, "*")
+
+			// compressing
+			compressedFileName := tmpFileNameWithPrefix("abc0007")
+			err := archiver.Compress(compressedFileName, tempFile.Name())
+			assert.Nil(t, err)
+
+			// compressed file is created
+			_, err = os.Stat(compressedFileName)
+			assert.Nil(t, err)
+			assert.NoError(t, os.RemoveAll(tempDir))
 
 			// unpacking
 			unpackedAt, err := archiver.Decompress(compressedFileName)
