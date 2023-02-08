@@ -218,6 +218,7 @@ func Test__Compress(t *testing.T) {
 			cwd, _ := os.Getwd()
 			tempDir, _ := ioutil.TempDir(cwd, "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
 
 			// compressing
 			compressedFileName := tmpFileNameWithPrefix("abc0007")
