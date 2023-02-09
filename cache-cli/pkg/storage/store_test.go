@@ -15,7 +15,7 @@ import (
 )
 
 func Test__Store(t *testing.T) {
-	runTestForAllStorageTypes(t, func(storageType string, storage Storage) {
+	runTestForAllStorageTypes(t, SortByStoreTime, func(storageType string, storage Storage) {
 		t.Run(fmt.Sprintf("%s stored objects can be listed", storageType), func(t *testing.T) {
 			_ = storage.Clear()
 
@@ -98,25 +98,22 @@ func Test__Store(t *testing.T) {
 	})
 
 	if runtime.GOOS != "windows" {
-		runTestForSingleStorageType("sftp", 1024, t, func(storage Storage) {
-			t.Run("sftp storage deletes old keys if no space left to store", func(t *testing.T) {
+		runTestForSingleStorageType("sftp", 1024, SortByStoreTime, t, func(storage Storage) {
+			t.Run("sftp least recently stored keys are deleted when no space", func(t *testing.T) {
 				_ = storage.Clear()
 
-				file1, _ := ioutil.TempFile(os.TempDir(), "*")
-				file1.WriteString(strings.Repeat("x", 400))
-				storage.Store("abc001", file1.Name())
+				// store first key
+				tmpFile, _ := ioutil.TempFile(os.TempDir(), "*")
+				tmpFile.WriteString(strings.Repeat("x", 400))
+				storage.Store("abc001", tmpFile.Name())
 
-				time.Sleep(time.Second)
+				// wait a little bit, then store second key
+				time.Sleep(2 * time.Second)
+				storage.Store("abc002", tmpFile.Name())
 
-				file2, _ := ioutil.TempFile(os.TempDir(), "*")
-				file2.WriteString(strings.Repeat("x", 400))
-				storage.Store("abc002", file2.Name())
-
-				time.Sleep(time.Second)
-
-				file3, _ := ioutil.TempFile(os.TempDir(), "*")
-				file3.WriteString(strings.Repeat("x", 400))
-				storage.Store("abc003", file3.Name())
+				// wait a little bit, then store third key
+				time.Sleep(2 * time.Second)
+				storage.Store("abc003", tmpFile.Name())
 
 				keys, _ := storage.List()
 				assert.Len(t, keys, 2)
@@ -126,18 +123,101 @@ func Test__Store(t *testing.T) {
 				secondKey := keys[1]
 				assert.Equal(t, "abc002", secondKey.Name)
 
-				os.Remove(file1.Name())
-				os.Remove(file2.Name())
-				os.Remove(file3.Name())
+				os.Remove(tmpFile.Name())
+			})
+		})
+
+		runTestForSingleStorageType("sftp", 1024, SortByAccessTime, t, func(storage Storage) {
+			t.Run("sftp least recently accessed keys are deleted when no space", func(t *testing.T) {
+				_ = storage.Clear()
+
+				// store first key
+				tmpFile, _ := ioutil.TempFile(os.TempDir(), "*")
+				tmpFile.WriteString(strings.Repeat("x", 400))
+				storage.Store("abc001", tmpFile.Name())
+
+				// wait a little bit, then store second key
+				time.Sleep(2 * time.Second)
+				storage.Store("abc002", tmpFile.Name())
+
+				// wait a little bit, then restore first key (access time will be updated)
+				time.Sleep(2 * time.Second)
+				storage.Store("abc001", tmpFile.Name())
+
+				// wait a little bit, then store third key
+				time.Sleep(2 * time.Second)
+				storage.Store("abc003", tmpFile.Name())
+
+				keys, _ := storage.List()
+				assert.Len(t, keys, 2)
+
+				firstKey := keys[0]
+				assert.Equal(t, "abc003", firstKey.Name)
+				secondKey := keys[1]
+				assert.Equal(t, "abc001", secondKey.Name)
+
+				os.Remove(tmpFile.Name())
+			})
+		})
+
+		runTestForSingleStorageType("sftp", 150*1024*1024, SortBySize, t, func(storage Storage) {
+			t.Run("sftp smaller keys are deleted when no space", func(t *testing.T) {
+				_ = storage.Clear()
+
+				smallerFile := fmt.Sprintf("%s/smaller.tmp", os.TempDir())
+				err := createBigTempFile(smallerFile, 50*1000*1000) // 50M
+				assert.Nil(t, err)
+
+				biggerFile := fmt.Sprintf("%s/bigger.tmp", os.TempDir())
+				err = createBigTempFile(biggerFile, 100*1000*1000) // 100M
+				assert.Nil(t, err)
+
+				// store both keys
+				storage.Store("smaller-key", smallerFile)
+				storage.Store("bigger-key", biggerFile)
+
+				// store third key, this should cleanup the smaller key
+				storage.Store("another-smaller-key", smallerFile)
+
+				keys, _ := storage.List()
+				assert.Len(t, keys, 2)
+
+				firstKey := keys[0]
+				assert.Equal(t, "bigger-key", firstKey.Name)
+				secondKey := keys[1]
+				assert.Equal(t, "another-smaller-key", secondKey.Name)
+
+				os.Remove(smallerFile)
+				os.Remove(biggerFile)
 			})
 		})
 	}
 }
 
 func createBigTempFile(fileName string, size int64) error {
-	command := fmt.Sprintf("yes '%s' | head -c %d > %s", fileName, size, fileName)
-	cmd := exec.Command("bash", "-c", command)
-	return cmd.Run()
+	var command *exec.Cmd
+	if runtime.GOOS != "windows" {
+		command = exec.Command(
+			"bash",
+			"-c",
+			fmt.Sprintf("yes '%s' | head -c %d > %s", fileName, size, fileName),
+		)
+	} else {
+		command = exec.Command(
+			"fsutil",
+			"file",
+			"createnew",
+			fileName,
+			fmt.Sprintf("%d", size),
+		)
+	}
+
+	output, err := command.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error executing command: Output: %s - Error: %v", output, err)
+	}
+
+	return nil
 }
 
 func countLines(fileName, line string) int64 {

@@ -16,6 +16,7 @@ import (
 )
 
 func Test__Store(t *testing.T) {
+	storeCmd := NewStoreCommand()
 	log.SetFormatter(new(logging.CustomFormatter))
 	log.SetLevel(log.InfoLevel)
 	log.SetOutput(openLogfileForTests(t))
@@ -80,6 +81,7 @@ func Test__Store(t *testing.T) {
 }
 
 func Test__AutomaticStore(t *testing.T) {
+	storeCmd := NewStoreCommand()
 	_, file, _, _ := runtime.Caller(0)
 	cmdPath := filepath.Dir(file)
 	rootPath := filepath.Dir(cmdPath)

@@ -13,6 +13,7 @@ import (
 )
 
 func Test__List(t *testing.T) {
+	listCmd := NewListCommand()
 	log.SetFormatter(new(logging.CustomFormatter))
 	log.SetLevel(log.InfoLevel)
 	log.SetOutput(openLogfileForTests(t))

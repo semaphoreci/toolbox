@@ -16,14 +16,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var storeCmd = &cobra.Command{
-	Use:   "store [key path]",
-	Short: "Store keys in the cache.",
-	Long:  ``,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		RunStore(cmd, args)
-	},
+func NewStoreCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "store [key path]",
+		Short: "Store keys in the cache.",
+		Long:  ``,
+		Args:  cobra.ArbitraryArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			RunStore(cmd, args)
+		},
+	}
+
+	description := fmt.Sprintf(`
+		If storage does not have enough space,
+		keys will be sorted in descending order using the specified field,
+		and will be cleaned up starting from the last key on the list.
+		Possible values are: %v.
+	`, strings.Join(storage.ValidSortByKeys, ","))
+
+	cmd.Flags().StringP("cleanup-by", "c", storage.SortByStoreTime, description)
+	return cmd
 }
 
 func RunStore(cmd *cobra.Command, args []string) {
@@ -33,7 +45,10 @@ func RunStore(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	storage, err := storage.InitStorage()
+	cleanupBy, err := cmd.Flags().GetString("cleanup-by")
+	utils.Check(err)
+
+	storage, err := storage.InitStorageWithConfig(storage.StorageConfig{SortKeysBy: cleanupBy})
 	utils.Check(err)
 
 	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
@@ -141,5 +156,5 @@ func FindGitBranch() string {
 }
 
 func init() {
-	RootCmd.AddCommand(storeCmd)
+	RootCmd.AddCommand(NewStoreCommand())
 }

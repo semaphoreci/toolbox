@@ -10,7 +10,7 @@ import (
 )
 
 func Test__Usage(t *testing.T) {
-	runTestForAllStorageTypes(t, func(storageType string, storage Storage) {
+	runTestForAllStorageTypes(t, SortByStoreTime, func(storageType string, storage Storage) {
 		t.Run(fmt.Sprintf("%s no usage", storageType), func(t *testing.T) {
 			_ = storage.Clear()
 			usage, err := storage.Usage()
