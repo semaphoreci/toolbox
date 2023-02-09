@@ -195,9 +195,29 @@ func Test__Store(t *testing.T) {
 }
 
 func createBigTempFile(fileName string, size int64) error {
-	command := fmt.Sprintf("yes '%s' | head -c %d > %s", fileName, size, fileName)
-	cmd := exec.Command("bash", "-c", command)
-	return cmd.Run()
+	var command *exec.Cmd
+	if runtime.GOOS != "windows" {
+		command = exec.Command(
+			"bash",
+			"-c",
+			fmt.Sprintf("yes '%s' | head -c %d > %s", fileName, size, fileName),
+		)
+	} else {
+		command = exec.Command(
+			"fsutil",
+			"file",
+			"createnew",
+			fileName,
+			fmt.Sprintf("%d", size),
+		)
+	}
+
+	output, err := command.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error executing command: Output: %s - Error: %v", output, err)
+	}
+
+	return nil
 }
 
 func countLines(fileName, line string) int64 {

@@ -50,18 +50,27 @@ func (s *SFTPStorage) sortKeys(keys []CacheKey) []CacheKey {
 // If we can't figure out the access time of the file,
 // we fallback to the modification time.
 func findLastAccessedAt(fileInfo fs.FileInfo) *time.Time {
-	stat, ok := fileInfo.Sys().(*sftp.FileStat)
+	mtime := fileInfo.ModTime()
 
-	if !ok {
-		mtime := fileInfo.ModTime()
+	// Try to get the underlying data source; if nil, fallback to mtime.
+	ds := fileInfo.Sys()
+	if ds == nil {
 		return &mtime
 	}
 
+	// Try to cast the underlying data source to something we understand; if nil, fallback to mtime.
+	stat, ok := ds.(*sftp.FileStat)
+	if !ok {
+		return &mtime
+	}
+
+	// atime can also be unset; fallback to mtime.
 	if stat.Atime == 0 {
 		mtime := fileInfo.ModTime()
 		return &mtime
 	}
 
+	// Otherwise, we use atime.
 	atime := time.Unix(int64(stat.Atime), 0)
 	return &atime
 }
