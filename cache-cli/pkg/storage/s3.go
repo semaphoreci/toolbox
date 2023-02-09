@@ -2,13 +2,14 @@ package storage
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/credentials/ec2rolecreds"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	log "github.com/sirupsen/logrus"
 )
 
 type S3Storage struct {
@@ -37,14 +38,46 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 	var config aws.Config
 	var err error
 
-	profile := os.Getenv("SEMAPHORE_CACHE_AWS_PROFILE")
-	if profile == "" {
-		config, err = awsConfig.LoadDefaultConfig(context.TODO())
-	} else {
-		fmt.Printf("Using '%s' AWS profile.\n", profile)
-		config, err = awsConfig.LoadDefaultConfig(context.TODO(), awsConfig.WithSharedConfigProfile(profile))
+	// Using EC2 metadata service to retrieve credentials for the instance profile
+	if os.Getenv("SEMAPHORE_CACHE_USE_EC2_INSTANCE_PROFILE") == "true" {
+		log.Infof("Using EC2 instance profile.")
+		config, err = awsConfig.LoadDefaultConfig(
+			context.TODO(),
+			awsConfig.WithCredentialsProvider(ec2rolecreds.New()),
+			awsConfig.WithEC2IMDSRegion(),
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &S3Storage{
+			Client:        s3.NewFromConfig(config),
+			Bucket:        s3Bucket,
+			Project:       project,
+			StorageConfig: storageConfig,
+		}, nil
 	}
 
+	// Using an existing profile configured in one of the default configuration files.
+	profile := os.Getenv("SEMAPHORE_CACHE_AWS_PROFILE")
+	if profile != "" {
+		log.Infof("Using '%s' AWS profile.", profile)
+		config, err = awsConfig.LoadDefaultConfig(context.TODO(), awsConfig.WithSharedConfigProfile(profile))
+		if err != nil {
+			return nil, err
+		}
+
+		return &S3Storage{
+			Client:        s3.NewFromConfig(config),
+			Bucket:        s3Bucket,
+			Project:       project,
+			StorageConfig: storageConfig,
+		}, nil
+	}
+
+	// No special configuration, just follow the default chain
+	config, err = awsConfig.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		return nil, err
 	}

@@ -6,21 +6,24 @@ import (
 	"os"
 	"testing"
 
+	"github.com/semaphoreci/toolbox/cache-cli/pkg/logging"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
-	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	assert "github.com/stretchr/testify/assert"
 )
 
 func Test__List(t *testing.T) {
 	listCmd := NewListCommand()
+	log.SetFormatter(new(logging.CustomFormatter))
+	log.SetLevel(log.InfoLevel)
+	log.SetOutput(openLogfileForTests(t))
 
 	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s no keys", backend), func(*testing.T) {
 			storage.Clear()
 
-			capturer := utils.CreateOutputCapturer()
 			RunList(listCmd, []string{""})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			assert.Contains(t, output, "Cache is empty.")
 		})
@@ -32,9 +35,8 @@ func Test__List(t *testing.T) {
 			storage.Store("abc002", tempFile.Name())
 			storage.Store("abc003", tempFile.Name())
 
-			capturer := utils.CreateOutputCapturer()
 			RunList(listCmd, []string{})
-			output := capturer.Done()
+			output := readOutputFromFile(t)
 
 			assert.Contains(t, output, "abc001")
 			assert.Contains(t, output, "abc002")

@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -27,12 +26,12 @@ func RunUsage(cmd *cobra.Command, args []string) {
 	utils.Check(err)
 
 	if summary.Free == -1 {
-		fmt.Println("FREE SPACE: (unlimited)")
+		log.Info("FREE SPACE: (unlimited)")
 	} else {
-		fmt.Printf("FREE SPACE: %s\n", files.HumanReadableSize(summary.Free))
+		log.Infof("FREE SPACE: %s", files.HumanReadableSize(summary.Free))
 	}
 
-	fmt.Printf("USED SPACE: %s\n", files.HumanReadableSize(summary.Used))
+	log.Infof("USED SPACE: %s", files.HumanReadableSize(summary.Used))
 }
 
 func init() {

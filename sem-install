@@ -85,6 +85,9 @@ install::install_elixir() {
       "1.13"*)
         local erlang_version="24.3"
         ;;
+      "1.14"*)
+        local erlang_version="25.1"
+        ;;
       *)
         echo "Installation of '${language}' version '${language_version}' is not yet supported"
         return 1;
@@ -138,8 +141,12 @@ install::install_php() {
     mv php-${language_version} ~/.phpbrew/php/
     if [ ! -d "~/.phpbrew/build/php-{$language_version}" ]; then
       output=$(phpbrew download ${language_version} | tail -n1|awk -F'/' '{print $NF}')
-      if [[ ! -z "$output" ]]; then
-        tar -xjf ~/.phpbrew/distfiles/${output} -C ~/.phpbrew/build/
+      if [ ! -f ~/.phpbrew/distfiles/php-${language_version}.tar.bz2 ] || [[ "$(du -sh ~/.phpbrew/distfiles/php-${language_version}.tar.bz2 | cut -f1)" == "0" ]] ; then 
+        mkdir -p ~/.phpbrew/distfiles
+        wget -q http://packages.semaphoreci.com/php-sources/php-${language_version}.tar.bz2 -O ~/.phpbrew/distfiles/php-${language_version}.tar.bz2
+      fi
+      if [ -f ~/.phpbrew/distfiles/php-${language_version}.tar.bz2 ]; then
+        tar -xjf ~/.phpbrew/distfiles/php-${language_version}.tar.bz2 -C ~/.phpbrew/build/
       fi
     fi
   fi

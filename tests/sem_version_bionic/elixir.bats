@@ -4,7 +4,7 @@ load "../support/bats-support/load"
 load "../support/bats-assert/load"
 
 setup() {
-  source /tmp/.env
+  source /tmp/.env-*
   source /opt/change-erlang-version.sh
   source /opt/change-python-version.sh
   source /opt/change-go-version.sh
@@ -46,4 +46,10 @@ setup() {
   sem-version elixir 1.13.4
   run elixir --version
   assert_line --partial "Elixir 1.13.4"
+}
+
+@test "change elixir to 1.14.2" {
+  sem-version elixir 1.14.2
+  run elixir --version
+  assert_line --partial "Elixir 1.14.2"
 }

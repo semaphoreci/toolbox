@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 
@@ -49,4 +52,22 @@ func runTestForAllBackends(t *testing.T, test func(string, storage.Storage)) {
 		assert.Nil(t, err)
 		test(backendType, storage)
 	}
+}
+
+func readOutputFromFile(t *testing.T) string {
+	path := filepath.Join(os.TempDir(), "cache_log")
+
+	defer os.Truncate(path, 0)
+
+	output, err := ioutil.ReadFile(path)
+	assert.NoError(t, err)
+
+	return string(output)
+}
+
+func openLogfileForTests(t *testing.T) io.Writer {
+	filePath := filepath.Join(os.TempDir(), "cache_log")
+	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	assert.NoError(t, err)
+	return io.MultiWriter(f, os.Stdout)
 }

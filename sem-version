@@ -43,9 +43,10 @@ version::change() {
 version::change_ruby() {
   [[ "$software_version" == "2.5" ]] && software_version="2.5.9"
   [[ "$software_version" == "2.6" ]] && software_version="2.6.10"
-  [[ "$software_version" == "2.7" ]] && software_version="2.7.6"
-  [[ "$software_version" == "3.0" ]] && software_version="3.0.4"
-  [[ "$software_version" == "3.1" ]] && software_version="3.1.2"
+  [[ "$software_version" == "2.7" ]] && software_version="2.7.7"
+  [[ "$software_version" == "3.0" ]] && software_version="3.0.5"
+  [[ "$software_version" == "3.1" ]] && software_version="3.1.3"
+  [[ "$software_version" == "3.2" ]] && software_version="3.2.0"
 
   if ! [ -d ~/.rbenv/versions/"${software_version}" ]; then
     sem-install ruby "${software_version}"
@@ -66,6 +67,7 @@ version::change_elixir() {
   [[ "$software_version" == "1.11" ]] && software_version="1.11.4"
   [[ "$software_version" == "1.12" ]] && software_version="1.12.3"
   [[ "$software_version" == "1.13" ]] && software_version="1.13.4"
+  [[ "$software_version" == "1.14" ]] && software_version="1.14.2"
 
   if [[ $(kiex list) != *"${software_version}"* ]];then
     sem-install elixir "${software_version}"
@@ -88,9 +90,9 @@ version::change_php() {
   [[ "$software_version" == "7.1" ]] && software_version="7.1.33"
   [[ "$software_version" == "7.2" ]] && software_version="7.2.34"
   [[ "$software_version" == "7.3" ]] && software_version="7.3.33"
-  [[ "$software_version" == "7.4" ]] && software_version="7.4.30"
-  [[ "$software_version" == "8" ]] && software_version="8.0.19"
-  [[ "$software_version" == "8.0" ]] && software_version="8.0.19"
+  [[ "$software_version" == "7.4" ]] && software_version="7.4.33"
+  [[ "$software_version" == "8" ]] && software_version="8.0.27"
+  [[ "$software_version" == "8.0" ]] && software_version="8.0.27"
 
   if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
     sem-install php "${software_version}"
@@ -121,7 +123,7 @@ version::change_erlang() {
   [[ "$software_version" == "22" ]] && software_version="22.3"
   [[ "$software_version" == "23" ]] && software_version="23.3"
   [[ "$software_version" == "24" ]] && software_version="24.3"
-  [[ "$software_version" == "25" ]] && software_version="25.0"
+  [[ "$software_version" == "25" ]] && software_version="25.2"
 
   if [[ $(kerl list installations) != *"${software_version}"* ]]; then
     sem-install erlang "${software_version}"
@@ -130,14 +132,6 @@ version::change_erlang() {
   return $?
 }
 version::change_firefox() {
-  local firefox_version=""
-  case "${software_version}" in
-    "52")firefox_version="esr-prev";;
-    "68")firefox_version="esr";;
-    "78")firefox_version="esr-new";;
-    *)echo "Please choose one of 52, 68, 78";return 1;;
-  esac
-  software_version="$firefox_version"
   version::change "change-firefox-version"
   return $?
 }
@@ -249,6 +243,8 @@ version::main() {
   software_version=$2
   force=${3:-""}
   ignore=${4:-""}
+  [ "$(uname)" == "Linux" ] && os_version="$(lsb_release -rs)"
+  [ "$(uname)" == "Darwin" ] && os_version="$(sw_vers -productVersion)"
 
   if [[ "$force" == "-i" ]] || [[ "$force" == "--ignore" ]]; then
     ignore="--ignore"
@@ -268,10 +264,10 @@ version::main() {
     fn_status=$?
     if [[ fn_status -ne 0 ]]; then
       version::err "Failed to switch version.\n"
-      echo "semversion,software=$software,state=fail,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
+      echo "semversion,software=$software,state=fail,version=$software_version,osversion=$os_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
       [[ "$ignore" == "--ignore" ]] || exit 1
     else
-      echo "semversion,software=$software,state=success,version=$software_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
+      echo "semversion,software=$software,state=success,version=$software_version,osversion=$os_version duration=$TOTAL_TIME" >> /tmp/toolbox_semversion
       version::log "Switch successful."
     fi
     return 0

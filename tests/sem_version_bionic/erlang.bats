@@ -4,7 +4,7 @@ load "../support/bats-support/load"
 load "../support/bats-assert/load"
 
 setup() {
-  source /tmp/.env
+  source /tmp/.env-*
   source /opt/change-erlang-version.sh
   source /opt/change-python-version.sh
   source /opt/change-go-version.sh
@@ -24,6 +24,12 @@ setup() {
 }
 
 #  erlang
+@test "change erlang to 23.3" {
+  sem-version erlang 23.3
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "23"
+}
+
 @test "change erlang to 24.0" {
   sem-version erlang 24.0
   run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
@@ -42,3 +48,14 @@ setup() {
   assert_line --partial "25"
 }
 
+@test "change erlang to 25.1" {
+  sem-version erlang 25.1
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "25"
+}
+
+@test "change erlang to 25.2" {
+  sem-version erlang 25.2
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "25"
+}

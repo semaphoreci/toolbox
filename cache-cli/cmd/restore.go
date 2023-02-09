@@ -8,10 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/semaphoreci/toolbox/cache-cli/pkg/archive"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +29,7 @@ var restoreCmd = &cobra.Command{
 
 func RunRestore(cmd *cobra.Command, args []string) {
 	if len(args) > 1 {
-		fmt.Printf("Incorrect number of arguments!\n")
+		log.Error("Incorrect number of arguments!")
 		_ = cmd.Help()
 		return
 	}
@@ -38,6 +40,8 @@ func RunRestore(cmd *cobra.Command, args []string) {
 	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
 	utils.Check(err)
 
+	archiver := archive.NewArchiver(metricsManager)
+
 	if len(args) == 0 {
 		lookupResults := files.Lookup(files.LookupOptions{
 			GitBranch: FindGitBranch(),
@@ -45,29 +49,29 @@ func RunRestore(cmd *cobra.Command, args []string) {
 		})
 
 		if len(lookupResults) == 0 {
-			fmt.Printf("Nothing to restore from cache.")
+			log.Info("Nothing to restore from cache.")
 			return
 		}
 
 		for _, lookupResult := range lookupResults {
-			fmt.Printf("Detected %s.\n", lookupResult.DetectedFile)
+			log.Infof("Detected %s.", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {
-				fmt.Printf("Fetching '%s' directory with cache keys '%s'...\n", entry.Path, strings.Join(entry.Keys, ","))
-				downloadAndUnpack(storage, metricsManager, entry.Keys)
+				log.Infof("Fetching '%s' directory with cache keys '%s'...", entry.Path, strings.Join(entry.Keys, ","))
+				downloadAndUnpack(storage, archiver, metricsManager, entry.Keys)
 			}
 		}
 	} else {
 		keys := strings.Split(args[0], ",")
-		downloadAndUnpack(storage, metricsManager, keys)
+		downloadAndUnpack(storage, archiver, metricsManager, keys)
 	}
 }
 
-func downloadAndUnpack(storage storage.Storage, metricsManager metrics.MetricsManager, keys []string) {
+func downloadAndUnpack(storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, keys []string) {
 	for _, rawKey := range keys {
 		key := NormalizeKey(rawKey)
 		if ok, _ := storage.HasKey(key); ok {
-			fmt.Printf("HIT: '%s', using key '%s'.\n", key, key)
-			downloadAndUnpackKey(storage, metricsManager, key)
+			log.Infof("HIT: '%s', using key '%s'.", key, key)
+			downloadAndUnpackKey(storage, archiver, metricsManager, key)
 			break
 		}
 
@@ -76,11 +80,11 @@ func downloadAndUnpack(storage storage.Storage, metricsManager metrics.MetricsMa
 
 		matchingKey := findMatchingKey(availableKeys, key)
 		if matchingKey != "" {
-			fmt.Printf("HIT: '%s', using key '%s'.\n", key, matchingKey)
-			downloadAndUnpackKey(storage, metricsManager, matchingKey)
+			log.Infof("HIT: '%s', using key '%s'.", key, matchingKey)
+			downloadAndUnpackKey(storage, archiver, metricsManager, matchingKey)
 			break
 		} else {
-			fmt.Printf("MISS: '%s'.\n", key)
+			log.Infof("MISS: '%s'.", key)
 		}
 	}
 }
@@ -96,30 +100,30 @@ func findMatchingKey(availableKeys []storage.CacheKey, match string) string {
 	return ""
 }
 
-func downloadAndUnpackKey(storage storage.Storage, metricsManager metrics.MetricsManager, key string) {
+func downloadAndUnpackKey(storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, key string) {
 	downloadStart := time.Now()
-	fmt.Printf("Downloading key '%s'...\n", key)
+	log.Infof("Downloading key '%s'...", key)
 	compressed, err := storage.Restore(key)
 	utils.Check(err)
 
 	downloadDuration := time.Since(downloadStart)
 	info, _ := os.Stat(compressed.Name())
 
-	fmt.Printf("Download complete. Duration: %v. Size: %v bytes.\n", downloadDuration.String(), files.HumanReadableSize(info.Size()))
+	log.Infof("Download complete. Duration: %v. Size: %v bytes.", downloadDuration.String(), files.HumanReadableSize(info.Size()))
 	publishMetrics(metricsManager, info, downloadDuration)
 
 	unpackStart := time.Now()
-	fmt.Printf("Unpacking '%s'...\n", compressed.Name())
-	restorationPath, err := files.Unpack(metricsManager, compressed.Name())
+	log.Infof("Unpacking '%s'...", compressed.Name())
+	restorationPath, err := archiver.Decompress(compressed.Name())
 	utils.Check(err)
 
 	unpackDuration := time.Since(unpackStart)
-	fmt.Printf("Unpack complete. Duration: %v.\n", unpackDuration)
-	fmt.Printf("Restored: %s.\n", restorationPath)
+	log.Infof("Unpack complete. Duration: %v.", unpackDuration)
+	log.Infof("Restored: %s.", restorationPath)
 
 	err = os.Remove(compressed.Name())
 	if err != nil {
-		fmt.Printf("Error removing %s: %v", compressed.Name(), err)
+		log.Errorf("Error removing %s: %v", compressed.Name(), err)
 	}
 }
 
@@ -143,7 +147,7 @@ func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo,
 
 	err := metricsManager.PublishBatch(metricsToPublish)
 	if err != nil {
-		fmt.Printf("Error publishing metrics: %v", err)
+		log.Errorf("Error publishing metrics: %v", err)
 	}
 }
 

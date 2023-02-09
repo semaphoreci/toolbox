@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/storage"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +19,7 @@ var deleteCmd = &cobra.Command{
 
 func RunDelete(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
-		fmt.Printf("Incorrect number of arguments!\n")
+		log.Errorf("Incorrect number of arguments!")
 		_ = cmd.Help()
 		return
 	}
@@ -34,9 +33,9 @@ func RunDelete(cmd *cobra.Command, args []string) {
 	if ok, _ := storage.HasKey(key); ok {
 		err := storage.Delete(key)
 		utils.Check(err)
-		fmt.Printf("Key '%s' is deleted.\n", key)
+		log.Infof("Key '%s' is deleted.", key)
 	} else {
-		fmt.Printf("Key '%s' doesn't exist in the cache store.\n", key)
+		log.Infof("Key '%s' doesn't exist in the cache store.", key)
 	}
 }
 

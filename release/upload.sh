@@ -10,7 +10,9 @@ set -euo pipefail
 #      - /tmp/Linux/linux.tar
 #      - /tmp/Darwin/darwin.tar
 #      - /tmp/self-hosted-Linux/linux.tar
+#      - /tmp/self-hosted-Linux-arm/linux-arm.tar
 #      - /tmp/self-hosted-Darwin/darwin.tar
+#      - /tmp/self-hosted-Darwin-arm/darwin-arm.tar
 #
 #   2. Upload the tarballs to Github by running release/upload.sh.
 #
@@ -50,6 +52,16 @@ curl \
     -X POST \
     -H "Authorization: token $GITHUB_TOKEN" \
     -H "Accept: application/vnd.github.v3+json" \
+    -H "Content-Type: $(file -b --mime-type /tmp/self-hosted-Linux/linux.tar)" \
+    --data-binary @/tmp/self-hosted-Linux-arm/linux-arm.tar \
+    "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=self-hosted-linux-arm.tar"
+
+echo "self-hosted-linux-arm.tar uploaded"
+
+curl \
+    -X POST \
+    -H "Authorization: token $GITHUB_TOKEN" \
+    -H "Accept: application/vnd.github.v3+json" \
     -H "Content-Type: $(file -b --mime-type /tmp/Darwin/darwin.tar)" \
     --data-binary @/tmp/Darwin/darwin.tar \
     "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=darwin.tar"
@@ -65,6 +77,16 @@ curl \
     "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=self-hosted-darwin.tar"
 
 echo "self-hosted-darwin.tar uploaded"
+
+curl \
+    -X POST \
+    -H "Authorization: token $GITHUB_TOKEN" \
+    -H "Accept: application/vnd.github.v3+json" \
+    -H "Content-Type: $(file -b --mime-type /tmp/self-hosted-Darwin/darwin.tar)" \
+    --data-binary @/tmp/self-hosted-Darwin-arm/darwin-arm.tar \
+    "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=self-hosted-darwin-arm.tar"
+
+echo "self-hosted-darwin-arm.tar uploaded"
 
 curl \
     -X POST \
