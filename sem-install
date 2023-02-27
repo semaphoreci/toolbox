@@ -30,7 +30,7 @@ install::download() {
 }
 
 install::install_node() {
-  NVM_NODEJS_ORG_MIRROR=https://nodejs.semaphoreci.com/dist nvm install ${language_version}
+  NVM_NODEJS_ORG_MIRROR=http://nodejs.semaphoreci.com/dist nvm install ${language_version}
   nvm use ${language_version}
   npm install -g grunt-cli
   result="$?"
