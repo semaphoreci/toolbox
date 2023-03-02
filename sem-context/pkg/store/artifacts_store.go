@@ -54,14 +54,6 @@ func (_ *ArtifactStore) Get(key, contextId string) (string, error) {
 	}
 
 	byte_key, _ := os.ReadFile(file.Name())
-
-	// Next line is a hot fix
-
-	if len(byte_key) == 0 {
-		return "", &utils.Error{ErrorMessage: fmt.Sprintf("Cant find the key '%s'", key), ExitCode: 1}
-	}
-	// Hotfix end
-
 	return string(byte_key), nil
 }
 
