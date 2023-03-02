@@ -20,9 +20,8 @@ echo 'source ~/.toolbox/toolbox' >> ~/.bash_profile
 The process for adding new cli tools to the toolbox differs a bit depending on how they are written. If a new tool is written in
 bash, like `sem-install`, `sem-service`, or `retry`, the process is pretty simple:
  
-  - bash script will be copied into the toolbox during the `release` step inside the Semaphore CI/CD pipeline. (This happens 
-  inside release/create.sh, function `hosted::create_initial_content`). The release process will be triggered only when a new release is
-  created inside the GitHub repo.
+  - When  you are finished with writing and testing you cli tool, create a PR to merge them into the master. Once the PR is review, approved and merged, create a new release. This will trigger a build on Semaphore CI/CD, and after all the tests/jobs pass, after-pipeline for releasing a new toolbox will be triggered. During this `release` pipeline bash script conteining your tool will be copied into the toolbox. This happens 
+  inside release/create.sh, function `hosted::create_initial_content`.
 
   - In order for the new version of toolbox to be used on Semaphore's hosted agents, toolbox version should be updated [here](https://github.com/renderedtext/s2-platform/blob/master/Makefile). (Needles to say,
 people outside of Semaphore can not perform this step)
