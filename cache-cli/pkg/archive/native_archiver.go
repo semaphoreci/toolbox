@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"time"
 
 	pgzip "github.com/klauspost/pgzip"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
@@ -54,6 +55,9 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 		if err != nil {
 			return fmt.Errorf("error creating tar header for '%s': %v", fileName, err)
 		}
+
+		// Truncate time to seconds only
+		header.ModTime = header.ModTime.Truncate(time.Second)
 
 		if fileInfo.IsDir() {
 			header.Name = fileName + string(os.PathSeparator)
