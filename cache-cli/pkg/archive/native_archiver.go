@@ -206,6 +206,12 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 				continue
 			}
 
+			if err := os.Chtimes(outFile.Name(), header.ModTime, header.ModTime); err != nil {
+				log.Errorf("Error changing timestamps for '%s': %v", header.Name, err)
+				hadError = true
+				continue
+			}
+
 			if err := outFile.Close(); err != nil {
 				log.Errorf("Error closing file handle for '%s': %v", header.Name, err)
 				hadError = true

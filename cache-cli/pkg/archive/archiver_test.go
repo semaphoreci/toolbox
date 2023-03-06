@@ -241,6 +241,38 @@ func Test__Compress(t *testing.T) {
 			assert.NoError(t, os.Remove(tempFile.Name()))
 			assert.NoError(t, os.Remove(compressedFileName))
 		})
+
+		t.Run(archiverType+" respects timestamps", func(t *testing.T) {
+			cwd, _ := os.Getwd()
+			tempFile, _ := ioutil.TempFile(cwd, "*")
+			_ = tempFile.Close()
+
+			// change mtime to 1 hour ago
+			originalTimestamp := time.Now().Add(time.Hour)
+			_ = os.Chtimes(tempFile.Name(), originalTimestamp, originalTimestamp)
+
+			// compressing
+			compressedFileName := tmpFileNameWithPrefix("abc0007")
+			err := archiver.Compress(compressedFileName, tempFile.Name())
+			assert.Nil(t, err)
+
+			// compressed file is created
+			_, err = os.Stat(compressedFileName)
+			assert.Nil(t, err)
+			assert.NoError(t, os.Remove(tempFile.Name()))
+
+			// unpacking
+			unpackedAt, err := archiver.Decompress(compressedFileName)
+			assert.Nil(t, err)
+			assert.Equal(t, tempFile.Name(), unpackedAt)
+
+			info, err := os.Stat(unpackedAt)
+			assert.Nil(t, err)
+			assert.Equal(t, info.ModTime().Unix(), originalTimestamp.Unix())
+
+			assert.NoError(t, os.Remove(tempFile.Name()))
+			assert.NoError(t, os.Remove(compressedFileName))
+		})
 	})
 }
 
