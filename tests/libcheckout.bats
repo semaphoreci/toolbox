@@ -17,7 +17,7 @@ setup() {
   export SEMAPHORE_GIT_SHA=5608567
   export SEMAPHORE_GIT_REPO_SLUG="mojombo/grit"
   export SEMAPHORE_GIT_REF="refs/heads/master"
-  
+
   set -u
   source ~/.toolbox/libcheckout
   rm -rf $SEMAPHORE_GIT_DIR
@@ -47,8 +47,18 @@ teardown() {
   assert_failure
 }
 
-@test "libcheckout - [Push] missing branch" {
+@test "libcheckout - [Push] missing branch and sha" {
   export SEMAPHORE_GIT_REF_TYPE="push"
+  export SEMAPHORE_GIT_BRANCH="non-existing-branch"
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a4
+
+  run checkout
+  assert_failure
+}
+
+@test "libcheckout - [Push] missing branch, sha exist on different branch" {
+  export SEMAPHORE_GIT_REF_TYPE="push"
+  export SEMAPHORE_GIT_BRANCH="non-existing-branch"
   export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
 
   run checkout
