@@ -59,3 +59,9 @@ setup() {
   run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
   assert_line --partial "25"
 }
+
+@test "change erlang to 25.3" {
+  sem-version erlang 25.3
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "25"
+}
