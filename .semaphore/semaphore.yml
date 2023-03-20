@@ -201,6 +201,7 @@ blocks:
                 - memcached
                 - rabbitmq
                 - mongodb
+                - opensearch
                 - elasticsearch
                 - cassandra
                 - rethinkdb
