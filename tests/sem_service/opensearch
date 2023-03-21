@@ -1,0 +1,29 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+sem-service start opensearch
+sleep 5
+curl -XGET 'https://0.0.0.0:9200/_cluster/health?pretty' -ksu admin:admin | grep status
+
+sem-service status opensearch
+sleep 5
+curl -XGET 'https://0.0.0.0:9200' -ksu admin:admin| grep number | grep 2
+
+sem-service stop opensearch
+sem-service start opensearch 1
+sleep 5
+curl -XGET 'https://0.0.0.0:9200/_cluster/health?pretty' -ksu admin:admin | grep status
+
+sem-service stop opensearch
+sem-service start opensearch 1.3.9
+sleep 5
+curl -XGET 'https://0.0.0.0:9200' -ksu admin:admin | grep number | grep 1.3.9
+
+sem-service stop opensearch
+sem-service start opensearch 2.6.0
+sleep 5
+curl -XGET 'https://0.0.0.0:9200' -ksu admin:admin | grep number |grep 2.6.0
+
+sem-service stop opensearch
+cat /tmp/toolbox_semservice
