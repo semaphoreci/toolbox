@@ -83,4 +83,13 @@ else
   echo "Error installing when at $INSTALL_PATH/when"
 fi
 
+echo "Installing the sem-context CLI"
+install_cmd ln -sf ~/.toolbox/sem-context $INSTALL_PATH/sem-context
+install_cmd chmod +x $INSTALL_PATH/sem-context
+if [[ $? -eq 0 ]];then
+  echo "sem-context installed"
+else
+  echo "Error installing the sem-context CLI at $INSTALL_PATH/sem-context"
+fi
+
 source ~/.toolbox/toolbox && echo 'source ~/.toolbox/toolbox' >> ~/.bash_profile
