@@ -140,6 +140,7 @@ self_hosted::create_initial_content() {
   # folder to the user's PATH.
   mkdir -p /tmp/self-hosted-Windows/toolbox/bin
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/windows/cache.exe /tmp/self-hosted-Windows/toolbox/bin/cache.exe
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/windows/sem-context.exe /tmp/self-hosted-Windows/toolbox/bin/sem-context.exe
 }
 
 self_hosted::pack() {
@@ -168,6 +169,11 @@ self_hosted::pack() {
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/arm64/cache /tmp/self-hosted-Linux-arm/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/amd64/cache /tmp/self-hosted-Darwin/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/arm64/cache /tmp/self-hosted-Darwin-arm/toolbox/
+
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/amd64/sem-context /tmp/self-hosted-Linux/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/arm64/sem-context /tmp/self-hosted-Linux-arm/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/amd64/sem-context /tmp/self-hosted-Darwin/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/arm64/sem-context /tmp/self-hosted-Darwin-arm/toolbox/
 }
 
 hosted::pack() {

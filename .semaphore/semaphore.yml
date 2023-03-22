@@ -37,10 +37,16 @@ blocks:
             - "export PATH=/home/semaphore/go/bin:$PATH"
             - checkout
             - cd sem-context
-            - make build.linux
-            - make build.darwin
-            - artifact push workflow bin/linux/sem-context -d bin/linux/sem-context
-            - artifact push workflow bin/darwin/sem-context -d bin/darwin/sem-context
+            - make build.linux ARCH=amd64
+            - make build.linux ARCH=arm64
+            - make build.darwin ARCH=amd64
+            - make build.darwin ARCH=arm64
+            - make build.windows
+            - artifact push workflow bin/linux/amd64/sem-context -d bin/linux/amd64/sem-context
+            - artifact push workflow bin/linux/arm64/sem-context -d bin/linux/arm64/sem-context
+            - artifact push workflow bin/darwin/amd64/sem-context -d bin/darwin/amd64/sem-context
+            - artifact push workflow bin/darwin/arm64/sem-context -d bin/darwin/arm64/sem-context
+            - artifact push workflow bin/windows/sem-context.exe -d bin/windows/sem-context.exe
 
   - name: Static Code Analysis
     dependencies: []
