@@ -218,11 +218,6 @@ function checkout::refbased() {
 
   if [ ${SEMAPHORE_GIT_REF_TYPE:-""} = "pull-request" ]; then
     retry git clone --depth $SEMAPHORE_GIT_DEPTH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
-    if [ $? -ne 0 ]; then
-      echo "Pull request not found .... Exiting"
-
-      return 1
-    fi
     cd $SEMAPHORE_GIT_DIR
     git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
     if [ $? -ne 0 ]; then
