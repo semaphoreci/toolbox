@@ -53,7 +53,7 @@ function checkout::fetch() {
   echo "Restored cache"
   cd $HOME/$SEMAPHORE_GIT_DIR
   git remote prune origin
-  git fetch --tags origin
+  retry git fetch --tags origin
 
   checkout::switch_revision
 }
@@ -78,7 +78,7 @@ function checkout::reset_to_sha {
 
 function checkout::switch_revision() {
   if [ ${SEMAPHORE_GIT_REF_TYPE:-""} = "pull-request" ]; then
-    git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
+    retry git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "Reference: ${SEMAPHORE_GIT_REF} not found .... Exiting"
 
@@ -198,7 +198,7 @@ function checkout::shallow() {
     git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "SHA: $SEMAPHORE_GIT_SHA not found performing full clone"
-      git fetch --unshallow
+      retry git fetch --unshallow
       checkout::checkrevision
       if [ "$?" -eq "0" ]; then
         git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
@@ -219,7 +219,7 @@ function checkout::refbased() {
   if [ ${SEMAPHORE_GIT_REF_TYPE:-""} = "pull-request" ]; then
     retry git clone --depth $SEMAPHORE_GIT_DEPTH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
     cd $SEMAPHORE_GIT_DIR
-    git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
+    retry git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "Revision: ${SEMAPHORE_GIT_SHA} not found .... Exiting"
 
