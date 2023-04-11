@@ -19,7 +19,10 @@ blocks:
             - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
             - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
             - artifact pull workflow bin/windows/cache.exe -d cache-cli/bin/windows/cache.exe
-            - artifact pull workflow bin/linux/sem-context -d sem-context/bin/linux/sem-context
-            - artifact pull workflow bin/darwin/sem-context -d sem-context/bin/darwin/sem-context
+            - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+            - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+            - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+            - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+            - artifact pull workflow bin/windows/sem-context.exe -d sem-context/bin/windows/sem-context.exe
             - bash release/create.sh -a
             - bash release/upload.sh

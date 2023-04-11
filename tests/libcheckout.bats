@@ -17,7 +17,7 @@ setup() {
   export SEMAPHORE_GIT_SHA=5608567
   export SEMAPHORE_GIT_REPO_SLUG="mojombo/grit"
   export SEMAPHORE_GIT_REF="refs/heads/master"
-  
+
   set -u
   source ~/.toolbox/libcheckout
   rm -rf $SEMAPHORE_GIT_DIR
@@ -45,14 +45,27 @@ teardown() {
 
   run checkout
   assert_failure
+  assert_output --partial "Revision: $SEMAPHORE_GIT_SHA not found .... Exiting"
 }
 
-@test "libcheckout - [Push] missing branch" {
+@test "libcheckout - [Push] missing branch and sha" {
   export SEMAPHORE_GIT_REF_TYPE="push"
+  export SEMAPHORE_GIT_BRANCH="non-existing-branch"
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a4
+
+  run checkout
+  assert_failure
+  assert_output --partial "Branch: $SEMAPHORE_GIT_BRANCH not found .... Exiting"
+}
+
+@test "libcheckout - [Push] missing branch, sha exist on different branch" {
+  export SEMAPHORE_GIT_REF_TYPE="push"
+  export SEMAPHORE_GIT_BRANCH="non-existing-branch"
   export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
 
   run checkout
-  assert_success
+  assert_failure
+  assert_output --partial "Branch: $SEMAPHORE_GIT_BRANCH not found .... Exiting"
 }
 
 # Tag
@@ -234,7 +247,7 @@ teardown() {
 @test "libcheckout - Checkout and use cache" {
 
   export SEMAPHORE_GIT_URL="https://github.com/rails/rails.git"
-  export SEMAPHORE_GIT_BRANCH=master
+  export SEMAPHORE_GIT_BRANCH=main
   export SEMAPHORE_GIT_DIR=rails
   export SEMAPHORE_GIT_SHA=f907b418aecfb6dab4e30149b88a8593ddd321b9
   cache clear

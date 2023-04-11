@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/files"
@@ -11,18 +12,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all keys in the cache.",
-	Long:  ``,
-	Args:  cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		RunList(cmd, args)
-	},
+func NewListCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List all keys in the cache.",
+		Long:  ``,
+		Args:  cobra.ArbitraryArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			RunList(cmd, args)
+		},
+	}
+
+	description := fmt.Sprintf(
+		`Sort keys by a specific field. Possible values are: %v.`,
+		strings.Join(storage.ValidSortByKeys, ","),
+	)
+
+	cmd.Flags().StringP("sort-by", "s", storage.SortByStoreTime, description)
+	return cmd
 }
 
 func RunList(cmd *cobra.Command, args []string) {
-	storage, err := storage.InitStorage()
+	sortBy, err := cmd.Flags().GetString("sort-by")
+	utils.Check(err)
+
+	storage, err := storage.InitStorageWithConfig(storage.StorageConfig{SortKeysBy: sortBy})
 	utils.Check(err)
 
 	keys, err := storage.List()
@@ -36,13 +50,14 @@ func RunList(cmd *cobra.Command, args []string) {
 }
 
 func formatList(keys []storage.CacheKey) string {
-	formatted := fmt.Sprintf("%-60s %-12s %-12s\n", "NAME", "SIZE", "STORED AT")
+	formatted := fmt.Sprintf("%-60s %-12s %-22s %-22s\n", "NAME", "SIZE", "STORED AT", "ACCESSED AT")
 	for _, key := range keys {
 		formatted += fmt.Sprintf(
-			"%-60s %-12s %-12s\n",
+			"%-60s %-12s %-22s %-22s\n",
 			key.Name,
 			files.HumanReadableSize(key.Size),
 			key.StoredAt.Format(time.RFC822),
+			key.LastAccessedAt.Format(time.RFC822),
 		)
 	}
 
@@ -50,5 +65,5 @@ func formatList(keys []storage.CacheKey) string {
 }
 
 func init() {
-	RootCmd.AddCommand(listCmd)
+	RootCmd.AddCommand(NewListCommand())
 }

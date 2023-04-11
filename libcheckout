@@ -165,6 +165,14 @@ function checkout::checkrevision {
   fi
 }
 
+function checkout::branch_checkout {
+  git checkout -f "$SEMAPHORE_GIT_BRANCH"
+  if [ $? -ne 0 ]; then
+    echo "Branch: ${SEMAPHORE_GIT_BRANCH} not found .... Exiting"
+    return 1
+  fi
+}
+
 function checkout::shallow() {
   if [ -z ${SEMAPHORE_GIT_DEPTH:-""} ]; then
     SEMAPHORE_GIT_DEPTH=50
@@ -172,9 +180,13 @@ function checkout::shallow() {
   echo "Performing shallow clone with depth: $SEMAPHORE_GIT_DEPTH"
   retry git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_BRANCH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
   if [ $? -ne 0 ]; then
-    echo -e "Branch not found performing full clone"
-    retry git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>&1
-    cd $SEMAPHORE_GIT_DIR
+    echo "Branch not found performing full clone"
+    retry git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
+    cd "$SEMAPHORE_GIT_DIR"
+    checkout::branch_checkout
+    if [ $? -ne 0 ]; then
+      return 1
+    fi
     checkout::checkrevision
     if [ "$?" -eq "0" ]; then
       git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null

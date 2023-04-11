@@ -2,10 +2,10 @@
 
 set -euo pipefail
 
-ARTIFACT_CLI_VERSION="v0.6.0"
+ARTIFACT_CLI_VERSION="v0.6.2"
 WHEN_CLI_VERSION="v1.0.5"
 SPC_CLI_VERSION="v1.9.4"
-TEST_RESULTS_CLI_VERSION="v0.6.3"
+TEST_RESULTS_CLI_VERSION="v0.6.4"
 
 ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
 SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSION"
@@ -140,6 +140,7 @@ self_hosted::create_initial_content() {
   # folder to the user's PATH.
   mkdir -p /tmp/self-hosted-Windows/toolbox/bin
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/windows/cache.exe /tmp/self-hosted-Windows/toolbox/bin/cache.exe
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/windows/sem-context.exe /tmp/self-hosted-Windows/toolbox/bin/sem-context.exe
 }
 
 self_hosted::pack() {
@@ -168,6 +169,11 @@ self_hosted::pack() {
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/arm64/cache /tmp/self-hosted-Linux-arm/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/amd64/cache /tmp/self-hosted-Darwin/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/arm64/cache /tmp/self-hosted-Darwin-arm/toolbox/
+
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/amd64/sem-context /tmp/self-hosted-Linux/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/arm64/sem-context /tmp/self-hosted-Linux-arm/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/amd64/sem-context /tmp/self-hosted-Darwin/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/arm64/sem-context /tmp/self-hosted-Darwin-arm/toolbox/
 }
 
 hosted::pack() {
@@ -179,8 +185,8 @@ hosted::pack() {
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux "x86_64"
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/amd64/cache /tmp/Linux/toolbox/cache
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/amd64/cache /tmp/Darwin/toolbox/cache
-  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/sem-context /tmp/Linux/toolbox/sem-context
-  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/sem-context /tmp/Darwin/toolbox/sem-context
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/amd64/sem-context /tmp/Linux/toolbox/sem-context
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/amd64/sem-context /tmp/Darwin/toolbox/sem-context
   cp /tmp/when-cli/when /tmp/Linux/toolbox/when
 }
 

@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"time"
 
 	pgzip "github.com/klauspost/pgzip"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
@@ -53,6 +55,9 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 		if err != nil {
 			return fmt.Errorf("error creating tar header for '%s': %v", fileName, err)
 		}
+
+		// Truncate time to seconds only
+		header.ModTime = header.ModTime.Truncate(time.Second)
 
 		if fileInfo.IsDir() {
 			header.Name = fileName + string(os.PathSeparator)
@@ -103,6 +108,11 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 	return nil
 }
 
+type directoryStat struct {
+	name string
+	mode fs.FileMode
+}
+
 func (a *NativeArchiver) Decompress(src string) (string, error) {
 	srcFile, err := os.Open(src)
 	if err != nil {
@@ -123,7 +133,14 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 	i := 0
 	tarReader := tar.NewReader(uncompressedStream)
 	restorationPath := ""
+	hadError := false
+	delayedDirectoryStats := []directoryStat{}
 
+	// We read all blocks in the tar archive.
+	// If an error is found when processing a particular tar block,
+	// it is logged, and we move to the next tar block.
+	// The only reason we return an error, and stop execution,
+	// is if we have issues reading the tar archive.
 	for {
 		header, err := tarReader.Next()
 		if err == io.EOF {
@@ -140,73 +157,120 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 			restorationPath = header.Name
 		}
 
+		i++
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(header.Name, header.FileInfo().Mode()); err != nil {
-				return "", fmt.Errorf("error creating directory '%s': %v", header.Name, err)
+			mode := header.FileInfo().Mode()
+
+			// Directories can be filled with files, but not be writable.
+			// See: https://github.com/golang/go/issues/27161.
+			// So, if we create the directory with the permissions on the tar header,
+			// we are not able to create the files inside of it afterwards.
+			// In those cases, we create the directory with 0770 permissions,
+			// and delay setting the proper permissions on the directory after all files are extracted.
+			if header.FileInfo().Mode()&0200 == 0 {
+				mode = 0770
+				delayedDirectoryStats = append(delayedDirectoryStats, directoryStat{
+					name: header.Name,
+					mode: header.FileInfo().Mode(),
+				})
+			}
+
+			if err := os.MkdirAll(header.Name, mode); err != nil {
+				log.Errorf("Error creating directory '%s': %v", header.Name, err)
+				hadError = true
+				continue
 			}
 
 		case tar.TypeSymlink:
 			// we have to remove the symlink first, if it exists.
 			// Otherwise os.Symlink will complain.
 			if _, err := os.Lstat(header.Name); err == nil {
-				if err := os.Remove(header.Name); err != nil {
-					return "", fmt.Errorf("error removing symlink '%s': %v", header.Name, err)
-				}
+				_ = os.Remove(header.Name)
 			}
 
 			if err := os.Symlink(header.Linkname, header.Name); err != nil {
-				return "", fmt.Errorf("error creating symlink '%s': %v", header.Name, err)
+				log.Errorf("Error creating symlink '%s'-'%s': %v", header.Name, header.Linkname, err)
+				hadError = true
+				continue
 			}
 
 		case tar.TypeReg:
 			outFile, err := a.openFile(header, tarReader)
 			if err != nil {
-				return "", err
+				log.Errorf("Error opening file '%s': %v", header.Name, err)
+				hadError = true
+				continue
 			}
 
 			if _, err := io.Copy(outFile, tarReader); err != nil {
-				return "", fmt.Errorf("error copying to file '%s': %v", header.Name, err)
+				log.Errorf("Error writing to file '%s': %v", header.Name, err)
+				hadError = true
+				_ = outFile.Close()
+				continue
+			}
+
+			if err := os.Chtimes(outFile.Name(), header.ModTime, header.ModTime); err != nil {
+				log.Errorf("Error changing timestamps for '%s': %v", header.Name, err)
+				hadError = true
+				continue
 			}
 
 			if err := outFile.Close(); err != nil {
-				return "", fmt.Errorf("error closing file '%s': %v", header.Name, err)
+				log.Errorf("Error closing file handle for '%s': %v", header.Name, err)
+				hadError = true
+				continue
 			}
 		}
+	}
 
-		i++
+	for _, d := range delayedDirectoryStats {
+		if err := os.Chmod(d.name, d.mode); err != nil {
+			log.Errorf("error changing mode of directory '%s': %v", d.name, err)
+			hadError = true
+		}
+	}
+
+	if hadError {
+		return restorationPath, fmt.Errorf("tar archive was not completely decompressed without errors")
 	}
 
 	return restorationPath, nil
 }
 
 func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*os.File, error) {
-	outFile, err := os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, header.FileInfo().Mode())
+	outFile, err := os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_EXCL, header.FileInfo().Mode())
 
 	// File was opened successfully, just return it.
 	if err == nil {
 		return outFile, nil
 	}
 
-	// Check if this is a permission error.
-	// This error could happen when trying to open an existing read-only file.
-	// If that's the case, we try to remove the file, and open it again.
-	// If the file can't be removed, then there's nothing we can do.
-	if errors.Is(err, os.ErrPermission) {
+	// Since we are using O_EXCL, this error could mean that the file already exists.
+	// If that is the case, we attempt to remove it before attempting to open it again.
+	if errors.Is(err, os.ErrExist) {
 		if err := os.Remove(header.Name); err != nil {
-			return nil, fmt.Errorf("error removing file '%s': %v", header.Name, err)
+			return nil, fmt.Errorf("file '%s' already exists and can't be removed: %v", header.Name, err)
 		}
-
-		outFile, err = os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, header.FileInfo().Mode())
-		if err != nil {
-			return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
-		}
-
-		return outFile, nil
 	}
 
-	// If we're dealing with a different error, just return it
-	return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
+	// If a ErrNotExist is returned, it means the parent directory does not exist.
+	// That means the file was included in the archive, but not its parent directory.
+	// If that happens, we create the parent directory here, and try to open the file again.
+	if errors.Is(err, os.ErrNotExist) {
+		parentDir := filepath.Dir(header.Name)
+		if err := os.MkdirAll(parentDir, 0755); err != nil {
+			return nil, fmt.Errorf("error creating directory '%s' for '%s': %v", parentDir, header.Name, err)
+		}
+	}
+
+	// Try to open file again now that we handled some possible errors.
+	outFile, err = os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_EXCL, header.FileInfo().Mode())
+	if err != nil {
+		return nil, fmt.Errorf("error opening file '%s': %v", header.Name, err)
+	}
+
+	return outFile, nil
 }
 
 func (a *NativeArchiver) newGzipWriter(dstFile *os.File) io.WriteCloser {
