@@ -235,7 +235,7 @@ function checkout::refbased() {
   if [ ${SEMAPHORE_GIT_REF_TYPE:-""} = "tag" ]; then
     retry git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_TAG_NAME $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
     if [ $? -ne 0 ]; then
-      echo -e "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
+      echo "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
 
       return 1
     else
