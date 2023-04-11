@@ -59,7 +59,7 @@ function checkout::fetch() {
 }
 
 function checkout::clone() {
-  git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
+  retry git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
   cd $SEMAPHORE_GIT_DIR
 
   checkout::switch_revision
@@ -170,10 +170,10 @@ function checkout::shallow() {
     SEMAPHORE_GIT_DEPTH=50
   fi
   echo "Performing shallow clone with depth: $SEMAPHORE_GIT_DEPTH"
-  output=$(git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_BRANCH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>&1)
+  retry git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_BRANCH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
   if [ $? -ne 0 ]; then
-    echo -e "$output \nBranch not found performing full clone"
-    git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>&1
+    echo -e "Branch not found performing full clone"
+    retry git clone $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>&1
     cd $SEMAPHORE_GIT_DIR
     checkout::checkrevision
     if [ "$?" -eq "0" ]; then
@@ -205,9 +205,9 @@ function checkout::refbased() {
   fi
 
   if [ ${SEMAPHORE_GIT_REF_TYPE:-""} = "pull-request" ]; then
-    output=$(git clone --depth $SEMAPHORE_GIT_DEPTH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>&1)
+    retry git clone --depth $SEMAPHORE_GIT_DEPTH $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
     if [ $? -ne 0 ]; then
-      echo "$output Pull request not found .... Exiting"
+      echo "Pull request not found .... Exiting"
 
       return 1
     fi
@@ -226,9 +226,9 @@ function checkout::refbased() {
   fi
 
   if [ ${SEMAPHORE_GIT_REF_TYPE:-""} = "tag" ]; then
-    output=$(git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_TAG_NAME $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR 2>&1)
+    retry git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_TAG_NAME $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
     if [ $? -ne 0 ]; then
-      echo -e "$output \nRelease $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
+      echo -e "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
 
       return 1
     else
