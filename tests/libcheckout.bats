@@ -25,7 +25,7 @@ setup() {
 
 teardown() {
   rm -rf $SEMAPHORE_GIT_DIR
-  rm -rf /tmp/toolbox_metrics
+  rm -rf /tmp/toolbox_checkout
 }
 
 # Push
@@ -286,8 +286,8 @@ teardown() {
   export SEMAPHORE_TOOLBOX_METRICS_ENABLED=true
   checkout
 
-  run cat /tmp/toolbox_metrics
-  assert_line --partial "libcheckout_repo_size"
+  run cat /tmp/toolbox_checkout
+  assert_line --partial "libcheckout"
 }
 
 @test "libcheckout - does not populate metrics file if self-hosted environment" {
@@ -296,7 +296,7 @@ teardown() {
   export SEMAPHORE_TOOLBOX_METRICS_ENABLED=false
   checkout
 
-  run cat /tmp/toolbox_metrics
+  run cat /tmp/toolbox_checkout
   assert_failure
-  assert_line "cat: /tmp/toolbox_metrics: No such file or directory"
+  assert_line "cat: /tmp/toolbox_checkout: No such file or directory"
 }

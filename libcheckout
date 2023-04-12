@@ -16,6 +16,13 @@ function checkout() {
     else
       checkout::shallow
     fi
+
+    exit_code=$?
+    if [ "$exit_code" -ne "0" ]; then
+      checkout::metric 0
+    fi
+
+    return $exit_code
   fi
 }
 
@@ -187,6 +194,7 @@ function checkout::shallow() {
     if [ $? -ne 0 ]; then
       return 1
     fi
+
     checkout::checkrevision
     if [ "$?" -eq "0" ]; then
       git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
@@ -222,7 +230,6 @@ function checkout::refbased() {
     retry git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "Revision: ${SEMAPHORE_GIT_SHA} not found .... Exiting"
-
       return 1
     else
       git checkout -qf FETCH_HEAD
@@ -236,7 +243,6 @@ function checkout::refbased() {
     retry git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_TAG_NAME $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
     if [ $? -ne 0 ]; then
       echo "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
-
       return 1
     else
       cd $SEMAPHORE_GIT_DIR
@@ -252,7 +258,10 @@ function checkout::refbased() {
 
 function checkout::metric() {
   if [[ "${SEMAPHORE_TOOLBOX_METRICS_ENABLED:-''}" == "true" ]]; then
-    echo "libcheckout_repo_size $1" >> /tmp/toolbox_metrics
+    ref_type=${SEMAPHORE_GIT_REF_TYPE:-""}
+    size=${1:-"0"}
+    [[ $size -gt 0 ]] && status='success' || status='fail'
+    echo "libcheckout,provider='$SEMAPHORE_GIT_PROVIDER',reftype='$ref_type',status=$status size=$1" >> /tmp/toolbox_checkout
   fi
 }
 
