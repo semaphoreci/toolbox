@@ -263,13 +263,15 @@ function checkout::metric() {
 
 function checkout::error_metric() {
   if [[ "${SEMAPHORE_TOOLBOX_METRICS_ENABLED:-''}" == "true" ]]; then
-    echo "libcheckout_error 1" >> /tmp/toolbox_metrics
+    echo "libcheckout_error{provider='$SEMAPHORE_GIT_PROVIDER'} 1" >> /tmp/toolbox_metrics
+    echo "libcheckout_error{reftype='$SEMAPHORE_GIT_REF_TYPE'} 1" >> /tmp/toolbox_metrics
   fi
 }
 
 function checkout::success_metric() {
   if [[ "${SEMAPHORE_TOOLBOX_METRICS_ENABLED:-''}" == "true" ]]; then
-    echo "libcheckout_error 0" >> /tmp/toolbox_metrics
+    echo "libcheckout_error{provider='$SEMAPHORE_GIT_PROVIDER'} 0" >> /tmp/toolbox_metrics
+    echo "libcheckout_error{reftype='$SEMAPHORE_GIT_REF_TYPE'} 0" >> /tmp/toolbox_metrics
   fi
 }
 
