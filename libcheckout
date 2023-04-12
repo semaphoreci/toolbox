@@ -185,12 +185,15 @@ function checkout::shallow() {
     cd "$SEMAPHORE_GIT_DIR"
     checkout::branch_checkout
     if [ $? -ne 0 ]; then
+      checkout::error_metric
       return 1
     fi
+
     checkout::checkrevision
     if [ "$?" -eq "0" ]; then
       git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
     else
+      checkout::error_metric
       return 1
     fi
   else
@@ -203,6 +206,7 @@ function checkout::shallow() {
       if [ "$?" -eq "0" ]; then
         git reset --hard $SEMAPHORE_GIT_SHA 2>/dev/null
       else
+        checkout::error_metric
         return 1
       fi
     fi
@@ -222,7 +226,7 @@ function checkout::refbased() {
     retry git fetch origin +$SEMAPHORE_GIT_REF: 2>/dev/null
     if [ $? -ne 0 ]; then
       echo "Revision: ${SEMAPHORE_GIT_SHA} not found .... Exiting"
-
+      checkout::error_metric
       return 1
     else
       git checkout -qf FETCH_HEAD
@@ -236,7 +240,7 @@ function checkout::refbased() {
     retry git clone --depth $SEMAPHORE_GIT_DEPTH -b $SEMAPHORE_GIT_TAG_NAME $SEMAPHORE_GIT_URL $SEMAPHORE_GIT_DIR
     if [ $? -ne 0 ]; then
       echo "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
-
+      checkout::error_metric
       return 1
     else
       cd $SEMAPHORE_GIT_DIR
@@ -253,6 +257,12 @@ function checkout::refbased() {
 function checkout::metric() {
   if [[ "${SEMAPHORE_TOOLBOX_METRICS_ENABLED:-''}" == "true" ]]; then
     echo "libcheckout_repo_size $1" >> /tmp/toolbox_metrics
+  fi
+}
+
+function checkout::error_metric() {
+  if [[ "${SEMAPHORE_TOOLBOX_METRICS_ENABLED:-''}" == "true" ]]; then
+    echo "libcheckout_error 1" >> /tmp/toolbox_metrics
   fi
 }
 
