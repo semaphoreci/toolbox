@@ -2,17 +2,18 @@
 
 install::package_url() {
   DIST=$(uname)
-  case $DIST in 
+  [[ $(uname -m) =~ "aarch" ]] && ARCH="arm/" || ARCH=""
+  case $DIST in
     Linux)
-      echo "http://packages.semaphoreci.com/$(lsb_release -cs)"
+      echo "http://packages.semaphoreci.com/${ARCH}$(lsb_release -cs)"
       ;;
     Darwin)
       echo "http://packagesmac.semaphoreci.com/mac"
       ;;
     *)
-    echo "Unsupported distro $DIST"
-    exit 1
-    ;;
+      echo "Unsupported distro $DIST"
+      exit 1
+      ;;
   esac
 }
 

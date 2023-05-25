@@ -68,12 +68,15 @@ hosted::create_initial_content() {
   echo "Creating initial content of the release directories for the hosted toolbox..."
 
   rm -rf /tmp/Linux
+  rm -rf /tmp/Linux-arm
   rm -rf /tmp/Darwin
 
   mkdir -p /tmp/Linux/toolbox
+  mkdir -p /tmp/Linux-arm/toolbox
   mkdir -p /tmp/Darwin/toolbox
 
   cp -R ~/$SEMAPHORE_GIT_DIR/* /tmp/Linux/toolbox
+  cp -R ~/$SEMAPHORE_GIT_DIR/* /tmp/Linux-arm/toolbox
   cp -R ~/$SEMAPHORE_GIT_DIR/* /tmp/Darwin/toolbox
 
   exclusions=(
@@ -93,6 +96,7 @@ hosted::create_initial_content() {
   )
   for exclusion in "${exclusions[@]}"; do
     rm -rf /tmp/Linux/toolbox/${exclusion}
+    rm -rf /tmp/Linux-arm/toolbox/${exclusion}
     rm -rf /tmp/Darwin/toolbox/${exclusion}
   done
 }
@@ -177,17 +181,23 @@ self_hosted::pack() {
 }
 
 hosted::pack() {
-  hosted::create_initial_content
+  hosted::create_initial_content 
   include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/Linux "x86_64"
+  include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/Linux-arm "arm64"
   include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/Darwin "x86_64"
   include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Linux "x86_64"
+  include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Linux-arm "arm64"
   include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Darwin "x86_64"
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux "x86_64"
+  include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux-arm "arm64"
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/amd64/cache /tmp/Linux/toolbox/cache
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/arm64/cache /tmp/Linux-arm/toolbox/cache
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/amd64/cache /tmp/Darwin/toolbox/cache
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/amd64/sem-context /tmp/Linux/toolbox/sem-context
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/arm64/sem-context /tmp/Linux-arm/toolbox/sem-context
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/amd64/sem-context /tmp/Darwin/toolbox/sem-context
   cp /tmp/when-cli/when /tmp/Linux/toolbox/when
+  cp /tmp/when-cli/when /tmp/Linux-arm/toolbox/when
 }
 
 create_self_hosted=false
@@ -212,6 +222,7 @@ download_when_cli
 hosted::pack
 create_tarball "linux.tar" /tmp/Linux
 create_tarball "darwin.tar" /tmp/Darwin
+create_tarball "linux-arm.tar" /tmp/Linux-arm
 
 if [[ $create_self_hosted == "true" ]]; then
   self_hosted::pack

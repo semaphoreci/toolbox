@@ -84,7 +84,7 @@ blocks:
           commands:
             - make pwsh.test
 
-  - name: Sem Version Tests bionic
+  - name: Sem Version Tests Bionic
     dependencies:
       - "Build local CLIs"
     task:
@@ -92,9 +92,11 @@ blocks:
         commands:
           - checkout
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
           - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -120,7 +122,7 @@ blocks:
           commands:
             - bats tests/sem_version_bionic/${TEST}.bats
 
-  - name: Sem version tests focal
+  - name: Sem Version Tests Focal
     dependencies:
       - "Build local CLIs"
     task:
@@ -134,9 +136,11 @@ blocks:
           - sudo apt-get update 
           - sudo apt-get install -y libargon2-0
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
           - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -151,6 +155,81 @@ blocks:
           commands:
             - bats tests/sem_version_focal/${TEST}.bats
 
+  - name: Sem Version Tests Jammy ARM
+    dependencies:
+      - "Build local CLIs"
+    task:
+      agent:
+        machine:
+          type: r1-standard-4
+          os_image: ubuntu2204
+      prologue:
+        commands:
+          - wget https://github.com/semaphoreci/artifact/releases/download/v0.6.2/artifact_Linux_arm64.tar.gz -O /tmp/artifact_Linux_arm64.tar.gz
+          - sudo tar -xf /tmp/artifact_Linux_arm64.tar.gz -C /usr/local/bin/
+          - checkout
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+          - bash release/create.sh
+          - source release/install_in_tests.sh
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+      jobs:
+        - name: Sem Version
+          matrix:
+            - env_var: TEST
+              values:
+                - elixir
+                - erlang
+                - gcc
+                - go
+                - java
+                - kubectl
+                - node
+                - php
+                - python
+                - ruby
+                - scala
+          commands:
+            - bats tests/sem_version_jammy_arm/${TEST}.bats
+
+
+  - name: Sem Service Tests Jammy ARM
+    dependencies:
+      - "Build local CLIs"
+    task:
+      agent:
+        machine:
+          type: r1-standard-4
+          os_image: ubuntu2204
+      prologue:
+        commands:
+          - wget https://github.com/semaphoreci/artifact/releases/download/v0.6.2/artifact_Linux_arm64.tar.gz -O /tmp/artifact_Linux_arm64.tar.gz
+          - sudo tar -xf /tmp/artifact_Linux_arm64.tar.gz -C /usr/local/bin/
+          - checkout
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+          - bash release/create.sh
+          - source release/install_in_tests.sh
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+      jobs:
+        - name: Sem Service
+          matrix:
+            - env_var: SERVICE
+              values:
+                - postgres
+                - memcached
+          commands:
+            - sem-service start ${SERVICE}
 
 
   - name: "Sem Version Tests container"
@@ -167,9 +246,11 @@ blocks:
         commands:
           - checkout
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
           - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - bash release/create.sh
           - source tests/sftp_server/start_on_mac.sh
           - source release/install_in_tests.sh
@@ -188,9 +269,11 @@ blocks:
         commands:
           - checkout
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
           - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - bash release/create.sh
           - source release/create.sh
           - cd ~/$SEMAPHORE_GIT_DIR/
@@ -227,9 +310,11 @@ blocks:
         commands:
           - checkout
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
           - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - bash release/create.sh
           - source tests/sftp_server/start_on_mac.sh
 
@@ -283,9 +368,12 @@ blocks:
         commands:
           - checkout
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
           - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+
           - bash release/create.sh
           - source tests/sftp_server/start_on_docker.sh
       jobs:
@@ -336,9 +424,11 @@ blocks:
         commands:
           - checkout
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
           - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - bash release/create.sh
           - apk add --update docker openrc
           - source tests/sftp_server/start_on_docker.sh
@@ -383,9 +473,11 @@ blocks:
         commands:
           - checkout
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
           - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - bash release/create.sh
           - source tests/sftp_server/start_on_linux.sh
           - sudo apt-get install -y python3.8-dev
@@ -501,9 +593,11 @@ blocks:
         commands:
           - checkout
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
           - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -532,9 +626,11 @@ blocks:
         commands:
           - checkout
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
           - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update

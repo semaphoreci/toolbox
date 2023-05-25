@@ -42,6 +42,16 @@ curl \
     -X POST \
     -H "Authorization: token $GITHUB_TOKEN" \
     -H "Accept: application/vnd.github.v3+json" \
+    -H "Content-Type: $(file -b --mime-type /tmp/Linux-arm/linux-arm.tar)" \
+    --data-binary @/tmp/Linux-arm/linux-arm.tar \
+    "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=linux-arm.tar"
+
+echo "linux-arm.tar uploaded"
+
+curl \
+    -X POST \
+    -H "Authorization: token $GITHUB_TOKEN" \
+    -H "Accept: application/vnd.github.v3+json" \
     -H "Content-Type: $(file -b --mime-type /tmp/self-hosted-Linux/linux.tar)" \
     --data-binary @/tmp/self-hosted-Linux/linux.tar \
     "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=self-hosted-linux.tar"
