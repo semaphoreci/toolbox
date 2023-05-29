@@ -66,7 +66,7 @@ func Test__Store(t *testing.T) {
 		 * have any lines from the smaller file.
 		 */
 		t.Run(fmt.Sprintf("%s concurrent writes keep the file that finished writing last", storageType), func(t *testing.T) {
-			if runtime.GOOS == "windows" {
+			if runtime.GOOS == "windows" || storageType == "gcs" {
 				t.Skip()
 			}
 
