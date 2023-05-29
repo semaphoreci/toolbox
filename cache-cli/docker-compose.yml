@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile.dev
     depends_on:
       - s3
+      - gcs
       - sftp-server
     tty: true
     command: "sleep 0"
@@ -15,7 +16,16 @@ services:
       - .:/app
     environment:
       SEMAPHORE_CACHE_S3_URL: "http://s3:9000"
+      STORAGE_EMULATOR_HOST: "http://gcs:4443"
       SEMAPHORE_TOOLBOX_METRICS_ENABLED: "true"
+  gcs:
+    image: fsouza/fake-gcs-server
+    container_name: 'gcs'
+    volumes:
+      - ./test/gcs/data:/data
+    ports:
+      - 4443:4443
+    command: -backend memory -scheme http -port 4443 -public-host gcs:4443 -external-url http://gcs:4443
   s3:
     image: quay.io/minio/minio:RELEASE.2021-09-15T04-54-25Z
     container_name: 's3'
