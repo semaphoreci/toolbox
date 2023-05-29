@@ -8,7 +8,7 @@ import (
 )
 
 func (s *GCSStorage) Clear() error {
-	it := s.Bucket.Objects(context.TODO(), &storage.Query{Prefix: ""})
+	it := s.Bucket.Objects(context.TODO(), &storage.Query{Prefix: s.Project})
 	for {
 		attrs, err := it.Next()
 		if err == iterator.Done {

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 
@@ -18,7 +19,8 @@ func (s *GCSStorage) Store(key, path string) error {
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 
-	writer := s.Bucket.Object(key).NewWriter(ctx)
+	destination := fmt.Sprintf("%s/%s", s.Project, key)
+	writer := s.Bucket.Object(destination).NewWriter(ctx)
 
 	_, err = io.Copy(writer, file)
 	if err != nil {

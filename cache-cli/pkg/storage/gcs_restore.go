@@ -14,7 +14,8 @@ func (s *GCSStorage) Restore(key string) (*os.File, error) {
 		return nil, err
 	}
 
-	reader, err := s.Bucket.Object(key).NewReader(context.TODO())
+	bucketKey := fmt.Sprintf("%s/%s", s.Project, key)
+	reader, err := s.Bucket.Object(bucketKey).NewReader(context.TODO())
 	if err != nil {
 		_ = tempFile.Close()
 		return nil, err

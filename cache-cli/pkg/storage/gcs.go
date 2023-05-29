@@ -15,14 +15,15 @@ type GCSStorage struct {
 
 type GCSStorageOptions struct {
 	Bucket  string
+	Project string
 	Config  StorageConfig
 }
 
 func NewGCSStorage(options GCSStorageOptions) (*GCSStorage, error) {
-	return createDefaultGCSStorage(options.Bucket, options.Config)
+	return createDefaultGCSStorage(options.Bucket, options.Project, options.Config)
 }
 
-func createDefaultGCSStorage(gcsBucket string, storageConfig StorageConfig) (*GCSStorage, error) {
+func createDefaultGCSStorage(gcsBucket string, project string, storageConfig StorageConfig) (*GCSStorage, error) {
 	client, err := storage.NewClient(context.TODO())
 	if err != nil {
 		return nil, err
@@ -31,6 +32,7 @@ func createDefaultGCSStorage(gcsBucket string, storageConfig StorageConfig) (*GC
 	return &GCSStorage{
 		Client:        client,
 		Bucket:        client.Bucket(gcsBucket),
+		Project:       project,
 		StorageConfig: storageConfig,
 	}, nil
 }
