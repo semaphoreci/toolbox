@@ -6,6 +6,9 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 docker_status=0
 state=('success' 'fail')
 download_location='local'
+registry_host='registry.semaphoreci.com'
+[[ $(uname -m) =~ "aarch" ]] && registry_host="${registry_host}/arm"
+
 declare -A sem_services
 sem_services['memcached']="1.5 1.6"
 sem_services['mysql']="5.5 5.6.51 5.6 5.6.50 5.7.13 5.7.25 5.7.27 5.7.31 5.7.32 5.7.33 5.7 5 8.0.16 8.0.22 8.0.23 8.0 8"
@@ -34,13 +37,13 @@ service::pull_image() {
   if [[ -z $image_name ]]; then
     service:err "Image name can't be empty"
   fi
-
-  if ! echo "$image_name" | grep -E '^registry.semaphoreci.com/[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
-    if ! echo "$image_name" | grep -E '^[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
-      service::err "Invalid image name provided '${image_name}'"
+  if ! echo "$image_name" | grep -E '^registry.semaphoreci.com/arm/[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
+    if ! echo "$image_name" | grep -E '^registry.semaphoreci.com/[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
+      if ! echo "$image_name" | grep -E '^[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
+        service::err "Invalid image name provided '${image_name}'"
+      fi
     fi
   fi
-
   service::duration service::run_cmd service::pull_image_retry pull "$image_name" download "$(echo ${image_name%%:*})"
 }
 
@@ -79,7 +82,7 @@ service::check_version(){
 service::start_mysql() {
   service_version=$1
   shift
-  local service_image='registry.semaphoreci.com/mysql'
+  local service_image="${registry_host}/mysql"
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
@@ -99,7 +102,7 @@ service::start_mysql() {
 service::start_postgres() {
   service_version=$1
   shift
-  local service_image='registry.semaphoreci.com/postgres'
+  local service_image="${registry_host}/postgres"
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
@@ -119,7 +122,7 @@ service::start_postgres() {
 service::start_postgis() {
   service_version=$1
   shift
-  local service_image='registry.semaphoreci.com/postgis'
+  local service_image="${registry_host}/postgis"
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
@@ -140,7 +143,7 @@ service::start_postgis() {
 service::start_redis() {
   service_version=$1
   shift
-  local service_image='registry.semaphoreci.com/redis'
+  local service_image="${registry_host}/redis"
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
@@ -158,7 +161,7 @@ service::start_redis() {
 
 service::start_memcached() {
   service_version="${1:-1.5}"
-  local service_image='registry.semaphoreci.com/memcached'
+  local service_image="${registry_host}/memcached"
 
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name memcached -d "$service_image":"$service_version")
@@ -176,7 +179,7 @@ service::start_memcached() {
 service::start_mongodb() {
   service_version=$1
   shift
-  local service_image='registry.semaphoreci.com/mongo'
+  local service_image="${registry_host}/mongo"
 
   docker_params="$@"
   service::pull_image "$service_image:$service_version"
@@ -194,7 +197,7 @@ service::start_mongodb() {
 
 service::start_elasticsearch() {
   service_version="${1:-6.5}"
-  local service_image='registry.semaphoreci.com/elasticsearch'
+  local service_image="${registry_host}/elasticsearch"
 
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name elasticsearch -e "discovery.type=single-node" -d "$service_image":"$service_version")
@@ -211,7 +214,7 @@ service::start_elasticsearch() {
 
 service::start_opensearch() {
   service_version="${1:-2}"
-  local service_image='registry.semaphoreci.com/opensearch'
+  local service_image="${registry_host}/opensearch"
 
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name opensearch -e "discovery.type=single-node" -d "$service_image":"$service_version")
@@ -228,7 +231,7 @@ service::start_opensearch() {
 
 service::start_rabbitmq() {
   service_version="${1:-3.8}"
-  local service_image='registry.semaphoreci.com/rabbitmq'
+  local service_image="${registry_host}/rabbitmq"
 
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name rabbitmq --hostname rabbitmq -d "$service_image":"$service_version")
@@ -245,7 +248,7 @@ service::start_rabbitmq() {
 
 service::start_cassandra() {
   service_version="${1:-3.11}"
-  local service_image='registry.semaphoreci.com/cassandra'
+  local service_image="${registry_host}/cassandra"
 
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name cassandra -d "$service_image":"$service_version")
@@ -262,7 +265,7 @@ service::start_cassandra() {
 
 service::start_rethinkdb() {
   service_version="${1:-2.3}"
-  local service_image='registry.semaphoreci.com/rethinkdb'
+  local service_image="${registry_host}/rethinkdb"
 
   service::pull_image "$service_image:$service_version"
   docker_output=$(docker run --net=host --rm --name rethinkdb -d "$service_image":"$service_version")

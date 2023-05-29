@@ -8,6 +8,8 @@ SUPPORTED_SOFTWARE=(elixir go java php ruby python node c cpp erlang scala firef
 DATE_FORMAT='%H:%M %d/%m/%Y'
 TOTAL_TIME=0
 
+ARCH=$(uname -m)
+
 ################################################################################
 # Generic function which executes the passed 'command' to switch the version
 # Globals:
@@ -43,10 +45,10 @@ version::change() {
 version::change_ruby() {
   [[ "$software_version" == "2.5" ]] && software_version="2.5.9"
   [[ "$software_version" == "2.6" ]] && software_version="2.6.10"
-  [[ "$software_version" == "2.7" ]] && software_version="2.7.7"
-  [[ "$software_version" == "3.0" ]] && software_version="3.0.5"
-  [[ "$software_version" == "3.1" ]] && software_version="3.1.3"
-  [[ "$software_version" == "3.2" ]] && software_version="3.2.1"
+  [[ "$software_version" == "2.7" ]] && software_version="2.7.8"
+  [[ "$software_version" == "3.0" ]] && software_version="3.0.6"
+  [[ "$software_version" == "3.1" ]] && software_version="3.1.4"
+  [[ "$software_version" == "3.2" ]] && software_version="3.2.2"
 
   if ! [ -d ~/.rbenv/versions/"${software_version}" ]; then
     sem-install ruby "${software_version}"
@@ -67,7 +69,7 @@ version::change_elixir() {
   [[ "$software_version" == "1.11" ]] && software_version="1.11.4"
   [[ "$software_version" == "1.12" ]] && software_version="1.12.3"
   [[ "$software_version" == "1.13" ]] && software_version="1.13.4"
-  [[ "$software_version" == "1.14" ]] && software_version="1.14.3"
+  [[ "$software_version" == "1.14" ]] && software_version="1.14.4"
 
   if [[ $(kiex list) != *"${software_version}"* ]];then
     sem-install elixir "${software_version}"
@@ -91,8 +93,8 @@ version::change_php() {
   [[ "$software_version" == "7.2" ]] && software_version="7.2.34"
   [[ "$software_version" == "7.3" ]] && software_version="7.3.33"
   [[ "$software_version" == "7.4" ]] && software_version="7.4.33"
-  [[ "$software_version" == "8" ]] && software_version="8.0.27"
-  [[ "$software_version" == "8.0" ]] && software_version="8.0.27"
+  [[ "$software_version" == "8" ]] && software_version="8.0.28"
+  [[ "$software_version" == "8.0" ]] && software_version="8.0.28"
 
   if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
     sem-install php "${software_version}"
@@ -132,11 +134,30 @@ version::change_erlang() {
   return $?
 }
 version::change_firefox() {
-  version::change "change-firefox-version"
-  return $?
+  case $ARCH in
+    x86_64)
+      version::change "change-firefox-version"
+      return $?
+      ;;
+    *)
+      echo "sem-version firefox is not supported for $ARCH"
+      ;;
+  esac
 }
 version::change_kubectl() {
-  curl --silent -LO https://storage.googleapis.com/kubernetes-release/release/v"$software_version"/bin/linux/amd64/kubectl
+  case $ARCH in
+    x86_64)
+      kubectl_arch="amd64"
+      ;;
+    aarch64)
+      kubectl_arch="arm64"
+      ;;
+    *)
+      echo "Unsupported architecture $ARCH"
+      exit 1
+      ;;
+  esac
+  curl --silent -LO https://storage.googleapis.com/kubernetes-release/release/v"$software_version"/bin/linux/"$kubectl_arch"/kubectl
   if test -f "kubectl"; then
     chmod +x ./kubectl
     sudo mv -f kubectl /usr/bin/

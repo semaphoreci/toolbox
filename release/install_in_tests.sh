@@ -19,14 +19,15 @@ prefix_cmd rm -f $(which when)
 prefix_cmd rm -f $(which test-results)
 prefix_cmd rm -f $(which enetwork)
 cd ~
-
+arch=""
 case $(uname) in
   Darwin)
     tar -xvf /tmp/Darwin/darwin.tar -C /tmp
     mv /tmp/toolbox ~/.toolbox
     ;;
   Linux)
-    tar -xvf /tmp/Linux/linux.tar -C /tmp
+    [[ "$(uname -m)" =~ "aarch" ]] && arch="-arm"
+    tar -xvf /tmp/"Linux${arch}"/"linux${arch}".tar -C /tmp
     mv /tmp/toolbox ~/.toolbox
     ;;
 esac
