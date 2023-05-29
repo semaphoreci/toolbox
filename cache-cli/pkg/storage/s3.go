@@ -97,7 +97,12 @@ func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string, storageConfig
 		}, nil
 	})
 
-	creds := credentials.NewStaticCredentialsProvider("minioadmin", "minioadmin", "")
+	creds := credentials.NewStaticCredentialsProvider(
+		os.Getenv("SEMAPHORE_CACHE_S3_KEY"),
+		os.Getenv("SEMAPHORE_CACHE_S3_SECRET"),
+		"",
+	)
+
 	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
 		awsConfig.WithCredentialsProvider(creds),
 		awsConfig.WithEndpointResolver(resolver),
