@@ -41,8 +41,9 @@ var testStorageTypes = map[string]TestStorageType{
 		runInWindows: true,
 		initializer: func(storageSize int64, sortBy string) (Storage, error) {
 			return NewGCSStorage(GCSStorageOptions{
-				Bucket: "semaphore-cache",
-				Config: StorageConfig{MaxSpace: math.MaxInt64, SortKeysBy: sortBy},
+				Bucket:  "semaphore-cache",
+				Project: "cache-cli",
+				Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysBy: sortBy},
 			})
 		},
 	},
