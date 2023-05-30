@@ -108,6 +108,22 @@ func InitStorageWithConfig(config StorageConfig) (Storage, error) {
 			PrivateKeyPath: privateKeyPath,
 			Config:         buildStorageConfig(config, 9*1024*1024*1024),
 		})
+	case "gcs":
+		project := os.Getenv("SEMAPHORE_PROJECT_ID")
+		if project == "" {
+			return nil, fmt.Errorf("no SEMAPHORE_PROJECT_ID set")
+		}
+
+		gcsBucket := os.Getenv("SEMAPHORE_CACHE_GCS_BUCKET")
+		if gcsBucket == "" {
+			return nil, fmt.Errorf("no SEMAPHORE_CACHE_GCS_BUCKET set")
+		}
+
+		return NewGCSStorage(GCSStorageOptions{
+			Bucket:  gcsBucket,
+			Project: project,
+			Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysBy: config.SortKeysBy},
+		})
 	default:
 		return nil, fmt.Errorf("cache backend '%s' is not available", backend)
 	}

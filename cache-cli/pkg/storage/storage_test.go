@@ -37,6 +37,16 @@ var testStorageTypes = map[string]TestStorageType{
 			})
 		},
 	},
+	"gcs": {
+		runInWindows: true,
+		initializer: func(storageSize int64, sortBy string) (Storage, error) {
+			return NewGCSStorage(GCSStorageOptions{
+				Bucket:  "semaphore-cache",
+				Project: "cache-cli",
+				Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysBy: sortBy},
+			})
+		},
+	},
 }
 
 func runTestForAllStorageTypes(t *testing.T, sortBy string, test func(string, Storage)) {
