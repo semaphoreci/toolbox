@@ -69,7 +69,8 @@ version::change_elixir() {
   [[ "$software_version" == "1.11" ]] && software_version="1.11.4"
   [[ "$software_version" == "1.12" ]] && software_version="1.12.3"
   [[ "$software_version" == "1.13" ]] && software_version="1.13.4"
-  [[ "$software_version" == "1.14" ]] && software_version="1.14.4"
+  [[ "$software_version" == "1.14" ]] && software_version="1.14.5"
+  [[ "$software_version" == "1.15" ]] && software_version="1.15.2"
 
   if [[ $(kiex list) != *"${software_version}"* ]];then
     sem-install elixir "${software_version}"
@@ -93,8 +94,8 @@ version::change_php() {
   [[ "$software_version" == "7.2" ]] && software_version="7.2.34"
   [[ "$software_version" == "7.3" ]] && software_version="7.3.33"
   [[ "$software_version" == "7.4" ]] && software_version="7.4.33"
-  [[ "$software_version" == "8" ]] && software_version="8.0.28"
-  [[ "$software_version" == "8.0" ]] && software_version="8.0.28"
+  [[ "$software_version" == "8" ]] && software_version="8.0.29"
+  [[ "$software_version" == "8.0" ]] && software_version="8.0.29"
 
   if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
     sem-install php "${software_version}"
@@ -126,6 +127,7 @@ version::change_erlang() {
   [[ "$software_version" == "23" ]] && software_version="23.3"
   [[ "$software_version" == "24" ]] && software_version="24.3"
   [[ "$software_version" == "25" ]] && software_version="25.3"
+  [[ "$software_version" == "26" ]] && software_version="26.0"
 
   if [[ $(kerl list installations) != *"${software_version}"* ]]; then
     sem-install erlang "${software_version}"

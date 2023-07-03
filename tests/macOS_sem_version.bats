@@ -9,6 +9,8 @@ setup() {
   eval "$(rbenv init -)"
   source ~/toolbox/sem-version
   source ~/toolbox/sem-install
+  source ~/.nvm/nvm.sh
+  export NVM_DIR=~/.nvm
 }
 
 @test "[macOS] sem-version ruby - 2.5.9 " {

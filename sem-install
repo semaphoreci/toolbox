@@ -38,6 +38,7 @@ install::install_node() {
   sudo ln -fs "$(which node)" /usr/bin/nodejs
   return $result
 }
+
 install::install_ruby() {
   if [[ $(install::available) -eq 1 ]] ; then
     rbenv install -s ${language_version}
@@ -88,6 +89,9 @@ install::install_elixir() {
         ;;
       "1.14"*)
         local erlang_version="25.3"
+        ;;
+      "1.15"*)
+        local erlang_version="26.0"
         ;;
       *)
         echo "Installation of '${language}' version '${language_version}' is not yet supported"
