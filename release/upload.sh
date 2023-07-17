@@ -8,6 +8,7 @@ set -euo pipefail
 #
 #   1. Create the tarballs by running release/create.sh -a, this will create:
 #      - /tmp/Linux/linux.tar
+#      - /tmp/Linux/linux-arm.tar
 #      - /tmp/Darwin/darwin.tar
 #      - /tmp/self-hosted-Linux/linux.tar
 #      - /tmp/self-hosted-Linux-arm/linux-arm.tar
@@ -107,6 +108,17 @@ curl \
     "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=self-hosted-windows.tar"
 
 echo "self-hosted-windows.tar uploaded"
+
+curl \
+    -X POST \
+    -H "Authorization: token $GITHUB_TOKEN" \
+    -H "Accept: application/vnd.github.v3+json" \
+    -H "Content-Type: $(file -b --mime-type /tmp/checksums.txt)" \
+    --data-binary @/tmp/checksums.txt \
+    "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=checksums.txt"
+
+echo "checksums.txt uploaded"
+
 
 echo "Everything DONE"
 echo "🍻"

@@ -32,6 +32,14 @@ create_tarball() {
   tar --list --verbose --file=${tarball_name}
 }
 
+create_checksum() {
+# path variable includes the target file
+  path=$1
+  target_name=$2
+  chsum=$(sha256sum $path | awk '{print $1}')
+  echo "${chsum} ${target_name}"
+}
+
 include_external_linux_binary() {
   url=$1
   binary_name=$2
@@ -218,17 +226,30 @@ shift $((OPTIND -1))
 # The when CLI is a escript that runs on the Erlang VM,
 # so it doesn't change based on os/arch. We download it just once before anything else.
 download_when_cli
-
+touch /tmp/checksums.txt
+truncate -s0 /tmp/checksums.txt
 hosted::pack
 create_tarball "linux.tar" /tmp/Linux
+echo "$(create_checksum /tmp/Linux/linux.tar 'linux.tar')" >> /tmp/checksums.txt
 create_tarball "darwin.tar" /tmp/Darwin
+echo "$(create_checksum /tmp/Darwin/darwin.tar 'darwin.tar')" >> /tmp/checksums.txt
 create_tarball "linux-arm.tar" /tmp/Linux-arm
+echo "$(create_checksum /tmp/Linux-arm/linux-arm.tar 'linux-arm.tar')" >> /tmp/checksums.txt
 
 if [[ $create_self_hosted == "true" ]]; then
   self_hosted::pack
   create_tarball "linux.tar" /tmp/self-hosted-Linux
+  echo "$(create_checksum /tmp/self-hosted-Linux/linux.tar 'self-hosted-linux.tar')" >> /tmp/checksums.txt
   create_tarball "linux-arm.tar" /tmp/self-hosted-Linux-arm
+  echo "$(create_checksum /tmp/self-hosted-Linux-arm/linux-arm.tar 'self-hosted-linux-arm.tar')" >> /tmp/checksums.txt
   create_tarball "darwin.tar" /tmp/self-hosted-Darwin
+  echo "$(create_checksum /tmp/self-hosted-Darwin/darwin.tar 'self-hosted-darwin.tar')" >> /tmp/checksums.txt
   create_tarball "darwin-arm.tar" /tmp/self-hosted-Darwin-arm
+  echo "$(create_checksum /tmp/self-hosted-Darwin-arm/darwin-arm.tar 'self-hosted-darwin-arm.tar')" >> /tmp/checksums.txt
   create_tarball "windows.tar" /tmp/self-hosted-Windows
+  echo "$(create_checksum /tmp/self-hosted-Windows/windows.tar 'self-hosted-windows.tar')" >> /tmp/checksums.txt
 fi
+
+cat /tmp/checksums.txt
+
+
