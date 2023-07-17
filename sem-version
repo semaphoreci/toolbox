@@ -8,7 +8,7 @@ SUPPORTED_SOFTWARE=(elixir go java php ruby python node c cpp erlang scala firef
 DATE_FORMAT='%H:%M %d/%m/%Y'
 TOTAL_TIME=0
 
-ARCH=$(uname -m)
+SEMAPHORE_ARCH=$(uname -m)
 
 ################################################################################
 # Generic function which executes the passed 'command' to switch the version
@@ -136,18 +136,18 @@ version::change_erlang() {
   return $?
 }
 version::change_firefox() {
-  case $ARCH in
+  case $SEMAPHORE_ARCH in
     x86_64)
       version::change "change-firefox-version"
       return $?
       ;;
     *)
-      echo "sem-version firefox is not supported for $ARCH"
+      echo "sem-version firefox is not supported for $SEMAPHORE_ARCH"
       ;;
   esac
 }
 version::change_kubectl() {
-  case $ARCH in
+  case $SEMAPHORE_ARCH in
     x86_64)
       kubectl_arch="amd64"
       ;;
@@ -155,7 +155,7 @@ version::change_kubectl() {
       kubectl_arch="arm64"
       ;;
     *)
-      echo "Unsupported architecture $ARCH"
+      echo "Unsupported architecture $SEMAPHORE_ARCH"
       exit 1
       ;;
   esac
