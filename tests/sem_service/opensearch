@@ -26,4 +26,8 @@ sleep 5
 curl -XGET 'https://0.0.0.0:9200' -ksu admin:admin | grep number |grep 2.6.0
 
 sem-service stop opensearch
+sem-service start opensearch 2.7.0
+sleep 5
+curl -XGET 'https://0.0.0.0:9200' -ksu admin:admin | grep number |grep 2.7.0
+sem-service stop opensearch
 cat /tmp/toolbox_semservice
