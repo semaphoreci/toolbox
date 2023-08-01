@@ -32,8 +32,7 @@ install::download() {
 
 install::install_node() {
   NVM_NODEJS_ORG_MIRROR=http://nodejs.semaphoreci.com/dist nvm install ${language_version}
-  nvm use ${language_version}
-  npm install -g grunt-cli
+  nvm use ${language_version} && npm install -g grunt-cli
   result="$?"
   sudo ln -fs "$(which node)" /usr/bin/nodejs
   return $result
@@ -61,12 +60,12 @@ install::install_erlang() {
     kerl update releases
     kerl build "${language_version}" "${language_version}"
     kerl install "${language_version}" ~/.kerl/installs/"${language_version}"
-    echo ""${language_version}" /home/semaphore/.kerl/installs/"${language_version}"">> ~/.kerl/otp_installations
+    echo "${language_version} /home/semaphore/.kerl/installs/${language_version}">> ~/.kerl/otp_installations
   else
     install::download
     tar -zxf ./"${language_version}".tar.gz && rm -rf ./"${language_version}".tar.gz
     mv ./"${language_version}" ~/.kerl/installs/
-    echo ""${language_version}" /home/semaphore/.kerl/installs/"${language_version}"">> ~/.kerl/otp_installations
+    echo "${language_version} /home/semaphore/.kerl/installs/${language_version}">> ~/.kerl/otp_installations
   fi
   return $?
 }
@@ -197,8 +196,6 @@ sem-install() {
     node)
       install::install_node
       ;;
-
-
     *)
       install:err "Installation of '${language}' is not yet supported"
       return 1;
