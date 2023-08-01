@@ -5,7 +5,7 @@ set -euo pipefail
 ARTIFACT_CLI_VERSION="v0.6.2"
 WHEN_CLI_VERSION="v1.0.5"
 SPC_CLI_VERSION="v1.9.4"
-TEST_RESULTS_CLI_VERSION="v0.6.4"
+TEST_RESULTS_CLI_VERSION="v0.6.5"
 
 ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
 SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSION"
@@ -189,7 +189,7 @@ self_hosted::pack() {
 }
 
 hosted::pack() {
-  hosted::create_initial_content 
+  hosted::create_initial_content
   include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/Linux "x86_64"
   include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/Linux-arm "arm64"
   include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/Darwin "x86_64"
@@ -251,5 +251,3 @@ if [[ $create_self_hosted == "true" ]]; then
 fi
 
 cat /tmp/checksums.txt
-
-
