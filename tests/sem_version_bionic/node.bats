@@ -35,3 +35,8 @@ setup() {
   run node --version
   assert_line --partial "v16.15.1"
 }
+
+@test "change node to x.y.z" {
+  run sem-version node x.y.z
+  assert_failure
+}
