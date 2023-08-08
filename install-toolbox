@@ -39,7 +39,7 @@ install_cmd chmod +x $INSTALL_PATH/retry
 if [[ $? -eq 0 ]];then
   echo "retry installed"
 else
-  echo "toolbox_install_error{module='retry'} 1" >> /tmp/toolbox_metrics
+  echo "toolbox_install_error_retry" >> /tmp/toolbox_metrics
 fi
 
 install_cmd ln -sf ~/.toolbox/ssh-session-cli $INSTALL_PATH/semaphore
@@ -47,7 +47,7 @@ install_cmd chmod +x $INSTALL_PATH/semaphore
 if [[ $? -eq 0 ]];then
   echo "ssh-session-cli installed"
 else
-  echo "toolbox_install_error{module='ssh-session-cli'} 1" >> /tmp/toolbox_metrics
+  echo "toolbox_install_error_ssh-session-cli" >> /tmp/toolbox_metrics
 fi
 
 install_cmd ln -sf ~/.toolbox/cache $INSTALL_PATH/cache
@@ -55,7 +55,7 @@ install_cmd chmod +x $INSTALL_PATH/cache
 if [[ $? -eq 0 ]];then
   echo "cache installed"
 else
-  echo "toolbox_install_error{module='cache'} 1" >> /tmp/toolbox_metrics
+  echo "toolbox_install_error_cache" >> /tmp/toolbox_metrics
 fi
 
 install_cmd ln -sf ~/.toolbox/sem-context $INSTALL_PATH/sem-context
@@ -63,7 +63,7 @@ install_cmd chmod +x $INSTALL_PATH/sem-context
 if [[ $? -eq 0 ]];then
   echo "sem-context installed"
 else
-  echo "toolbox_install_error{module='sem-context'} 1" >> /tmp/toolbox_metrics
+  echo "toolbox_install_error_sem-context" >> /tmp/toolbox_metrics
 fi
 
 install_cmd ln -sf ~/.toolbox/sem-service $INSTALL_PATH/sem-service
@@ -71,7 +71,7 @@ install_cmd chmod +x $INSTALL_PATH/sem-service
 if [[ $? -eq 0 ]];then
   echo "sem-service installed"
 else
-  echo "toolbox_install_error{module='sem-service'} 1" >> /tmp/toolbox_metrics
+  echo "toolbox_install_error_sem-service" >> /tmp/toolbox_metrics
 fi
 
 install_cmd ln -sf ~/.toolbox/sem-dockerize $INSTALL_PATH/sem-dockerize
@@ -79,7 +79,7 @@ install_cmd chmod +x $INSTALL_PATH/sem-dockerize
 if [[ $? -eq 0 ]];then
   echo "sem-dockerize installed"
 else
-  echo "toolbox_install_error{module='sem-dockerize'} 1" >> /tmp/toolbox_metrics
+  echo "toolbox_install_error_sem-dockerize" >> /tmp/toolbox_metrics
 fi
 
 install_cmd ln -sf ~/.toolbox/sem-service-check-params $INSTALL_PATH/sem-service-check-params
@@ -87,7 +87,7 @@ install_cmd chmod +x $INSTALL_PATH/sem-service-check-params
 if [[ $? -eq 0 ]];then
   echo "sem-service-check-params installed"
 else
-  echo "toolbox_install_error{module='sem-service-check-params'} 1" >> /tmp/toolbox_metrics
+  echo "toolbox_install_error_sem-service-check-params" >> /tmp/toolbox_metrics
 fi
 
 install_cmd ln -sf ~/.toolbox/sem-semantic-release $INSTALL_PATH/sem-semantic-release
@@ -95,17 +95,9 @@ install_cmd chmod +x $INSTALL_PATH/sem-semantic-release
 if [[ $? -eq 0 ]];then
   echo "sem-semantic-release installed"
 else
-  echo "toolbox_install_error{module='sem-semantic-release'} 1" >> /tmp/toolbox_metrics
+  echo "toolbox_install_error_sem-semantic-release" >> /tmp/toolbox_metrics
 fi
 
-install_cmd ln -sf ~/.toolbox/install-package $INSTALL_PATH/install-package
-install_cmd ln -sf ~/.toolbox/install-package $INSTALL_PATH/install-package.sh
-install_cmd chmod +x $INSTALL_PATH/install-package
-if [[ $? -eq 0 ]];then
-  echo "install-package installed"
-else
-  echo "toolbox_install_error{module='install-package'} 1" >> /tmp/toolbox_metrics
-fi
 
 echo "Installing the artifacts CLI"
 install_cmd mv ~/.toolbox/artifact $INSTALL_PATH/artifact
@@ -113,7 +105,7 @@ install_cmd chmod +x $INSTALL_PATH/artifact
 if [[ $? -eq 0 ]];then
   echo "artifacts installed"
 else
-  echo "toolbox_install_error{module='artifacts'} 1" >> /tmp/toolbox_metrics
+  echo "toolbox_install_error_artifacts" >> /tmp/toolbox_metrics
 fi
 
 echo "Installing the test results CLI"
@@ -122,11 +114,21 @@ install_cmd chmod +x $INSTALL_PATH/test-results
 if [[ $? -eq 0 ]];then
   echo "test-results installed"
 else
-  echo "toolbox_install_error{module='test-results'} 1" >> /tmp/toolbox_metrics
+  echo "toolbox_install_error_test-results" >> /tmp/toolbox_metrics
 fi
 
 
 if [[ `uname` != "Darwin" ]]; then
+
+  echo "Installing the install-package for linux"
+  install_cmd ln -sf ~/.toolbox/install-package $INSTALL_PATH/install-package
+  install_cmd ln -sf ~/.toolbox/install-package $INSTALL_PATH/install-package.sh
+  install_cmd chmod +x $INSTALL_PATH/install-package
+  if [[ $? -eq 0 ]];then
+    echo "install-package installed"
+  else
+    echo "toolbox_install_error_install-package" >> /tmp/toolbox_metrics
+  fi
 
   echo "Installing the SPC CLI"
   install_cmd mv ~/.toolbox/spc $INSTALL_PATH/spc
@@ -134,7 +136,7 @@ if [[ `uname` != "Darwin" ]]; then
   if [[ $? -eq 0 ]];then
     echo "spc installed"
   else
-    echo "toolbox_install_error{module='spc'} 1" >> /tmp/toolbox_metrics
+    echo "toolbox_install_error_spc" >> /tmp/toolbox_metrics
   fi
 
 
@@ -144,16 +146,16 @@ if [[ `uname` != "Darwin" ]]; then
   if [[ $? -eq 0 ]];then
     echo "when installed"
   else
-    echo "toolbox_install_error{module='when'} 1" >> /tmp/toolbox_metrics
+    echo "toolbox_install_error_when" >> /tmp/toolbox_metrics
   fi
 
   echo "Installing the enetwork CLI"
   install_cmd mv ~/.toolbox/enetwork $INSTALL_PATH/enetwork
   install_cmd chmod +x $INSTALL_PATH/enetwork
   if [[ $? -eq 0 ]];then
-    echo "when installed"
+    echo "enetwork installed"
   else
-    echo "toolbox_install_error{module='enetwork'} 1" >> /tmp/toolbox_metrics
+    echo "toolbox_install_error_enetwork" >> /tmp/toolbox_metrics
   fi
 
 
@@ -163,4 +165,3 @@ if [[ `uname` != "Darwin" ]]; then
   sh ~/.toolbox/system-metrics-collector &
 fi
 
-echo "toolbox_install_total 1" >> /tmp/toolbox_metrics
