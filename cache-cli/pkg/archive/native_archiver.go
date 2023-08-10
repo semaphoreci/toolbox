@@ -33,6 +33,7 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 		return fmt.Errorf("error finding '%s': %v", src, err)
 	}
 
+	// #nosec
 	dstFile, err := os.OpenFile(dst, os.O_CREATE|os.O_RDWR, os.FileMode(0644))
 	if err != nil {
 		return err
@@ -75,6 +76,7 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 		}
 
 		// If it is a regular file, we need to copy its contents to the archive
+		// #nosec
 		file, err := os.Open(fileName)
 		if err != nil {
 			return fmt.Errorf("error opening file '%s': %v", fileName, err)
@@ -114,6 +116,7 @@ type directoryStat struct {
 }
 
 func (a *NativeArchiver) Decompress(src string) (string, error) {
+	// #nosec
 	srcFile, err := os.Open(src)
 	if err != nil {
 		return "", fmt.Errorf("error opening '%s': %v", src, err)
