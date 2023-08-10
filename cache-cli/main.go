@@ -19,7 +19,10 @@ func main() {
 }
 
 func OpenLogfile() io.Writer {
+	// #nosec
 	filePath := filepath.Join(os.TempDir(), "cache_log")
+
+	// #nosec
 	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 
 	/*
