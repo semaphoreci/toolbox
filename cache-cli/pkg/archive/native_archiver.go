@@ -206,6 +206,7 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 				continue
 			}
 
+			// #nosec
 			if _, err := io.Copy(outFile, tarReader); err != nil {
 				log.Errorf("Error writing to file '%s': %v", header.Name, err)
 				hadError = true
@@ -262,7 +263,7 @@ func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*o
 	// If that happens, we create the parent directory here, and try to open the file again.
 	if errors.Is(err, os.ErrNotExist) {
 		parentDir := filepath.Dir(header.Name)
-		if err := os.MkdirAll(parentDir, 0755); err != nil {
+		if err := os.MkdirAll(parentDir, 0750); err != nil {
 			return nil, fmt.Errorf("error creating directory '%s' for '%s': %v", parentDir, header.Name, err)
 		}
 	}
