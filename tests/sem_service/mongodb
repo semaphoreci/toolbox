@@ -54,4 +54,19 @@ sem-service start mongodb 5 --username=xxx --password=xxx
 sleep 2
 echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
+sem-service status mongodb
+sem-service stop mongodb
+sem-service stop mongodb
+sem-service start mongodb 6.0.8 --username=xxx --password=xxx
+sleep 5
+echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+
+sem-service status mongodb
+sem-service stop mongodb
+sem-service stop mongodb
+sem-service start mongodb 6 --username=xxx --password=xxx
+sleep 5
+echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+
+
 cat /tmp/toolbox_semservice
