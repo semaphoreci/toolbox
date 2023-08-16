@@ -559,7 +559,7 @@ blocks:
             - go install github.com/mgechev/revive@latest
             - make lint
 
-  - name: "Cache CLI: Security checks"
+  - name: "Security checks"
     dependencies: []
     run:
       when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
@@ -568,16 +568,24 @@ blocks:
         - name: security-toolbox-shared-read-access
       prologue:
         commands:
-          - checkout && cd cache-cli
+          - checkout && cd $CLI_NAME
           - mv ~/.ssh/security-toolbox ~/.ssh/id_rsa
           - sudo chmod 600 ~/.ssh/id_rsa
       jobs:
-        # TODO: commenting this since it's blocking an important release
-        # TODO: uncomment it after this issue is fixed: https://semaphore.semaphoreci.com/jobs/adc8582e-9a24-48c3-8fdd-401033a0471e#L168
-        # - name: Check dependencies
-        #   commands:
-        #     - make check.deps
+        - name: Check dependencies
+          matrix:
+            - env_var: CLI_NAME
+              values:
+                - cache-cli
+                - sem-context
+          commands:
+            - make check.deps
         - name: Check code
+          matrix:
+            - env_var: CLI_NAME
+              values:
+                - cache-cli
+                - sem-context
           commands:
             - make check.static
       epilogue:
