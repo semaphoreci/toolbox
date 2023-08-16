@@ -21,7 +21,11 @@ func (_ *ArtifactStore) Put(key, value, contextId string) error {
 		return &utils.Error{ErrorMessage: "Cant create temp file to store contents from artifacts", ExitCode: 2}
 	}
 	defer os.Remove(file.Name())
-	file.Write([]byte(value))
+
+	_, err = file.Write([]byte(value))
+	if err != nil {
+		return &utils.Error{ErrorMessage: fmt.Sprintf("error writing value to file: %v", err), ExitCode: 2}
+	}
 
 	artifact_output, err := execArtifactCommand(Push, file.Name(), keysInfoDirName+contextId+"/"+key)
 	if err != nil {
