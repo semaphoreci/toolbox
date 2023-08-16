@@ -30,7 +30,10 @@ func (_ *ArtifactStore) Put(key, value, contextId string) error {
 	}
 
 	//Since the key is stored, delete it from '.deleted' dir, in case it was marked as deleted before
-	execArtifactCommand(Yank, keysInfoDirName+contextId+"/.deleted/"+key, "")
+	if output, err := execArtifactCommand(Yank, keysInfoDirName+contextId+"/.deleted/"+key, ""); err != nil {
+		log.Printf("error executing artifact command: %v. Output: %s\n", err, output)
+	}
+
 	return nil
 }
 
@@ -67,7 +70,10 @@ func (_ *ArtifactStore) Delete(key, contextId string) error {
 	}
 	defer os.Remove(file.Name())
 
-	execArtifactCommand(Yank, keysInfoDirName+contextId+"/"+key, "")
+	if output, err := execArtifactCommand(Yank, keysInfoDirName+contextId+"/"+key, ""); err != nil {
+		log.Printf("error executing artifact command: %v. Output: %s\n", err, output)
+	}
+
 	// The key might be present in some of the parent pipline's context as well, but we cant delete them there, as they might be used by some other pipeline.
 	// We will just mark those keys as deleted inside this pipeline's context.
 	artifact_output, err := execArtifactCommand(Push, file.Name(), keysInfoDirName+contextId+"/.deleted/"+key)
@@ -100,7 +106,9 @@ func (_ *ArtifactStore) CheckIfKeyDeleted(key, contextId string) (bool, error) {
 	}
 	defer os.RemoveAll(dir)
 
-	execArtifactCommand(Pull, keysInfoDirName+contextId+"/.deleted/", dir)
+	if output, err := execArtifactCommand(Pull, keysInfoDirName+contextId+"/.deleted/", dir); err != nil {
+		log.Printf("error executing artifact command: %v. Output: %s\n", err, output)
+	}
 
 	all_deleted_key_files, _ := ioutil.ReadDir(dir)
 	for _, deleted_key_file := range all_deleted_key_files {
@@ -114,8 +122,10 @@ func (_ *ArtifactStore) CheckIfKeyDeleted(key, contextId string) (bool, error) {
 func execArtifactCommand(command ArtifactCommand, source, dest string) (string, error) {
 	var cmd *exec.Cmd
 	if command == Push || command == Pull {
+		// #nosec
 		cmd = exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source, "-d", dest, "--force")
 	} else {
+		// #nosec
 		cmd = exec.Command("artifact", fmt.Sprintf("%v", command), "workflow", source)
 	}
 	artifact_output, err := cmd.CombinedOutput()
