@@ -2,7 +2,6 @@
 
 # Changing language versions
 VERSION="0.7"
-SUPPORTED_SOFTWARE=(elixir go java php ruby python node c cpp erlang scala firefox kubectl)
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
@@ -20,25 +19,23 @@ SEMAPHORE_ARCH=$(uname -m)
 #  0, 1-127 (exit status of the language manager command)
 
 version::metrics() {
-  local cmd=$@
+  local cmd=( "$@" )
   local software=${1#"version::change_"}
-  local version=$2
   local start
   local end
-  local duration
   [ "$(uname)" == "Linux" ] && start=$(date +%s%3N)
   [ "$(uname)" == "Darwin" ] && start=$(gdate +%s%3N)
-  $cmd
+  "${cmd[@]}"
   ch_status=$?
   [ "$(uname)" == "Linux" ] && end=$(date +%s%3N)
   [ "$(uname)" == "Darwin" ] && end=$(gdate +%s%3N)
-  TOTAL_TIME=$(( $end - $start ))
+  TOTAL_TIME=$(( end - start ))
   return $ch_status
 }
 version::change() {
   command=$1
   version::log "Changing '${software}' to version ${software_version}"
-  eval $command $software_version
+  eval "$command" "$software_version"
   ch_status=$?
   return $ch_status
 }
@@ -81,7 +78,10 @@ version::change_elixir() {
 version::change_go() {
   version::change "change-go-version"
   ret=$?
+
+  # shellcheck disable=SC2155
   [[ "$ret" == "0" ]] && export PATH="$(go env GOPATH)/bin:${PATH}"
+
   return $ret
 }
 version::change_java() {
@@ -168,9 +168,10 @@ version::change_kubectl() {
   return $?
 }
 version::change_flutter() {
-  local local_version=$(ls -1d /opt/flutter_${software_version}* | tail -1)
-  if test -d ${local_version}; then
-    rm -f /opt/flutter && ln -s ${local_version}  /opt/flutter
+  # shellcheck disable=SC2155,SC2012
+  local local_version=$(ls -1d /opt/flutter_"${software_version}"* | tail -1)
+  if test -d "${local_version}"; then
+    rm -f /opt/flutter && ln -s "${local_version}" /opt/flutter
     version::change "/opt/flutter/bin/flutter --version | grep "
     return $?
   else
@@ -227,7 +228,7 @@ version::date() {
 #   none
 ################################################################################
 version::log() {
-  echo -e "\n[$(version::date)]: $@" >&2
+  echo -e "\n[$(version::date)]: $*" >&2
 }
 
 ################################################################################
@@ -240,15 +241,13 @@ version::log() {
 #   1
 ################################################################################
 version::err() {
-  echo -e "\n! [$(version::date)]: $@" >&2
+  echo -e "\n! [$(version::date)]: $*" >&2
 
   return 1
 }
 
 ################################################################################
 # The main entrypoint to the script. Holds the switching logic.
-# Globals:
-#   SUPPORTED_SOFTWARE
 # Arguments:
 #   'software', 'version'
 # Returns:
@@ -279,11 +278,11 @@ version::main() {
 
   fn_name="version::change_${software}"
 
-  if ! [[ $(type -t $fn_name) == function ]]; then
+  if ! [[ $(type -t "$fn_name") == function ]]; then
     version::err "Function '${fn_name}' not implemented. Software '${software}' might not be supported."
     return 1
   else
-    version::metrics version::change_${software} $software_version $force
+    version::metrics version::change_"${software}" "$software_version" "$force"
     fn_status=$?
     if [[ fn_status -ne 0 ]]; then
       version::err "Failed to switch version.\n"
@@ -302,7 +301,7 @@ sem-version() {
     if [[ "$1" == 'ruby' ]] || [[ "$1" == 'node' ]]; then
       version::main "$@"
     else
-      echo "`sem-version` is not supported in this environment."
+      echo "'sem-version' is not supported in this environment."
       echo "https://docs.semaphoreci.com/ci-cd-environment/sem-version-managing-language-versions-on-linux"
       exit 1
     fi
