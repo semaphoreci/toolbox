@@ -524,8 +524,6 @@ blocks:
 
   - name: "Cache CLI: Tests"
     dependencies: []
-    run:
-      when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
     task:
       prologue:
         commands:
@@ -543,8 +541,6 @@ blocks:
 
   - name: "Cache CLI: Lint"
     dependencies: []
-    run:
-      when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
     task:
       env_vars:
         - name: GO111MODULE
@@ -561,8 +557,6 @@ blocks:
 
   - name: "Security checks"
     dependencies: []
-    run:
-      when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
     task:
       secrets:
         - name: security-toolbox-shared-read-access
