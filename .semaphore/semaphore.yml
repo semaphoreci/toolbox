@@ -559,7 +559,7 @@ blocks:
             - go install github.com/mgechev/revive@latest
             - make lint
 
-  - name: "Cache CLI: Security checks"
+  - name: "Security checks"
     dependencies: []
     run:
       when: "change_in('/cache-cli', {pipeline_file: 'ignore'})"
@@ -568,20 +568,30 @@ blocks:
         - name: security-toolbox-shared-read-access
       prologue:
         commands:
-          - checkout && cd cache-cli
+          - checkout && cd $CLI_NAME
           - mv ~/.ssh/security-toolbox ~/.ssh/id_rsa
           - sudo chmod 600 ~/.ssh/id_rsa
       jobs:
         - name: Check dependencies
+          matrix:
+            - env_var: CLI_NAME
+              values:
+                - cache-cli
+                - sem-context
           commands:
             - make check.deps
         - name: Check code
+          matrix:
+            - env_var: CLI_NAME
+              values:
+                - cache-cli
+                - sem-context
           commands:
             - make check.static
       epilogue:
         always:
           commands:
-            - 'if [ -f results.xml ]; then test-results publish --name="Cache CLI: Security checks" results.xml; fi'
+            - 'if [ -f results.xml ]; then test-results publish --name="$CLI_NAME: Security checks" results.xml; fi'
 
   - name: SHM Test Bionic
     dependencies:
