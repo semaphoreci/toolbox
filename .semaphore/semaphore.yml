@@ -60,9 +60,8 @@ blocks:
           commands:
             - shellcheck sem-service || true
             - shellcheck sem-version
-            - shellcheck libcheckout || true
+            - shellcheck -s bash libcheckout
             - 'shellcheck sem-service -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -le 76 ]]'
-            - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 90 ]]'
             - shellcheck install-package
             - shellcheck sem-semantic-release
         - name: PowerShell check
