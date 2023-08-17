@@ -119,7 +119,7 @@ function checkout::switch_revision() {
 
 function checkout::cache_store() {
   # update cache if older then 72h -> 25920s
-  if [ -z "${SEMAPHORE_GIT_CACHE_AGE:-''}" ]; then
+  if [ -z "${SEMAPHORE_GIT_CACHE_AGE:-""}" ]; then
     SEMAPHORE_GIT_CACHE_AGE=259200
   fi
 
@@ -132,7 +132,8 @@ function checkout::cache_store() {
     local diff=$(($(date +%s) - cache_age))
     echo "diff: $diff"
 
-    if (( diff > SEMAPHORE_GIT_CACHE_AGE )); then
+    # shellcheck disable=SC2004
+    if (( diff > $SEMAPHORE_GIT_CACHE_AGE )); then
       echo "Git cache outdated, refreshing..."
       cd ..
       checkout::cleanupcache
