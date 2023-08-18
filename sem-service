@@ -56,7 +56,9 @@ service::check_version(){
   local have_it=1
   local local_versions="${sem_services[$image_name]}"
 
-  for i in "${local_versions[@]}"; do
+  # SC2068: we want the word splitting here, so no double quotes
+  # shellcheck disable=SC2068
+  for i in ${local_versions[@]}; do
     if [ "$version" == "$i" ]; then
       have_it=0
       break
