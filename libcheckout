@@ -119,9 +119,7 @@ function checkout::switch_revision() {
 
 function checkout::cache_store() {
   # update cache if older then 72h -> 25920s
-  if [ -z "${SEMAPHORE_GIT_CACHE_AGE:-""}" ]; then
-    SEMAPHORE_GIT_CACHE_AGE=259200
-  fi
+  SEMAPHORE_GIT_CACHE_AGE="${SEMAPHORE_GIT_CACHE_AGE:-259200}"
 
   local cache_key
   local cache_age
@@ -132,8 +130,7 @@ function checkout::cache_store() {
     local diff=$(($(date +%s) - cache_age))
     echo "diff: $diff"
 
-    # shellcheck disable=SC2004
-    if (( diff > $SEMAPHORE_GIT_CACHE_AGE )); then
+    if (( diff > SEMAPHORE_GIT_CACHE_AGE )); then
       echo "Git cache outdated, refreshing..."
       cd ..
       checkout::cleanupcache
@@ -157,8 +154,8 @@ function checkout::cleanupcache {
   fi
   local k=$SEMAPHORE_GIT_CACHE_KEEP
 
-  # shellcheck disable=SC2207
-  local list=($(cache list 2>&1 | grep git-cache- | awk '{ print $1 }' | xargs))
+  local list=()
+  while IFS='' read -r line; do list+=("$line"); done < <(cache list 2>&1 | grep git-cache- | awk '{ print $1 }')
 
   for i in "${list[@]:$k}"; do
     cache delete "${i}"

@@ -79,6 +79,7 @@ version::change_go() {
   version::change "change-go-version"
   ret=$?
 
+  # SC2155: we are not interested in the return value.
   # shellcheck disable=SC2155
   [[ "$ret" == "0" ]] && export PATH="$(go env GOPATH)/bin:${PATH}"
 
@@ -168,8 +169,11 @@ version::change_kubectl() {
   return $?
 }
 version::change_flutter() {
-  # shellcheck disable=SC2155,SC2012
-  local local_version=$(ls -1d /opt/flutter_"${software_version}"* | tail -1)
+  local local_version
+
+  # SC2012: we don't need to handle non-alphanumeric filenames.
+  # shellcheck disable=SC2012
+  local_version=$(ls -1d /opt/flutter_"${software_version}"* | tail -1)
   if test -d "${local_version}"; then
     rm -f /opt/flutter && ln -s "${local_version}" /opt/flutter
     version::change "/opt/flutter/bin/flutter --version | grep "
