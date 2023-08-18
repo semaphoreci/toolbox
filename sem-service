@@ -298,30 +298,30 @@ service::start() {
   case "$service_name" in
     "mysql" )
       shift
-      service_version=$(sem-service-check-params mysql "$@")
-      service::check_version 'mysql' "${service_version%% *}"
-      service::duration service::start_mysql "${service_version}" total "${service_name}"
+      IFS=" " read -r -a version_and_args <<< "$(sem-service-check-params mysql "$@")"
+      service::check_version 'mysql' "${version_and_args[0]}"
+      service::duration service::start_mysql "${version_and_args[@]}" total "${service_name}"
       exit 0
       ;;
     "postgres" )
       shift
-      service_version=$(sem-service-check-params postgres "$@")
-      service::check_version 'postgres' "${service_version%% *}"
-      service::duration service::start_postgres "${service_version}" total "${service_name}"
+      IFS=" " read -r -a version_and_args <<< "$(sem-service-check-params postgres "$@")"
+      service::check_version 'postgres' "${version_and_args[0]}"
+      service::duration service::start_postgres "${version_and_args[@]}" total "${service_name}"
       exit 0
       ;;
     "postgis" )
       shift
-      service_version=$(sem-service-check-params postgis "$@")
-      service::check_version 'postgis' "${service_version%% *}"
-      service::duration service::start_postgis "${service_version}" total "${service_name}"
+      IFS=" " read -r -a version_and_args <<< "$(sem-service-check-params postgis "$@")"
+      service::check_version 'postgis' "${version_and_args[0]}"
+      service::duration service::start_postgis "${version_and_args[@]}" total "${service_name}"
       exit 0
       ;;
     "redis" )
       shift
-      service_version=$(sem-service-check-params redis "$@")
-      service::check_version 'redis' "${service_version%% *}"
-      service::duration service::start_redis "${service_version}" total "${service_name}"
+      IFS=" " read -r -a version_and_args <<< "$(sem-service-check-params redis "$@")"
+      service::check_version 'redis' "${version_and_args[0]}"
+      service::duration service::start_redis "${version_and_args[@]}" total "${service_name}"
       exit 0
       ;;
     "memcached" )
@@ -333,9 +333,9 @@ service::start() {
       ;;
     "mongodb" )
       shift
-      service_version=$(sem-service-check-params mongodb "$@")
-      service::check_version 'mongo' "${service_version%% *}"
-      service::duration service::start_mongodb "${service_version}" total "${service_name}"
+      IFS=" " read -r -a version_and_args <<< "$(sem-service-check-params mongodb "$@")"
+      service::check_version 'mongo' "${version_and_args[0]}"
+      service::duration service::start_mongodb "${version_and_args[@]}" total "${service_name}"
       exit 0
       ;;
     "elasticsearch" )
