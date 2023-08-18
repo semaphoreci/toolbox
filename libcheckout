@@ -48,6 +48,8 @@ function checkout::use_cache() {
     checkout::clone
   fi
 
+  # SC2181: checking the last command's exit code
+  # with $? simplifies the control flow of this function.
   # shellcheck disable=SC2181
   if [ "$?" -eq "0" ]; then
     checkout::cache_store
