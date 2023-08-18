@@ -1,5 +1,6 @@
 #!/bin/bash
-# shellcheck disable=SC2155,SC2116
+# SC2116: style suggestion that we don't care about.
+# shellcheck disable=SC2116
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
@@ -46,8 +47,7 @@ service::pull_image() {
     fi
   fi
 
-  # shellcheck disable=SC2086
-  service::duration service::run_cmd service::pull_image_retry pull "$image_name" download "$(echo ${image_name%%:*})"
+  service::duration service::run_cmd service::pull_image_retry pull "$image_name" download "$(echo "${image_name%%:*}")"
 }
 
 service::check_version(){
@@ -510,19 +510,21 @@ service::print_usage() {
 }
 
 service::duration() {
-  # shellcheck disable=SC2178,SC2124
-  local cmd=${@:1:$#-2}
-
-  local service=$(echo "${@: -1}")
-  local version=$(echo "${@: 2:1}")
-  local type=$(echo "${@: -2:1}")
+  local cmd
+  local service
+  local version
+  local type
   local start
   local end
   local duration
+
+  cmd=( "${@:1:$#-2}" )
+  service=$(echo "${@: -1}")
+  version=$(echo "${@: 2:1}")
+  type=$(echo "${@: -2:1}")
   start=$(date +%s%3N)
 
-  # shellcheck disable=SC2128
-  $cmd
+  "${cmd[@]}"
 
   end=$(date +%s%3N)
   duration=$(( end - start ))
