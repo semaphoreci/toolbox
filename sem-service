@@ -1,4 +1,6 @@
 #!/bin/bash
+# SC2116: style suggestion that we don't care about.
+# shellcheck disable=SC2116
 
 # Misc
 DATE_FORMAT='%H:%M %d/%m/%Y'
@@ -44,7 +46,8 @@ service::pull_image() {
       fi
     fi
   fi
-  service::duration service::run_cmd service::pull_image_retry pull "$image_name" download "$(echo ${image_name%%:*})"
+
+  service::duration service::run_cmd service::pull_image_retry pull "$image_name" download "$(echo "${image_name%%:*}")"
 }
 
 service::check_version(){
@@ -53,8 +56,10 @@ service::check_version(){
   local have_it=1
   local local_versions="${sem_services[$image_name]}"
 
-  for i in ${local_versions[@]};do
-    if [ "$version" == "$i" ];then
+  # SC2068: we want the word splitting here, so no double quotes
+  # shellcheck disable=SC2068
+  for i in ${local_versions[@]}; do
+    if [ "$version" == "$i" ]; then
       have_it=0
       break
     fi
@@ -66,7 +71,7 @@ service::check_version(){
     echo -e "Available options for '$image_name' are:"
     echo -e ""
     local_versions="${sem_services[$image_name]}"
-    for v in ${local_versions[@]};do
+    for v in "${local_versions[@]}"; do
       echo -e "  \e[34m- sem-version start ${image_name} ${v}\e[0m"
     done
     echo -e ""
@@ -84,9 +89,9 @@ service::start_mysql() {
   shift
   local service_image="${registry_host}/mysql"
 
-  docker_params="$@"
+  docker_params=( "$@" )
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run $docker_params "$service_image":"$service_version")
+  docker_output=$(docker run "${docker_params[@]}" "$service_image":"$service_version")
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 3306 mysql)
   if [ "$docker_status" == "0" ]; then
@@ -104,9 +109,9 @@ service::start_postgres() {
   shift
   local service_image="${registry_host}/postgres"
 
-  docker_params="$@"
+  docker_params=( "$@" )
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run $docker_params "$service_image":"$service_version")
+  docker_output=$(docker run "${docker_params[@]}" "$service_image":"$service_version")
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 5432 postgres)
   if [ "$docker_status" == "0" ]; then
@@ -124,9 +129,9 @@ service::start_postgis() {
   shift
   local service_image="${registry_host}/postgis"
 
-  docker_params="$@"
+  docker_params=( "$@" )
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run $docker_params "$service_image":"$service_version")
+  docker_output=$(docker run "${docker_params[@]}" "$service_image":"$service_version")
   # run only if previous command exited successfully
   service::duration sem-dockerize 5432 boot postgis
   docker_status=$(sem-dockerize 5432 postgis)
@@ -145,9 +150,9 @@ service::start_redis() {
   shift
   local service_image="${registry_host}/redis"
 
-  docker_params="$@"
+  docker_params=( "$@" )
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run $docker_params "$service_image":"$service_version" --appendonly yes)
+  docker_output=$(docker run "${docker_params[@]}" "$service_image":"$service_version" --appendonly yes)
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 6379 redis)
   if [ "$docker_status" == "0" ]; then
@@ -181,9 +186,9 @@ service::start_mongodb() {
   shift
   local service_image="${registry_host}/mongo"
 
-  docker_params="$@"
+  docker_params=( "$@" )
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run $docker_params "$service_image":"$service_version")
+  docker_output=$(docker run "${docker_params[@]}" "$service_image":"$service_version")
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 27017 mongodb)
   if [ "$docker_status" == "0" ]; then
@@ -293,79 +298,79 @@ service::start() {
   case "$service_name" in
     "mysql" )
       shift
-      service_version=$(sem-service-check-params mysql $@)
-      service::check_version 'mysql' ${service_version%% *}
-      service::duration service::start_mysql $service_version total $service_name
+      IFS=" " read -r -a version_and_args <<< "$(sem-service-check-params mysql "$@")"
+      service::check_version 'mysql' "${version_and_args[0]}"
+      service::duration service::start_mysql "${version_and_args[@]}" total "${service_name}"
       exit 0
       ;;
     "postgres" )
       shift
-      service_version=$(sem-service-check-params postgres $@)
-      service::check_version 'postgres' ${service_version%% *}
-      service::duration service::start_postgres $service_version total $service_name
+      IFS=" " read -r -a version_and_args <<< "$(sem-service-check-params postgres "$@")"
+      service::check_version 'postgres' "${version_and_args[0]}"
+      service::duration service::start_postgres "${version_and_args[@]}" total "${service_name}"
       exit 0
       ;;
     "postgis" )
       shift
-      service_version=$(sem-service-check-params postgis $@)
-      service::check_version 'postgis' ${service_version%% *}
-      service::duration service::start_postgis $service_version total $service_name
+      IFS=" " read -r -a version_and_args <<< "$(sem-service-check-params postgis "$@")"
+      service::check_version 'postgis' "${version_and_args[0]}"
+      service::duration service::start_postgis "${version_and_args[@]}" total "${service_name}"
       exit 0
       ;;
     "redis" )
       shift
-      service_version=$(sem-service-check-params redis $@)
-      service::check_version 'redis' ${service_version%% *}
-      service::duration service::start_redis $service_version total $service_name
+      IFS=" " read -r -a version_and_args <<< "$(sem-service-check-params redis "$@")"
+      service::check_version 'redis' "${version_and_args[0]}"
+      service::duration service::start_redis "${version_and_args[@]}" total "${service_name}"
       exit 0
       ;;
     "memcached" )
       shift
       service_version="${service_version:-1.5}"
-      service::check_version 'memcached' ${service_version%% *}
-      service::duration service::start_memcached $service_version total $service_name
+      service::check_version 'memcached' "${service_version%% *}"
+      service::duration service::start_memcached "${service_version}" total "${service_name}"
       exit 0
       ;;
     "mongodb" )
       shift
-      service_version=$(sem-service-check-params mongodb $@)
-      service::check_version 'mongo' ${service_version%% *}
-      service::duration service::start_mongodb $service_version total $service_name
+      IFS=" " read -r -a version_and_args <<< "$(sem-service-check-params mongodb "$@")"
+      service::check_version 'mongo' "${version_and_args[0]}"
+      service::duration service::start_mongodb "${version_and_args[@]}" total "${service_name}"
       exit 0
       ;;
     "elasticsearch" )
       shift
       service_version="${service_version:-6.5}"
-      service::check_version 'elasticsearch' ${service_version%% *}
-      service::duration service::start_elasticsearch $service_version total $service_name
+      service::check_version 'elasticsearch' "${service_version%% *}"
+      service::duration service::start_elasticsearch "${service_version}" total "${service_name}"
       exit 0
       ;;
     "opensearch" )
       shift
       service_version="${service_version:-2}"
-      service::check_version 'opensearch' ${service_version%% *}
-      service::duration service::start_opensearch $service_version total $service_name
+      service::check_version 'opensearch' "${service_version%% *}"
+      service::duration service::start_opensearch "${service_version}" total "${service_name}"
       exit 0
       ;;
     "rabbitmq" )
       shift
       service_version="${service_version:-3.8}"
-      service::check_version 'rabbitmq' ${service_version%% *}
-      service::duration service::start_rabbitmq $service_version total $service_name
+      service::check_version 'rabbitmq' "${service_version%% *}"
+      service::duration service::start_rabbitmq "${service_version}" total "${service_name}"
       exit 0
       ;;
     "cassandra" )
       shift
       service_version="${service_version:-3.11}"
-      service::check_version 'cassandra' ${service_version%% *}
-      service::duration service::start_cassandra $service_version total $service_name
+      service::check_version 'cassandra' "${service_version%% *}"
+      service::duration service::start_cassandra "${service_version}" total "${service_name}"
       exit 0
       ;;
     "rethinkdb" )
       shift
       service_version="${service_version:-2.3}"
-      service::check_version 'rethinkdb' ${service_version%% *}
-      service::duration service::start_rethinkdb $service_version total $service_name
+      service::check_version 'rethinkdb' "${service_version%% *}"
+      service::duration service::start_rethinkdb "${service_version}" total "${service_name}"
       exit 0
       ;;
 
@@ -379,15 +384,14 @@ service::start() {
 
 service::stop() {
   local service_name
-  local service_check_log
 
   service_name=$1
-  service_check_log=$( service::status $service_name &>/dev/null )
+  service::status "${service_name}" &>/dev/null
   service_status=$?
 
   if [[ $service_status -eq 0 ]]; then
-    stop_output=$( service::run_cmd docker stop $service_name )
-    sudo rm -rf /var/tmp/$service_name
+    service::run_cmd docker stop "${service_name}"
+    sudo rm -rf "/var/tmp/${service_name}"
 
     service::log "'${service_name}' stopped."
   else
@@ -409,10 +413,9 @@ service::stop() {
 ################################################################################
 service::status() {
   local service_name
-  local docker_ps
-
   service_name=$1
-  docker_ps=$(docker ps | grep $service_name &>/dev/null )
+
+  docker ps | grep "${service_name}" &>/dev/null
   service_status=$?
 
   if [[ $service_status -eq 0 ]]; then
@@ -435,19 +438,19 @@ service::status() {
 #   0,1...n
 ################################################################################
 service::run_cmd() {
-  local cmd=$@
+  local cmd=( "$@" )
   local out=""
   local status=0
 
   if [[ -n $DRYRUN ]]; then
-    service::log "Dry-running '${cmd}'"
+    service::log "Dry-running '${cmd[*]}'"
   else
-    out=$($cmd 2>&1)
+    out=$("${cmd[@]}" 2>&1)
     status=$?
   fi
 
   if ! [[ $status -eq 0 ]]; then
-    service::err "Failed to run command '${cmd}'\n\nReason:\n${out}"
+    service::err "Failed to run command '${cmd[*]}'\n\nReason:\n${out}"
   fi
 
   return $status
@@ -465,14 +468,12 @@ service::run_cmd() {
 ################################################################################
 service::port_info() {
   local service_name
-  local service_check_log
 
   service_name=$1
-  port_check_log=$( service::run_cmd sudo netstat -tlpn | grep $service_name 2>&1 )
-  port_status=$?
+  port_check_log=$( service::run_cmd sudo netstat -tlpn | grep "${service_name}" 2>&1 )
 
   if [[ $service_status -eq 0 ]]; then
-    listens_on=$( echo ${port_check_log} | awk '{print $4}' )
+    listens_on=$( echo "${port_check_log}" | awk '{print $4}' )
 
     echo "Listens on ${listens_on}"
   else
@@ -483,11 +484,11 @@ service::port_info() {
 }
 
 service::log() {
-  echo -e "[$(date +"${DATE_FORMAT}")]: $@" >&2
+  echo -e "[$(date +"${DATE_FORMAT}")]: $*" >&2
 }
 
 service::err() {
-  echo -e "\n! [$(date +"${DATE_FORMAT}")]: $@\n" >&2
+  echo -e "\n! [$(date +"${DATE_FORMAT}")]: $*\n" >&2
 
   exit 1
 }
@@ -509,15 +510,22 @@ service::print_usage() {
 }
 
 service::duration() {
-  local cmd=${@:1:$#-2}
-  local service=$(echo "${@: -1}")
-  local version=$(echo "${@: 2:1}")
-  local type=$(echo "${@: -2:1}")
+  local cmd
+  local service
+  local version
+  local type
   local start
   local end
   local duration
+
+  cmd=( "${@:1:$#-2}" )
+  service=$(echo "${@: -1}")
+  version=$(echo "${@: 2:1}")
+  type=$(echo "${@: -2:1}")
   start=$(date +%s%3N)
-  $cmd
+
+  "${cmd[@]}"
+
   end=$(date +%s%3N)
   duration=$(( end - start ))
   if [[ "$type" == "total" ]]; then
@@ -551,7 +559,7 @@ service::main () {
 }
 
 if [[ "$(uname)" == "Darwin" ]]; then
-  echo "`sem-service` is not supported in this environment."
+  echo "'sem-service' is not supported in this environment."
   echo "https://docs.semaphoreci.com/ci-cd-environment/sem-service-managing-databases-and-services-on-linux"
   exit 1
 else

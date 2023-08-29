@@ -58,15 +58,9 @@ blocks:
       jobs:
         - name: Shell check
           commands:
-            - shellcheck sem-service || true
-            - shellcheck sem-version || true
-            - shellcheck cache       || true
-            - shellcheck sem-context || true
-            - shellcheck libcheckout || true
-            - 'shellcheck sem-service -f gcc | wc -l && [[ "$(shellcheck sem-service -f gcc | wc -l)" -le 76 ]]'
-            - 'shellcheck sem-version -f gcc | wc -l && [[ "$(shellcheck sem-version -f gcc | wc -l)" -le 21 ]]'
-            - 'shellcheck cache       -f gcc | wc -l && [[ "$(shellcheck cache -f gcc | wc -l)" -le 152 ]]'
-            - 'shellcheck libcheckout -f gcc | wc -l && [[ "$(shellcheck libcheckout -f gcc | wc -l)" -le 90 ]]'
+            - shellcheck sem-service
+            - shellcheck sem-version
+            - shellcheck -s bash libcheckout
             - shellcheck install-package
             - shellcheck sem-semantic-release
         - name: PowerShell check
