@@ -74,6 +74,9 @@ install::install_elixir() {
   response1=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/elixirs_${language_version}.tar.gz)
   response2=$(curl --write-out %{http_code} --head --silent --output /dev/null $(install::package_url)/${language}/archives_${language_version}.tar.gz)
   case ${language_version} in
+      "1.6"*)
+        local erlang_version="20.3"
+        ;;
       "1.7"* | "1.8"* | "1.9"* | "1.10"*)
         local erlang_version="22.3"
         ;;

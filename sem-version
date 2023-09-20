@@ -59,6 +59,7 @@ version::change_node() {
   return $?
 }
 version::change_elixir() {
+  [[ "$software_version" == "1.6" ]] && software_version="1.6.6"
   [[ "$software_version" == "1.7" ]] && software_version="1.7.4"
   [[ "$software_version" == "1.8" ]] && software_version="1.8.2"
   [[ "$software_version" == "1.9" ]] && software_version="1.9.4"
