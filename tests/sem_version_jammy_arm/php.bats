@@ -36,32 +36,32 @@ setup() {
   assert_line --partial "imap"
 }
 
-@test "change php to 8.1.18" {
+@test "change php to 8.1.23" {
 
-  run sem-version php 8.1.18
+  run sem-version php 8.1.23
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.1.18"
+  assert_line --partial "PHP 8.1.23"
   run php -m 
   assert_line --partial "gd"
   assert_line --partial "imap"
 }
 
-@test "php check composer 8.1.18" {
+@test "php check composer 8.1.23" {
 
   run which composer
   assert_success
   source ~/.phpbrew/bashrc
-  assert_line --partial "8.1.18"
+  assert_line --partial "8.1.23"
 }
 
-@test "php check source 8.1.18" {
+@test "php check source 8.1.23" {
 
-  run sem-version php 8.1.18
+  run sem-version php 8.1.23
   assert_success
   source ~/.phpbrew/bashrc
-  assert_line --partial "8.1.18"
+  assert_line --partial "8.1.23"
   run phpbrew ext install iconv
   assert_success
 }
