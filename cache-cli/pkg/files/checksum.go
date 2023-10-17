@@ -7,8 +7,8 @@ import (
 	"os"
 )
 
-// #nosec
 func GenerateChecksum(filePath string) (string, error) {
+	// #nosec
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", err
@@ -16,6 +16,7 @@ func GenerateChecksum(filePath string) (string, error) {
 
 	defer file.Close()
 
+	// #nosec
 	hash := md5.New()
 	if _, err := io.Copy(hash, file); err != nil {
 		return "", err
