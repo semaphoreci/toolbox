@@ -15,7 +15,7 @@ blocks:
       jobs:
         - name: Build cache CLI
           commands:
-            - sem-version go 1.18
+            - sem-version go 1.20
             - "export GOPATH=~/go"
             - "export PATH=/home/semaphore/go/bin:$PATH"
             - checkout
@@ -32,7 +32,7 @@ blocks:
             - artifact push workflow bin/windows/cache.exe -d bin/windows/cache.exe
         - name: Build sem-context CLI
           commands:
-            - sem-version go 1.17
+            - sem-version go 1.20
             - "export GOPATH=~/go"
             - "export PATH=/home/semaphore/go/bin:$PATH"
             - checkout
@@ -542,7 +542,7 @@ blocks:
           value: "on"
       prologue:
         commands:
-          - sem-version go 1.18
+          - sem-version go 1.20
           - checkout && cd cache-cli
       jobs:
         - name: Lint
