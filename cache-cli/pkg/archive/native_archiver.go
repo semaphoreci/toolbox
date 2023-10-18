@@ -207,7 +207,8 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 			}
 
 			// #nosec
-			if _, err := io.Copy(outFile, tarReader); err != nil {
+			_, err = io.Copy(outFile, tarReader)
+			if err != nil {
 				log.Errorf("Error writing to file '%s': %v", header.Name, err)
 				hadError = true
 				_ = outFile.Close()
