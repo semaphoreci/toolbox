@@ -22,6 +22,12 @@ setup() {
   source ~/.toolbox/toolbox
 }
 
+@test "change java to 11" {
+  sem-version java 11
+  run java --version
+  assert_line --partial "openjdk 11."
+}
+
 @test "change java to 17" {
   sem-version java 17
   run java --version
