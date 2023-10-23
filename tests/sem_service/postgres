@@ -40,4 +40,12 @@ psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
 psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 15
 sem-service status postgres
 
+sem-service stop postgres
+sem-service start postgres 16
+createdb -U postgres -h 0.0.0.0 fooo
+psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 16
+sem-service status postgres
+
+
 cat /tmp/toolbox_semservice
