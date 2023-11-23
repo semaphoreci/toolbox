@@ -27,7 +27,7 @@ teardown_file() {
 @test "test-results publish works" {
   cd /tmp/test-results-cli
 
-  run test-results publish junit-sample.xml
+  run test-results publish --no-compress junit-sample.xml
   assert_success
 
   run artifact pull job test-results/junit.xml
@@ -52,7 +52,7 @@ teardown_file() {
 @test "test-results compile works" {
   cd /tmp/test-results-cli
 
-  run test-results compile junit-sample.xml junit-compile.json
+  run test-results compile --no-compress junit-sample.xml junit-compile.json
   assert_success
   assert_output --partial "Using rspec parser"
 
@@ -63,6 +63,6 @@ teardown_file() {
 @test "test-results compile does not work with non existent file" {
   cd /tmp/test-results-cli
 
-  run test-results compile /tmp/some/file /tmp/some/file.json
+  run test-results compile --no-compress /tmp/some/file /tmp/some/file.json
   assert_failure
 }
