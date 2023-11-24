@@ -647,6 +647,12 @@ after_pipeline:
       - name: Submit Reports
         commands:
           - checkout
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - bash release/create.sh
           - source release/install_in_tests.sh
           - test-results gen-pipeline-report
