@@ -3,7 +3,7 @@ name: Toolbox S2 project
 agent:
   machine:
     type: e1-standard-2
-    os_image: ubuntu1804
+    os_image: ubuntu2004
 
 execution_time_limit:
   minutes: 30
@@ -355,7 +355,7 @@ blocks:
       agent:
         machine:
           type: e1-standard-2
-          os_image: ubuntu1804
+          os_image: ubuntu2004
         containers:
           - name: main
             image: "semaphoreci/ruby:2.6.2"
@@ -410,7 +410,7 @@ blocks:
       agent:
         machine:
           type: e1-standard-2
-          os_image: ubuntu1804
+          os_image: ubuntu2004
         containers:
           - name: main
             image: "semaphoreci/alpine:3.9"
