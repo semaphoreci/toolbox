@@ -23,26 +23,25 @@ setup() {
   source ~/.toolbox/toolbox
 }
 
-#  Node
-@test "change node to 12.16.1" {
-  sem-version node 12.16.1
-  run node --version
-  assert_line --partial "v12.16.1"
+#  Firefox
+
+@test "change firefox to 68" {
+
+  run sem-version firefox 68
+  assert_success
+  assert_line --partial "Mozilla Firefox 68"
 }
 
-@test "change node to 16.15.1" {
-  sem-version node 16.15.1
-  run node --version
-  assert_line --partial "v16.15.1"
+@test "change firefox to 78" {
+
+  run sem-version firefox 78
+  assert_success
+  assert_line --partial "Mozilla Firefox 78"
 }
 
-@test "change node to 18.18.0" {
-  sem-version node 18.18.0
-  run node --version
-  assert_line --partial "v18.18.0"
-}
+@test "change firefox to 102" {
 
-@test "change node to 30.30.30" {
-  run sem-version node 30.30.30
-  assert_failure
+  run sem-version firefox 102
+  assert_success
+  assert_line --partial "Mozilla Firefox 102"
 }

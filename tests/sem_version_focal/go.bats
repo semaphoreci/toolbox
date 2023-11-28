@@ -23,26 +23,16 @@ setup() {
   source ~/.toolbox/toolbox
 }
 
-#  Node
-@test "change node to 12.16.1" {
-  sem-version node 12.16.1
-  run node --version
-  assert_line --partial "v12.16.1"
+@test "sem-version go 1.20.8 path check" {
+
+  sem-version go 1.20.8
+  run echo ${PATH}
+  assert_line --partial "$(go env GOPATH)/bin"
 }
 
-@test "change node to 16.15.1" {
-  sem-version node 16.15.1
-  run node --version
-  assert_line --partial "v16.15.1"
-}
+@test "sem-version go 1.21.3 path check" {
 
-@test "change node to 18.18.0" {
-  sem-version node 18.18.0
-  run node --version
-  assert_line --partial "v18.18.0"
-}
-
-@test "change node to 30.30.30" {
-  run sem-version node 30.30.30
-  assert_failure
+  sem-version go 1.21.3
+  run echo ${PATH}
+  assert_line --partial "$(go env GOPATH)/bin"
 }

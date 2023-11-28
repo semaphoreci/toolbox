@@ -23,26 +23,13 @@ setup() {
   source ~/.toolbox/toolbox
 }
 
-#  Node
-@test "change node to 12.16.1" {
-  sem-version node 12.16.1
-  run node --version
-  assert_line --partial "v12.16.1"
-}
+#  scala
+@test "change scala to 2.12" {
 
-@test "change node to 16.15.1" {
-  sem-version node 16.15.1
-  run node --version
-  assert_line --partial "v16.15.1"
-}
+  run scala -version
+  assert_line --partial "2.12"
 
-@test "change node to 18.18.0" {
-  sem-version node 18.18.0
-  run node --version
-  assert_line --partial "v18.18.0"
-}
-
-@test "change node to 30.30.30" {
-  run sem-version node 30.30.30
-  assert_failure
+  sem-version scala 2.12
+  run scala -version
+  assert_line --partial "2.12"
 }

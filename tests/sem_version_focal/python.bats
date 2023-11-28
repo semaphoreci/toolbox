@@ -10,7 +10,6 @@ setup() {
   source /opt/change-go-version.sh
   source /opt/change-java-version.sh
   source /opt/change-scala-version.sh
-  source /opt/change-firefox-version.sh
   source ~/.phpbrew/bashrc
   . /home/semaphore/.nvm/nvm.sh
   export PATH="$PATH:/home/semaphore/.yarn/bin"
@@ -23,26 +22,15 @@ setup() {
   source ~/.toolbox/toolbox
 }
 
-#  Node
-@test "change node to 12.16.1" {
-  sem-version node 12.16.1
-  run node --version
-  assert_line --partial "v12.16.1"
+# Python
+@test "change python to 3.10" {
+  sem-version python 3.10
+  run python --version
+  assert_line --partial "3.10"
 }
 
-@test "change node to 16.15.1" {
-  sem-version node 16.15.1
-  run node --version
-  assert_line --partial "v16.15.1"
-}
-
-@test "change node to 18.18.0" {
-  sem-version node 18.18.0
-  run node --version
-  assert_line --partial "v18.18.0"
-}
-
-@test "change node to 30.30.30" {
-  run sem-version node 30.30.30
-  assert_failure
+@test "change python to 3.11" {
+  sem-version python 3.11
+  run python --version
+  assert_line --partial "3.11"
 }
