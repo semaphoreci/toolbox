@@ -23,26 +23,25 @@ setup() {
   source ~/.toolbox/toolbox
 }
 
-#  Node
-@test "change node to 12.16.1" {
-  sem-version node 12.16.1
-  run node --version
-  assert_line --partial "v12.16.1"
+#  C
+@test "change gcc to 9" {
+
+  run sem-version c 9
+  assert_success
+  run gcc -v
+  assert_line --partial "gcc version 9."
 }
 
-@test "change node to 16.15.1" {
-  sem-version node 16.15.1
-  run node --version
-  assert_line --partial "v16.15.1"
+@test "change gcc to 10" {
+
+  run sem-version c 10
+  assert_success
+  run gcc -v
+  assert_line --partial "gcc version 10."
 }
 
-@test "change node to 18.18.0" {
-  sem-version node 18.18.0
-  run node --version
-  assert_line --partial "v18.18.0"
-}
+@test "change gcc to 16" {
 
-@test "change node to 30.30.30" {
-  run sem-version node 30.30.30
+  run sem-version c 16
   assert_failure
 }

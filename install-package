@@ -57,7 +57,7 @@ init() {
 run_selective_update() {
   recently_modified_lists=$(find /etc/apt/sources.list.d/ -name "*.list" -type f -mmin -59)
 
-  if ! [ -z "${recently_modified_lists}" ]; then
+  if [ -n "${recently_modified_lists}" ]; then
     for list in $recently_modified_lists; do
       echo "* pulling from: $list"
       sudo apt-get update -o Dir::Etc::sourcelist="$list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"

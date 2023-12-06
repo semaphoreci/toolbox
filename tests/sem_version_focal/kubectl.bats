@@ -23,26 +23,15 @@ setup() {
   source ~/.toolbox/toolbox
 }
 
-#  Node
-@test "change node to 12.16.1" {
-  sem-version node 12.16.1
-  run node --version
-  assert_line --partial "v12.16.1"
+#  kubectl
+@test "change kubectl to 1.15.3" {
+  sem-version kubectl 1.15.3
+  run kubectl version
+  assert_line --partial "1.15.3"
 }
 
-@test "change node to 16.15.1" {
-  sem-version node 16.15.1
-  run node --version
-  assert_line --partial "v16.15.1"
-}
-
-@test "change node to 18.18.0" {
-  sem-version node 18.18.0
-  run node --version
-  assert_line --partial "v18.18.0"
-}
-
-@test "change node to 30.30.30" {
-  run sem-version node 30.30.30
-  assert_failure
+@test "change kubectl to 1.28.2" {
+  sem-version kubectl 1.28.2
+  run kubectl version
+  assert_line --partial "1.28.2"
 }
