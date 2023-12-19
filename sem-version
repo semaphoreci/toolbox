@@ -129,7 +129,7 @@ version::change_erlang() {
   [[ "$software_version" == "23" ]] && software_version="23.3"
   [[ "$software_version" == "24" ]] && software_version="24.3"
   [[ "$software_version" == "25" ]] && software_version="25.3"
-  [[ "$software_version" == "26" ]] && software_version="26.1"
+  [[ "$software_version" == "26" ]] && software_version="26.2"
 
   if [[ $(kerl list installations) != *"${software_version}"* ]]; then
     sem-install erlang "${software_version}"
