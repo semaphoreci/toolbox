@@ -22,27 +22,33 @@ setup() {
   source ~/.toolbox/toolbox
 }
 
-#  Elixir
-@test "change elixir to 1.14.0" {
-  sem-version elixir 1.14.0
-  run elixir --version
-  assert_line --partial "Elixir 1.14.0"
+# PHP
+@test "change php to 8.1.23" {
+
+  run sem-version php 8.1.23
+  assert_success
+  source ~/.phpbrew/bashrc
+  run php -v
+  assert_line --partial "PHP 8.1.23"
+  run php -m 
+  assert_line --partial "gd"
+  assert_line --partial "imap"
 }
 
-@test "change elixir to 1.14.5" {
-  sem-version elixir 1.14.5
-  run elixir --version
-  assert_line --partial "Elixir 1.14.5"
+@test "php check composer 8.1.23" {
+
+  run which composer
+  assert_success
+  source ~/.phpbrew/bashrc
+  assert_line --partial "8.1.23"
 }
 
-@test "change elixir to 1.15.0" {
-  sem-version elixir 1.15.0
-  run elixir --version
-  assert_line --partial "Elixir 1.15.0"
-}
+@test "php check source 8.1.23" {
 
-@test "change elixir to 1.15.7" {
-  sem-version elixir 1.15.7
-  run elixir --version
-  assert_line --partial "Elixir 1.15.7"
+  run sem-version php 8.1.23
+  assert_success
+  source ~/.phpbrew/bashrc
+  assert_line --partial "8.1.23"
+  run phpbrew ext install iconv
+  assert_success
 }
