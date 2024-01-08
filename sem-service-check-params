@@ -173,6 +173,23 @@ params-check::mongodb () {
   echo "$service_version $default_params"
 }
 
+params-check::elasticsearch () {
+
+  local defaultEnv='-e discovery.type=single-node '
+
+  sudo mkdir -p /var/tmp/elasticsearch && sudo chmod -R 0777 /var/tmp/elasticsearch
+  service_version="6.5"
+  params=""
+  if [ "${1:0:1}" == "-" ];then
+    defaultEnv=" $defaultEnv ${@} "
+  else
+    service_version="${1:-$service_version}"
+    defaultEnv=" $defaultEnv ${@:2} "
+  fi
+  default_params="--net=host --rm --name elasticsearch -d $defaultEnv -v /var/tmp/elasticsearch:/use/share/elasticsearch/data "
+  echo "$service_version $default_params"
+}
+
 params-check::main () {
   case "$1" in
     "mysql" )
@@ -194,6 +211,10 @@ params-check::main () {
     "mongodb" )
       shift
       params-check::mongodb $@
+      ;;
+    "elasticsearch" )
+      shift
+      params-check::elasticsearch $@
       ;;
     * )
       shift
