@@ -202,12 +202,11 @@ service::start_mongodb() {
 
 service::start_elasticsearch() {
   service_version=$1
-  shift
   local service_image="${registry_host}/elasticsearch"
 
-  docker_params=( "$@" )
+  docker_cmd=$(echo "$2"|base64 -d )
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run "${docker_params[@]}" "$service_image":"$service_version")
+  docker_output=$(bash -c "$docker_cmd $service_image:$service_version")
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 9200 elasticsearch)
   if [ "$docker_status" == "0" ]; then

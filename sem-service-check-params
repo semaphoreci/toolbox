@@ -174,19 +174,15 @@ params-check::mongodb () {
 }
 
 params-check::elasticsearch () {
+  local defaultEnv="-e 'discovery.type=single-node'"
 
-  local defaultEnv='-e discovery.type=single-node '
-
-  sudo mkdir -p /var/tmp/elasticsearch && sudo chmod -R 0777 /var/tmp/elasticsearch
   service_version="6.5"
-  params=""
-  if [ "${1:0:1}" == "-" ];then
-    defaultEnv=" $defaultEnv ${@} "
-  else
+  if [ "${1:0:1}" != "-" ];then
     service_version="${1:-$service_version}"
-    defaultEnv=" $defaultEnv ${@:2} "
+    shift
   fi
-  default_params="--net=host --rm --name elasticsearch -d $defaultEnv -v /var/tmp/elasticsearch:/use/share/elasticsearch/data "
+  defaultEnv="$defaultEnv $*"
+  default_params=$(echo "docker run --net=host --rm --name elasticsearch -d $defaultEnv "|base64 --wrap=0)
   echo "$service_version $default_params"
 }
 

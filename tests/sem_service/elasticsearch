@@ -37,9 +37,12 @@ curl -XGET '0.0.0.0:9200' -s | grep 8.9.2
 sem-service stop elasticsearch
 sleep 5
 
-sem-service start elasticsearch 8.11.3 -e "xpack.security.enabled=false" -e "xpack.security.enrollment.enabled=false"
+sem-service start elasticsearch 8.11.3 -e "xpack.security.enabled=false" -e "xpack.security.enrollment.enabled=false" -e '"ES_JAVA_OPTS=-Xms256m -Xmx256m"'
 sleep 10
 curl -XGET '0.0.0.0:9200' -s | grep 8.11.3
+docker inspect elasticsearch | grep '"ES_JAVA_OPTS=-Xms256m -Xmx256m"'
 sem-service stop elasticsearch
+
+
 
 cat /tmp/toolbox_semservice
