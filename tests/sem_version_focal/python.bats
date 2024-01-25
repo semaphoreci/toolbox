@@ -34,3 +34,9 @@ setup() {
   run python --version
   assert_line --partial "3.11"
 }
+
+@test "change python to 3.12" {
+  sem-version python 3.12
+  run python --version
+  assert_line --partial "3.12"
+}
