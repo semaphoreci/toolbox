@@ -16,4 +16,8 @@ sem-service stop redis
 sem-service start redis 7.0.5
 sem-service status redis
 
+sem-service stop redis
+sem-service start redis 7.2.4
+sem-service status redis
+
 cat /tmp/toolbox_semservice
