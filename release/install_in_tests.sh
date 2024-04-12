@@ -22,7 +22,8 @@ cd ~
 arch=""
 case $(uname) in
   Darwin)
-    tar -xvf /tmp/Darwin/darwin.tar -C /tmp
+    [[ "$(uname -m)" =~ "arm64" ]] && arch="-arm"
+    tar -xvf /tmp/Darwin${arch}/darwin${arch}.tar -C /tmp
     mv /tmp/toolbox ~/.toolbox
     ;;
   Linux)
