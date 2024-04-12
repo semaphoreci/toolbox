@@ -31,6 +31,7 @@ while true; do
   SHARED_MEMORY=$(free -m | grep Mem | awk '{ print $5 }')
   SYSTEM_DISK=$(df "$SYSTEM_DISK_LOCATION" | sed 1d | awk '{ printf("%6.2f%%\n", ($3/$2 * 100.0)) }')
   DOCKER_DISK=$(df "$DOCKER_DISK_LOCATION" | sed 1d | awk '{ printf("%6.2f%%\n", ($3/$2 * 100.0)) }')
-  echo "$(date) | mem:$MEMORY,  system_disk:$SYSTEM_DISK,  docker_disk:$DOCKER_DISK,  shared_memory: $SHARED_MEMORY M" >> $OUTPUT
+  CPU_USAGE=$(ps -A -o %cpu | awk '{s+=$1} END {print s "%"}')
+  echo "$(date) |  cpu:$CPU_USAGE,  mem:$MEMORY,  system_disk:$SYSTEM_DISK,  docker_disk:$DOCKER_DISK,  shared_memory: $SHARED_MEMORY M" >> $OUTPUT
   sleep 1
 done
