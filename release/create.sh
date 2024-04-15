@@ -78,14 +78,17 @@ hosted::create_initial_content() {
   rm -rf /tmp/Linux
   rm -rf /tmp/Linux-arm
   rm -rf /tmp/Darwin
+  rm -rf /tmp/Darwin-arm
 
   mkdir -p /tmp/Linux/toolbox
   mkdir -p /tmp/Linux-arm/toolbox
   mkdir -p /tmp/Darwin/toolbox
+  mkdir -p /tmp/Darwin-arm/toolbox
 
   cp -R ~/$SEMAPHORE_GIT_DIR/* /tmp/Linux/toolbox
   cp -R ~/$SEMAPHORE_GIT_DIR/* /tmp/Linux-arm/toolbox
   cp -R ~/$SEMAPHORE_GIT_DIR/* /tmp/Darwin/toolbox
+  cp -R ~/$SEMAPHORE_GIT_DIR/* /tmp/Darwin-arm/toolbox
 
   exclusions=(
     .git
@@ -106,6 +109,7 @@ hosted::create_initial_content() {
     rm -rf /tmp/Linux/toolbox/${exclusion}
     rm -rf /tmp/Linux-arm/toolbox/${exclusion}
     rm -rf /tmp/Darwin/toolbox/${exclusion}
+    rm -rf /tmp/Darwin-arm/toolbox/${exclusion}
   done
 }
 
@@ -193,17 +197,21 @@ hosted::pack() {
   include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/Linux "x86_64"
   include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/Linux-arm "arm64"
   include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/Darwin "x86_64"
+  include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/Darwin-arm "arm64"
   include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Linux "x86_64"
   include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Linux-arm "arm64"
   include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Darwin "x86_64"
+  include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Darwin-arm "arm64"
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux "x86_64"
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux-arm "arm64"
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/amd64/cache /tmp/Linux/toolbox/cache
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/arm64/cache /tmp/Linux-arm/toolbox/cache
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/amd64/cache /tmp/Darwin/toolbox/cache
+  cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/darwin/arm64/cache /tmp/Darwin-arm/toolbox/cache
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/amd64/sem-context /tmp/Linux/toolbox/sem-context
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/arm64/sem-context /tmp/Linux-arm/toolbox/sem-context
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/amd64/sem-context /tmp/Darwin/toolbox/sem-context
+  cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/arm64/sem-context /tmp/Darwin-arm/toolbox/sem-context
   cp /tmp/when-cli/when /tmp/Linux/toolbox/when
   cp /tmp/when-cli/when /tmp/Linux-arm/toolbox/when
 }
@@ -233,6 +241,8 @@ create_tarball "linux.tar" /tmp/Linux
 echo "$(create_checksum /tmp/Linux/linux.tar 'linux.tar')" >> /tmp/checksums.txt
 create_tarball "darwin.tar" /tmp/Darwin
 echo "$(create_checksum /tmp/Darwin/darwin.tar 'darwin.tar')" >> /tmp/checksums.txt
+create_tarball "darwin-arm.tar" /tmp/Darwin-arm
+echo "$(create_checksum /tmp/Darwin-arm/darwin.tar 'darwin-arm.tar')" >> /tmp/checksums.txt
 create_tarball "linux-arm.tar" /tmp/Linux-arm
 echo "$(create_checksum /tmp/Linux-arm/linux-arm.tar 'linux-arm.tar')" >> /tmp/checksums.txt
 
