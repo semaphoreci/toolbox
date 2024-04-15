@@ -84,8 +84,8 @@ curl \
     -X POST \
     -H "Authorization: token $GITHUB_TOKEN" \
     -H "Accept: application/vnd.github.v3+json" \
-    -H "Content-Type: $(file -b --mime-type /tmp/Darwin/darwin-arm.tar)" \
-    --data-binary @/tmp/Darwin/darwin-arm.tar \
+    -H "Content-Type: $(file -b --mime-type /tmp/Darwin-arm/darwin-arm.tar)" \
+    --data-binary @/tmp/Darwin-arm/darwin-arm.tar \
     "https://uploads.github.com/repos/semaphoreci/toolbox/releases/$release_id/assets?name=darwin-arm.tar"
 
 echo "darwin-arm.tar uploaded"

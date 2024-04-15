@@ -242,7 +242,7 @@ echo "$(create_checksum /tmp/Linux/linux.tar 'linux.tar')" >> /tmp/checksums.txt
 create_tarball "darwin.tar" /tmp/Darwin
 echo "$(create_checksum /tmp/Darwin/darwin.tar 'darwin.tar')" >> /tmp/checksums.txt
 create_tarball "darwin-arm.tar" /tmp/Darwin-arm
-echo "$(create_checksum /tmp/Darwin-arm/darwin.tar 'darwin-arm.tar')" >> /tmp/checksums.txt
+echo "$(create_checksum /tmp/Darwin-arm/darwin-arm.tar 'darwin-arm.tar')" >> /tmp/checksums.txt
 create_tarball "linux-arm.tar" /tmp/Linux-arm
 echo "$(create_checksum /tmp/Linux-arm/linux-arm.tar 'linux-arm.tar')" >> /tmp/checksums.txt
 
