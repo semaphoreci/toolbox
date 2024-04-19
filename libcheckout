@@ -226,15 +226,24 @@ function checkout::refbased() {
     retry git clone --depth "${SEMAPHORE_GIT_DEPTH}" "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
     cd "${SEMAPHORE_GIT_DIR}" || exit
 
-    if ! retry git fetch --depth "${SEMAPHORE_GIT_DEPTH}" origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null; then
-      echo "Revision: ${SEMAPHORE_GIT_SHA} not found .... Exiting"
-      return 1
-    else
+    # Try fetching refs/objects with a depth.
+    if retry git fetch --depth "${SEMAPHORE_GIT_DEPTH}" origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null; then
       git checkout -qf FETCH_HEAD
       echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
 
       return 0
     fi
+
+    # Fetch with depth failed, fallback to not using a depth.
+    if retry git fetch origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null; then
+      git checkout -qf FETCH_HEAD
+      echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
+
+      return 0
+    fi
+
+    echo "Revision: ${SEMAPHORE_GIT_SHA} not found .... Exiting"
+    return 1
   fi
 
   if [ "${SEMAPHORE_GIT_REF_TYPE:-""}" = "tag" ]; then
