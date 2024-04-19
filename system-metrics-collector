@@ -15,8 +15,8 @@
 #
 #   $ cat /tmp/system-metrics-collector
 #
-#     Mon May 18 14:50:58 UTC 2020 | mem:   5.03%, disk:  47.75%
-#     Mon May 18 14:51:28 UTC 2020 | mem:   5.03%, disk:  47.75%
+#     Mon May 18 14:50:58 UTC 2020 | cpu: 6% , mem:   5.03% , system_disk 1% , docker_disk: 1% , shared_memory 1% 
+#     Mon May 18 14:51:28 UTC 2020 | cpu: 4% , mem:   5.03% , system_disk 1.9% , docker_disk: 11% , shared_memory 41% 
 #
 # Jobs that run for an hour collect around 120 log lines. This should be safe
 # and not introduce any performance of disk usage problems.
@@ -31,7 +31,7 @@ while true; do
   SHARED_MEMORY=$(free -m | grep Mem | awk '{ print $5 }')
   SYSTEM_DISK=$(df "$SYSTEM_DISK_LOCATION" | sed 1d | awk '{ printf("%6.2f%%\n", ($3/$2 * 100.0)) }')
   DOCKER_DISK=$(df "$DOCKER_DISK_LOCATION" | sed 1d | awk '{ printf("%6.2f%%\n", ($3/$2 * 100.0)) }')
-  CPU_USAGE=$(ps -A -o %cpu | awk '{s+=$1} END {print s "%"}')
+  CPU_USAGE=$(ps L | grep -q '%cpu' && ps -A -o %cpu | awk '{s+=$1} END {print s "%"}')
   echo "$(date) |  cpu:$CPU_USAGE,  mem:$MEMORY,  system_disk:$SYSTEM_DISK,  docker_disk:$DOCKER_DISK,  shared_memory: $SHARED_MEMORY M" >> $OUTPUT
   sleep 1
 done
