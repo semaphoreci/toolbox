@@ -219,11 +219,12 @@ service::start_elasticsearch() {
 }
 
 service::start_opensearch() {
-  service_version="${1:-2}"
+  service_version=$1
   local service_image="${registry_host}/opensearch"
 
+  docker_cmd=$(echo "$2"|base64 -d )
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run --net=host --rm --name opensearch -e "discovery.type=single-node" -d "$service_image":"$service_version")
+  docker_output=$(bash -c "$docker_cmd $service_image:$service_version")
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 9200 opensearch)
   if [ "$docker_status" == "0" ]; then
@@ -348,9 +349,9 @@ service::start() {
       ;;
     "opensearch" )
       shift
-      service_version="${service_version:-2}"
-      service::check_version 'opensearch' "${service_version%% *}"
-      service::duration service::start_opensearch "${service_version}" total "${service_name}"
+      IFS=" " read -r -a version_and_args <<< "$(sem-service-check-params opensearch "$@")"
+      service::check_version 'opensearch' "${version_and_args[0]}"
+      service::duration service::start_opensearch "${version_and_args[@]}" total "${service_name}"
       exit 0
       ;;
     "rabbitmq" )
@@ -506,6 +507,7 @@ service::print_usage() {
   echo "memcached (default: 1.5), available versions: ${sem_services['memcached']}"
   echo "mongodb (default: 4.1), available versions: ${sem_services['mongo']}"
   echo "elasticsearch (default: 6.5), available versions: ${sem_services['elasticsearch']}"
+  echo "opensearch (default: 2), available versions: ${sem_services['opensearch']}"
   echo "cassandra (default: 3.11), available versions: ${sem_services['cassandra']}"
   echo "rethinkdb (default: 2.3), available versions: ${sem_services['rethinkdb']}"
 }
