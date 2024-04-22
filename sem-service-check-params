@@ -186,6 +186,19 @@ params-check::elasticsearch () {
   echo "$service_version $default_params"
 }
 
+params-check::opensearch () {
+  local defaultEnv="-e 'discovery.type=single-node'"
+
+  service_version="2"
+  if [ "${1:0:1}" != "-" ];then
+    service_version="${1:-$service_version}"
+    shift
+  fi
+  defaultEnv="$defaultEnv $*"
+  default_params=$(echo "docker run --net=host --rm --name opensearch -d $defaultEnv "|base64 --wrap=0)
+  echo "$service_version $default_params"
+}
+
 params-check::main () {
   case "$1" in
     "mysql" )
@@ -211,6 +224,10 @@ params-check::main () {
     "elasticsearch" )
       shift
       params-check::elasticsearch $@
+      ;;
+    "opensearch" )
+      shift
+      params-check::opensearch $@
       ;;
     * )
       shift
