@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
-func (s *S3Storage) Clear() error {
-	keys, err := s.List()
+func (s *S3Storage) Clear(ctx context.Context) error {
+	keys, err := s.List(ctx)
 	if err != nil {
 		return err
 	}
@@ -22,7 +22,7 @@ func (s *S3Storage) Clear() error {
 	chunks := createChunks(keys, 1000)
 
 	for _, chunk := range chunks {
-		err := s.deleteChunk(chunk)
+		err := s.deleteChunk(ctx, chunk)
 		if err != nil {
 			return err
 		}
@@ -31,8 +31,8 @@ func (s *S3Storage) Clear() error {
 	return nil
 }
 
-func (s *S3Storage) deleteChunk(keys []CacheKey) error {
-	output, err := s.Client.DeleteObjects(context.TODO(), &s3.DeleteObjectsInput{
+func (s *S3Storage) deleteChunk(ctx context.Context, keys []CacheKey) error {
+	output, err := s.Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
 		Bucket: &s.Bucket,
 		Delete: &types.Delete{
 			Objects: cacheKeysToObjectIdentifiers(s.Project, keys),

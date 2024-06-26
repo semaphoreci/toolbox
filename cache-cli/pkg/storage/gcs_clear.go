@@ -7,8 +7,8 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func (s *GCSStorage) Clear() error {
-	it := s.Bucket.Objects(context.TODO(), &storage.Query{Prefix: s.Project})
+func (s *GCSStorage) Clear(ctx context.Context) error {
+	it := s.Bucket.Objects(ctx, &storage.Query{Prefix: s.Project})
 	for {
 		attrs, err := it.Next()
 		if err == iterator.Done {
@@ -18,7 +18,7 @@ func (s *GCSStorage) Clear() error {
 			return err
 		}
 
-		err = s.Bucket.Object(attrs.Name).Delete(context.TODO())
+		err = s.Bucket.Object(attrs.Name).Delete(ctx)
 		if err != nil {
 			return err
 		}

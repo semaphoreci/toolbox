@@ -8,9 +8,9 @@ import (
 	"cloud.google.com/go/storage"
 )
 
-func (s *GCSStorage) HasKey(key string) (bool, error) {
+func (s *GCSStorage) HasKey(ctx context.Context, key string) (bool, error) {
 	gcsKey := fmt.Sprintf("%s/%s", s.Project, key)
-	_, err := s.Bucket.Object(gcsKey).Attrs(context.TODO())
+	_, err := s.Bucket.Object(gcsKey).Attrs(ctx)
 	if err != nil {
 		if errors.Is(err, storage.ErrObjectNotExist) {
 			return false, nil

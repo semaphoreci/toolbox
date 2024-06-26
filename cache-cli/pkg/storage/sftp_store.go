@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -8,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (s *SFTPStorage) Store(key, path string) error {
+func (s *SFTPStorage) Store(ctx context.Context, key, path string) error {
 	epochNanos := time.Now().UnixNano()
 	tmpKey := fmt.Sprintf("%s-%d", os.Getenv("SEMAPHORE_JOB_ID"), epochNanos)
 
@@ -17,7 +18,7 @@ func (s *SFTPStorage) Store(key, path string) error {
 		return err
 	}
 
-	err = s.allocateSpace(localFileInfo.Size())
+	err = s.allocateSpace(ctx, localFileInfo.Size())
 	if err != nil {
 		return err
 	}
@@ -66,8 +67,8 @@ func (s *SFTPStorage) Store(key, path string) error {
 	return localFile.Close()
 }
 
-func (s *SFTPStorage) allocateSpace(space int64) error {
-	usage, err := s.Usage()
+func (s *SFTPStorage) allocateSpace(ctx context.Context, space int64) error {
+	usage, err := s.Usage(ctx)
 	if err != nil {
 		return err
 	}
@@ -75,14 +76,14 @@ func (s *SFTPStorage) allocateSpace(space int64) error {
 	freeSpace := usage.Free
 	if freeSpace < space {
 		fmt.Printf("Not enough space, deleting keys based on %s...\n", s.Config().SortKeysBy)
-		keys, err := s.List()
+		keys, err := s.List(ctx)
 		if err != nil {
 			return err
 		}
 
 		for freeSpace < space {
 			lastKey := keys[len(keys)-1]
-			err = s.Delete(lastKey.Name)
+			err = s.Delete(ctx, lastKey.Name)
 			if err != nil {
 				return err
 			}

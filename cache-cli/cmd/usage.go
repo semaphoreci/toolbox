@@ -19,10 +19,10 @@ var usageCmd = &cobra.Command{
 }
 
 func RunUsage(cmd *cobra.Command, args []string) {
-	storage, err := storage.InitStorage()
+	storage, err := storage.InitStorage(cmd.Context())
 	utils.Check(err)
 
-	summary, err := storage.Usage()
+	summary, err := storage.Usage(cmd.Context())
 	utils.Check(err)
 
 	if summary.Free == -1 {

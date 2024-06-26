@@ -18,10 +18,10 @@ var clearCmd = &cobra.Command{
 }
 
 func RunClear(cmd *cobra.Command, args []string) {
-	storage, err := storage.InitStorage()
+	storage, err := storage.InitStorage(cmd.Context())
 	utils.Check(err)
 
-	err = storage.Clear()
+	err = storage.Clear(cmd.Context())
 	utils.Check(err)
 	log.Infof("Deleted all caches.")
 }

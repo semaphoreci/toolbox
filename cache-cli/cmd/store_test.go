@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -16,12 +17,13 @@ import (
 )
 
 func Test__Store(t *testing.T) {
+	ctx := context.TODO()
 	storeCmd := NewStoreCommand()
 	log.SetFormatter(new(logging.CustomFormatter))
 	log.SetLevel(log.InfoLevel)
 	log.SetOutput(openLogfileForTests(t))
 
-	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
+	runTestForAllBackends(ctx, t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s wrong number of arguments", backend), func(t *testing.T) {
 			RunStore(storeCmd, []string{"key", "value", "extra-bad-argument"})
 			output := readOutputFromFile(t)
@@ -37,7 +39,7 @@ func Test__Store(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s using key and valid path", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			ioutil.TempFile(tempDir, "*")
 
@@ -49,7 +51,7 @@ func Test__Store(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			ioutil.TempFile(tempDir, "*")
 
@@ -62,7 +64,7 @@ func Test__Store(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s using duplicate key", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			ioutil.TempFile(tempDir, "*")
 
@@ -81,6 +83,7 @@ func Test__Store(t *testing.T) {
 }
 
 func Test__AutomaticStore(t *testing.T) {
+	ctx := context.TODO()
 	storeCmd := NewStoreCommand()
 	_, file, _, _ := runtime.Caller(0)
 	cmdPath := filepath.Dir(file)
@@ -90,7 +93,7 @@ func Test__AutomaticStore(t *testing.T) {
 	log.SetLevel(log.InfoLevel)
 	log.SetOutput(openLogfileForTests(t))
 
-	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
+	runTestForAllBackends(ctx, t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s nothing found", backend), func(t *testing.T) {
 			os.Chdir(cmdPath)
 
@@ -110,7 +113,7 @@ func Test__AutomaticStore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s detects and stores using SEMAPHORE_GIT_BRANCH", backend), func(t *testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
 			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
@@ -132,7 +135,7 @@ func Test__AutomaticStore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s detects and stores using SEMAPHORE_GIT_PR_BRANCH", backend), func(t *testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
 			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
@@ -154,7 +157,7 @@ func Test__AutomaticStore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s does not store if key already exist", backend), func(t *testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
 			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
@@ -165,7 +168,7 @@ func Test__AutomaticStore(t *testing.T) {
 
 			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
 			key := fmt.Sprintf("gems-master-%s", checksum)
-			err := storage.Store(key, tempFile.Name())
+			err := storage.Store(ctx, key, tempFile.Name())
 			assert.Nil(t, err)
 
 			RunStore(storeCmd, []string{})

@@ -1,7 +1,9 @@
 package storage
 
-func (s *S3Storage) Usage() (*UsageSummary, error) {
-	keys, err := s.List()
+import "context"
+
+func (s *S3Storage) Usage(ctx context.Context) (*UsageSummary, error) {
+	keys, err := s.List(ctx)
 	if err != nil {
 		return nil, err
 	}

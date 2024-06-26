@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -24,7 +25,7 @@ type SFTPStorageOptions struct {
 	Config         StorageConfig
 }
 
-func NewSFTPStorage(options SFTPStorageOptions) (*SFTPStorage, error) {
+func NewSFTPStorage(ctx context.Context, options SFTPStorageOptions) (*SFTPStorage, error) {
 	sshClient, err := createSSHClient(options)
 	if err != nil {
 		return nil, err

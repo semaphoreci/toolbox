@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"os"
@@ -11,14 +12,14 @@ import (
 )
 
 type Storage interface {
-	List() ([]CacheKey, error)
-	HasKey(key string) (bool, error)
-	Store(key, path string) error
-	Restore(key string) (*os.File, error)
-	Delete(key string) error
-	Clear() error
-	Usage() (*UsageSummary, error)
-	IsNotEmpty() (bool, error)
+	List(ctx context.Context) ([]CacheKey, error)
+	HasKey(ctx context.Context, key string) (bool, error)
+	Store(ctx context.Context, key, path string) error
+	Restore(ctx context.Context, key string) (*os.File, error)
+	Delete(ctx context.Context, key string) error
+	Clear(ctx context.Context) error
+	Usage(ctx context.Context) (*UsageSummary, error)
+	IsNotEmpty(ctx context.Context) (bool, error)
 	Config() StorageConfig
 }
 
@@ -53,11 +54,11 @@ type UsageSummary struct {
 	Used int64
 }
 
-func InitStorage() (Storage, error) {
-	return InitStorageWithConfig(StorageConfig{SortKeysBy: SortByStoreTime})
+func InitStorage(ctx context.Context) (Storage, error) {
+	return InitStorageWithConfig(ctx, StorageConfig{SortKeysBy: SortByStoreTime})
 }
 
-func InitStorageWithConfig(config StorageConfig) (Storage, error) {
+func InitStorageWithConfig(ctx context.Context, config StorageConfig) (Storage, error) {
 	err := config.Validate()
 	if err != nil {
 		return nil, err
@@ -80,7 +81,7 @@ func InitStorageWithConfig(config StorageConfig) (Storage, error) {
 			return nil, fmt.Errorf("no SEMAPHORE_CACHE_S3_BUCKET set")
 		}
 
-		return NewS3Storage(S3StorageOptions{
+		return NewS3Storage(ctx, S3StorageOptions{
 			URL:     os.Getenv("SEMAPHORE_CACHE_S3_URL"),
 			Bucket:  s3Bucket,
 			Project: project,
@@ -102,7 +103,7 @@ func InitStorageWithConfig(config StorageConfig) (Storage, error) {
 			return nil, fmt.Errorf("no SEMAPHORE_CACHE_PRIVATE_KEY_PATH set")
 		}
 
-		return NewSFTPStorage(SFTPStorageOptions{
+		return NewSFTPStorage(ctx, SFTPStorageOptions{
 			URL:            url,
 			Username:       username,
 			PrivateKeyPath: privateKeyPath,
@@ -119,7 +120,7 @@ func InitStorageWithConfig(config StorageConfig) (Storage, error) {
 			return nil, fmt.Errorf("no SEMAPHORE_CACHE_GCS_BUCKET set")
 		}
 
-		return NewGCSStorage(GCSStorageOptions{
+		return NewGCSStorage(ctx, GCSStorageOptions{
 			Bucket:  gcsBucket,
 			Project: project,
 			Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysBy: config.SortKeysBy},

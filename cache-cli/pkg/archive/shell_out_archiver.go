@@ -3,6 +3,7 @@ package archive
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -21,12 +22,12 @@ func NewShellOutArchiver(metricsManager metrics.MetricsManager) *ShellOutArchive
 	return &ShellOutArchiver{metricsManager: metricsManager}
 }
 
-func (a *ShellOutArchiver) Compress(dst, src string) error {
+func (a *ShellOutArchiver) Compress(ctx context.Context, dst, src string) error {
 	if _, err := os.Stat(src); err != nil {
 		return fmt.Errorf("error finding '%s': %v", src, err)
 	}
 
-	cmd := a.compressionCommand(dst, src)
+	cmd := a.compressionCommand(ctx, dst, src)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("error compressing %s: %s, %v", src, output, err)
@@ -35,7 +36,7 @@ func (a *ShellOutArchiver) Compress(dst, src string) error {
 	return nil
 }
 
-func (a *ShellOutArchiver) Decompress(src string) (string, error) {
+func (a *ShellOutArchiver) Decompress(ctx context.Context, src string) (string, error) {
 	restorationPath, err := a.findRestorationPath(src)
 	if err != nil {
 		if metricErr := a.metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
@@ -45,7 +46,7 @@ func (a *ShellOutArchiver) Decompress(src string) (string, error) {
 		return "", fmt.Errorf("error finding restoration path: %v", err)
 	}
 
-	cmd := a.decompressionCmd(restorationPath, src)
+	cmd := a.decompressionCmd(ctx, restorationPath, src)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		if metricErr := a.metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
@@ -58,20 +59,20 @@ func (a *ShellOutArchiver) Decompress(src string) (string, error) {
 	return restorationPath, nil
 }
 
-func (a *ShellOutArchiver) compressionCommand(dst, src string) *exec.Cmd {
+func (a *ShellOutArchiver) compressionCommand(ctx context.Context, dst, src string) *exec.Cmd {
 	if filepath.IsAbs(src) {
-		return exec.Command("tar", "czPf", dst, src)
+		return exec.CommandContext(ctx, "tar", "czPf", dst, src)
 	}
 
-	return exec.Command("tar", "czf", dst, src)
+	return exec.CommandContext(ctx, "tar", "czf", dst, src)
 }
 
-func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
+func (a *ShellOutArchiver) decompressionCmd(ctx context.Context, dst, tempFile string) *exec.Cmd {
 	if filepath.IsAbs(dst) {
-		return exec.Command("tar", "xzPf", tempFile, "-C", ".")
+		return exec.CommandContext(ctx, "tar", "xzPf", tempFile, "-C", ".")
 	}
 
-	return exec.Command("tar", "xzf", tempFile, "-C", ".")
+	return exec.CommandContext(ctx, "tar", "xzf", tempFile, "-C", ".")
 }
 
 func (a *ShellOutArchiver) findRestorationPath(src string) (string, error) {

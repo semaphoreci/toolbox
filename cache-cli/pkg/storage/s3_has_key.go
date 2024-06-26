@@ -9,14 +9,14 @@ import (
 	"github.com/aws/smithy-go"
 )
 
-func (s *S3Storage) HasKey(key string) (bool, error) {
+func (s *S3Storage) HasKey(ctx context.Context, key string) (bool, error) {
 	s3Key := fmt.Sprintf("%s/%s", s.Project, key)
 	input := s3.HeadObjectInput{
 		Bucket: &s.Bucket,
 		Key:    &s3Key,
 	}
 
-	_, err := s.Client.HeadObject(context.TODO(), &input)
+	_, err := s.Client.HeadObject(ctx, &input)
 	if err != nil {
 		var apiErr *smithy.GenericAPIError
 		if errors.As(err, &apiErr) && apiErr.ErrorCode() == "NotFound" {

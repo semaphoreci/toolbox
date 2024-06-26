@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"math"
 	"os"
 	"runtime"
@@ -18,7 +19,7 @@ var testStorageTypes = map[string]TestStorageType{
 	"s3": {
 		runInWindows: true,
 		initializer: func(storageSize int64, sortBy string) (Storage, error) {
-			return NewS3Storage(S3StorageOptions{
+			return NewS3Storage(context.TODO(), S3StorageOptions{
 				URL:     os.Getenv("SEMAPHORE_CACHE_S3_URL"),
 				Bucket:  "semaphore-cache",
 				Project: "cache-cli",
@@ -29,7 +30,7 @@ var testStorageTypes = map[string]TestStorageType{
 	"sftp": {
 		runInWindows: false,
 		initializer: func(storageSize int64, sortBy string) (Storage, error) {
-			return NewSFTPStorage(SFTPStorageOptions{
+			return NewSFTPStorage(context.TODO(), SFTPStorageOptions{
 				URL:            "sftp-server:22",
 				Username:       "tester",
 				PrivateKeyPath: "/root/.ssh/semaphore_cache_key",
@@ -40,7 +41,7 @@ var testStorageTypes = map[string]TestStorageType{
 	"gcs": {
 		runInWindows: false,
 		initializer: func(storageSize int64, sortBy string) (Storage, error) {
-			return NewGCSStorage(GCSStorageOptions{
+			return NewGCSStorage(context.TODO(), GCSStorageOptions{
 				Bucket:  "semaphore-cache",
 				Project: "cache-cli",
 				Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysBy: sortBy},

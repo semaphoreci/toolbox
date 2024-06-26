@@ -1,12 +1,13 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 )
 
-func (s *SFTPStorage) Restore(key string) (*os.File, error) {
+func (s *SFTPStorage) Restore(ctx context.Context, key string) (*os.File, error) {
 	localFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("%s-*", key))
 	if err != nil {
 		return nil, err

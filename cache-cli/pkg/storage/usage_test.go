@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,10 +11,11 @@ import (
 )
 
 func Test__Usage(t *testing.T) {
+	ctx := context.TODO()
 	runTestForAllStorageTypes(t, SortByStoreTime, func(storageType string, storage Storage) {
 		t.Run(fmt.Sprintf("%s no usage", storageType), func(t *testing.T) {
-			_ = storage.Clear()
-			usage, err := storage.Usage()
+			_ = storage.Clear(ctx)
+			usage, err := storage.Usage(ctx)
 			assert.Nil(t, err)
 			assert.Equal(t, int64(0), usage.Used)
 
@@ -26,14 +28,14 @@ func Test__Usage(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s some usage", storageType), func(t *testing.T) {
-			_ = storage.Clear()
+			_ = storage.Clear(ctx)
 
 			fileContents := "usage - some usage"
 			file, _ := ioutil.TempFile(os.TempDir(), "*")
 			file.WriteString(fileContents)
-			_ = storage.Store("abc001", file.Name())
+			_ = storage.Store(ctx, "abc001", file.Name())
 
-			usage, err := storage.Usage()
+			usage, err := storage.Usage(ctx)
 			assert.Nil(t, err)
 			assert.Equal(t, int64(len(fileContents)), usage.Used)
 

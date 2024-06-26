@@ -1,14 +1,15 @@
 package archive
 
 import (
+	"context"
 	"os"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 )
 
 type Archiver interface {
-	Compress(dst, src string) error
-	Decompress(src string) (string, error)
+	Compress(ctx context.Context, dst, src string) error
+	Decompress(ctx context.Context, src string) (string, error)
 }
 
 func NewArchiver(metricsManager metrics.MetricsManager) Archiver {

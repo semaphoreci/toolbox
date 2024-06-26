@@ -10,8 +10,8 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func (s *GCSStorage) List() ([]CacheKey, error) {
-	it := s.Bucket.Objects(context.TODO(), &storage.Query{Prefix: s.Project})
+func (s *GCSStorage) List(ctx context.Context) ([]CacheKey, error) {
+	it := s.Bucket.Objects(ctx, &storage.Query{Prefix: s.Project})
 
 	keys := make([]CacheKey, 0)
 	for {

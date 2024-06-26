@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"io"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/semaphoreci/toolbox/cache-cli/cmd"
@@ -15,7 +17,10 @@ func main() {
 	log.SetOutput(logfile)
 	log.SetFormatter(new(logging.CustomFormatter))
 	log.SetLevel(log.InfoLevel)
-	cmd.Execute()
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+	cmd.RootCmd.ExecuteContext(ctx)
 }
 
 func OpenLogfile() io.Writer {

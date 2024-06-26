@@ -24,14 +24,14 @@ func RunDelete(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	storage, err := storage.InitStorage()
+	storage, err := storage.InitStorage(cmd.Context())
 	utils.Check(err)
 
 	rawKey := args[0]
 	key := NormalizeKey(rawKey)
 
-	if ok, _ := storage.HasKey(key); ok {
-		err := storage.Delete(key)
+	if ok, _ := storage.HasKey(cmd.Context(), key); ok {
+		err := storage.Delete(cmd.Context(), key)
 		utils.Check(err)
 		log.Infof("Key '%s' is deleted.", key)
 	} else {

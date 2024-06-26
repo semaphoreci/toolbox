@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -19,11 +20,12 @@ import (
 )
 
 func Test__Restore(t *testing.T) {
+	ctx := context.TODO()
 	log.SetFormatter(new(logging.CustomFormatter))
 	log.SetLevel(log.InfoLevel)
 	log.SetOutput(openLogfileForTests(t))
 
-	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
+	runTestForAllBackends(ctx, t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s wrong number of arguments", backend), func(t *testing.T) {
 			RunRestore(restoreCmd, []string{"key", "extra-bad-argument"})
 			output := readOutputFromFile(t)
@@ -32,7 +34,7 @@ func Test__Restore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s using single missing key", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			RunRestore(restoreCmd, []string{"this-key-does-not-exist"})
 			output := readOutputFromFile(t)
@@ -41,14 +43,14 @@ func Test__Restore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s using single exact key", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
 			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc-001", tempDir)
+			compressAndStore(ctx, storage, archiver, "abc-001", tempDir)
 			RunRestore(restoreCmd, []string{"abc-001"})
 			output := readOutputFromFile(t)
 
@@ -61,14 +63,14 @@ func Test__Restore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
 			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc/00/22", tempDir)
+			compressAndStore(ctx, storage, archiver, "abc/00/22", tempDir)
 			RunRestore(restoreCmd, []string{"abc/00/22"})
 			output := readOutputFromFile(t)
 
@@ -82,14 +84,14 @@ func Test__Restore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s using single matching key", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
 			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc-001", tempDir)
+			compressAndStore(ctx, storage, archiver, "abc-001", tempDir)
 			RunRestore(restoreCmd, []string{"abc"})
 			output := readOutputFromFile(t)
 
@@ -102,15 +104,15 @@ func Test__Restore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s only first matching key is used", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
 			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc-001", tempDir)
-			compressAndStore(storage, archiver, "abc-002", tempDir)
+			compressAndStore(ctx, storage, archiver, "abc-001", tempDir)
+			compressAndStore(ctx, storage, archiver, "abc-002", tempDir)
 			RunRestore(restoreCmd, []string{"abc-001,abc-002"})
 			output := readOutputFromFile(t)
 
@@ -124,14 +126,14 @@ func Test__Restore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s using fallback key", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
 			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc", tempDir)
+			compressAndStore(ctx, storage, archiver, "abc", tempDir)
 			RunRestore(restoreCmd, []string{"abc-001,abc"})
 			output := readOutputFromFile(t)
 
@@ -145,14 +147,14 @@ func Test__Restore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s using regex key", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
 			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc", tempDir)
+			compressAndStore(ctx, storage, archiver, "abc", tempDir)
 			RunRestore(restoreCmd, []string{"^abc"})
 			output := readOutputFromFile(t)
 
@@ -167,6 +169,7 @@ func Test__Restore(t *testing.T) {
 }
 
 func Test__AutomaticRestore(t *testing.T) {
+	ctx := context.TODO()
 	_, file, _, _ := runtime.Caller(0)
 	cmdPath := filepath.Dir(file)
 	rootPath := filepath.Dir(cmdPath)
@@ -175,9 +178,9 @@ func Test__AutomaticRestore(t *testing.T) {
 	log.SetLevel(log.InfoLevel)
 	log.SetOutput(openLogfileForTests(t))
 
-	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
+	runTestForAllBackends(ctx, t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s nothing found", backend), func(t *testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 			os.Chdir(cmdPath)
 
 			RunRestore(restoreCmd, []string{})
@@ -187,7 +190,7 @@ func Test__AutomaticRestore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s detects and restores using SEMAPHORE_GIT_BRANCH", backend), func(t *testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
 			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
@@ -199,8 +202,8 @@ func Test__AutomaticRestore(t *testing.T) {
 			key := fmt.Sprintf("gems-master-%s", checksum)
 			compressedFile := filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", key, time.Now().Nanosecond()))
 			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			archiver.Compress(compressedFile, "vendor/bundle")
-			storage.Store(key, compressedFile)
+			archiver.Compress(ctx, compressedFile, "vendor/bundle")
+			storage.Store(ctx, key, compressedFile)
 
 			// restoring
 			RunRestore(restoreCmd, []string{})
@@ -215,7 +218,7 @@ func Test__AutomaticRestore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s detects and restores using SEMAPHORE_GIT_PR_BRANCH", backend), func(t *testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			os.Chdir(fmt.Sprintf("%s/test/autocache/gems", rootPath))
 			os.Setenv("SEMAPHORE_GIT_BRANCH", "master")
@@ -227,8 +230,8 @@ func Test__AutomaticRestore(t *testing.T) {
 			key := fmt.Sprintf("gems-some-development-branch-%s", checksum)
 			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
 			compressedFile := filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", key, time.Now().Nanosecond()))
-			archiver.Compress(compressedFile, "vendor/bundle")
-			storage.Store(key, compressedFile)
+			archiver.Compress(ctx, compressedFile, "vendor/bundle")
+			storage.Store(ctx, key, compressedFile)
 
 			// restoring
 			RunRestore(restoreCmd, []string{})

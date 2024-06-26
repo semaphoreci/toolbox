@@ -7,8 +7,8 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-func (s *GCSStorage) IsNotEmpty() (bool, error) {
-	it := s.Bucket.Objects(context.TODO(), &storage.Query{Prefix: s.Project})
+func (s *GCSStorage) IsNotEmpty(ctx context.Context) (bool, error) {
+	it := s.Bucket.Objects(ctx, &storage.Query{Prefix: s.Project})
 
 	_, err := it.Next()
 	if err == iterator.Done {
