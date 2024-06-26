@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# Simple log system metrics collector. Polls the system state every 30s and
+# Simple log system metrics collector. Polls the system state every 1s and
 # saves the result to /tmp/system-metrics.
 #
 # The simple nature of the script allows it to seemlesly run in any Linux based
