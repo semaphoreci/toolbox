@@ -1,6 +1,8 @@
 package storage
 
-func (s *SFTPStorage) Usage() (*UsageSummary, error) {
+import "context"
+
+func (s *SFTPStorage) Usage(ctx context.Context) (*UsageSummary, error) {
 	files, err := s.SFTPClient.ReadDir(".")
 	if err != nil {
 		return nil, err

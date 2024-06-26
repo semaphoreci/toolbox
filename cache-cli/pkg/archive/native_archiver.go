@@ -3,6 +3,7 @@ package archive
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -28,7 +29,7 @@ func NewNativeArchiver(metricsManager metrics.MetricsManager, useParallelism boo
 	}
 }
 
-func (a *NativeArchiver) Compress(dst, src string) error {
+func (a *NativeArchiver) Compress(ctx context.Context, dst, src string) error {
 	if _, err := os.Stat(src); err != nil {
 		return fmt.Errorf("error finding '%s': %v", src, err)
 	}
@@ -115,7 +116,7 @@ type directoryStat struct {
 	mode fs.FileMode
 }
 
-func (a *NativeArchiver) Decompress(src string) (string, error) {
+func (a *NativeArchiver) Decompress(ctx context.Context, src string) (string, error) {
 	// #nosec
 	srcFile, err := os.Open(src)
 	if err != nil {

@@ -26,15 +26,15 @@ type S3StorageOptions struct {
 	Config  StorageConfig
 }
 
-func NewS3Storage(options S3StorageOptions) (*S3Storage, error) {
+func NewS3Storage(ctx context.Context, options S3StorageOptions) (*S3Storage, error) {
 	if options.URL != "" {
-		return createS3StorageUsingEndpoint(options.Bucket, options.Project, options.URL, options.Config)
+		return createS3StorageUsingEndpoint(ctx, options.Bucket, options.Project, options.URL, options.Config)
 	}
 
-	return createDefaultS3Storage(options.Bucket, options.Project, options.Config)
+	return createDefaultS3Storage(ctx, options.Bucket, options.Project, options.Config)
 }
 
-func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfig) (*S3Storage, error) {
+func createDefaultS3Storage(ctx context.Context, s3Bucket, project string, storageConfig StorageConfig) (*S3Storage, error) {
 	var config aws.Config
 	var err error
 
@@ -42,7 +42,7 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 	if os.Getenv("SEMAPHORE_CACHE_USE_EC2_INSTANCE_PROFILE") == "true" {
 		log.Infof("Using EC2 instance profile.")
 		config, err = awsConfig.LoadDefaultConfig(
-			context.TODO(),
+			ctx,
 			awsConfig.WithCredentialsProvider(ec2rolecreds.New()),
 			awsConfig.WithEC2IMDSRegion(),
 		)
@@ -63,7 +63,7 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 	profile := os.Getenv("SEMAPHORE_CACHE_AWS_PROFILE")
 	if profile != "" {
 		log.Infof("Using '%s' AWS profile.", profile)
-		config, err = awsConfig.LoadDefaultConfig(context.TODO(), awsConfig.WithSharedConfigProfile(profile))
+		config, err = awsConfig.LoadDefaultConfig(ctx, awsConfig.WithSharedConfigProfile(profile))
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +77,7 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 	}
 
 	// No special configuration, just follow the default chain
-	config, err = awsConfig.LoadDefaultConfig(context.TODO())
+	config, err = awsConfig.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 	}, nil
 }
 
-func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string, storageConfig StorageConfig) (*S3Storage, error) {
+func createS3StorageUsingEndpoint(ctx context.Context, s3Bucket, project, s3Url string, storageConfig StorageConfig) (*S3Storage, error) {
 	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
 		return aws.Endpoint{
 			URL: s3Url,
@@ -98,7 +98,7 @@ func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string, storageConfig
 	})
 
 	creds := credentials.NewStaticCredentialsProvider("minioadmin", "minioadmin", "")
-	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
+	cfg, err := awsConfig.LoadDefaultConfig(ctx,
 		awsConfig.WithCredentialsProvider(creds),
 		awsConfig.WithEndpointResolver(resolver),
 	)

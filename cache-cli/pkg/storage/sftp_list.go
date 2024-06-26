@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"io/fs"
 	"sort"
 	"time"
@@ -8,7 +9,7 @@ import (
 	"github.com/pkg/sftp"
 )
 
-func (s *SFTPStorage) List() ([]CacheKey, error) {
+func (s *SFTPStorage) List(ctx context.Context) ([]CacheKey, error) {
 	files, err := s.SFTPClient.ReadDir(".")
 	if err != nil {
 		return nil, err

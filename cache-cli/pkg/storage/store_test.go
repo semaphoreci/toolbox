@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -15,15 +16,16 @@ import (
 )
 
 func Test__Store(t *testing.T) {
+	ctx := context.TODO()
 	runTestForAllStorageTypes(t, SortByStoreTime, func(storageType string, storage Storage) {
 		t.Run(fmt.Sprintf("%s stored objects can be listed", storageType), func(t *testing.T) {
-			_ = storage.Clear()
+			_ = storage.Clear(ctx)
 
 			file, _ := ioutil.TempFile(os.TempDir(), "*")
-			err := storage.Store("abc001", file.Name())
+			err := storage.Store(ctx, "abc001", file.Name())
 			assert.Nil(t, err)
 
-			keys, err := storage.List()
+			keys, err := storage.List(ctx)
 			assert.Nil(t, err)
 
 			if assert.Len(t, keys, 1) {
@@ -37,15 +39,15 @@ func Test__Store(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s stored objects can be restored", storageType), func(t *testing.T) {
-			_ = storage.Clear()
+			_ = storage.Clear(ctx)
 
 			file, _ := ioutil.TempFile(os.TempDir(), "*")
 			file.WriteString("stored objects can be restored")
 
-			err := storage.Store("abc002", file.Name())
+			err := storage.Store(ctx, "abc002", file.Name())
 			assert.Nil(t, err)
 
-			restoredFile, err := storage.Restore("abc002")
+			restoredFile, err := storage.Restore(ctx, "abc002")
 			assert.Nil(t, err)
 
 			content, err := ioutil.ReadFile(restoredFile.Name())
@@ -70,7 +72,7 @@ func Test__Store(t *testing.T) {
 				t.Skip()
 			}
 
-			_ = storage.Clear()
+			_ = storage.Clear(ctx)
 
 			smallerFile := fmt.Sprintf("%s/smaller.tmp", os.TempDir())
 			err := createBigTempFile(smallerFile, 300*1000*1000) // 300M
@@ -82,12 +84,12 @@ func Test__Store(t *testing.T) {
 			assert.Nil(t, err)
 
 			go func() {
-				_ = storage.Store("abc003", smallerFile)
+				_ = storage.Store(ctx, "abc003", smallerFile)
 			}()
 
-			_ = storage.Store("abc003", biggerFile)
+			_ = storage.Store(ctx, "abc003", biggerFile)
 
-			restoredFile, err := storage.Restore("abc003")
+			restoredFile, err := storage.Restore(ctx, "abc003")
 			assert.Nil(t, err)
 			assert.Zero(t, countLines(restoredFile.Name(), smallerFile))
 
@@ -100,22 +102,22 @@ func Test__Store(t *testing.T) {
 	if runtime.GOOS != "windows" {
 		runTestForSingleStorageType("sftp", 1024, SortByStoreTime, t, func(storage Storage) {
 			t.Run("sftp least recently stored keys are deleted when no space", func(t *testing.T) {
-				_ = storage.Clear()
+				_ = storage.Clear(ctx)
 
 				// store first key
 				tmpFile, _ := ioutil.TempFile(os.TempDir(), "*")
 				tmpFile.WriteString(strings.Repeat("x", 400))
-				storage.Store("abc001", tmpFile.Name())
+				storage.Store(ctx, "abc001", tmpFile.Name())
 
 				// wait a little bit, then store second key
 				time.Sleep(2 * time.Second)
-				storage.Store("abc002", tmpFile.Name())
+				storage.Store(ctx, "abc002", tmpFile.Name())
 
 				// wait a little bit, then store third key
 				time.Sleep(2 * time.Second)
-				storage.Store("abc003", tmpFile.Name())
+				storage.Store(ctx, "abc003", tmpFile.Name())
 
-				keys, _ := storage.List()
+				keys, _ := storage.List(ctx)
 				assert.Len(t, keys, 2)
 
 				firstKey := keys[0]
@@ -129,26 +131,26 @@ func Test__Store(t *testing.T) {
 
 		runTestForSingleStorageType("sftp", 1024, SortByAccessTime, t, func(storage Storage) {
 			t.Run("sftp least recently accessed keys are deleted when no space", func(t *testing.T) {
-				_ = storage.Clear()
+				_ = storage.Clear(ctx)
 
 				// store first key
 				tmpFile, _ := ioutil.TempFile(os.TempDir(), "*")
 				tmpFile.WriteString(strings.Repeat("x", 400))
-				storage.Store("abc001", tmpFile.Name())
+				storage.Store(ctx, "abc001", tmpFile.Name())
 
 				// wait a little bit, then store second key
 				time.Sleep(2 * time.Second)
-				storage.Store("abc002", tmpFile.Name())
+				storage.Store(ctx, "abc002", tmpFile.Name())
 
 				// wait a little bit, then restore first key (access time will be updated)
 				time.Sleep(2 * time.Second)
-				storage.Store("abc001", tmpFile.Name())
+				storage.Store(ctx, "abc001", tmpFile.Name())
 
 				// wait a little bit, then store third key
 				time.Sleep(2 * time.Second)
-				storage.Store("abc003", tmpFile.Name())
+				storage.Store(ctx, "abc003", tmpFile.Name())
 
-				keys, _ := storage.List()
+				keys, _ := storage.List(ctx)
 				assert.Len(t, keys, 2)
 
 				firstKey := keys[0]
@@ -162,7 +164,7 @@ func Test__Store(t *testing.T) {
 
 		runTestForSingleStorageType("sftp", 150*1024*1024, SortBySize, t, func(storage Storage) {
 			t.Run("sftp smaller keys are deleted when no space", func(t *testing.T) {
-				_ = storage.Clear()
+				_ = storage.Clear(ctx)
 
 				smallerFile := fmt.Sprintf("%s/smaller.tmp", os.TempDir())
 				err := createBigTempFile(smallerFile, 50*1000*1000) // 50M
@@ -173,13 +175,13 @@ func Test__Store(t *testing.T) {
 				assert.Nil(t, err)
 
 				// store both keys
-				storage.Store("smaller-key", smallerFile)
-				storage.Store("bigger-key", biggerFile)
+				storage.Store(ctx, "smaller-key", smallerFile)
+				storage.Store(ctx, "bigger-key", biggerFile)
 
 				// store third key, this should cleanup the smaller key
-				storage.Store("another-smaller-key", smallerFile)
+				storage.Store(ctx, "another-smaller-key", smallerFile)
 
-				keys, _ := storage.List()
+				keys, _ := storage.List(ctx)
 				assert.Len(t, keys, 2)
 
 				firstKey := keys[0]

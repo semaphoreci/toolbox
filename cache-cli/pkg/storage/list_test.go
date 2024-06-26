@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,29 +13,30 @@ import (
 )
 
 func Test__List(t *testing.T) {
+	ctx := context.TODO()
 	runTestForAllStorageTypes(t, SortByStoreTime, func(storageType string, storage Storage) {
 		t.Run(fmt.Sprintf("%s no keys", storageType), func(t *testing.T) {
-			_ = storage.Clear()
-			keys, err := storage.List()
+			_ = storage.Clear(ctx)
+			keys, err := storage.List(ctx)
 			assert.Nil(t, err)
 			assert.Len(t, keys, 0)
 		})
 
 		t.Run(fmt.Sprintf("%s keys are ordered by store time", storageType), func(t *testing.T) {
-			err := storage.Clear()
+			err := storage.Clear(ctx)
 			assert.Nil(t, err)
 
 			file1, _ := ioutil.TempFile(os.TempDir(), "*")
-			err = storage.Store("abc001", file1.Name())
+			err = storage.Store(ctx, "abc001", file1.Name())
 			assert.Nil(t, err)
 
 			time.Sleep(time.Second)
 
 			file2, _ := ioutil.TempFile(os.TempDir(), "*")
-			err = storage.Store("abc002", file2.Name())
+			err = storage.Store(ctx, "abc002", file2.Name())
 			assert.Nil(t, err)
 
-			keys, err := storage.List()
+			keys, err := storage.List(ctx)
 			assert.Nil(t, err)
 
 			if assert.Len(t, keys, 2) {
@@ -58,13 +60,13 @@ func Test__List(t *testing.T) {
 
 	runTestForAllStorageTypes(t, SortBySize, func(storageType string, storage Storage) {
 		t.Run(fmt.Sprintf("%s keys are ordered by size", storageType), func(t *testing.T) {
-			err := storage.Clear()
+			err := storage.Clear(ctx)
 			assert.Nil(t, err)
 
 			biggerFile := fmt.Sprintf("%s/bigger.tmp", os.TempDir())
 			err = createBigTempFile(biggerFile, 100*1000*1000) // 100M
 			assert.Nil(t, err)
-			err = storage.Store("bigger", biggerFile)
+			err = storage.Store(ctx, "bigger", biggerFile)
 			assert.Nil(t, err)
 
 			// Just to make sure things are really being sorted by size
@@ -73,10 +75,10 @@ func Test__List(t *testing.T) {
 			smallerFile := fmt.Sprintf("%s/smaller.tmp", os.TempDir())
 			err = createBigTempFile(smallerFile, 50*1000*1000) // 50M
 			assert.Nil(t, err)
-			err = storage.Store("smaller", smallerFile)
+			err = storage.Store(ctx, "smaller", smallerFile)
 			assert.Nil(t, err)
 
-			keys, err := storage.List()
+			keys, err := storage.List(ctx)
 			assert.Nil(t, err)
 
 			if assert.Len(t, keys, 2) {
@@ -102,25 +104,25 @@ func Test__List(t *testing.T) {
 		// s3 does not support access time sorting
 		runTestForSingleStorageType("sftp", 1024, SortByAccessTime, t, func(storage Storage) {
 			t.Run("sftp keys are ordered by access time", func(t *testing.T) {
-				err := storage.Clear()
+				err := storage.Clear(ctx)
 				assert.Nil(t, err)
 
 				// store first key
 				tmpFile, _ := ioutil.TempFile(os.TempDir(), "*")
-				err = storage.Store("abc001", tmpFile.Name())
+				err = storage.Store(ctx, "abc001", tmpFile.Name())
 				assert.Nil(t, err)
 
 				// wait a little bit, and then store second key
 				time.Sleep(2 * time.Second)
-				err = storage.Store("abc002", tmpFile.Name())
+				err = storage.Store(ctx, "abc002", tmpFile.Name())
 				assert.Nil(t, err)
 
 				// wait a little bit, and then restore first key (access time will be updated)
 				time.Sleep(2 * time.Second)
-				_, err = storage.Restore("abc001")
+				_, err = storage.Restore(ctx, "abc001")
 				assert.Nil(t, err)
 
-				keys, err := storage.List()
+				keys, err := storage.List(ctx)
 				assert.Nil(t, err)
 
 				if assert.Len(t, keys, 2) {

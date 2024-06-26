@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -48,7 +49,7 @@ func RunStore(cmd *cobra.Command, args []string) {
 	cleanupBy, err := cmd.Flags().GetString("cleanup-by")
 	utils.Check(err)
 
-	storage, err := storage.InitStorageWithConfig(storage.StorageConfig{SortKeysBy: cleanupBy})
+	storage, err := storage.InitStorageWithConfig(cmd.Context(), storage.StorageConfig{SortKeysBy: cleanupBy})
 	utils.Check(err)
 
 	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
@@ -72,24 +73,24 @@ func RunStore(cmd *cobra.Command, args []string) {
 			for _, entry := range lookupResult.Entries {
 				log.Infof("Using default cache path '%s'.", entry.Path)
 				key := entry.Keys[0]
-				compressAndStore(storage, archiver, key, entry.Path)
+				compressAndStore(cmd.Context(), storage, archiver, key, entry.Path)
 			}
 		}
 	} else {
 		path := filepath.FromSlash(args[1])
-		compressAndStore(storage, archiver, args[0], path)
+		compressAndStore(cmd.Context(), storage, archiver, args[0], path)
 	}
 }
 
-func compressAndStore(storage storage.Storage, archiver archive.Archiver, rawKey, path string) {
+func compressAndStore(ctx context.Context, storage storage.Storage, archiver archive.Archiver, rawKey, path string) {
 	key := NormalizeKey(rawKey)
 	if _, err := os.Stat(path); err == nil {
-		if ok, _ := storage.HasKey(key); ok {
+		if ok, _ := storage.HasKey(ctx, key); ok {
 			log.Infof("Key '%s' already exists.", key)
 			return
 		}
 
-		compressedFilePath, compressedFileSize, err := compress(archiver, key, path)
+		compressedFilePath, compressedFileSize, err := compress(ctx, archiver, key, path)
 		if err != nil {
 			log.Errorf("Error compressing %s: %v", path, err)
 			return
@@ -103,7 +104,7 @@ func compressAndStore(storage storage.Storage, archiver archive.Archiver, rawKey
 
 		uploadStart := time.Now()
 		log.Infof("Uploading '%s' with cache key '%s'...", path, key)
-		err = storage.Store(key, compressedFilePath)
+		err = storage.Store(ctx, key, compressedFilePath)
 		utils.Check(err)
 
 		uploadDuration := time.Since(uploadStart)
@@ -118,12 +119,12 @@ func compressAndStore(storage storage.Storage, archiver archive.Archiver, rawKey
 	}
 }
 
-func compress(archiver archive.Archiver, key, path string) (string, int64, error) {
+func compress(ctx context.Context, archiver archive.Archiver, key, path string) (string, int64, error) {
 	compressingStart := time.Now()
 	log.Infof("Compressing %s...", path)
 
 	dst := filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", key, time.Now().Nanosecond()))
-	err := archiver.Compress(dst, path)
+	err := archiver.Compress(ctx, dst, path)
 	utils.Check(err)
 
 	compressionDuration := time.Since(compressingStart)

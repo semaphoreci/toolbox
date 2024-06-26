@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"io"
 	"io/ioutil"
 	"os"
@@ -38,7 +39,7 @@ var testBackends = map[string]TestBackend{
 	},
 }
 
-func runTestForAllBackends(t *testing.T, test func(string, storage.Storage)) {
+func runTestForAllBackends(ctx context.Context, t *testing.T, test func(string, storage.Storage)) {
 	for backendType, testBackend := range testBackends {
 		if runtime.GOOS == "windows" && !testBackend.runInWindows {
 			continue
@@ -48,7 +49,7 @@ func runTestForAllBackends(t *testing.T, test func(string, storage.Storage)) {
 			os.Setenv(envVarName, envVarValue)
 		}
 
-		storage, err := storage.InitStorage()
+		storage, err := storage.InitStorage(ctx)
 		assert.Nil(t, err)
 		test(backendType, storage)
 	}

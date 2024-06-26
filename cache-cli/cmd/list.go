@@ -36,10 +36,10 @@ func RunList(cmd *cobra.Command, args []string) {
 	sortBy, err := cmd.Flags().GetString("sort-by")
 	utils.Check(err)
 
-	storage, err := storage.InitStorageWithConfig(storage.StorageConfig{SortKeysBy: sortBy})
+	storage, err := storage.InitStorageWithConfig(cmd.Context(), storage.StorageConfig{SortKeysBy: sortBy})
 	utils.Check(err)
 
-	keys, err := storage.List()
+	keys, err := storage.List(cmd.Context())
 	utils.Check(err)
 
 	if len(keys) == 0 {

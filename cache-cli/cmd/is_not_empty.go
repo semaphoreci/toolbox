@@ -23,10 +23,10 @@ var isNotEmptyCmd = &cobra.Command{
 }
 
 func RunIsNotEmpty(cmd *cobra.Command, args []string) bool {
-	storage, err := storage.InitStorage()
+	storage, err := storage.InitStorage(cmd.Context())
 	utils.Check(err)
 
-	isNotEmpty, err := storage.IsNotEmpty()
+	isNotEmpty, err := storage.IsNotEmpty(cmd.Context())
 	utils.Check(err)
 
 	return isNotEmpty

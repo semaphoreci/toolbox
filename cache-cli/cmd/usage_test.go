@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -11,13 +12,14 @@ import (
 )
 
 func Test__Usage(t *testing.T) {
+	ctx := context.TODO()
 	log.SetFormatter(new(logging.CustomFormatter))
 	log.SetLevel(log.InfoLevel)
 	log.SetOutput(openLogfileForTests(t))
 
-	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
+	runTestForAllBackends(ctx, t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s empty cache", backend), func(t *testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			RunUsage(usageCmd, []string{})
 			output := readOutputFromFile(t)

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -13,14 +14,15 @@ import (
 )
 
 func Test__List(t *testing.T) {
+	ctx := context.TODO()
 	listCmd := NewListCommand()
 	log.SetFormatter(new(logging.CustomFormatter))
 	log.SetLevel(log.InfoLevel)
 	log.SetOutput(openLogfileForTests(t))
 
-	runTestForAllBackends(t, func(backend string, storage storage.Storage) {
+	runTestForAllBackends(ctx, t, func(backend string, storage storage.Storage) {
 		t.Run(fmt.Sprintf("%s no keys", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 
 			RunList(listCmd, []string{""})
 			output := readOutputFromFile(t)
@@ -29,11 +31,11 @@ func Test__List(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s with keys", backend), func(*testing.T) {
-			storage.Clear()
+			storage.Clear(ctx)
 			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
-			storage.Store("abc001", tempFile.Name())
-			storage.Store("abc002", tempFile.Name())
-			storage.Store("abc003", tempFile.Name())
+			storage.Store(ctx, "abc001", tempFile.Name())
+			storage.Store(ctx, "abc002", tempFile.Name())
+			storage.Store(ctx, "abc003", tempFile.Name())
 
 			RunList(listCmd, []string{})
 			output := readOutputFromFile(t)

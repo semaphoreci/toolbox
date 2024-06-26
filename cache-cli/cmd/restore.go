@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"os"
@@ -34,7 +35,7 @@ func RunRestore(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	storage, err := storage.InitStorage()
+	storage, err := storage.InitStorage(cmd.Context())
 	utils.Check(err)
 
 	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
@@ -57,31 +58,31 @@ func RunRestore(cmd *cobra.Command, args []string) {
 			log.Infof("Detected %s.", lookupResult.DetectedFile)
 			for _, entry := range lookupResult.Entries {
 				log.Infof("Fetching '%s' directory with cache keys '%s'...", entry.Path, strings.Join(entry.Keys, ","))
-				downloadAndUnpack(storage, archiver, metricsManager, entry.Keys)
+				downloadAndUnpack(cmd.Context(), storage, archiver, metricsManager, entry.Keys)
 			}
 		}
 	} else {
 		keys := strings.Split(args[0], ",")
-		downloadAndUnpack(storage, archiver, metricsManager, keys)
+		downloadAndUnpack(cmd.Context(), storage, archiver, metricsManager, keys)
 	}
 }
 
-func downloadAndUnpack(storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, keys []string) {
+func downloadAndUnpack(ctx context.Context, storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, keys []string) {
 	for _, rawKey := range keys {
 		key := NormalizeKey(rawKey)
-		if ok, _ := storage.HasKey(key); ok {
+		if ok, _ := storage.HasKey(ctx, key); ok {
 			log.Infof("HIT: '%s', using key '%s'.", key, key)
-			downloadAndUnpackKey(storage, archiver, metricsManager, key)
+			downloadAndUnpackKey(ctx, storage, archiver, metricsManager, key)
 			break
 		}
 
-		availableKeys, err := storage.List()
+		availableKeys, err := storage.List(ctx)
 		utils.Check(err)
 
 		matchingKey := findMatchingKey(availableKeys, key)
 		if matchingKey != "" {
 			log.Infof("HIT: '%s', using key '%s'.", key, matchingKey)
-			downloadAndUnpackKey(storage, archiver, metricsManager, matchingKey)
+			downloadAndUnpackKey(ctx, storage, archiver, metricsManager, matchingKey)
 			break
 		} else {
 			log.Infof("MISS: '%s'.", key)
@@ -100,10 +101,10 @@ func findMatchingKey(availableKeys []storage.CacheKey, match string) string {
 	return ""
 }
 
-func downloadAndUnpackKey(storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, key string) {
+func downloadAndUnpackKey(ctx context.Context, storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, key string) {
 	downloadStart := time.Now()
 	log.Infof("Downloading key '%s'...", key)
-	compressed, err := storage.Restore(key)
+	compressed, err := storage.Restore(ctx, key)
 	utils.Check(err)
 
 	downloadDuration := time.Since(downloadStart)
@@ -114,7 +115,7 @@ func downloadAndUnpackKey(storage storage.Storage, archiver archive.Archiver, me
 
 	unpackStart := time.Now()
 	log.Infof("Unpacking '%s'...", compressed.Name())
-	restorationPath, err := archiver.Decompress(compressed.Name())
+	restorationPath, err := archiver.Decompress(ctx, compressed.Name())
 	utils.Check(err)
 
 	unpackDuration := time.Since(unpackStart)

@@ -10,8 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
-func (s *S3Storage) List() ([]CacheKey, error) {
-	output, err := s.Client.ListObjects(context.TODO(), s.listObjectsInput(nil))
+func (s *S3Storage) List(ctx context.Context) ([]CacheKey, error) {
+	output, err := s.Client.ListObjects(ctx, s.listObjectsInput(nil))
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +21,7 @@ func (s *S3Storage) List() ([]CacheKey, error) {
 
 	for output.IsTruncated {
 		nextMarker := findNextMarker(output)
-		output, err = s.Client.ListObjects(context.TODO(), s.listObjectsInput(&nextMarker))
+		output, err = s.Client.ListObjects(ctx, s.listObjectsInput(&nextMarker))
 		if err != nil {
 			return nil, err
 		}

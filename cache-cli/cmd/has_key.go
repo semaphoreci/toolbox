@@ -28,12 +28,12 @@ func RunHasKey(cmd *cobra.Command, args []string) bool {
 		return true
 	}
 
-	storage, err := storage.InitStorage()
+	storage, err := storage.InitStorage(cmd.Context())
 	utils.Check(err)
 
 	rawKey := args[0]
 	key := NormalizeKey(rawKey)
-	exists, err := storage.HasKey(key)
+	exists, err := storage.HasKey(cmd.Context(), key)
 	utils.Check(err)
 
 	if exists {

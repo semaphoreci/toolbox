@@ -1,7 +1,9 @@
 package storage
 
-func (s *S3Storage) IsNotEmpty() (bool, error) {
-	keys, err := s.List()
+import "context"
+
+func (s *S3Storage) IsNotEmpty(ctx context.Context) (bool, error) {
+	keys, err := s.List(ctx)
 	if err != nil {
 		return false, err
 	}
