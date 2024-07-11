@@ -2,13 +2,13 @@
 
 install::package_url() {
   DIST=$(uname)
-  [[ $(uname -m) =~ "aarch" ]] && SEMAPHORE_ARCH="arm/" || SEMAPHORE_ARCH=""
+  [[ $(uname -m) =~ ^(aarch64|arm64)$ ]] && SEMAPHORE_ARCH="arm/" || SEMAPHORE_ARCH=""
   case $DIST in
     Linux)
       echo "http://packages.semaphoreci.com/${SEMAPHORE_ARCH}$(lsb_release -cs)"
       ;;
     Darwin)
-      echo "http://packagesmac.semaphoreci.com/mac"
+      [[ "${SEMAPHORE_ARCH}" == "arm/" ]] && echo "http://packages.semaphoreci.com/arm/mac" || echo "http://packagesmac.semaphoreci.com/mac"
       ;;
     *)
       echo "Unsupported distro $DIST"

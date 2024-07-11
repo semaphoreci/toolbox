@@ -13,31 +13,6 @@ setup() {
   export NVM_DIR=~/.nvm
 }
 
-@test "[macOS] sem-version ruby - 2.5.9 " {
-
-  run sem-version ruby 2.5.9
-  assert_success
-  run ruby --version
-  assert_success
-  assert_output --partial "2.5.9"
-}
-
-@test "[macOS] sem-version ruby - 2.6.7 " {
-
-  run sem-version ruby 2.6.7
-  assert_success
-  run ruby --version
-  assert_success
-  assert_output --partial "2.6.7"
-}
-@test "[macOS] sem-version ruby - 2.7.3 " {
-
-  run sem-version ruby 2.7.3
-  assert_success
-  run ruby --version
-  assert_success
-  assert_output --partial "2.7.3"
-}
 @test "[macOS] sem-version ruby - 2.7.2 " {
 
   run sem-version ruby 2.7.2

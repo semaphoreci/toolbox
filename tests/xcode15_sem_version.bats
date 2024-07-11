@@ -13,58 +13,20 @@ setup() {
   export NVM_DIR=~/.nvm
 }
 
-@test "[macOS] sem-version ruby - 2.5.9 " {
+@test "[macOS] sem-version ruby - 3.3.3 " {
 
-  run sem-version ruby 2.5.9
+  run sem-version ruby 3.3.3
   assert_success
   run ruby --version
   assert_success
-  assert_output --partial "2.5.9"
-}
-
-@test "[macOS] sem-version ruby - 2.6.7 " {
-
-  run sem-version ruby 2.6.7
-  assert_success
-  run ruby --version
-  assert_success
-  assert_output --partial "2.6.7"
-}
-@test "[macOS] sem-version ruby - 2.7.3 " {
-
-  run sem-version ruby 2.7.3
-  assert_success
-  run ruby --version
-  assert_success
-  assert_output --partial "2.7.3"
-}
-@test "[macOS] sem-version ruby - 2.7.2 " {
-
-  run sem-version ruby 2.7.2
-  assert_success
-  run ruby --version
-  assert_success
-  assert_output --partial "2.7.2"
-}
-@test "[macOS] sem-version ruby - 3.0.1 " {
-
-  run sem-version ruby 3.0.1
-  assert_success
-  run ruby --version
-  assert_success
-  assert_output --partial "3.0.1"
-}
-@test "[macOS] sem-version php - 8.0.5 " {
-
-  run sem-version php 8.0.5
-  assert_failure
+  assert_output --partial "3.3.3"
 }
 
 @test "[macOS] sem-version node - 14.16.1 " {
-
   run sem-version node 14.16.1
   assert_success
   assert_output --partial "14.16.1"
-  node --version
+  run node --version
+  assert_success
 }
 
