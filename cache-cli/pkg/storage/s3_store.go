@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (s *S3Storage) Store(key, path string) error {
+func (s *S3Storage) Store(ctx context.Context, key, path string) error {
 	// #nosec
 	file, err := os.Open(path)
 	if err != nil {
@@ -19,7 +19,7 @@ func (s *S3Storage) Store(key, path string) error {
 
 	destination := fmt.Sprintf("%s/%s", s.Project, key)
 	uploader := manager.NewUploader(s.Client)
-	_, err = uploader.Upload(context.TODO(), &s3.PutObjectInput{
+	_, err = uploader.Upload(ctx, &s3.PutObjectInput{
 		Bucket: &s.Bucket,
 		Key:    &destination,
 		Body:   file,

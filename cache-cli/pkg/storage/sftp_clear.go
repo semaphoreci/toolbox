@@ -1,7 +1,9 @@
 package storage
 
-func (s *SFTPStorage) Clear() error {
-	keys, err := s.List()
+import "context"
+
+func (s *SFTPStorage) Clear(ctx context.Context) error {
+	keys, err := s.List(ctx)
 	if err != nil {
 		return err
 	}

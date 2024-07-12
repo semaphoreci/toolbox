@@ -8,14 +8,14 @@ import (
 	"os"
 )
 
-func (s *GCSStorage) Restore(key string) (*os.File, error) {
+func (s *GCSStorage) Restore(ctx context.Context, key string) (*os.File, error) {
 	tempFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("%s-*", key))
 	if err != nil {
 		return nil, err
 	}
 
 	bucketKey := fmt.Sprintf("%s/%s", s.Project, key)
-	reader, err := s.Bucket.Object(bucketKey).NewReader(context.TODO())
+	reader, err := s.Bucket.Object(bucketKey).NewReader(ctx)
 	if err != nil {
 		_ = tempFile.Close()
 		return nil, err

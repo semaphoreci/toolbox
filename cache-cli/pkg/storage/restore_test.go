@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,17 +11,18 @@ import (
 )
 
 func Test__Restore(t *testing.T) {
+	ctx := context.TODO()
 	runTestForAllStorageTypes(t, SortByStoreTime, func(storageType string, storage Storage) {
 		t.Run(fmt.Sprintf("%s key exists", storageType), func(t *testing.T) {
-			_ = storage.Clear()
+			_ = storage.Clear(ctx)
 
 			file, _ := ioutil.TempFile(os.TempDir(), "*")
 			file.WriteString("restore - key exists")
 
-			err := storage.Store("abc001", file.Name())
+			err := storage.Store(ctx, "abc001", file.Name())
 			assert.Nil(t, err)
 
-			restoredFile, err := storage.Restore("abc001")
+			restoredFile, err := storage.Restore(ctx, "abc001")
 			assert.Nil(t, err)
 
 			content, err := ioutil.ReadFile(restoredFile.Name())
@@ -32,9 +34,9 @@ func Test__Restore(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%s key does not exist", storageType), func(t *testing.T) {
-			_ = storage.Clear()
+			_ = storage.Clear(ctx)
 
-			_, err := storage.Restore("abc002")
+			_, err := storage.Restore(ctx, "abc002")
 			assert.NotNil(t, err)
 		})
 	})

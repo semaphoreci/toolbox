@@ -9,14 +9,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (s *GCSStorage) Store(key, path string) error {
+func (s *GCSStorage) Store(ctx context.Context, key, path string) error {
 	// #nosec
 	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 
-	ctx, cancel := context.WithCancel(context.TODO())
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	destination := fmt.Sprintf("%s/%s", s.Project, key)

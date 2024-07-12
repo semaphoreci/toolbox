@@ -1,8 +1,11 @@
 package storage
 
-import "strings"
+import (
+	"context"
+	"strings"
+)
 
-func (s *SFTPStorage) HasKey(key string) (bool, error) {
+func (s *SFTPStorage) HasKey(ctx context.Context, key string) (bool, error) {
 	file, err := s.SFTPClient.Stat(key)
 	if file == nil {
 		if err != nil && strings.Contains(err.Error(), "file does not exist") {
