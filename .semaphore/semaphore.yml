@@ -212,6 +212,47 @@ blocks:
           commands:
             - bats tests/sem_version_jammy/${TEST}.bats
 
+  - name: Sem Version Tests Noble
+    dependencies:
+      - "Build local CLIs"
+    task:
+      agent:
+        machine:
+          type: f1-standard-4
+          os_image: ubuntu2404
+      prologue:
+        commands:
+          - checkout
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - bash release/create.sh
+          - source release/install_in_tests.sh
+          - git submodule init && git submodule update
+          - sudo ./tests/support/bats-core/install.sh /usr/local
+      jobs:
+        - name: Sem Version
+          matrix:
+            - env_var: TEST
+              values:
+                - elixir
+                - erlang
+                - gcc
+                - go
+                - java
+                - kubectl
+                - node
+                - php
+                - python
+                - ruby
+                - scala
+          commands:
+            - bats tests/sem_version_noble/${TEST}.bats
 
   - name: Sem Service Tests Jammy ARM
     dependencies:
