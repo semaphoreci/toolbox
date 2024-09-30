@@ -16,6 +16,8 @@ services:
       - .:/app
     environment:
       SEMAPHORE_CACHE_S3_URL: "http://s3:9000"
+      SEMAPHORE_CACHE_S3_USERNAME: minioadmin
+      SEMAPHORE_CACHE_S3_PASSWORD: minioadmin
       STORAGE_EMULATOR_HOST: "http://gcs:4443"
       SEMAPHORE_TOOLBOX_METRICS_ENABLED: "true"
   gcs:
@@ -27,7 +29,7 @@ services:
       - 4443:4443
     command: -backend memory -scheme http -port 4443 -public-host gcs:4443 -external-url http://gcs:4443
   s3:
-    image: quay.io/minio/minio:RELEASE.2021-09-15T04-54-25Z
+    image: quay.io/minio/minio:RELEASE.2024-09-22T00-33-43Z
     container_name: 's3'
     ports:
       - 9000:9000

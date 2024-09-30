@@ -91,31 +91,35 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 }
 
 func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string, storageConfig StorageConfig) (*S3Storage, error) {
-	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-		return aws.Endpoint{
-			URL: s3Url,
-		}, nil
-	})
+	// If a username/password pair is passed, we use them.
+	// Otherwise, we just rely on the default configuration methods
+	// used by LoadDefaultConfig(), for example,
+	// AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID environment variables.
+	username := os.Getenv("SEMAPHORE_CACHE_S3_USERNAME")
+	password := os.Getenv("SEMAPHORE_CACHE_S3_PASSWORD")
+	options := []func(*awsConfig.LoadOptions) error{
+		awsConfig.WithRegion("auto"),
+	}
 
-	creds := credentials.NewStaticCredentialsProvider("minioadmin", "minioadmin", "")
-	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
-		awsConfig.WithCredentialsProvider(creds),
-		awsConfig.WithEndpointResolver(resolver),
-	)
+	if username != "" && password != "" {
+		options = append(options, awsConfig.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(username, password, ""),
+		))
+	}
 
+	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(), options...)
 	if err != nil {
 		return nil, err
 	}
 
-	svc := s3.NewFromConfig(cfg, func(o *s3.Options) {
-		o.UsePathStyle = true
-	})
-
 	return &S3Storage{
-		Client:        svc,
 		Bucket:        s3Bucket,
 		Project:       project,
 		StorageConfig: storageConfig,
+		Client: s3.NewFromConfig(cfg, func(o *s3.Options) {
+			o.BaseEndpoint = aws.String(s3Url)
+			o.UsePathStyle = true
+		}),
 	}, nil
 }
 
