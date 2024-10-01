@@ -16,8 +16,8 @@ services:
       - .:/app
     environment:
       SEMAPHORE_CACHE_S3_URL: "http://s3:9000"
-      SEMAPHORE_CACHE_S3_USERNAME: minioadmin
-      SEMAPHORE_CACHE_S3_PASSWORD: minioadmin
+      SEMAPHORE_CACHE_S3_KEY: minioadmin
+      SEMAPHORE_CACHE_S3_SECRET: minioadmin
       STORAGE_EMULATOR_HOST: "http://gcs:4443"
       SEMAPHORE_TOOLBOX_METRICS_ENABLED: "true"
   gcs:

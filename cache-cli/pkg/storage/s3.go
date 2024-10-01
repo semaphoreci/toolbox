@@ -91,19 +91,19 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 }
 
 func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string, storageConfig StorageConfig) (*S3Storage, error) {
-	// If a username/password pair is passed, we use them.
+	// If a key/secret pair is passed, we use them.
 	// Otherwise, we just rely on the default configuration methods
 	// used by LoadDefaultConfig(), for example,
 	// AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID environment variables.
-	username := os.Getenv("SEMAPHORE_CACHE_S3_USERNAME")
-	password := os.Getenv("SEMAPHORE_CACHE_S3_PASSWORD")
+	s3Key := os.Getenv("SEMAPHORE_CACHE_S3_KEY")
+	s3Secret := os.Getenv("SEMAPHORE_CACHE_S3_SECRET")
 	options := []func(*awsConfig.LoadOptions) error{
 		awsConfig.WithRegion("auto"),
 	}
 
-	if username != "" && password != "" {
+	if s3Key != "" && s3Secret != "" {
 		options = append(options, awsConfig.WithCredentialsProvider(
-			credentials.NewStaticCredentialsProvider(username, password, ""),
+			credentials.NewStaticCredentialsProvider(s3Key, s3Secret, ""),
 		))
 	}
 
