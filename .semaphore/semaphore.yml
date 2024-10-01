@@ -15,7 +15,7 @@ blocks:
       jobs:
         - name: Build cache CLI
           commands:
-            - sem-version go 1.20
+            - sem-version go 1.22
             - "export GOPATH=~/go"
             - "export PATH=/home/semaphore/go/bin:$PATH"
             - checkout
@@ -32,7 +32,7 @@ blocks:
             - artifact push workflow bin/windows/cache.exe -d bin/windows/cache.exe
         - name: Build sem-context CLI
           commands:
-            - sem-version go 1.20
+            - sem-version go 1.22
             - "export GOPATH=~/go"
             - "export PATH=/home/semaphore/go/bin:$PATH"
             - checkout
@@ -360,14 +360,14 @@ blocks:
           commands:
             - bash tests/sem_service/$TEST
 
-  - name: "Bats: xcode14"
+  - name: "Bats: xcode15"
     dependencies:
       - "Build local CLIs"
     task:
       agent:
         machine:
           type: a1-standard-4
-          os_image: macos-xcode14
+          os_image: macos-xcode15
 
       prologue:
         commands:
@@ -612,7 +612,7 @@ blocks:
           - source tests/sftp_server/start_on_linux.sh
           - sudo apt-get install -y python3.8-dev
           - sem-version python 3.8
-          - sem-version go 1.13
+          - sem-version go 1.22
           - sem-version php 7.3.23
       jobs:
         - name: "Cache tests"
@@ -677,7 +677,7 @@ blocks:
           value: "on"
       prologue:
         commands:
-          - sem-version go 1.20
+          - sem-version go 1.22
           - checkout && cd cache-cli
       jobs:
         - name: Lint

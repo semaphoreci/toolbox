@@ -91,31 +91,41 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 }
 
 func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string, storageConfig StorageConfig) (*S3Storage, error) {
-	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-		return aws.Endpoint{
-			URL: s3Url,
-		}, nil
-	})
+	options := []func(*awsConfig.LoadOptions) error{
+		awsConfig.WithRegion("auto"),
+		awsConfig.WithEndpointResolverWithOptions(
+			aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+				return aws.Endpoint{
+					URL: s3Url,
+				}, nil
+			}),
+		),
+	}
 
-	creds := credentials.NewStaticCredentialsProvider("minioadmin", "minioadmin", "")
-	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
-		awsConfig.WithCredentialsProvider(creds),
-		awsConfig.WithEndpointResolver(resolver),
-	)
+	// If a key/secret pair is passed, we use them.
+	// Otherwise, we just rely on the default configuration methods
+	// used by LoadDefaultConfig(), for example,
+	// AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID environment variables.
+	s3Key := os.Getenv("SEMAPHORE_CACHE_S3_KEY")
+	s3Secret := os.Getenv("SEMAPHORE_CACHE_S3_SECRET")
+	if s3Key != "" && s3Secret != "" {
+		options = append(options, awsConfig.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(s3Key, s3Secret, ""),
+		))
+	}
 
+	cfg, err := awsConfig.LoadDefaultConfig(context.TODO(), options...)
 	if err != nil {
 		return nil, err
 	}
 
-	svc := s3.NewFromConfig(cfg, func(o *s3.Options) {
-		o.UsePathStyle = true
-	})
-
 	return &S3Storage{
-		Client:        svc,
 		Bucket:        s3Bucket,
 		Project:       project,
 		StorageConfig: storageConfig,
+		Client: s3.NewFromConfig(cfg, func(o *s3.Options) {
+			o.UsePathStyle = true
+		}),
 	}, nil
 }
 
