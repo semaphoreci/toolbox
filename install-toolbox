@@ -139,9 +139,9 @@ if [[ `uname` != "Darwin" ]]; then
     echo "toolbox_install_error_spc" >> /tmp/toolbox_metrics
   fi
 
-
   echo "Installing the when CLI"
-  install_cmd mv ~/.toolbox/when $INSTALL_PATH/when
+  ERLANG_VERSION=$(erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell | tr -d '"')
+  install_cmd mv ~/.toolbox/when_otp_$ERLANG_VERSION $INSTALL_PATH/when
   install_cmd chmod +x $INSTALL_PATH/when
   if [[ $? -eq 0 ]];then
     echo "when installed"

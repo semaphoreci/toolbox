@@ -3,9 +3,14 @@
 set -euo pipefail
 
 ARTIFACT_CLI_VERSION="v0.6.5"
-WHEN_CLI_VERSION="v1.0.5"
 SPC_CLI_VERSION="v1.12.1"
 TEST_RESULTS_CLI_VERSION="v0.7.0"
+WHEN_CLI_VERSION="v1.2.1"
+# we include multiple when binaries for all suported Erlang versions
+# and configure the correct one based on Erlang version in the VM where toolbox is installed
+WHEN_BINARY_VERSION_1="when_otp_24"
+WHEN_BINARY_VERSION_2="when_otp_25"
+WHEN_BINARY_VERSION_3="when_otp_26"
 
 ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
 SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSION"
@@ -15,9 +20,18 @@ WHEN_CLI_URL="https://github.com/renderedtext/when/releases/download/$WHEN_CLI_V
 download_when_cli() {
   rm -rf /tmp/when-cli
   mkdir -p /tmp/when-cli
-  echo "Downloading when CLI..."
-  curl -sL --retry 5 $WHEN_CLI_URL/when -o /tmp/when-cli/when
-  chmod +x /tmp/when-cli/when
+
+  echo "Downloading when CLI binary $WHEN_BINARY_VERSION_1"
+  curl -sL --retry 5 $WHEN_CLI_URL/$WHEN_BINARY_VERSION_1 -o /tmp/when-cli/$WHEN_BINARY_VERSION_1
+  chmod +x /tmp/when-cli/$WHEN_BINARY_VERSION_1
+
+  echo "Downloading when CLI binary $WHEN_BINARY_VERSION_2"
+  curl -sL --retry 5 $WHEN_CLI_URL/$WHEN_BINARY_VERSION_2 -o /tmp/when-cli/$WHEN_BINARY_VERSION_2
+  chmod +x /tmp/when-cli/$WHEN_BINARY_VERSION_2
+
+  echo "Downloading when CLI binary $WHEN_BINARY_VERSION_3"
+  curl -sL --retry 5 $WHEN_CLI_URL/$WHEN_BINARY_VERSION_3 -o /tmp/when-cli/$WHEN_BINARY_VERSION_3
+  chmod +x /tmp/when-cli/$WHEN_BINARY_VERSION_3
 }
 
 create_tarball() {
@@ -176,10 +190,13 @@ self_hosted::pack() {
   include_external_darwin_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Darwin "x86_64"
   include_external_darwin_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Darwin-arm "arm64"
 
-  cp /tmp/when-cli/when /tmp/self-hosted-Linux/toolbox/when
-  cp /tmp/when-cli/when /tmp/self-hosted-Linux-arm/toolbox/when
-  cp /tmp/when-cli/when /tmp/self-hosted-Darwin/toolbox/when
-  cp /tmp/when-cli/when /tmp/self-hosted-Darwin-arm/toolbox/when
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_1 /tmp/self-hosted-Linux/toolbox/$WHEN_BINARY_VERSION_1
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_2 /tmp/self-hosted-Linux/toolbox/$WHEN_BINARY_VERSION_2
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_3 /tmp/self-hosted-Linux/toolbox/$WHEN_BINARY_VERSION_3
+
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_1 /tmp/self-hosted-Linux-arm/toolbox/$WHEN_BINARY_VERSION_1
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_2 /tmp/self-hosted-Linux-arm/toolbox/$WHEN_BINARY_VERSION_2
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_3 /tmp/self-hosted-Linux-arm/toolbox/$WHEN_BINARY_VERSION_3
 
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/amd64/cache /tmp/self-hosted-Linux/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/arm64/cache /tmp/self-hosted-Linux-arm/toolbox/
@@ -212,8 +229,12 @@ hosted::pack() {
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/arm64/sem-context /tmp/Linux-arm/toolbox/sem-context
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/amd64/sem-context /tmp/Darwin/toolbox/sem-context
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/arm64/sem-context /tmp/Darwin-arm/toolbox/sem-context
-  cp /tmp/when-cli/when /tmp/Linux/toolbox/when
-  cp /tmp/when-cli/when /tmp/Linux-arm/toolbox/when
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_1 /tmp/Linux/toolbox/$WHEN_BINARY_VERSION_1
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_2 /tmp/Linux/toolbox/$WHEN_BINARY_VERSION_2
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_3 /tmp/Linux/toolbox/$WHEN_BINARY_VERSION_3
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_1 /tmp/Linux-arm/toolbox/$WHEN_BINARY_VERSION_1
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_2 /tmp/Linux-arm/toolbox/$WHEN_BINARY_VERSION_2
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_3 /tmp/Linux-arm/toolbox/$WHEN_BINARY_VERSION_3
 }
 
 create_self_hosted=false
