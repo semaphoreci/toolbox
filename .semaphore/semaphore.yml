@@ -319,14 +319,14 @@ blocks:
           commands:
             - bash tests/sem_service/$TEST
 
-  - name: "Bats: xcode14"
+  - name: "Bats: xcode15"
     dependencies:
       - "Build local CLIs"
     task:
       agent:
         machine:
           type: a1-standard-4
-          os_image: macos-xcode14
+          os_image: macos-xcode15
 
       prologue:
         commands:
