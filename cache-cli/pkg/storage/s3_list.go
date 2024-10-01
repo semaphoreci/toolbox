@@ -19,7 +19,7 @@ func (s *S3Storage) List() ([]CacheKey, error) {
 	keys := make([]CacheKey, 0)
 	keys = s.appendToListResult(keys, output.Contents)
 
-	for output.IsTruncated != nil && *output.IsTruncated {
+	for output.IsTruncated {
 		nextMarker := findNextMarker(output)
 		output, err = s.Client.ListObjects(context.TODO(), s.listObjectsInput(&nextMarker))
 		if err != nil {
@@ -70,7 +70,7 @@ func (s *S3Storage) appendToListResult(keys []CacheKey, objects []types.Object) 
 			Name:           keyWithoutProject,
 			StoredAt:       object.LastModified,
 			LastAccessedAt: object.LastModified,
-			Size:           *object.Size,
+			Size:           object.Size,
 		})
 	}
 
