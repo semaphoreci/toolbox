@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/smithy-go"
 )
 
 func (s *S3Storage) HasKey(key string) (bool, error) {
@@ -18,8 +18,8 @@ func (s *S3Storage) HasKey(key string) (bool, error) {
 
 	_, err := s.Client.HeadObject(context.TODO(), &input)
 	if err != nil {
-		var apiErr *awshttp.ResponseError
-		if errors.As(err, &apiErr) && apiErr.HTTPStatusCode() == 404 {
+		var apiErr *smithy.GenericAPIError
+		if errors.As(err, &apiErr) && apiErr.ErrorCode() == "NotFound" {
 			return false, nil
 		}
 
