@@ -688,6 +688,13 @@ blocks:
   - name: "Security checks"
     dependencies: []
     task:
+      env_vars:
+        # https://github.com/aquasecurity/trivy/discussions/7668#discussioncomment-10884984
+        # workaround for trivy TOOMANYREQUESTS issues
+        - name: TRIVY_DB_REPOSITORY
+          value: "ghcr.io/aquasecurity/trivy-db,public.ecr.aws/aquasecurity/trivy-db"
+        - name: TRIVY_JAVA_DB_REPOSITORY
+          value: "ghcr.io/aquasecurity/trivy-java-db,public.ecr.aws/aquasecurity/trivy-java-db"
       secrets:
         - name: security-toolbox-shared-read-access
       prologue:
