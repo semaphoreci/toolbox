@@ -16,6 +16,7 @@ check.static: check.prepare
 check.deps: check.prepare
 	docker run -it -v $$(pwd):/app \
 		-v $(SECURITY_TOOLBOX_TMP_DIR):$(SECURITY_TOOLBOX_TMP_DIR) \
+		-e TRIVY_DB_REPOSITORY -e TRIVY_JAVA_DB_REPOSITORY \
 		registry.semaphoreci.com/ruby:2.7 \
 		bash -c 'cd /app && $(SECURITY_TOOLBOX_TMP_DIR)/dependencies --language go -d'
 
