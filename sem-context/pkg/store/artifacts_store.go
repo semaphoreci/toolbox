@@ -110,7 +110,8 @@ func (_ *ArtifactStore) CheckIfKeyDeleted(key, contextId string) (bool, error) {
 	}
 	defer os.RemoveAll(dir)
 
-	if output, err := execArtifactCommand(Pull, keysInfoDirName+contextId+"/.deleted/", dir); err != nil {
+	output, err := execArtifactCommand(Pull, keysInfoDirName+contextId+"/.deleted/", dir)
+	if err != nil && !strings.Contains(output, "failed to generate signed URL") {
 		log.Printf("error executing artifact command: %v. Output: %s\n", err, output)
 	}
 
