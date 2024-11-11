@@ -400,6 +400,21 @@ blocks:
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
+        - name: "Cache tests -e"
+          matrix:
+            - env_var: TEST
+              values:
+                - tests/libcheckout.bats
+            - env_var: SEMAPHORE_CACHE_ARCHIVE_METHOD
+              values:
+                - shell-out
+                - native
+                - native-parallel
+          commands:
+            - cd ~ && rm -rf toolbox
+            - set -evo pipefail
+            - checkout --use-cache
+
         - name: "Non-cache tests"
           matrix:
             - env_var: TEST
@@ -460,6 +475,26 @@ blocks:
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
+        - name: "Cache tests -e"
+          matrix:
+            - env_var: TEST
+              values:
+                - tests/libcheckout.bats
+            - env_var: SEMAPHORE_CACHE_ARCHIVE_METHOD
+              values:
+                - shell-out
+                - native
+                - native-parallel
+          commands:
+            - source release/install_in_tests.sh
+            - cd ~ && rm -rf toolbox
+            - set -evo pipefail
+            - checkout --use-cache
+            - git submodule init && git submodule update
+            - sudo ./tests/support/bats-core/install.sh /usr/local
+            - bats --report-formatter junit --tap --timing $TEST
+
+
         - name: "Non-cache tests"
           matrix:
             - env_var: TEST
@@ -515,6 +550,25 @@ blocks:
                 - native-parallel
           commands:
             - source release/install_in_tests.sh
+            - git submodule init && git submodule update
+            - sudo ./tests/support/bats-core/install.sh /usr/local
+            - bats --report-formatter junit --tap --timing $TEST
+
+        - name: "Cache tests -e"
+          matrix:
+            - env_var: TEST
+              values:
+                - tests/libcheckout.bats
+            - env_var: SEMAPHORE_CACHE_ARCHIVE_METHOD
+              values:
+                - shell-out
+                - native
+                - native-parallel
+          commands:
+            - source release/install_in_tests.sh
+            - cd ~ && rm -rf toolbox
+            - set -evo pipefail
+            - checkout --use-cache
             - git submodule init && git submodule update
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
@@ -630,6 +684,26 @@ blocks:
             - git submodule init && git submodule update
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
+
+        - name: "Cache tests -e"
+          matrix:
+            - env_var: TEST
+              values:
+                - tests/libcheckout.bats
+            - env_var: SEMAPHORE_CACHE_ARCHIVE_METHOD
+              values:
+                - shell-out
+                - native
+                - native-parallel
+          commands:
+            - source release/install_in_tests.sh
+            - cd ~ && rm -rf toolbox
+            - set -evo pipefail
+            - checkout --use-cache
+            - git submodule init && git submodule update
+            - sudo ./tests/support/bats-core/install.sh /usr/local
+            - bats --report-formatter junit --tap --timing $TEST
+
 
         - name: "Non-cache tests"
           matrix:
