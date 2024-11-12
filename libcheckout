@@ -125,7 +125,10 @@ function checkout::cache_store() {
 
   local cache_key
   local cache_age
-  cache_key=$(cache list 2>&1 | grep git-cache- | awk '{ print $1 }' | head -1)
+  cache_key="$(cache list 2>&1 | grep git-cache- || true )"
+  if [[ -n "$cache_key" ]];then 
+    cache_key=$(echo "${cache_key}" | awk '{ print $1 }'| head -1)
+  fi
   cache_age=$(echo "${cache_key}" | cut -d'-' -f8)
 
   if [[ -n "$cache_age" ]] && [[ $cache_age =~ ^[0-9]+$ ]]; then
