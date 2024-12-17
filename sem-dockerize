@@ -5,7 +5,7 @@ run::dockerize(){
   local port=$1
   local service=$(echo "${@: -1}")
 
-  dockerize -wait tcp://0.0.0.0:${port} -timeout 30s 2>/dev/null
+  dockerize -wait tcp://0.0.0.0:${port} -timeout 60s 2>/dev/null
 
   echo $?
 }
