@@ -95,7 +95,7 @@ install::install_elixir() {
       "1.15"* | "1.16"*)
         local erlang_version="26.2"
         ;;
-      "1.17"*)
+      "1.17"* | "1.18"*)
         local erlang_version="27.0"
         ;;
       *)
