@@ -75,7 +75,7 @@ fi
 
 
 echo "Installing the when CLI"
-ERLANG_VERSION=$(erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell | tr -d '"')
+ERLANG_VERSION=$(erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().' -noshell | tr -d '"\r')
 install_cmd mv ~/.toolbox/when_otp_$ERLANG_VERSION $INSTALL_PATH/when
 install_cmd chmod +x $INSTALL_PATH/when
 if [[ $? -eq 0 ]];then
