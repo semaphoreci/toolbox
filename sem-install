@@ -40,6 +40,7 @@ install::install_node() {
 
 install::install_ruby() {
   if [[ $(install::available) -eq 1 ]] ; then
+    git -C $HOME/.rbenv/plugins/ruby-build pull > /dev/null 2>&1 || true
     rbenv install -s ${language_version}
     rbenv global ${language_version}
     gem update system
