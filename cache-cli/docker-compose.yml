@@ -39,6 +39,7 @@ services:
     container_name: sftp-server
     ports:
       - "2222:22"
+      - "8080:8080"
     build:
       context: .
       dockerfile: Dockerfile.sftp_server

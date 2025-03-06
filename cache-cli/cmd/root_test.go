@@ -38,6 +38,21 @@ var testBackends = map[string]TestBackend{
 	},
 }
 
+func runTestForSingleBackend(t *testing.T, testBackend string, test func(storage.Storage)) {
+	backend := testBackends[testBackend]
+	if runtime.GOOS == "windows" && !backend.runInWindows {
+		return
+	}
+
+	for envVarName, envVarValue := range backend.envVars {
+		os.Setenv(envVarName, envVarValue)
+	}
+
+	storage, err := storage.InitStorage()
+	assert.Nil(t, err)
+	test(storage)
+}
+
 func runTestForAllBackends(t *testing.T, test func(string, storage.Storage)) {
 	for backendType, testBackend := range testBackends {
 		if runtime.GOOS == "windows" && !testBackend.runInWindows {

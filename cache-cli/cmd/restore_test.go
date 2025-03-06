@@ -164,6 +164,67 @@ func Test__Restore(t *testing.T) {
 			os.Remove(tempDir)
 		})
 	})
+
+	runTestForSingleBackend(t, "sftp", func(storage storage.Storage) {
+		t.Run("restoring using HTTP works", func(t *testing.T) {
+			storage.Clear()
+
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
+			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
+
+			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
+			compressAndStore(storage, archiver, "abc", tempDir)
+
+			// set the environment variables to download using HTTP instead before restoring
+			os.Setenv("SEMAPHORE_CACHE_CDN_URL", "http://sftp-server:80")
+			os.Setenv("SEMAPHORE_CACHE_CDN_KEY", "test")
+			os.Setenv("SEMAPHORE_CACHE_CDN_SECRET", "test")
+			defer func() {
+				os.Unsetenv("SEMAPHORE_CACHE_CDN_URL")
+				os.Unsetenv("SEMAPHORE_CACHE_CDN_KEY")
+				os.Unsetenv("SEMAPHORE_CACHE_CDN_SECRET")
+			}()
+
+			RunRestore(restoreCmd, []string{"^abc"})
+			output := readOutputFromFile(t)
+
+			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
+			assert.Contains(t, output, "HIT: '^abc', using key 'abc'.")
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s.", restoredPath))
+
+			os.Remove(tempFile.Name())
+			os.Remove(tempDir)
+		})
+
+		t.Run("restoring defaults to use SFTP if not all variables are available", func(t *testing.T) {
+			storage.Clear()
+
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
+			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
+
+			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
+			compressAndStore(storage, archiver, "abc", tempDir)
+
+			// Set just the URL, but not the user/pass
+			// This means SFTP will still be used.
+			os.Setenv("SEMAPHORE_CACHE_CDN_URL", "http://sftp-server:80")
+			defer func() {
+				os.Unsetenv("SEMAPHORE_CACHE_CDN_URL")
+			}()
+
+			RunRestore(restoreCmd, []string{"^abc"})
+			output := readOutputFromFile(t)
+
+			restoredPath := filepath.FromSlash(fmt.Sprintf("%s/", tempDir))
+			assert.Contains(t, output, "HIT: '^abc', using key 'abc'.")
+			assert.Contains(t, output, fmt.Sprintf("Restored: %s.", restoredPath))
+
+			os.Remove(tempFile.Name())
+			os.Remove(tempDir)
+		})
+	})
 }
 
 func Test__AutomaticRestore(t *testing.T) {

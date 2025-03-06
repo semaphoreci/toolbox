@@ -1,9 +1,13 @@
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install -y openssh-server
+RUN apt-get update && apt-get install -y openssh-server nginx
 RUN mkdir -p /var/run/sshd
 
 COPY sshd_config /etc/ssh/sshd_config
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY default.conf /etc/nginx/sites-enabled/default
+COPY wrapper.sh /wrapper.sh
+COPY .htpasswd /etc/nginx/.htpasswd
 
 RUN addgroup ftpaccess
 RUN adduser tester --ingroup ftpaccess --shell /bin/bash --disabled-password --gecos ''
@@ -13,5 +17,6 @@ RUN mkdir /etc/ssh/authorized_keys
 COPY id_rsa.pub /tmp/id_rsa.pub
 RUN cat /tmp/id_rsa.pub >> /etc/ssh/authorized_keys/tester
 
+EXPOSE 80
 EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
+CMD ["/wrapper.sh"]
