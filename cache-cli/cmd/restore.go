@@ -103,7 +103,7 @@ func findMatchingKey(availableKeys []storage.CacheKey, match string) string {
 func downloadAndUnpackKey(storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, key string) {
 	downloadStart := time.Now()
 	log.Infof("Downloading key '%s'...", key)
-	compressed, err := storage.Restore(key)
+	compressed, err := downloadKey(storage, key)
 	utils.Check(err)
 
 	downloadDuration := time.Since(downloadStart)
@@ -125,6 +125,29 @@ func downloadAndUnpackKey(storage storage.Storage, archiver archive.Archiver, me
 	if err != nil {
 		log.Errorf("Error removing %s: %v", compressed.Name(), err)
 	}
+}
+
+func downloadKey(storage storage.Storage, key string) (*os.File, error) {
+	backend := os.Getenv("SEMAPHORE_CACHE_BACKEND")
+
+	// If this is not an sftp backend, then we are not in a cloud environment,
+	// and in there, there's no CDN variation, so just use the storage.
+	if backend != "sftp" {
+		return storage.Restore(key)
+	}
+
+	// Here, we are using sftp, so we know we are in a cloud job.
+	// But, not all cloud jobs should use this, so we only use it
+	// if the SEMAPHORE_CACHE_CDN_* variables are defined
+	cdnURL := os.Getenv("SEMAPHORE_CACHE_CDN_URL")
+	cdnKey := os.Getenv("SEMAPHORE_CACHE_CDN_KEY")
+	cdnSecret := os.Getenv("SEMAPHORE_CACHE_CDN_SECRET")
+	if cdnURL == "" || cdnKey == "" || cdnSecret == "" {
+		return storage.Restore(key)
+	}
+
+	log.Infof("Restoring using HTTP URL %s...", cdnURL)
+	return files.DownloadFromHTTP(cdnURL, cdnKey, cdnSecret, key)
 }
 
 func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo, downloadDuration time.Duration) {

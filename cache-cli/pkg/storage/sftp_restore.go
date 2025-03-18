@@ -31,6 +31,5 @@ func (s *SFTPStorage) Restore(key string) (*os.File, error) {
 		_ = localFile.Close()
 		return nil, err
 	}
-
 	return localFile, localFile.Close()
 }
