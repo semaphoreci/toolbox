@@ -29,20 +29,6 @@ echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "a
 sem-service status mongodb
 sem-service stop mongodb
 sem-service stop mongodb
-sem-service start mongodb 5.0.1 --username=xxx --password=xxx
-sleep 3
-echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
-
-sem-service status mongodb
-sem-service stop mongodb
-sem-service stop mongodb
-sem-service start mongodb 5.0.8 --username=xxx --password=xxx
-sleep 3
-echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
-
-sem-service status mongodb
-sem-service stop mongodb
-sem-service stop mongodb
 sem-service start mongodb 5.0.9 --username=xxx --password=xxx
 sleep 3
 echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
@@ -68,5 +54,32 @@ sem-service start mongodb 6 --username=xxx --password=xxx
 sleep 5
 echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
+sem-service status mongodb
+sem-service stop mongodb
+sem-service stop mongodb
+sem-service start mongodb 7.0.18 --username=xxx --password=xxx
+sleep 5
+echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+
+sem-service status mongodb
+sem-service stop mongodb
+sem-service stop mongodb
+sem-service start mongodb 7 --username=xxx --password=xxx
+sleep 5
+echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+
+sem-service status mongodb
+sem-service stop mongodb
+sem-service stop mongodb
+sem-service start mongodb 8.0.6 --username=xxx --password=xxx
+sleep 5
+echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+
+sem-service status mongodb
+sem-service stop mongodb
+sem-service stop mongodb
+sem-service start mongodb 8 --username=xxx --password=xxx
+sleep 5
+echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
 cat /tmp/toolbox_semservice
