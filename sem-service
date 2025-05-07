@@ -535,7 +535,7 @@ service::duration() {
     echo "semservice,service=$service,state=${state[$docker_status]},version=$version,location=$download_location duration=${duration}" >> /tmp/toolbox_semservice
   fi
   if [[ "${state[$docker_status]}" == 'fail' ]]; then 
-    docker logs $service
+    docker logs "$service"
   fi
   return 0
 }
