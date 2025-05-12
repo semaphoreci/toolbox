@@ -4,7 +4,7 @@ set -euo pipefail
 
 ARTIFACT_CLI_VERSION="v0.6.5"
 SPC_CLI_VERSION="v1.12.1"
-TEST_RESULTS_CLI_VERSION="v0.7.0"
+TEST_RESULTS_CLI_VERSION="v0.8.0"
 WHEN_CLI_VERSION="v1.2.1"
 # we include multiple when binaries for all suported Erlang versions
 # and configure the correct one based on Erlang version in the VM where toolbox is installed
