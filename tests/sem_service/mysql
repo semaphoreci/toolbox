@@ -8,12 +8,28 @@ mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
 mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.6
 sem-service status mysql
 sem-service stop mysql
+
 sem-service start mysql 5.7
 mysql --host=0.0.0.0 -uroot -e "create database fooo"
 mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
 mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 5.7
 sem-service status mysql
 sem-service stop mysql
+
+sem-service start mysql 8.4
+mysql --host=0.0.0.0 -uroot -e "create database fooo"
+mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
+mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 8.4
+sem-service status mysql
+sem-service stop mysql
+
+sem-service start mysql 9.3
+mysql --host=0.0.0.0 -uroot -e "create database fooo"
+mysql --host=0.0.0.0 -uroot -e "show databases" | grep fooo
+mysql --host=0.0.0.0 -uroot -e 'SHOW VARIABLES like "version";' | grep 9.3
+sem-service status mysql
+sem-service stop mysql
+
 sem-service start mysql 8 --username=test --password=test --garbage else || true
 sem-service stop mysql
 sem-service start mysql --username=root --password=root
