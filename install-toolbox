@@ -165,4 +165,3 @@ if [[ `uname` != "Darwin" ]]; then
   # failure won't be propagated to the caller in case of using &
   sh ~/.toolbox/system-metrics-collector &
 fi
-

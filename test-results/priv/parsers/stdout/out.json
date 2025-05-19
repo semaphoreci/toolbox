@@ -1,0 +1,147 @@
+{
+  "testResults": [
+    {
+      "id": "4ae71336-e44b-39bf-b9d2-752e234818a5",
+      "name": "",
+      "framework": "",
+      "isDisabled": false,
+      "suites": [
+        {
+          "id": "5adf0dab-e505-39fe-99c7-298ef43a8f09",
+          "name": "foo",
+          "isSkipped": false,
+          "isDisabled": false,
+          "timestamp": "",
+          "hostname": "",
+          "package": "",
+          "tests": [
+            {
+              "id": "03038e64-7367-39b9-8e6c-5f503139a200",
+              "file": "",
+              "classname": "",
+              "package": "",
+              "name": "foo.2",
+              "duration": 0,
+              "state": "passed",
+              "failure": null,
+              "error": null,
+              "systemOut": "",
+              "systemErr": ""
+            },
+            {
+              "id": "58f2ffeb-dc64-3100-b81f-cfc2e9646b8b",
+              "file": "",
+              "classname": "",
+              "package": "",
+              "name": "foo.1",
+              "duration": 0,
+              "state": "passed",
+              "failure": null,
+              "error": null,
+              "systemOut": "",
+              "systemErr": ""
+            },
+            {
+              "id": "7c947655-ee72-38d1-965d-35a6bdb0da6d",
+              "file": "",
+              "classname": "",
+              "package": "",
+              "name": "foo.4",
+              "duration": 0,
+              "state": "passed",
+              "failure": null,
+              "error": null,
+              "systemOut": "",
+              "systemErr": ""
+            },
+            {
+              "id": "b6941c19-0674-36aa-965c-badc07c512bd",
+              "file": "",
+              "classname": "",
+              "package": "",
+              "name": "foo.3",
+              "duration": 0,
+              "state": "passed",
+              "failure": null,
+              "error": null,
+              "systemOut": "",
+              "systemErr": ""
+            }
+          ],
+          "properties": null,
+          "summary": {
+            "total": 4,
+            "passed": 4,
+            "skipped": 0,
+            "error": 0,
+            "failed": 0,
+            "disabled": 0,
+            "duration": 0
+          },
+          "systemOut": "",
+          "systemErr": ""
+        },
+        {
+          "id": "c348fb08-df86-3e06-a356-b951c48ea5a4",
+          "name": "bar",
+          "isSkipped": false,
+          "isDisabled": false,
+          "timestamp": "",
+          "hostname": "",
+          "package": "",
+          "tests": [
+            {
+              "id": "0727aa44-1fc5-3024-804f-6e5936caa480",
+              "file": "",
+              "classname": "",
+              "package": "",
+              "name": "bar.1",
+              "duration": 0,
+              "state": "passed",
+              "failure": null,
+              "error": null,
+              "systemOut": "",
+              "systemErr": ""
+            },
+            {
+              "id": "30daf1b2-b6e9-382f-836d-a13f7a7cddac",
+              "file": "",
+              "classname": "",
+              "package": "",
+              "name": "bar.2",
+              "duration": 0,
+              "state": "passed",
+              "failure": null,
+              "error": null,
+              "systemOut": "",
+              "systemErr": ""
+            }
+          ],
+          "properties": null,
+          "summary": {
+            "total": 2,
+            "passed": 2,
+            "skipped": 0,
+            "error": 0,
+            "failed": 0,
+            "disabled": 0,
+            "duration": 0
+          },
+          "systemOut": "",
+          "systemErr": ""
+        }
+      ],
+      "summary": {
+        "total": 6,
+        "passed": 6,
+        "skipped": 0,
+        "error": 0,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 0
+      },
+      "status": "success",
+      "statusMessage": ""
+    }
+  ]
+}

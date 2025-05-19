@@ -4,7 +4,6 @@ set -euo pipefail
 
 ARTIFACT_CLI_VERSION="v0.6.5"
 SPC_CLI_VERSION="v1.12.1"
-TEST_RESULTS_CLI_VERSION="v0.7.0"
 WHEN_CLI_VERSION="v1.2.1"
 # we include multiple when binaries for all suported Erlang versions
 # and configure the correct one based on Erlang version in the VM where toolbox is installed
@@ -14,7 +13,6 @@ WHEN_BINARY_VERSION_3="when_otp_26"
 
 ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
 SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSION"
-TEST_RESULTS_CLI_URL="https://github.com/semaphoreci/test-results/releases/download/$TEST_RESULTS_CLI_VERSION"
 WHEN_CLI_URL="https://github.com/renderedtext/when/releases/download/$WHEN_CLI_VERSION"
 
 download_when_cli() {
@@ -114,6 +112,7 @@ hosted::create_initial_content() {
     docker-compose.yml
     cache-cli
     sem-context
+    test-results
     install-self-hosted-toolbox
     install-self-hosted-toolbox.ps1
     Checkout.psm1
@@ -180,11 +179,6 @@ self_hosted::pack() {
   include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Darwin "x86_64"
   include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Darwin-arm "arm64"
   include_external_windows_binary $ARTIFACT_CLI_URL "artifact" /tmp/self-hosted-Windows
-  include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Linux "x86_64"
-  include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Linux-arm "arm64"
-  include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Darwin "x86_64"
-  include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Darwin-arm "arm64"
-  include_external_windows_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/self-hosted-Windows
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Linux "x86_64"
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Linux-arm "arm64"
   include_external_darwin_binary $SPC_CLI_URL "spc" /tmp/self-hosted-Darwin "x86_64"
@@ -207,6 +201,11 @@ self_hosted::pack() {
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/arm64/sem-context /tmp/self-hosted-Linux-arm/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/amd64/sem-context /tmp/self-hosted-Darwin/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/arm64/sem-context /tmp/self-hosted-Darwin-arm/toolbox/
+
+  cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/linux/amd64/test-results /tmp/self-hosted-Linux/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/linux/arm64/test-results /tmp/self-hosted-Linux-arm/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/darwin/amd64/test-results /tmp/self-hosted-Darwin/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/darwin/arm64/test-results /tmp/self-hosted-Darwin-arm/toolbox/
 }
 
 hosted::pack() {
@@ -215,10 +214,6 @@ hosted::pack() {
   include_external_linux_binary $ARTIFACT_CLI_URL "artifact" /tmp/Linux-arm "arm64"
   include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/Darwin "x86_64"
   include_external_darwin_binary $ARTIFACT_CLI_URL "artifact" /tmp/Darwin-arm "arm64"
-  include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Linux "x86_64"
-  include_external_linux_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Linux-arm "arm64"
-  include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Darwin "x86_64"
-  include_external_darwin_binary $TEST_RESULTS_CLI_URL "test-results" /tmp/Darwin-arm "arm64"
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux "x86_64"
   include_external_linux_binary $SPC_CLI_URL "spc" /tmp/Linux-arm "arm64"
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/amd64/cache /tmp/Linux/toolbox/cache
@@ -229,6 +224,10 @@ hosted::pack() {
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/linux/arm64/sem-context /tmp/Linux-arm/toolbox/sem-context
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/amd64/sem-context /tmp/Darwin/toolbox/sem-context
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/darwin/arm64/sem-context /tmp/Darwin-arm/toolbox/sem-context
+  cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/linux/amd64/test-results /tmp/Linux/toolbox/test-results
+  cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/linux/arm64/test-results /tmp/Linux-arm/toolbox/test-results
+  cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/darwin/amd64/test-results /tmp/Darwin/toolbox/test-results
+  cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/darwin/arm64/test-results /tmp/Darwin-arm/toolbox/test-results
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_1 /tmp/Linux/toolbox/$WHEN_BINARY_VERSION_1
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_2 /tmp/Linux/toolbox/$WHEN_BINARY_VERSION_2
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_3 /tmp/Linux/toolbox/$WHEN_BINARY_VERSION_3

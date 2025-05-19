@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+	<testsuite name="io.testcompany.ZedCounterAdminTest" tests="1"
+		failures="0" errors="0" disabled="0" skipped="0" package="">
+		<properties />
+		<testcase name="testNestedIO"
+			classname="io.testcompany.ZedCounterAdminTest" time="0.1"></testcase>
+		<testsuite name="testMultipleVirtualThreadsFor(boolean)" tests="2" failures="0"
+			errors="0" disabled="0" skipped="0" package="">
+			<properties />
+			<testcase name="usesVirtualThreadType=true"
+				classname="io.testcompany.ZedCounterAdminTest" time="0.06"></testcase>
+			<testcase name="usesVirtualThreadType=false"
+				classname="io.testcompany.ZedCounterAdminTest" time="0.11"></testcase>
+		</testsuite>
+		<testsuite name="testNumOfOps(boolean)" tests="2" failures="0" errors="0"
+			disabled="0" skipped="0" package="">
+			<properties />
+			<testcase name="testMetrics=true"
+				classname="io.testcompany.ZedCounterAdminTest" time="0"></testcase>
+			<testcase name="testMetrics=false"
+				classname="io.testcompany.ZedCounterAdminTest" time="0.11"></testcase>
+		</testsuite>
+		<testsuite name="testNumSuccess(boolean)" tests="2" failures="0" errors="1" disabled="0"
+			skipped="0" package="">
+			<properties />
+			<testcase name="[1] testVirtualMetrics=true"
+				classname="io.testcompany.ZedCounterAdminTest" time="0">
+				<error message="expected: &lt;true&gt; but was: &lt;false&gt;"
+					type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:31)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:180)
+	at io.testcompany.ZedCounterAdminTest.testNumSuccess(ZedCounterAdminTest.java:35)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+]]></error>
+			</testcase>
+			<testcase name="[2] testVirtualMetrics=false"
+				classname="io.testcompany.ZedCounterAdminTest" time="0.1"></testcase>
+		</testsuite>
+	</testsuite>
+</testsuites>
