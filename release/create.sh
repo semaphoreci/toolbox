@@ -206,6 +206,7 @@ self_hosted::pack() {
   cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/linux/arm64/test-results /tmp/self-hosted-Linux-arm/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/darwin/amd64/test-results /tmp/self-hosted-Darwin/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/darwin/arm64/test-results /tmp/self-hosted-Darwin-arm/toolbox/
+  cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/windows/test-results.exe /tmp/self-hosted-Windows/toolbox/
 }
 
 hosted::pack() {
