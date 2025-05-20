@@ -24,5 +24,10 @@ blocks:
             - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
             - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
             - artifact pull workflow bin/windows/sem-context.exe -d sem-context/bin/windows/sem-context.exe
+            - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+            - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+            - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+            - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+            - artifact pull workflow bin/windows/test-results.exe -d test-results/bin/windows/test-results.exe
             - bash release/create.sh -a
             - bash release/upload.sh
