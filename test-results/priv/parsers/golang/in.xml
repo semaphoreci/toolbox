@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite tests="0" failures="0" time="0.000000" name="github.com/semaphoreci/test-results">
+    <properties>
+      <property name="go.version" value="go1.16 linux/amd64"></property>
+    </properties>
+  </testsuite>
+  <testsuite tests="0" failures="0" time="0.000000" name="github.com/semaphoreci/test-results/cmd">
+    <properties>
+      <property name="go.version" value="go1.16 linux/amd64"></property>
+    </properties>
+  </testsuite>
+  <testsuite tests="4" failures="0" time="0.000000" name="github.com/semaphoreci/test-results/pkg/cli">
+    <properties>
+      <property name="go.version" value="go1.16 linux/amd64"></property>
+    </properties>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/cli" name="Test_LoadFiles/with_invalid_path_to_file" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/cli" name="Test_LoadFiles/with_single_file" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/cli" name="Test_LoadFiles/with_directory" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/cli" name="Test_LoadFiles" time="0.000000"></testcase>
+  </testsuite>
+  <testsuite tests="1" failures="0" time="0.000000" name="github.com/semaphoreci/test-results/pkg/fileloader">
+    <properties>
+      <property name="go.version" value="go1.16 linux/amd64"></property>
+    </properties>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/fileloader" name="TestLoad" time="0.000000"></testcase>
+  </testsuite>
+  <testsuite tests="12" failures="0" time="0.000000" name="github.com/semaphoreci/test-results/pkg/logger">
+    <properties>
+      <property name="go.version" value="go1.16 linux/amd64"></property>
+    </properties>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_SetLogger" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_GetLogger" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_Debug" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_Warn" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_Error" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_Info" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_Log/Works_in_info_Level_on_level_4" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_Log/Works_in_info_Level_on_level_3" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_Log/Works_in_info_Level_on_level_2" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_Log/Works_in_info_Level_on_level_5" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_Log/Works_in_info_Level_on_level_6" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/logger" name="Test_Log" time="0.000000"></testcase>
+  </testsuite>
+  <testsuite tests="38" failures="0" time="0.000000" name="github.com/semaphoreci/test-results/pkg/parser">
+    <properties>
+      <property name="go.version" value="go1.16 linux/amd64"></property>
+    </properties>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="Test_NewTest_Results" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="Test_TestResults_Aggregate" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="Test_TestResults_ArrangeSuitesByTestFile" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="Test_TestResults_ArrangeSuitesByTestFile_SingleSuite" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="Test_NewSuite" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="Test_Suite_Aggregate" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="Test_NewTest" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="Test_NewError" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="Test_NewFailure" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestNewXMLElement" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestXMLElement_Attr" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestXMLElement_Tag" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestXMLElement_Parse" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseProperties" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestPropertyExists" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseFailure" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseError" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseTime/parses_0.0013_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseTime/parses_0.01_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseTime/parses_0.1_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseTime/parses_0_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseTime/parses_1_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseTime/parses_60_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseTime/parses_61.123_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseTime/parses_invalid_number_correctly_#1" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseTime/parses_invalid_number_correctly_#2" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseTime" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseInt/parses_0_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseInt/parses_1_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseInt/parses_60_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseInt/parses_1000000_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseInt/parses_invalid_number_correctly_#1" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseInt/parses_invalid_number_correctly_#2" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseInt" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseBool/parses_true_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseBool/parses_false_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseBool/parses_0_correctly" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parser" name="TestParseBool" time="0.000000"></testcase>
+  </testsuite>
+  <testsuite tests="22" failures="0" time="0.000000" name="github.com/semaphoreci/test-results/pkg/parsers">
+    <properties>
+      <property name="go.version" value="go1.16 linux/amd64"></property>
+    </properties>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_ExUnit_ParseTestSuite" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_ExUnit_ParseTestSuites" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_ExUnit_ParseInvalidRoot" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_Generic_ParseTestSuite" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_Generic_ParseTestSuites" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_Generic_ParseInvalidRoot" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_GoLang_ParseTestSuite" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_GoLang_ParseTestSuites" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_GoLang_ParseInvalidRoot" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_Mocha_ParseTestSuite" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_Mocha_ParseTestSuites" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_Mocha_ParseInvalidRoot" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="TestFindParser/finds_parser_automatically" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="TestFindParser/finds_rspec_parser_automatically" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="TestFindParser/finds_exunit_parser_automatically" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="TestFindParser/finds_mocha_parser_automatically" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="TestFindParser/finds_golang_parser_automatically" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="TestFindParser/finds_golang_parser_automatically#01" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="TestFindParser" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_RSpec_ParseTestSuite" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_RSpec_ParseTestSuites" time="0.000000"></testcase>
+    <testcase classname="github.com/semaphoreci/test-results/pkg/parsers" name="Test_RSpec_ParseInvalidRoot" time="0.000000"></testcase>
+  </testsuite>
+</testsuites>

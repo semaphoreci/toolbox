@@ -1,0 +1,81 @@
+{"event":"job_started","timestamp":1747001724}
+{"event":"cmd_started","timestamp":1747001724,"directive":"Exporting environment variables"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting CI\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting DISPLAY\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting PAGER\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_AGENT_MACHINE_ENVIRONMENT_TYPE\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_AGENT_MACHINE_OS_IMAGE\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_AGENT_MACHINE_TYPE\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_ARTIFACT_TOKEN\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_CACHE_ARCHIVE_METHOD\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_CACHE_BACKEND\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_CACHE_PRIVATE_KEY_PATH\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_CACHE_URL\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_CACHE_USERNAME\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_BRANCH\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_COMMITTER\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_COMMIT_AUTHOR\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_COMMIT_RANGE\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_DIR\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_PROVIDER\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_REF\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_REF_TYPE\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_REPO_NAME\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_REPO_SLUG\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_SHA\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_URL\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_GIT_WORKING_BRANCH\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_JOB_CREATION_TIME\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_JOB_ID\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_JOB_NAME\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_JOB_TYPE\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_OIDC_TOKEN\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_ORGANIZATION_URL\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_PIPELINE_0_ARTEFACT_ID\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_PIPELINE_ARTEFACT_ID\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_PIPELINE_ID\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_PIPELINE_PROMOTED_BY\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_PIPELINE_PROMOTION\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_PIPELINE_RERUN\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_PROJECT_ID\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_PROJECT_NAME\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_TOOLBOX_METRICS_ENABLED\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_WORKFLOW_HOOK_SOURCE\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_WORKFLOW_ID\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_WORKFLOW_NUMBER\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_WORKFLOW_RERUN\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_WORKFLOW_TRIGGERED_BY\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_WORKFLOW_TRIGGERED_BY_API\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_WORKFLOW_TRIGGERED_BY_HOOK\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_WORKFLOW_TRIGGERED_BY_MANUAL_RUN\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SEMAPHORE_WORKFLOW_TRIGGERED_BY_SCHEDULE\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting SSH_PRIVATE_KEY_PATH\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Exporting TERM\n"}
+{"event":"cmd_finished","timestamp":1747001724,"directive":"Exporting environment variables","exit_code":0,"started_at":1747001724,"finished_at":1747001724}
+{"event":"cmd_started","timestamp":1747001724,"directive":"Injecting Files"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Injecting /home/semaphore/.ssh/semaphore_cache_key with file mode 0600\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Injecting /home/semaphore/.ssh/id_rsa with file mode 0600\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Injecting /home/semaphore/commands.sh with file mode 0644\n"}
+{"event":"cmd_finished","timestamp":1747001724,"directive":"Injecting Files","exit_code":0,"started_at":1747001724,"finished_at":1747001724}
+{"event":"cmd_started","timestamp":1747001724,"directive":"Running the pre-job hook configured in the agent"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Running: source /opt/semaphoreci/prejob/pre_job.sh\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Warning: The agent is configured to fail the job if the pre-job hook fails.\n"}
+{"event":"cmd_output","timestamp":1747001724,"output":"Installing toolbox in pre-job-hook\nToolbox download URL: http://packages.semaphoreci.com/toolbox/re"}
+{"event":"cmd_output","timestamp":1747001724,"output":"leases/download/v1.23.1/linux.tar\nTar file: linux.tar\n"}
+{"event":"cmd_output","timestamp":1747001726,"output":"Attempt 5\ntoolbox/\ntoolbox/sem-dockerize\ntoolbox/toolbox\ntoolbox/retry\ntoolbox/enetwork\ntoolbo"}
+{"event":"cmd_output","timestamp":1747001726,"output":"x/artifact\ntoolbox/install-toolbox\ntoolbox/system-metrics-collector\ntoolbox/libcheckout\ntoolbox/"}
+{"event":"cmd_output","timestamp":1747001726,"output":"cache\ntoolbox/when_otp_24\ntoolbox/spc\ntoolbox/libchecksum\ntoolbox/when_otp_26\ntoolbox/when_otp_"}
+{"event":"cmd_output","timestamp":1747001726,"output":"25\ntoolbox/install-package\ntoolbox/README.md\ntoolbox/sem-context\ntoolbox/test-results\ntoolbox/s"}
+{"event":"cmd_output","timestamp":1747001726,"output":"em-version\ntoolbox/ssh-session-cli\ntoolbox/sem-service\ntoolbox/sem-install\ntoolbox/sem-service-c"}
+{"event":"cmd_output","timestamp":1747001726,"output":"heck-params\ntoolbox/Dockerfile.dev\ntoolbox/sem-semantic-release\nretry installed\nssh-session-cli "}
+{"event":"cmd_output","timestamp":1747001726,"output":"installed\ncache installed\nsem-context installed\nsem-service installed\nsem-dockerize installed\ns"}
+{"event":"cmd_output","timestamp":1747001726,"output":"em-service-check-params installed\nsem-semantic-release installed\nInstalling the artifacts CLI\nart"}
+{"event":"cmd_output","timestamp":1747001726,"output":"ifacts installed\nInstalling the test results CLI\ntest-results installed\nInstalling the install-pa"}
+{"event":"cmd_output","timestamp":1747001726,"output":"ckage for linux\ninstall-package installed\nInstalling the SPC CLI\nspc installed\nInstalling the wh"}
+{"event":"cmd_output","timestamp":1747001726,"output":"en CLI\nwhen installed\nInstalling the enetwork CLI\nenetwork installed\nStarting to collect System "}
+{"event":"cmd_output","timestamp":1747001726,"output":"Metrics in /tmp/system-metrics\nStarting virtual X frame buffer: Xvfb.\nToolbox installed\nStarting "}
+{"event":"cmd_output","timestamp":1747001726,"output":"ssh-agent\nAgent pid 2326\nssh-agent started\nConnecting to cache\n# 94.130.123.200:29920 SSH-2.0-Op"}
+{"event":"cmd_output","timestamp":1747001726,"output":"enSSH_8.2p1 Ubuntu-4ubuntu0.11\n# 94.130.123.200:29920 SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.11\n# 94.130.123.200:29920 SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.11\n# 94.130.123.200:29920 SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.11\n# 94.130.123.200:29920 SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.11\nIdentity added: /home/semaphore/.ssh/semaphore_cache_key (/home/semaphore/.ssh/semaphore_cache_key)\n"}
+{"event":"cmd_finished","timestamp":1747001726,"directive":"Running the pre-job hook configured in the agent","exit_code":0,"started_at":1747001724,"finished_at":1747001726}
+{"event":"cmd_started","timestamp":1747001726,"directive":"sleep 3600"}

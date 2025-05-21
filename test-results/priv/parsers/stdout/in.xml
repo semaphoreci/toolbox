@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<testsuites>
+  <testsuite name="stdout testing">
+    <testcase name="trims stdout">
+      <system-out>assume-im-long-out</system-out>
+      <failure message="Assertion with == failed">I've failed</failure>
+    </testcase>
+    <testcase name="trims stderr">
+      <system-err>assume-im-longerr</system-err>
+      <failure message="Assertion with == failed">I've failed as well</failure>
+    </testcase>
+    <testcase name="trims stderr" system-out="assume-im-long-but-also-ive-succeeded"></testcase>
+  </testsuite>
+</testsuites>

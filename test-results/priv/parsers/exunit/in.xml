@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<testsuites>
+  <testsuite errors="0" failures="2" name="Elixir.Calculator.AdderTest" tests="3" time="0.0014">
+    <properties>
+      <property name="date" value="2021-03-29T12:19:22.461117Z" />
+      <property name="seed" value="430315" />
+    </properties>
+    <testcase file="test/calculator/adder_test.exs" classname="Elixir.Calculator.AdderTest" name="test fails with 8531 + 6984 = 1547 0.09411569755491345" time="0.0000">
+      <failure message="Assertion with == failed">  1) test fails with 8531 + 6984 = 1547 0.09411569755491345 (Calculator.AdderTest)
+     test/calculator/adder_test.exs:15
+     Assertion with == failed
+     code:  assert Calculator.Adder.run(8531, 6984) == 1547
+     left:  15515
+     right: 1547
+     stacktrace:
+       test/calculator/adder_test.exs:16: (test)
+</failure>
+    </testcase>
+    <testcase file="test/calculator/adder_test.exs" classname="Elixir.Calculator.AdderTest" name="test succeeds with 4464 + 2317 = 6781 0.7790935912260967" time="0.0000" />
+    <testcase file="test/calculator/adder_test.exs" classname="Elixir.Calculator.AdderTest" name="test fails with 6981 + 3883 = 3098 0.5046993437439501" time="0.0000">
+      <failure message="Assertion with == failed">  3) test fails with 6981 + 3883 = 3098 0.5046993437439501 (Calculator.AdderTest)
+     test/calculator/adder_test.exs:15
+     Assertion with == failed
+     code:  assert Calculator.Adder.run(6981, 3883) == 3098
+     left:  10864
+     right: 3098
+     stacktrace:
+       test/calculator/adder_test.exs:16: (test)
+</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

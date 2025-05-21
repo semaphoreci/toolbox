@@ -1,0 +1,13 @@
+services:
+  cli:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    tty: true
+    volumes:
+      - go-pkg-cache:/go/pkg
+      - .:/app
+
+volumes:
+  go-pkg-cache:
+    driver: local

@@ -47,6 +47,24 @@ blocks:
             - artifact push workflow bin/darwin/amd64/sem-context -d bin/darwin/amd64/sem-context
             - artifact push workflow bin/darwin/arm64/sem-context -d bin/darwin/arm64/sem-context
             - artifact push workflow bin/windows/sem-context.exe -d bin/windows/sem-context.exe
+        - name: Build test-results CLI
+          commands:
+            - sem-version go 1.20
+            - "export GOPATH=~/go"
+            - "export PATH=/home/semaphore/go/bin:$PATH"
+            - checkout
+            - cd test-results
+            - ls -la
+            - make build.linux ARCH=amd64
+            - make build.linux ARCH=arm64
+            - make build.darwin ARCH=amd64
+            - make build.darwin ARCH=arm64
+            - make build.windows
+            - artifact push workflow bin/linux/amd64/test-results -d bin/linux/amd64/test-results
+            - artifact push workflow bin/linux/arm64/test-results -d bin/linux/arm64/test-results
+            - artifact push workflow bin/darwin/amd64/test-results -d bin/darwin/amd64/test-results
+            - artifact push workflow bin/darwin/arm64/test-results -d bin/darwin/arm64/test-results
+            - artifact push workflow bin/windows/test-results.exe -d bin/windows/test-results.exe
 
   - name: Static Code Analysis
     dependencies: []
@@ -99,6 +117,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -144,6 +166,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -189,6 +215,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -231,6 +261,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -275,6 +309,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -312,6 +350,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source tests/sftp_server/start_on_mac.sh
           - source release/install_in_tests.sh
@@ -337,6 +379,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source release/create.sh
           - cd ~/$SEMAPHORE_GIT_DIR/
@@ -380,6 +426,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source tests/sftp_server/start_on_mac.sh
 
@@ -455,6 +505,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source tests/sftp_server/start_on_mac.sh
 
@@ -535,6 +589,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source tests/sftp_server/start_on_docker.sh
       jobs:
@@ -611,6 +669,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - apk add --update docker openrc
           - source tests/sftp_server/start_on_docker.sh
@@ -662,6 +724,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source tests/sftp_server/start_on_linux.sh
           - sudo apt-get install -y python3.8-dev
@@ -759,6 +825,22 @@ blocks:
             - go install github.com/mgechev/revive@latest
             - make lint
 
+  - name: "Test Results CLI"
+    dependencies: []
+    task:
+      prologue:
+        commands:
+          - checkout && cd test-results
+      jobs:
+        - name: Test
+          commands:
+          - make test.setup
+          - make test
+      epilogue:
+        always:
+          commands:
+            - '[[ -f junit-report.xml ]] && test-results publish junit-report.xml'
+
   - name: "Security checks"
     dependencies: []
     task:
@@ -783,6 +865,7 @@ blocks:
               values:
                 - cache-cli
                 - sem-context
+                - test-results
           commands:
             - make check.deps
         - name: Check code
@@ -791,12 +874,13 @@ blocks:
               values:
                 - cache-cli
                 - sem-context
+                - test-results
           commands:
             - make check.static
       epilogue:
         always:
           commands:
-            - 'if [ -f results.xml ]; then test-results publish --name="$CLI_NAME: Security checks" results.xml; fi'
+            - '[[ -f results.xml ]] && test-results publish --name="$CLI_NAME: Security checks" results.xml'
 
   - name: SHM Test Focal
     dependencies:
@@ -813,6 +897,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -849,6 +937,10 @@ blocks:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source release/install_in_tests.sh
           - git submodule init && git submodule update
@@ -877,6 +969,10 @@ after_pipeline:
           - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
           - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
           - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source release/install_in_tests.sh
           - test-results gen-pipeline-report
