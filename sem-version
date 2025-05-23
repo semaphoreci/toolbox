@@ -45,9 +45,9 @@ version::change_ruby() {
   [[ "$software_version" == "2.7" ]] && software_version="2.7.8"
   [[ "$software_version" == "3.0" ]] && software_version="3.0.7"
   [[ "$software_version" == "3.1" ]] && software_version="3.1.6"
-  [[ "$software_version" == "3.2" ]] && software_version="3.2.6"
-  [[ "$software_version" == "3.3" ]] && software_version="3.3.6"
-  [[ "$software_version" == "3.4" ]] && software_version="3.4.1"
+  [[ "$software_version" == "3.2" ]] && software_version="3.2.8"
+  [[ "$software_version" == "3.3" ]] && software_version="3.3.8"
+  [[ "$software_version" == "3.4" ]] && software_version="3.4.4"
 
   if ! [ -d ~/.rbenv/versions/"${software_version}" ]; then
     sem-install ruby "${software_version}"
@@ -73,8 +73,7 @@ version::change_elixir() {
   [[ "$software_version" == "1.15" ]] && software_version="1.15.8"
   [[ "$software_version" == "1.16" ]] && software_version="1.16.3"
   [[ "$software_version" == "1.17" ]] && software_version="1.17.3"
-  [[ "$software_version" == "1.18" ]] && software_version="1.18.0"
-
+  [[ "$software_version" == "1.18" ]] && software_version="1.18.4"
 
   if [[ $(kiex list) != *"${software_version}"* ]];then
     sem-install elixir "${software_version}"
@@ -136,7 +135,8 @@ version::change_erlang() {
   [[ "$software_version" == "24" ]] && software_version="24.3"
   [[ "$software_version" == "25" ]] && software_version="25.3"
   [[ "$software_version" == "26" ]] && software_version="26.2"
-  [[ "$software_version" == "27" ]] && software_version="27.2"
+  [[ "$software_version" == "27" ]] && software_version="27.3"
+  [[ "$software_version" == "28" ]] && software_version="28.0"
 
   if [[ $(kerl list installations) != *"${software_version}"* ]]; then
     sem-install erlang "${software_version}"
