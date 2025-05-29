@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 	"github.com/spf13/cobra"
 )
 
@@ -89,8 +90,7 @@ var resourceMetricsCmd = &cobra.Command{
 			dockerDiskSeries []string
 		)
 
-		layout := "Mon 02 Jan 2006 03:04:05 PM MST"
-		startTime, err := time.Parse(layout, metrics[0].Timestamp)
+		startTime, layout, err := parser.ParseTimeAuto(metrics[0].Timestamp)
 		if err != nil {
 			return fmt.Errorf("failed to parse start time: %w", err)
 		}
