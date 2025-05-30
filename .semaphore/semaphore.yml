@@ -792,6 +792,57 @@ blocks:
           commands:
             - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
 
+  - name: "Bats: Ubuntu 24.04"
+    dependencies:
+        - "Build local CLIs"
+    task:
+      agent:
+        machine:
+          type: e2-standard-2
+          os_image: ubuntu2404
+      prologue:
+        commands:
+          - checkout
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+          - bash release/create.sh
+          - source tests/sftp_server/start_on_linux.sh
+          - sudo apt-get install -y python3.8-dev
+          - sem-version python 3.11
+          - sem-version go 1.22
+          - sem-version php 8.2.20
+      jobs:
+        - name: "Non-cache tests"
+          matrix:
+            - env_var: TEST
+              values:
+                - tests/install_package.bats
+                - tests/artifacts.bats
+                - tests/compiler.bats
+                - tests/test-results.bats
+                - tests/enetwork.bats
+                - tests/sem-semantic-release.bats
+          commands:
+            - source release/install_in_tests.sh
+            - git submodule init && git submodule update
+            - sudo ./tests/support/bats-core/install.sh /usr/local
+            - bats --report-formatter junit --tap --timing $TEST
+
+      epilogue:
+        always:
+          commands:
+            - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST' 
+  
   - name: "Cache CLI: Tests"
     dependencies: []
     task:
