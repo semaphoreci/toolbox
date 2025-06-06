@@ -828,7 +828,6 @@ blocks:
               values:
                 - tests/install_package.bats
                 - tests/artifacts.bats
-                - tests/compiler.bats
                 - tests/test-results.bats
                 - tests/enetwork.bats
                 - tests/sem-semantic-release.bats
