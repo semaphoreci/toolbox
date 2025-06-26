@@ -558,6 +558,7 @@ blocks:
                 - tests/test-results.bats
                 - tests/xcode15_sem_version.bats
                 - tests/sem-semantic-release.bats
+                - tests/system_metrics_collector.bats
           commands:
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
@@ -782,6 +783,7 @@ blocks:
                 - tests/test-results.bats
                 - tests/enetwork.bats
                 - tests/sem-semantic-release.bats
+                - tests/system_metrics_collector.bats
           commands:
             - source release/install_in_tests.sh
             - git submodule init && git submodule update

@@ -21,59 +21,75 @@
 # Jobs that run for an hour collect around 120 log lines. This should be safe
 # and not introduce any performance of disk usage problems.
 #
-DIST=$(uname)
+DIST="`uname`"
 SYSTEM_DISK_LOCATION="/"
-DOCKER_DISK_LOCATION="/$([ -d /var/lib/docker ] && echo 'var/lib/docker')"
+DOCKER_DISK_LOCATION="/`[ -d /var/lib/docker ] && echo 'var/lib/docker'`"
 OUTPUT="/tmp/system-metrics"
 
 memFree(){
-  local mem_free=-1
-  if [ "$DIST" == "Linux" ]; then
-    mem_free=$(free | grep Mem | awk '{ printf("%6.2f%%\n", ($3/$2 * 100.0)) }')
-  fi
-  if [ "$DIST" == "Darwin" ]; then
-    mem_free=$(memory_pressure | grep 'percentage' | tr -d '%'|awk '{print 100-$NF"%"}')
-  fi
-  echo $mem_free
+  freeMem=-1
+  case "$DIST" in
+    "Linux")
+      freeMem=`free | grep Mem | awk '{ printf("%6.2f%%\n", ($3/$2 * 100.0)) }'`
+      ;;
+    "Darwin")
+      freeMem=`memory_pressure | grep 'percentage' | tr -d '%'|awk '{print 100-$NF"%"}'`
+      ;;
+    *)
+      ;;
+  esac
+  echo $freeMem
 }
 sharedMemory(){
-  local shared_mem
-  if [ "$DIST" == "Linux" ]; then
-    shared_mem=$(free -m | grep Mem | awk '{ print $5 }')
-  fi
-  if [ "$DIST" == "Darwin" ]; then
-    shared_mem=0
-  fi
-  echo $shared_mem
+  sharedMem=0
+  case "$DIST" in
+    "Linux")
+      sharedMem=`free -m | grep Mem | awk '{ print $5 }'`
+      ;;
+    "Darwin")
+      sharedMem=0
+      ;;
+    *)
+      ;;
+  esac
+  echo $sharedMem
 }
 cpuUsage(){
-  local cpu_usage
-  if [ "$DIST" == "Linux" ]; then
-    cpu_usage=$(ps L | grep -q '%cpu' && ps -A -o %cpu 2>/dev/null | awk '{s+=$1} END {print s "%"}')
-  fi
-  if [ "$DIST" == "Darwin" ]; then
-    cpu_usage=$(top -i 1 -l 1 -stats CPU | grep CPU | grep idle |tr -d '%'| awk '{print 100-$7"%"}')
-  fi
-  echo $cpu_usage
+  usedCpu=-1
+  case "$DIST" in
+    "Linux")
+      usedCpu=`ps L | grep -q '%cpu' && ps -A -o %cpu 2>/dev/null | awk '{s+=$1} END {print s "%"}'`
+      ;;
+    "Darwin")
+      usedCpu=`top -i 1 -l 1 -stats CPU | grep CPU | grep idle |tr -d '%'| awk '{print 100-$7"%"}'`
+      ;;
+    *)
+      ;;
+  esac
+  echo $usedCpu
 }
 diskUsage(){
-  local disk=$1
-  local disk_usage=-1
-  if [ "$DIST" == "Linux" ]; then
-    disk_usage=$(df "$disk" | sed 1d | awk '{ printf("%6.2f%%\n", ($3/$2 * 100.0)) }')
-  fi
-  if [ "$DIST" == "Darwin" ]; then
-    disk_usage=$(df / | sed 1d | awk '{print $5}')
-  fi
-  echo $disk_usage
+  disk=$1
+  usedDisk=-1
+  case "$DIST" in
+    "Linux")
+      usedDisk=`df "$disk" | sed 1d | awk '{ printf("%6.2f%%\n", ($3/$2 * 100.0)) }'`
+      ;;
+    "Darwin")
+      usedDisk=`df / | sed 1d | awk '{print $5}'`
+      ;;
+    *)
+      ;;
+  esac
+  echo $usedDisk
 }
 
 while true; do
-  MEMORY=$(memFree)
-  SHARED_MEMORY=$(sharedMemory)
-  SYSTEM_DISK=$(diskUsage "$SYSTEM_DISK_LOCATION")
-  DOCKER_DISK=$(diskUsage "$DOCKER_DISK_LOCATION")
-  CPU_USAGE=$(cpuUsage)
-  echo "$(date) |  cpu:$CPU_USAGE,  mem:$MEMORY,  system_disk:$SYSTEM_DISK,  docker_disk:$DOCKER_DISK,  shared_memory: $SHARED_MEMORY M" >> $OUTPUT
+  MEMORY="`memFree`"
+  SHARED_MEMORY="`sharedMemory`"
+  SYSTEM_DISK="`diskUsage ${SYSTEM_DISK_LOCATION}`"
+  DOCKER_DISK="`diskUsage ${DOCKER_DISK_LOCATION}`"
+  CPU_USAGE="`cpuUsage`"
+  echo `date +"%a %b %d %T %Z %Y"`" |  cpu: ${CPU_USAGE},  mem: ${MEMORY},  system_disk: ${SYSTEM_DISK},  docker_disk: ${DOCKER_DISK},  shared_memory: ${SHARED_MEMORY} M" >> $OUTPUT
   sleep 1
 done
