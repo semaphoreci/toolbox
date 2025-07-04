@@ -140,6 +140,22 @@ params-check::redis () {
   echo "$service_version $default_params"
 }
 
+params-check::valkey () {
+  default_params='--net=host --rm --name valkey -d -v /var/tmp/valkey:/data'
+  service_version="8.1"
+  sudo mkdir -p /var/tmp/valkey && sudo chmod -R 0777 /var/tmp/valkey
+  params=""
+  if [ "${1:0:1}" == "-" ]; then
+    params="$@"
+  else
+    service_version="${1:-$service_version}"
+    tmp="${@:2}"
+    params="${tmp:-$default_params}"
+  fi
+
+  echo "$service_version $default_params"
+}
+
 params-check::mongodb () {
   default_params='--net=host --rm --name mongodb -d -v /var/tmp/mongodb:/home/mongo'
   sudo mkdir -p /var/tmp/mongodb && sudo chmod -R 0777 /var/tmp/mongodb
@@ -216,6 +232,10 @@ params-check::main () {
     "redis" )
       shift
       params-check::redis $@
+      ;;
+    "valkey" )
+      shift
+      params-check::valkey $@
       ;;
     "mongodb" )
       shift

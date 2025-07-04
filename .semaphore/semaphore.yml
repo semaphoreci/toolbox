@@ -403,6 +403,7 @@ blocks:
                 - elasticsearch
                 - cassandra
                 - rethinkdb
+                - valkey
           commands:
             - bash tests/sem_service/$TEST
 
