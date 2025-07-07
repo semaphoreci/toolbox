@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+sem-service start valkey
+sem-service status valkey
+sem-service stop valkey
+
+sem-service stop valkey
+sem-service start valkey 8.1.2
+sem-service status valkey
+
+cat /tmp/toolbox_semservice
