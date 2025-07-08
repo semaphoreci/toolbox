@@ -78,7 +78,7 @@ func (_ *ArtifactStore) Delete(key, contextId string) error {
 		log.Printf("error executing artifact command: %v. Output: %s\n", err, output)
 	}
 
-	// The key might be present in some of the parent pipline's context as well, but we cant delete them there, as they might be used by some other pipeline.
+	// The key might be present in some of the parent pipeline's context as well, but we cant delete them there, as they might be used by some other pipeline.
 	// We will just mark those keys as deleted inside this pipeline's context.
 	artifact_output, err := execArtifactCommand(Push, file.Name(), keysInfoDirName+contextId+"/.deleted/"+key)
 	if err != nil {

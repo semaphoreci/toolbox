@@ -26,7 +26,7 @@ setup() {
   cd -
 }
 
-@test "compiler can evaluare change_in expressions" {
+@test "compiler can evaluate change_in expressions" {
   cd /tmp/test-repo-clone
 
   run spc evaluate change-in --input .semaphore/semaphore.yml --output .semaphore/semaphore.yml.compiler --logs .semaphore/semaphore.yml.logs
