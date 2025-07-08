@@ -118,7 +118,7 @@ if install_packages;then
     echo ">> Finished successfully."
   fi
 else
-  echo ">> Errors have occured during package installation."
+  echo ">> Errors have occurred during package installation."
   exit 1
 fi
 

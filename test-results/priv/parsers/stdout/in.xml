@@ -6,7 +6,7 @@
       <failure message="Assertion with == failed">I've failed</failure>
     </testcase>
     <testcase name="trims stderr">
-      <system-err>assume-im-longerr</system-err>
+      <system-err>assume-im-longer</system-err>
       <failure message="Assertion with == failed">I've failed as well</failure>
     </testcase>
     <testcase name="trims stderr" system-out="assume-im-long-but-also-ive-succeeded"></testcase>
