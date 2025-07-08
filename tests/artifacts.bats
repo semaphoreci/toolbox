@@ -7,7 +7,7 @@ setup() {
   echo "hello" > /tmp/unique-file-$SEMAPHORE_JOB_ID
 }
 
-@test "artifacts - uploading to proect level" {
+@test "artifacts - uploading to project level" {
   run artifact push project /tmp/unique-file-$SEMAPHORE_JOB_ID
   assert_success
 

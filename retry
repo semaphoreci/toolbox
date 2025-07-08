@@ -49,7 +49,7 @@ function retry_execution {
     # echo "$__result__";
 
     if [ $__result__ -eq "0" ]; then
-      exit 0; # command executed succesfully
+      exit 0; # command executed successfully
     else
       if [[ $__i__ == $__n__ ]]; then
         echo "[$__i__/$__n__] Execution Failed with exit status $__result__. No more retries."
