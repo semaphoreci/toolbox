@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/archive"
@@ -67,6 +68,7 @@ func RunRestore(cmd *cobra.Command, args []string) {
 }
 
 func downloadAndUnpack(storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, keys []string) {
+	cachedList := sync.OnceValues(storage.List)
 	for _, rawKey := range keys {
 		key := NormalizeKey(rawKey)
 		if ok, _ := storage.HasKey(key); ok {
@@ -75,7 +77,7 @@ func downloadAndUnpack(storage storage.Storage, archiver archive.Archiver, metri
 			break
 		}
 
-		availableKeys, err := storage.List()
+		availableKeys, err := cachedList()
 		utils.Check(err)
 
 		matchingKey := findMatchingKey(availableKeys, key)
@@ -90,13 +92,24 @@ func downloadAndUnpack(storage storage.Storage, archiver archive.Archiver, metri
 }
 
 func findMatchingKey(availableKeys []storage.CacheKey, match string) string {
-	for _, availableKey := range availableKeys {
-		isMatch, _ := regexp.MatchString(match, availableKey.Name)
-		if isMatch {
-			return availableKey.Name
+	// If the key has no regex characters, just use strings.Contains
+	if regexp.QuoteMeta(match) == match {
+		for _, availableKey := range availableKeys {
+			if strings.Contains(availableKey.Name, match) {
+				return availableKey.Name
+			}
+		}
+	} else {
+		pattern, err := regexp.Compile(match)
+		if err != nil {
+			return ""
+		}
+		for _, availableKey := range availableKeys {
+			if pattern.MatchString(availableKey.Name) {
+				return availableKey.Name
+			}
 		}
 	}
-
 	return ""
 }
 
