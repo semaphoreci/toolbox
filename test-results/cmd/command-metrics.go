@@ -81,9 +81,6 @@ func init() {
 	tmpDir := os.TempDir()
 	defaultSrc := filepath.Join(tmpDir, "job_log_*.json")
 
-	fmt.Printf("tmpDir: %s\n", tmpDir)
-  fmt.Printf("defaultSrc: %s\n", defaultSrc)
-
 	commandMetricsCmd.Flags().String("src", defaultSrc, "source file to read system metrics from")
 	rootCmd.AddCommand(commandMetricsCmd)
 }
