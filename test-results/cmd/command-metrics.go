@@ -78,6 +78,9 @@ var commandMetricsCmd = &cobra.Command{
 }
 
 func init() {
-	commandMetricsCmd.Flags().String("src", "/tmp/job_log_*.json", "source file to read system metrics from")
+	tmpDir := os.TempDir()
+	defaultSrc := filepath.Join(tmpDir, "job_log_*.json")
+
+	commandMetricsCmd.Flags().String("src", defaultSrc, "source file to read system metrics from")
 	rootCmd.AddCommand(commandMetricsCmd)
 }
