@@ -4,12 +4,13 @@ set -euo pipefail
 
 ARTIFACT_CLI_VERSION="v0.6.5"
 SPC_CLI_VERSION="v1.12.1"
-WHEN_CLI_VERSION="v1.2.1"
+WHEN_CLI_VERSION="v1.3.0"
 # we include multiple when binaries for all suported Erlang versions
 # and configure the correct one based on Erlang version in the VM where toolbox is installed
 WHEN_BINARY_VERSION_1="when_otp_24"
 WHEN_BINARY_VERSION_2="when_otp_25"
 WHEN_BINARY_VERSION_3="when_otp_26"
+WHEN_BINARY_VERSION_4="when_otp_27"
 
 ARTIFACT_CLI_URL="https://github.com/semaphoreci/artifact/releases/download/$ARTIFACT_CLI_VERSION"
 SPC_CLI_URL="https://github.com/semaphoreci/spc/releases/download/$SPC_CLI_VERSION"
@@ -30,6 +31,10 @@ download_when_cli() {
   echo "Downloading when CLI binary $WHEN_BINARY_VERSION_3"
   curl -sL --retry 5 $WHEN_CLI_URL/$WHEN_BINARY_VERSION_3 -o /tmp/when-cli/$WHEN_BINARY_VERSION_3
   chmod +x /tmp/when-cli/$WHEN_BINARY_VERSION_3
+
+  echo "Downloading when CLI binary $WHEN_BINARY_VERSION_4"
+  curl -sL --retry 5 $WHEN_CLI_URL/$WHEN_BINARY_VERSION_4 -o /tmp/when-cli/$WHEN_BINARY_VERSION_4
+  chmod +x /tmp/when-cli/$WHEN_BINARY_VERSION_4
 }
 
 create_tarball() {
@@ -187,10 +192,12 @@ self_hosted::pack() {
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_1 /tmp/self-hosted-Linux/toolbox/$WHEN_BINARY_VERSION_1
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_2 /tmp/self-hosted-Linux/toolbox/$WHEN_BINARY_VERSION_2
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_3 /tmp/self-hosted-Linux/toolbox/$WHEN_BINARY_VERSION_3
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_4 /tmp/self-hosted-Linux/toolbox/$WHEN_BINARY_VERSION_4
 
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_1 /tmp/self-hosted-Linux-arm/toolbox/$WHEN_BINARY_VERSION_1
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_2 /tmp/self-hosted-Linux-arm/toolbox/$WHEN_BINARY_VERSION_2
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_3 /tmp/self-hosted-Linux-arm/toolbox/$WHEN_BINARY_VERSION_3
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_4 /tmp/self-hosted-Linux-arm/toolbox/$WHEN_BINARY_VERSION_4
 
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/amd64/cache /tmp/self-hosted-Linux/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/linux/arm64/cache /tmp/self-hosted-Linux-arm/toolbox/
@@ -232,9 +239,11 @@ hosted::pack() {
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_1 /tmp/Linux/toolbox/$WHEN_BINARY_VERSION_1
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_2 /tmp/Linux/toolbox/$WHEN_BINARY_VERSION_2
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_3 /tmp/Linux/toolbox/$WHEN_BINARY_VERSION_3
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_4 /tmp/Linux/toolbox/$WHEN_BINARY_VERSION_4
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_1 /tmp/Linux-arm/toolbox/$WHEN_BINARY_VERSION_1
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_2 /tmp/Linux-arm/toolbox/$WHEN_BINARY_VERSION_2
   cp /tmp/when-cli/$WHEN_BINARY_VERSION_3 /tmp/Linux-arm/toolbox/$WHEN_BINARY_VERSION_3
+  cp /tmp/when-cli/$WHEN_BINARY_VERSION_4 /tmp/Linux-arm/toolbox/$WHEN_BINARY_VERSION_4
 }
 
 create_self_hosted=false
