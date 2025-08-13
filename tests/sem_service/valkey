@@ -10,4 +10,13 @@ sem-service stop valkey
 sem-service start valkey 8.1.2
 sem-service status valkey
 
+sem-service stop valkey
+sem-service start valkey 7.2.6
+sem-service status valkey
+
+sem-service stop valkey
+sem-service start valkey 7
+sem-service status valkey
+
+
 cat /tmp/toolbox_semservice
