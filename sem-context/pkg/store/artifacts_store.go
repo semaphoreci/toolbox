@@ -34,7 +34,7 @@ func (_ *ArtifactStore) Put(key, value, contextId string) error {
 	}
 
 	//Since the key is stored, delete it from '.deleted' dir, in case it was marked as deleted before
-	if output, err := execArtifactCommand(Yank, keysInfoDirName+contextId+"/.deleted/"+key, ""); err != nil {
+	if output, err := execArtifactCommand(Yank, keysInfoDirName+contextId+"/.deleted/"+key, ""); err != nil && !strings.Contains(output, "failed to generate signed URL") {
 		log.Printf("error executing artifact command: %v. Output: %s\n", err, output)
 	}
 
@@ -74,7 +74,7 @@ func (_ *ArtifactStore) Delete(key, contextId string) error {
 	}
 	defer os.Remove(file.Name())
 
-	if output, err := execArtifactCommand(Yank, keysInfoDirName+contextId+"/"+key, ""); err != nil {
+	if output, err := execArtifactCommand(Yank, keysInfoDirName+contextId+"/"+key, ""); err != nil && !strings.Contains(output, "failed to generate signed URL") {
 		log.Printf("error executing artifact command: %v. Output: %s\n", err, output)
 	}
 
