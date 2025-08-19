@@ -36,7 +36,7 @@ setup() {
   run artifact push job /tmp/unique-file-$SEMAPHORE_JOB_ID
   assert_success
 
-  run artifact pull job /tmp/unique-file-$SEMAPHORE_JOB_ID
+  run artifact pull job unique-file-$SEMAPHORE_JOB_ID
   assert_success
   assert_output --regexp "Pulled [0-9]+ files?\. Total of .+"
 
