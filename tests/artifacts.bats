@@ -31,3 +31,12 @@ setup() {
   run artifact yank job unique-file-$SEMAPHORE_JOB_ID
   assert_success
 }
+
+@test "artifacts - pulling should display size summary" {
+  run artifact pull job /tmp/unique-file-$SEMAPHORE_JOB_ID
+  assert_success
+  assert_output --partial "Pulled 1 files. Total of"
+
+  run artifact yank job unique-file-$SEMAPHORE_JOB_ID
+  assert_success
+}
