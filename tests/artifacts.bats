@@ -7,7 +7,7 @@ setup() {
   echo "hello" > /tmp/unique-file-$SEMAPHORE_JOB_ID
 }
 
-@test "artifacts - uploading to proect level" {
+@test "artifacts - uploading to project level" {
   run artifact push project /tmp/unique-file-$SEMAPHORE_JOB_ID
   assert_success
   assert_output --regexp "Pushed [0-9]+ files?\. Total of .+"
@@ -17,7 +17,7 @@ setup() {
   assert_success
 }
 
-@test "artifacts - uploading to workflows level" {
+@test "artifacts - uploading to workflow level" {
   run artifact push workflow /tmp/unique-file-$SEMAPHORE_JOB_ID
   assert_success
   assert_output --regexp "Pushed [0-9]+ files?\. Total of .+"
