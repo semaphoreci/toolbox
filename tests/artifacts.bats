@@ -18,11 +18,11 @@ setup() {
 }
 
 @test "artifacts - uploading to workflows level" {
-  run artifact push workflows /tmp/unique-file-$SEMAPHORE_JOB_ID
+  run artifact push workflow /tmp/unique-file-$SEMAPHORE_JOB_ID
   assert_success
   assert_output --regexp "Pushed [0-9]+ files?\. Total of .+"
 
-  run artifact yank workflows unique-file-$SEMAPHORE_JOB_ID
+  run artifact yank workflow unique-file-$SEMAPHORE_JOB_ID
   assert_success
 }
 
