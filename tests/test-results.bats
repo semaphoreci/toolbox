@@ -97,7 +97,9 @@ teardown() {
   run test-results publish --no-compress --no-raw junit-sample.xml
   assert_success
 
-  assert_output --partial "[test-results] Artifacts pushed: 3 operations"
+  assert_output --partial "[test-results] Artifact transfers:"
+  assert_output --partial "← Pushed: 3 operations"
+  assert_output --partial "= Total: 3 operations"
 }
 
 @test "test-results publish multiple files shows correct operation count" {
@@ -107,7 +109,9 @@ teardown() {
   run test-results publish --no-compress junit-sample.xml junit-sample2.xml
   assert_success
 
-  assert_output --partial "[test-results] Artifacts pushed: 5 operations"
+  assert_output --partial "[test-results] Artifact transfers:"
+  assert_output --partial "← Pushed: 5 operations"
+  assert_output --partial "= Total: 5 operations"
 }
 
 @test "test-results gen-pipeline-report shows transfer summary" {
