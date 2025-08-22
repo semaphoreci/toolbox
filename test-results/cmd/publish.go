@@ -24,6 +24,7 @@ import (
 
 	"github.com/semaphoreci/toolbox/test-results/pkg/cli"
 	"github.com/semaphoreci/toolbox/test-results/pkg/logger"
+	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 	"github.com/spf13/cobra"
 )
 
@@ -61,6 +62,9 @@ var publishCmd = &cobra.Command{
 		}
 
 		defer os.RemoveAll(dirPath)
+
+		totalStats := &cli.ArtifactStats{}
+		uploadCount := 0
 
 		for _, path := range paths {
 			parser, err := cli.FindParser(path, cmd)
@@ -112,12 +116,17 @@ var publishCmd = &cobra.Command{
 
 		defer os.Remove(fileName)
 
-		_, err = cli.PushArtifacts("job", fileName, path.Join("test-results", "junit.json"), cmd)
+		_, stats, err := cli.PushArtifacts("job", fileName, path.Join("test-results", "junit.json"), cmd)
 		if err != nil {
 			return err
 		}
+		if stats != nil {
+			totalStats.FileCount += stats.FileCount
+			totalStats.TotalSize += stats.TotalSize
+			uploadCount++
+		}
 
-		if err = pushSummaries(result.TestResults, "job", path.Join("test-results", "summary.json"), cmd); err != nil {
+		if err = pushSummaryWithStats(result.TestResults, "job", path.Join("test-results", "summary.json"), cmd, totalStats, &uploadCount); err != nil {
 			return err
 		}
 
@@ -133,9 +142,14 @@ var publishCmd = &cobra.Command{
 			return err
 		}
 
-		_, err = cli.PushArtifacts("workflow", fileName, path.Join("test-results", pipelineID, jobID+".json"), cmd)
+		_, stats, err = cli.PushArtifacts("workflow", fileName, path.Join("test-results", pipelineID, jobID+".json"), cmd)
 		if err != nil {
 			return err
+		}
+		if stats != nil {
+			totalStats.FileCount += stats.FileCount
+			totalStats.TotalSize += stats.TotalSize
+			uploadCount++
 		}
 
 		noRaw, err := cmd.Flags().GetBool("no-raw")
@@ -156,15 +170,80 @@ var publishCmd = &cobra.Command{
 					outPath = path.Join("test-results", fmt.Sprintf("junit-%d.xml", idx))
 				}
 
-				_, err = cli.PushArtifacts("job", rawFilePath, outPath, cmd)
+				_, stats, err = cli.PushArtifacts("job", rawFilePath, outPath, cmd)
 				if err != nil {
 					return err
+				}
+				if stats != nil {
+					totalStats.FileCount += stats.FileCount
+					totalStats.TotalSize += stats.TotalSize
+					uploadCount++
 				}
 			}
 		}
 
+		displayUploadSummary(uploadCount, totalStats)
+
 		return nil
 	},
+}
+
+func pushSummaryWithStats(testResult []parser.TestResults, level, path string, cmd *cobra.Command, totalStats *cli.ArtifactStats, uploadCount *int) error {
+	skipCompression, err := cmd.Flags().GetBool("no-compress")
+	if err != nil {
+		return err
+	}
+	if len(testResult) == 0 {
+		logger.Info("no test results to process")
+		return nil
+	}
+
+	logger.Info("starting to generate summary")
+	summaryReport := parser.Summary{}
+	for _, results := range testResult {
+		summary := results.Summary
+		summaryReport.Merge(&summary)
+	}
+
+	jsonSummary, err := json.Marshal(summaryReport)
+	if err != nil {
+		return err
+	}
+
+	summaryFileName, err := cli.WriteToTmpFile(jsonSummary, !skipCompression)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(summaryFileName)
+
+	_, stats, err := cli.PushArtifacts(level, summaryFileName, path, cmd)
+	if err != nil {
+		return err
+	}
+	if stats != nil {
+		totalStats.FileCount += stats.FileCount
+		totalStats.TotalSize += stats.TotalSize
+		*uploadCount++
+	}
+	return nil
+}
+
+func displayUploadSummary(uploadCount int, stats *cli.ArtifactStats) {
+	if uploadCount > 0 {
+		logger.Info("")
+		logger.Info("========================================")
+		logger.Info("Artifact Upload Summary")
+		logger.Info("========================================")
+		logger.Info("Upload operations: %d", uploadCount)
+		
+		if stats.FileCount > 0 || stats.TotalSize > 0 {
+			logger.Info("Files uploaded: %d", stats.FileCount)
+			logger.Info("Total size: %s", cli.FormatBytes(stats.TotalSize))
+		} else {
+			logger.Info("Uploads completed successfully")
+		}
+		logger.Info("========================================")
+	}
 }
 
 func init() {

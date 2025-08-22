@@ -47,6 +47,9 @@ var genPipelineReportCmd = &cobra.Command{
 			return err
 		}
 
+		totalStats := &cli.ArtifactStats{}
+		operationCount := 0
+
 		var dir string
 
 		pipelineID, found := os.LookupEnv("SEMAPHORE_PIPELINE_ID")
@@ -63,9 +66,15 @@ var genPipelineReportCmd = &cobra.Command{
 			}
 			defer os.Remove(dir)
 
-			dir, err = cli.PullArtifacts("workflow", path.Join("test-results", pipelineID), dir, cmd)
+			var stats *cli.ArtifactStats
+			dir, stats, err = cli.PullArtifacts("workflow", path.Join("test-results", pipelineID), dir, cmd)
 			if err != nil {
 				return err
+			}
+			if stats != nil {
+				totalStats.FileCount += stats.FileCount
+				totalStats.TotalSize += stats.TotalSize
+				operationCount++
 			}
 		} else {
 			dir = args[0]
@@ -88,16 +97,28 @@ var genPipelineReportCmd = &cobra.Command{
 		}
 		defer os.Remove(fileName)
 
-		_, err = cli.PushArtifacts("workflow", fileName, path.Join("test-results", pipelineID+".json"), cmd)
+		_, stats, err := cli.PushArtifacts("workflow", fileName, path.Join("test-results", pipelineID+".json"), cmd)
+		if err != nil {
+			return err
+		}
+		if stats != nil {
+			totalStats.FileCount += stats.FileCount
+			totalStats.TotalSize += stats.TotalSize
+			operationCount++
+		}
+
+		err = pushSummariesWithStats(result.TestResults, "workflow", path.Join("test-results", pipelineID+"-summary.json"), cmd, totalStats, &operationCount)
 		if err != nil {
 			return err
 		}
 
-		return pushSummaries(result.TestResults, "workflow", path.Join("test-results", pipelineID+"-summary.json"), cmd)
+		displayTransferSummary("Artifact Transfer Summary", operationCount, totalStats)
+
+		return nil
 	},
 }
 
-func pushSummaries(testResult []parser.TestResults, level, path string, cmd *cobra.Command) error {
+func pushSummariesWithStats(testResult []parser.TestResults, level, path string, cmd *cobra.Command, totalStats *cli.ArtifactStats, operationCount *int) error {
 	skipCompression, err := cmd.Flags().GetBool("no-compress")
 	if err != nil {
 		return err
@@ -125,8 +146,35 @@ func pushSummaries(testResult []parser.TestResults, level, path string, cmd *cob
 	}
 	defer os.Remove(summaryFileName)
 
-	_, err = cli.PushArtifacts(level, summaryFileName, path, cmd)
-	return err
+	_, stats, err := cli.PushArtifacts(level, summaryFileName, path, cmd)
+	if err != nil {
+		return err
+	}
+	if stats != nil {
+		totalStats.FileCount += stats.FileCount
+		totalStats.TotalSize += stats.TotalSize
+		*operationCount++
+	}
+	return nil
+}
+
+// displayTransferSummary displays a summary of artifact transfers
+func displayTransferSummary(title string, operationCount int, stats *cli.ArtifactStats) {
+	if operationCount > 0 {
+		logger.Info("")
+		logger.Info("========================================")
+		logger.Info("%s", title)
+		logger.Info("========================================")
+		logger.Info("Operations: %d", operationCount)
+		
+		if stats.FileCount > 0 || stats.TotalSize > 0 {
+			logger.Info("Files transferred: %d", stats.FileCount)
+			logger.Info("Total size: %s", cli.FormatBytes(stats.TotalSize))
+		} else {
+			logger.Info("Operations completed successfully")
+		}
+		logger.Info("========================================")
+	}
 }
 
 func init() {
