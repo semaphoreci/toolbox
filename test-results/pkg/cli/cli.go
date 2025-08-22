@@ -24,8 +24,9 @@ import (
 )
 
 type ArtifactStats struct {
-	FileCount int
-	TotalSize int64
+	Operations int
+	FileCount  int
+	TotalSize  int64
 }
 
 // LoadFiles checks if path exists and can be `stat`ed at given `path`

@@ -49,8 +49,6 @@ var genPipelineReportCmd = &cobra.Command{
 
 		pullStats := &cli.ArtifactStats{}
 		pushStats := &cli.ArtifactStats{}
-		pullCount := 0
-		pushCount := 0
 
 		var dir string
 
@@ -74,9 +72,9 @@ var genPipelineReportCmd = &cobra.Command{
 				return err
 			}
 			if stats != nil {
+				pullStats.Operations++
 				pullStats.FileCount += stats.FileCount
 				pullStats.TotalSize += stats.TotalSize
-				pullCount++
 			}
 		} else {
 			dir = args[0]
@@ -104,23 +102,23 @@ var genPipelineReportCmd = &cobra.Command{
 			return err
 		}
 		if stats != nil {
+			pushStats.Operations++
 			pushStats.FileCount += stats.FileCount
 			pushStats.TotalSize += stats.TotalSize
-			pushCount++
 		}
 
-		err = pushSummariesWithStats(result.TestResults, "workflow", path.Join("test-results", pipelineID+"-summary.json"), cmd, pushStats, &pushCount)
+		err = pushSummariesWithStats(result.TestResults, "workflow", path.Join("test-results", pipelineID+"-summary.json"), cmd, pushStats)
 		if err != nil {
 			return err
 		}
 
-		displayTransferSummary(pullCount, pushCount, pullStats, pushStats)
+		displayTransferSummary(pullStats, pushStats)
 
 		return nil
 	},
 }
 
-func pushSummariesWithStats(testResult []parser.TestResults, level, path string, cmd *cobra.Command, pushStats *cli.ArtifactStats, pushCount *int) error {
+func pushSummariesWithStats(testResult []parser.TestResults, level, path string, cmd *cobra.Command, pushStats *cli.ArtifactStats) error {
 	skipCompression, err := cmd.Flags().GetBool("no-compress")
 	if err != nil {
 		return err
@@ -153,34 +151,34 @@ func pushSummariesWithStats(testResult []parser.TestResults, level, path string,
 		return err
 	}
 	if stats != nil {
+		pushStats.Operations++
 		pushStats.FileCount += stats.FileCount
 		pushStats.TotalSize += stats.TotalSize
-		*pushCount++
 	}
 	return nil
 }
 
-func displayTransferSummary(pullCount int, pushCount int, pullStats *cli.ArtifactStats, pushStats *cli.ArtifactStats) {
-	totalOps := pullCount + pushCount
+func displayTransferSummary(pullStats *cli.ArtifactStats, pushStats *cli.ArtifactStats) {
+	totalOps := pullStats.Operations + pushStats.Operations
 	if totalOps > 0 {
 		logger.Info("")
 		logger.Info("========================================")
 		logger.Info("test-results: Artifact Transfer Summary")
 		logger.Info("========================================")
 		
-		if pullCount > 0 {
+		if pullStats.Operations > 0 {
 			if pullStats.FileCount > 0 || pullStats.TotalSize > 0 {
-				logger.Info("Pull operations: %d (%d files, %s)", pullCount, pullStats.FileCount, cli.FormatBytes(pullStats.TotalSize))
+				logger.Info("Pull operations: %d (%d files, %s)", pullStats.Operations, pullStats.FileCount, cli.FormatBytes(pullStats.TotalSize))
 			} else {
-				logger.Info("Pull operations: %d", pullCount)
+				logger.Info("Pull operations: %d", pullStats.Operations)
 			}
 		}
 		
-		if pushCount > 0 {
+		if pushStats.Operations > 0 {
 			if pushStats.FileCount > 0 || pushStats.TotalSize > 0 {
-				logger.Info("Push operations: %d (%d files, %s)", pushCount, pushStats.FileCount, cli.FormatBytes(pushStats.TotalSize))
+				logger.Info("Push operations: %d (%d files, %s)", pushStats.Operations, pushStats.FileCount, cli.FormatBytes(pushStats.TotalSize))
 			} else {
-				logger.Info("Push operations: %d", pushCount)
+				logger.Info("Push operations: %d", pushStats.Operations)
 			}
 		}
 		

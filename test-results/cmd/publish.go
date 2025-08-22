@@ -63,8 +63,7 @@ var publishCmd = &cobra.Command{
 
 		defer os.RemoveAll(dirPath)
 
-		totalStats := &cli.ArtifactStats{}
-		pushCount := 0
+		pushStats := &cli.ArtifactStats{}
 
 		for _, path := range paths {
 			parser, err := cli.FindParser(path, cmd)
@@ -121,12 +120,12 @@ var publishCmd = &cobra.Command{
 			return err
 		}
 		if stats != nil {
-			totalStats.FileCount += stats.FileCount
-			totalStats.TotalSize += stats.TotalSize
-			pushCount++
+			pushStats.Operations++
+			pushStats.FileCount += stats.FileCount
+			pushStats.TotalSize += stats.TotalSize
 		}
 
-		if err = pushSummaryWithStats(result.TestResults, "job", path.Join("test-results", "summary.json"), cmd, totalStats, &pushCount); err != nil {
+		if err = pushSummaryWithStats(result.TestResults, "job", path.Join("test-results", "summary.json"), cmd, pushStats); err != nil {
 			return err
 		}
 
@@ -147,9 +146,9 @@ var publishCmd = &cobra.Command{
 			return err
 		}
 		if stats != nil {
-			totalStats.FileCount += stats.FileCount
-			totalStats.TotalSize += stats.TotalSize
-			pushCount++
+			pushStats.Operations++
+			pushStats.FileCount += stats.FileCount
+			pushStats.TotalSize += stats.TotalSize
 		}
 
 		noRaw, err := cmd.Flags().GetBool("no-raw")
@@ -175,20 +174,20 @@ var publishCmd = &cobra.Command{
 					return err
 				}
 				if stats != nil {
-					totalStats.FileCount += stats.FileCount
-					totalStats.TotalSize += stats.TotalSize
-					pushCount++
+					pushStats.Operations++
+					pushStats.FileCount += stats.FileCount
+					pushStats.TotalSize += stats.TotalSize
 				}
 			}
 		}
 
-		displayPushSummary(pushCount, totalStats)
+		displayPushSummary(pushStats)
 
 		return nil
 	},
 }
 
-func pushSummaryWithStats(testResult []parser.TestResults, level, path string, cmd *cobra.Command, totalStats *cli.ArtifactStats, pushCount *int) error {
+func pushSummaryWithStats(testResult []parser.TestResults, level, path string, cmd *cobra.Command, pushStats *cli.ArtifactStats) error {
 	skipCompression, err := cmd.Flags().GetBool("no-compress")
 	if err != nil {
 		return err
@@ -221,24 +220,24 @@ func pushSummaryWithStats(testResult []parser.TestResults, level, path string, c
 		return err
 	}
 	if stats != nil {
-		totalStats.FileCount += stats.FileCount
-		totalStats.TotalSize += stats.TotalSize
-		*pushCount++
+		pushStats.Operations++
+		pushStats.FileCount += stats.FileCount
+		pushStats.TotalSize += stats.TotalSize
 	}
 	return nil
 }
 
-func displayPushSummary(pushCount int, stats *cli.ArtifactStats) {
-	if pushCount > 0 {
+func displayPushSummary(stats *cli.ArtifactStats) {
+	if stats.Operations > 0 {
 		logger.Info("")
 		logger.Info("========================================")
 		logger.Info("test-results: Artifact Push Summary")
 		logger.Info("========================================")
 		
 		if stats.FileCount > 0 || stats.TotalSize > 0 {
-			logger.Info("Push operations: %d (%d files, %s)", pushCount, stats.FileCount, cli.FormatBytes(stats.TotalSize))
+			logger.Info("Push operations: %d (%d files, %s)", stats.Operations, stats.FileCount, cli.FormatBytes(stats.TotalSize))
 		} else {
-			logger.Info("Push operations: %d", pushCount)
+			logger.Info("Push operations: %d", stats.Operations)
 		}
 		
 		logger.Info("========================================")

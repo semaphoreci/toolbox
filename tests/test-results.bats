@@ -36,11 +36,12 @@ setup() {
 
 teardown() {
   rm -rf /tmp/test-results-cli
-}
-
-teardown_file() {
-  artifact yank job test-results
-  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID/$SEMAPHORE_JOB_ID.json
+  
+  # Clean up artifacts to avoid conflicts in subsequent test runs
+  artifact yank job test-results 2>/dev/null || true
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID/$SEMAPHORE_JOB_ID.json 2>/dev/null || true
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID.json 2>/dev/null || true
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID-summary.json 2>/dev/null || true
 }
 
 @test "test-results publish works" {
@@ -97,9 +98,6 @@ teardown_file() {
   
   assert_output --partial "test-results: Artifact Push Summary"
   assert_output --regexp "Push operations: 3"
-  
-  artifact yank job test-results
-  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID/$SEMAPHORE_JOB_ID.json
 }
 
 @test "test-results publish multiple files shows correct operation count" {
@@ -111,9 +109,6 @@ teardown_file() {
   
   assert_output --partial "test-results: Artifact Push Summary"
   assert_output --regexp "Push operations: 5"
-  
-  artifact yank job test-results
-  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID/$SEMAPHORE_JOB_ID.json
 }
 
 @test "test-results gen-pipeline-report shows transfer summary" {
@@ -128,9 +123,4 @@ teardown_file() {
   assert_output --partial "test-results: Artifact Transfer Summary"
   assert_output --regexp "(Pull|Push) operations:"
   assert_output --partial "Total:"
-  
-  artifact yank job test-results
-  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID.json
-  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID-summary.json
-  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID/$SEMAPHORE_JOB_ID.json
 }
