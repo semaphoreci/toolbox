@@ -47,6 +47,9 @@ var genPipelineReportCmd = &cobra.Command{
 			return err
 		}
 
+		pullStats := &cli.ArtifactStats{}
+		pushStats := &cli.ArtifactStats{}
+
 		var dir string
 
 		pipelineID, found := os.LookupEnv("SEMAPHORE_PIPELINE_ID")
@@ -63,9 +66,15 @@ var genPipelineReportCmd = &cobra.Command{
 			}
 			defer os.Remove(dir)
 
-			dir, err = cli.PullArtifacts("workflow", path.Join("test-results", pipelineID), dir, cmd)
+			var stats *cli.ArtifactStats
+			dir, stats, err = cli.PullArtifacts("workflow", path.Join("test-results", pipelineID), dir, cmd)
 			if err != nil {
 				return err
+			}
+			if stats != nil {
+				pullStats.Operations++
+				pullStats.FileCount += stats.FileCount
+				pullStats.TotalSize += stats.TotalSize
 			}
 		} else {
 			dir = args[0]
@@ -88,16 +97,28 @@ var genPipelineReportCmd = &cobra.Command{
 		}
 		defer os.Remove(fileName)
 
-		_, err = cli.PushArtifacts("workflow", fileName, path.Join("test-results", pipelineID+".json"), cmd)
+		_, stats, err := cli.PushArtifacts("workflow", fileName, path.Join("test-results", pipelineID+".json"), cmd)
+		if err != nil {
+			return err
+		}
+		if stats != nil {
+			pushStats.Operations++
+			pushStats.FileCount += stats.FileCount
+			pushStats.TotalSize += stats.TotalSize
+		}
+
+		err = pushSummariesWithStats(result.TestResults, "workflow", path.Join("test-results", pipelineID+"-summary.json"), cmd, pushStats)
 		if err != nil {
 			return err
 		}
 
-		return pushSummaries(result.TestResults, "workflow", path.Join("test-results", pipelineID+"-summary.json"), cmd)
+		cli.DisplayTransferSummary(pullStats, pushStats)
+
+		return nil
 	},
 }
 
-func pushSummaries(testResult []parser.TestResults, level, path string, cmd *cobra.Command) error {
+func pushSummariesWithStats(testResult []parser.TestResults, level, path string, cmd *cobra.Command, pushStats *cli.ArtifactStats) error {
 	skipCompression, err := cmd.Flags().GetBool("no-compress")
 	if err != nil {
 		return err
@@ -125,8 +146,16 @@ func pushSummaries(testResult []parser.TestResults, level, path string, cmd *cob
 	}
 	defer os.Remove(summaryFileName)
 
-	_, err = cli.PushArtifacts(level, summaryFileName, path, cmd)
-	return err
+	_, stats, err := cli.PushArtifacts(level, summaryFileName, path, cmd)
+	if err != nil {
+		return err
+	}
+	if stats != nil {
+		pushStats.Operations++
+		pushStats.FileCount += stats.FileCount
+		pushStats.TotalSize += stats.TotalSize
+	}
+	return nil
 }
 
 func init() {

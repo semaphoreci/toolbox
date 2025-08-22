@@ -10,7 +10,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/semaphoreci/toolbox/test-results/pkg/logger"
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
@@ -19,6 +22,12 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
+
+type ArtifactStats struct {
+	Operations int
+	FileCount  int
+	TotalSize  int64
+}
 
 // LoadFiles checks if path exists and can be `stat`ed at given `path`
 func LoadFiles(inPaths []string, ext string) ([]string, error) {
@@ -258,17 +267,17 @@ func writeToFile(data []byte, file *os.File, compress bool) (string, error) {
 }
 
 // PushArtifacts publishes artifacts to semaphore artifact storage
-func PushArtifacts(level string, file string, destination string, cmd *cobra.Command) (string, error) {
+func PushArtifacts(level string, file string, destination string, cmd *cobra.Command) (string, *ArtifactStats, error) {
 	force, err := cmd.Flags().GetBool("force")
 	if err != nil {
 		logger.Error("Reading flag error: %v", err)
-		return "", err
+		return "", nil, err
 	}
 
 	verbose, err := cmd.Flags().GetBool("verbose")
 	if err != nil {
 		logger.Error("Reading flag error: %v", err)
-		return "", err
+		return "", nil, err
 	}
 
 	artifactsPush := exec.Command("artifact")
@@ -287,17 +296,20 @@ func PushArtifacts(level string, file string, destination string, cmd *cobra.Com
 
 	if err != nil {
 		logger.Error("Pushing artifacts failed: %v\n%s", err, string(output))
-		return "", err
+		return "", nil, err
 	}
-	return destination, nil
+
+	stats := parseArtifactStats(string(output))
+
+	return destination, stats, nil
 }
 
 // PullArtifacts fetches artifacts from semaphore artifact storage
-func PullArtifacts(level string, remotePath string, localPath string, cmd *cobra.Command) (string, error) {
+func PullArtifacts(level string, remotePath string, localPath string, cmd *cobra.Command) (string, *ArtifactStats, error) {
 	verbose, err := cmd.Flags().GetBool("verbose")
 	if err != nil {
 		logger.Error("Reading flag error: %v", err)
-		return "", err
+		return "", nil, err
 	}
 
 	artifactsPush := exec.Command("artifact")
@@ -312,10 +324,12 @@ func PullArtifacts(level string, remotePath string, localPath string, cmd *cobra
 
 	if err != nil {
 		logger.Error("Pulling artifacts failed: %v\n%s", err, string(output))
-		return "", err
+		return "", nil, err
 	}
 
-	return localPath, nil
+	stats := parseArtifactStats(string(output))
+
+	return localPath, stats, nil
 }
 
 // SetLogLevel sets log level according to flags
@@ -480,4 +494,109 @@ func GzipDecompress(data []byte) ([]byte, error) {
 	}
 
 	return newData, nil
+}
+
+func parseArtifactStats(output string) *ArtifactStats {
+	stats := &ArtifactStats{}
+
+	fileCountRegex := regexp.MustCompile(`(?:Pushed|Pulled)\s+(\d+)\s+files?`)
+	sizeRegex := regexp.MustCompile(`Total\s+of\s+([\d.]+)\s*([KMGT]?B)`)
+
+	if matches := fileCountRegex.FindStringSubmatch(output); len(matches) > 1 {
+		if count, err := strconv.Atoi(matches[1]); err == nil {
+			stats.FileCount = count
+		}
+	}
+
+	if matches := sizeRegex.FindStringSubmatch(output); len(matches) > 1 {
+		if size, err := parseSize(matches[1], matches[2]); err == nil {
+			stats.TotalSize = size
+		}
+	}
+
+	return stats
+}
+
+func parseSize(sizeStr string, unit string) (int64, error) {
+	size, err := strconv.ParseFloat(sizeStr, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	multiplier := int64(1)
+	switch strings.ToUpper(unit) {
+	case "KB":
+		multiplier = 1024
+	case "MB":
+		multiplier = 1024 * 1024
+	case "GB":
+		multiplier = 1024 * 1024 * 1024
+	case "TB":
+		multiplier = 1024 * 1024 * 1024 * 1024
+	}
+
+	return int64(size * float64(multiplier)), nil
+}
+
+func FormatBytes(bytes int64) string {
+	const unit = 1024
+	if bytes < unit {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	div, exp := int64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
+}
+
+func Pluralize(count int, singular string, plural string) string {
+	if count == 1 {
+		return singular
+	}
+	return plural
+}
+
+func DisplayTransferSummary(pullStats *ArtifactStats, pushStats *ArtifactStats) {
+	totalOps := pullStats.Operations + pushStats.Operations
+	if totalOps > 0 {
+		logger.Info("[test-results] Artifact transfers:")
+		
+		if pullStats.Operations > 0 {
+			if pullStats.FileCount > 0 || pullStats.TotalSize > 0 {
+				logger.Info("  → Pulled: %d %s, %d %s, %s", 
+					pullStats.Operations, Pluralize(pullStats.Operations, "operation", "operations"),
+					pullStats.FileCount, Pluralize(pullStats.FileCount, "file", "files"),
+					FormatBytes(pullStats.TotalSize))
+			} else {
+				logger.Info("  → Pulled: %d %s", 
+					pullStats.Operations, Pluralize(pullStats.Operations, "operation", "operations"))
+			}
+		}
+		
+		if pushStats.Operations > 0 {
+			if pushStats.FileCount > 0 || pushStats.TotalSize > 0 {
+				logger.Info("  ← Pushed: %d %s, %d %s, %s", 
+					pushStats.Operations, Pluralize(pushStats.Operations, "operation", "operations"),
+					pushStats.FileCount, Pluralize(pushStats.FileCount, "file", "files"),
+					FormatBytes(pushStats.TotalSize))
+			} else {
+				logger.Info("  ← Pushed: %d %s", 
+					pushStats.Operations, Pluralize(pushStats.Operations, "operation", "operations"))
+			}
+		}
+		
+		totalFiles := pullStats.FileCount + pushStats.FileCount
+		totalSize := pullStats.TotalSize + pushStats.TotalSize
+		if totalFiles > 0 || totalSize > 0 {
+			logger.Info("  = Total: %d %s, %d %s, %s", 
+				totalOps, Pluralize(totalOps, "operation", "operations"),
+				totalFiles, Pluralize(totalFiles, "file", "files"),
+				FormatBytes(totalSize))
+		} else {
+			logger.Info("  = Total: %d %s", 
+				totalOps, Pluralize(totalOps, "operation", "operations"))
+		}
+	}
 }

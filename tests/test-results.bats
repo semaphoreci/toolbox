@@ -36,11 +36,12 @@ setup() {
 
 teardown() {
   rm -rf /tmp/test-results-cli
-}
 
-teardown_file() {
-  artifact yank job test-results
-  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID/$SEMAPHORE_JOB_ID.json
+  # Clean up artifacts to avoid conflicts in subsequent test runs
+  artifact yank job test-results 2>/dev/null || true
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID/$SEMAPHORE_JOB_ID.json 2>/dev/null || true
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID.json 2>/dev/null || true
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID-summary.json 2>/dev/null || true
 }
 
 @test "test-results publish works" {
@@ -48,6 +49,10 @@ teardown_file() {
 
   run test-results publish --no-compress junit-sample.xml
   assert_success
+
+  assert_output --partial "[test-results] Artifact transfers:"
+  assert_output --partial "← Pushed: 4 operations"
+  assert_output --partial "= Total: 4 operations"
 
   run artifact pull job test-results/junit.xml
   assert_success
@@ -84,4 +89,44 @@ teardown_file() {
 
   run test-results compile --no-compress /tmp/some/file /tmp/some/file.json
   assert_failure
+}
+
+@test "test-results publish with --no-raw shows correct operation count" {
+  cd /tmp/test-results-cli
+
+  run test-results publish --no-compress --no-raw junit-sample.xml
+  assert_success
+
+  assert_output --partial "[test-results] Artifact transfers:"
+  assert_output --partial "← Pushed: 3 operations"
+  assert_output --partial "= Total: 3 operations"
+}
+
+@test "test-results publish multiple files shows correct operation count" {
+  cd /tmp/test-results-cli
+  cp junit-sample.xml junit-sample2.xml
+
+  run test-results publish --no-compress junit-sample.xml junit-sample2.xml
+  assert_success
+
+  assert_output --partial "[test-results] Artifact transfers:"
+  assert_output --partial "← Pushed: 5 operations"
+  assert_output --partial "= Total: 5 operations"
+}
+
+@test "test-results gen-pipeline-report shows transfer summary" {
+  cd /tmp/test-results-cli
+
+  run test-results publish --no-compress junit-sample.xml
+  assert_success
+
+  mkdir -p pipeline-results
+  cp junit-sample.json pipeline-results/
+
+  run test-results gen-pipeline-report --force pipeline-results
+  assert_success
+
+  assert_output --partial "[test-results] Artifact transfers:"
+  assert_output --partial "← Pushed:"
+  assert_output --partial "= Total:"
 }
