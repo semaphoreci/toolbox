@@ -112,7 +112,7 @@ var genPipelineReportCmd = &cobra.Command{
 			return err
 		}
 
-		displayTransferSummary(pullStats, pushStats)
+		cli.DisplayTransferSummary(pullStats, pushStats)
 
 		return nil
 	},
@@ -156,47 +156,6 @@ func pushSummariesWithStats(testResult []parser.TestResults, level, path string,
 		pushStats.TotalSize += stats.TotalSize
 	}
 	return nil
-}
-
-func displayTransferSummary(pullStats *cli.ArtifactStats, pushStats *cli.ArtifactStats) {
-	totalOps := pullStats.Operations + pushStats.Operations
-	if totalOps > 0 {
-		logger.Info("[test-results] Artifact transfers:")
-		
-		if pullStats.Operations > 0 {
-			if pullStats.FileCount > 0 || pullStats.TotalSize > 0 {
-				logger.Info("  → Pulled: %d operation%s, %d files, %s", 
-					pullStats.Operations, pluralize(pullStats.Operations), pullStats.FileCount, cli.FormatBytes(pullStats.TotalSize))
-			} else {
-				logger.Info("  → Pulled: %d operation%s", pullStats.Operations, pluralize(pullStats.Operations))
-			}
-		}
-		
-		if pushStats.Operations > 0 {
-			if pushStats.FileCount > 0 || pushStats.TotalSize > 0 {
-				logger.Info("  ← Pushed: %d operation%s, %d files, %s", 
-					pushStats.Operations, pluralize(pushStats.Operations), pushStats.FileCount, cli.FormatBytes(pushStats.TotalSize))
-			} else {
-				logger.Info("  ← Pushed: %d operation%s", pushStats.Operations, pluralize(pushStats.Operations))
-			}
-		}
-		
-		totalFiles := pullStats.FileCount + pushStats.FileCount
-		totalSize := pullStats.TotalSize + pushStats.TotalSize
-		if totalFiles > 0 || totalSize > 0 {
-			logger.Info("  = Total: %d operation%s, %d files, %s", 
-				totalOps, pluralize(totalOps), totalFiles, cli.FormatBytes(totalSize))
-		} else {
-			logger.Info("  = Total: %d operation%s", totalOps, pluralize(totalOps))
-		}
-	}
-}
-
-func pluralize(count int) string {
-	if count == 1 {
-		return ""
-	}
-	return "s"
 }
 
 func init() {

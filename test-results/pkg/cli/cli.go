@@ -550,3 +550,53 @@ func FormatBytes(bytes int64) string {
 	}
 	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }
+
+func Pluralize(count int, singular string, plural string) string {
+	if count == 1 {
+		return singular
+	}
+	return plural
+}
+
+func DisplayTransferSummary(pullStats *ArtifactStats, pushStats *ArtifactStats) {
+	totalOps := pullStats.Operations + pushStats.Operations
+	if totalOps > 0 {
+		logger.Info("[test-results] Artifact transfers:")
+		
+		if pullStats.Operations > 0 {
+			if pullStats.FileCount > 0 || pullStats.TotalSize > 0 {
+				logger.Info("  → Pulled: %d %s, %d %s, %s", 
+					pullStats.Operations, Pluralize(pullStats.Operations, "operation", "operations"),
+					pullStats.FileCount, Pluralize(pullStats.FileCount, "file", "files"),
+					FormatBytes(pullStats.TotalSize))
+			} else {
+				logger.Info("  → Pulled: %d %s", 
+					pullStats.Operations, Pluralize(pullStats.Operations, "operation", "operations"))
+			}
+		}
+		
+		if pushStats.Operations > 0 {
+			if pushStats.FileCount > 0 || pushStats.TotalSize > 0 {
+				logger.Info("  ← Pushed: %d %s, %d %s, %s", 
+					pushStats.Operations, Pluralize(pushStats.Operations, "operation", "operations"),
+					pushStats.FileCount, Pluralize(pushStats.FileCount, "file", "files"),
+					FormatBytes(pushStats.TotalSize))
+			} else {
+				logger.Info("  ← Pushed: %d %s", 
+					pushStats.Operations, Pluralize(pushStats.Operations, "operation", "operations"))
+			}
+		}
+		
+		totalFiles := pullStats.FileCount + pushStats.FileCount
+		totalSize := pullStats.TotalSize + pushStats.TotalSize
+		if totalFiles > 0 || totalSize > 0 {
+			logger.Info("  = Total: %d %s, %d %s, %s", 
+				totalOps, Pluralize(totalOps, "operation", "operations"),
+				totalFiles, Pluralize(totalFiles, "file", "files"),
+				FormatBytes(totalSize))
+		} else {
+			logger.Info("  = Total: %d %s", 
+				totalOps, Pluralize(totalOps, "operation", "operations"))
+		}
+	}
+}

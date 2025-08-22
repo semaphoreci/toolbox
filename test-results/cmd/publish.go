@@ -181,7 +181,8 @@ var publishCmd = &cobra.Command{
 			}
 		}
 
-		displayPushSummary(pushStats)
+		emptyPullStats := &cli.ArtifactStats{}
+		cli.DisplayTransferSummary(emptyPullStats, pushStats)
 
 		return nil
 	},
@@ -225,17 +226,6 @@ func pushSummaryWithStats(testResult []parser.TestResults, level, path string, c
 		pushStats.TotalSize += stats.TotalSize
 	}
 	return nil
-}
-
-func displayPushSummary(stats *cli.ArtifactStats) {
-	if stats.Operations > 0 {
-		if stats.FileCount > 0 || stats.TotalSize > 0 {
-			logger.Info("[test-results] Artifacts pushed: %d operations, %d files, %s", 
-				stats.Operations, stats.FileCount, cli.FormatBytes(stats.TotalSize))
-		} else {
-			logger.Info("[test-results] Artifacts pushed: %d operations", stats.Operations)
-		}
-	}
 }
 
 func init() {

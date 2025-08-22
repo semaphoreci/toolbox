@@ -50,7 +50,9 @@ teardown() {
   run test-results publish --no-compress junit-sample.xml
   assert_success
 
-  assert_output --partial "[test-results] Artifacts pushed: 4 operations"
+  assert_output --partial "[test-results] Artifact transfers:"
+  assert_output --partial "← Pushed: 4 operations"
+  assert_output --partial "= Total: 4 operations"
 
   run artifact pull job test-results/junit.xml
   assert_success
