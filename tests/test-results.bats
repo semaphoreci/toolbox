@@ -50,8 +50,7 @@ teardown() {
   run test-results publish --no-compress junit-sample.xml
   assert_success
   
-  assert_output --partial "test-results: Artifact Push Summary"
-  assert_output --regexp "Push operations: 4"
+  assert_output --partial "[test-results] Artifacts pushed: 4 operations"
 
   run artifact pull job test-results/junit.xml
   assert_success
@@ -96,8 +95,7 @@ teardown() {
   run test-results publish --no-compress --no-raw junit-sample.xml
   assert_success
   
-  assert_output --partial "test-results: Artifact Push Summary"
-  assert_output --regexp "Push operations: 3"
+  assert_output --partial "[test-results] Artifacts pushed: 3 operations"
 }
 
 @test "test-results publish multiple files shows correct operation count" {
@@ -107,8 +105,7 @@ teardown() {
   run test-results publish --no-compress junit-sample.xml junit-sample2.xml
   assert_success
   
-  assert_output --partial "test-results: Artifact Push Summary"
-  assert_output --regexp "Push operations: 5"
+  assert_output --partial "[test-results] Artifacts pushed: 5 operations"
 }
 
 @test "test-results gen-pipeline-report shows transfer summary" {
@@ -120,7 +117,7 @@ teardown() {
   run test-results gen-pipeline-report
   assert_success
   
-  assert_output --partial "test-results: Artifact Transfer Summary"
-  assert_output --regexp "(Pull|Push) operations:"
-  assert_output --partial "Total:"
+  assert_output --partial "[test-results] Artifact transfers:"
+  assert_output --regexp "(Pulled|Pushed):"
+  assert_output --partial "= Total:"
 }

@@ -229,18 +229,12 @@ func pushSummaryWithStats(testResult []parser.TestResults, level, path string, c
 
 func displayPushSummary(stats *cli.ArtifactStats) {
 	if stats.Operations > 0 {
-		logger.Info("")
-		logger.Info("========================================")
-		logger.Info("test-results: Artifact Push Summary")
-		logger.Info("========================================")
-		
 		if stats.FileCount > 0 || stats.TotalSize > 0 {
-			logger.Info("Push operations: %d (%d files, %s)", stats.Operations, stats.FileCount, cli.FormatBytes(stats.TotalSize))
+			logger.Info("[test-results] Artifacts pushed: %d operations, %d files, %s", 
+				stats.Operations, stats.FileCount, cli.FormatBytes(stats.TotalSize))
 		} else {
-			logger.Info("Push operations: %d", stats.Operations)
+			logger.Info("[test-results] Artifacts pushed: %d operations", stats.Operations)
 		}
-		
-		logger.Info("========================================")
 	}
 }
 

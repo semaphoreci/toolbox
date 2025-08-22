@@ -161,37 +161,42 @@ func pushSummariesWithStats(testResult []parser.TestResults, level, path string,
 func displayTransferSummary(pullStats *cli.ArtifactStats, pushStats *cli.ArtifactStats) {
 	totalOps := pullStats.Operations + pushStats.Operations
 	if totalOps > 0 {
-		logger.Info("")
-		logger.Info("========================================")
-		logger.Info("test-results: Artifact Transfer Summary")
-		logger.Info("========================================")
+		logger.Info("[test-results] Artifact transfers:")
 		
 		if pullStats.Operations > 0 {
 			if pullStats.FileCount > 0 || pullStats.TotalSize > 0 {
-				logger.Info("Pull operations: %d (%d files, %s)", pullStats.Operations, pullStats.FileCount, cli.FormatBytes(pullStats.TotalSize))
+				logger.Info("  → Pulled: %d operation%s, %d files, %s", 
+					pullStats.Operations, pluralize(pullStats.Operations), pullStats.FileCount, cli.FormatBytes(pullStats.TotalSize))
 			} else {
-				logger.Info("Pull operations: %d", pullStats.Operations)
+				logger.Info("  → Pulled: %d operation%s", pullStats.Operations, pluralize(pullStats.Operations))
 			}
 		}
 		
 		if pushStats.Operations > 0 {
 			if pushStats.FileCount > 0 || pushStats.TotalSize > 0 {
-				logger.Info("Push operations: %d (%d files, %s)", pushStats.Operations, pushStats.FileCount, cli.FormatBytes(pushStats.TotalSize))
+				logger.Info("  ← Pushed: %d operation%s, %d files, %s", 
+					pushStats.Operations, pluralize(pushStats.Operations), pushStats.FileCount, cli.FormatBytes(pushStats.TotalSize))
 			} else {
-				logger.Info("Push operations: %d", pushStats.Operations)
+				logger.Info("  ← Pushed: %d operation%s", pushStats.Operations, pluralize(pushStats.Operations))
 			}
 		}
 		
 		totalFiles := pullStats.FileCount + pushStats.FileCount
 		totalSize := pullStats.TotalSize + pushStats.TotalSize
 		if totalFiles > 0 || totalSize > 0 {
-			logger.Info("Total: %d operations (%d files, %s)", totalOps, totalFiles, cli.FormatBytes(totalSize))
+			logger.Info("  = Total: %d operation%s, %d files, %s", 
+				totalOps, pluralize(totalOps), totalFiles, cli.FormatBytes(totalSize))
 		} else {
-			logger.Info("Total: %d operations", totalOps)
+			logger.Info("  = Total: %d operation%s", totalOps, pluralize(totalOps))
 		}
-		
-		logger.Info("========================================")
 	}
+}
+
+func pluralize(count int) string {
+	if count == 1 {
+		return ""
+	}
+	return "s"
 }
 
 func init() {
