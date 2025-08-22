@@ -47,8 +47,10 @@ var genPipelineReportCmd = &cobra.Command{
 			return err
 		}
 
-		totalStats := &cli.ArtifactStats{}
-		operationCount := 0
+		pullStats := &cli.ArtifactStats{}
+		pushStats := &cli.ArtifactStats{}
+		pullCount := 0
+		pushCount := 0
 
 		var dir string
 
@@ -72,9 +74,9 @@ var genPipelineReportCmd = &cobra.Command{
 				return err
 			}
 			if stats != nil {
-				totalStats.FileCount += stats.FileCount
-				totalStats.TotalSize += stats.TotalSize
-				operationCount++
+				pullStats.FileCount += stats.FileCount
+				pullStats.TotalSize += stats.TotalSize
+				pullCount++
 			}
 		} else {
 			dir = args[0]
@@ -102,23 +104,23 @@ var genPipelineReportCmd = &cobra.Command{
 			return err
 		}
 		if stats != nil {
-			totalStats.FileCount += stats.FileCount
-			totalStats.TotalSize += stats.TotalSize
-			operationCount++
+			pushStats.FileCount += stats.FileCount
+			pushStats.TotalSize += stats.TotalSize
+			pushCount++
 		}
 
-		err = pushSummariesWithStats(result.TestResults, "workflow", path.Join("test-results", pipelineID+"-summary.json"), cmd, totalStats, &operationCount)
+		err = pushSummariesWithStats(result.TestResults, "workflow", path.Join("test-results", pipelineID+"-summary.json"), cmd, pushStats, &pushCount)
 		if err != nil {
 			return err
 		}
 
-		displayTransferSummary("Artifact Transfer Summary", operationCount, totalStats)
+		displayTransferSummary(pullCount, pushCount, pullStats, pushStats)
 
 		return nil
 	},
 }
 
-func pushSummariesWithStats(testResult []parser.TestResults, level, path string, cmd *cobra.Command, totalStats *cli.ArtifactStats, operationCount *int) error {
+func pushSummariesWithStats(testResult []parser.TestResults, level, path string, cmd *cobra.Command, pushStats *cli.ArtifactStats, pushCount *int) error {
 	skipCompression, err := cmd.Flags().GetBool("no-compress")
 	if err != nil {
 		return err
@@ -151,28 +153,45 @@ func pushSummariesWithStats(testResult []parser.TestResults, level, path string,
 		return err
 	}
 	if stats != nil {
-		totalStats.FileCount += stats.FileCount
-		totalStats.TotalSize += stats.TotalSize
-		*operationCount++
+		pushStats.FileCount += stats.FileCount
+		pushStats.TotalSize += stats.TotalSize
+		*pushCount++
 	}
 	return nil
 }
 
-// displayTransferSummary displays a summary of artifact transfers
-func displayTransferSummary(title string, operationCount int, stats *cli.ArtifactStats) {
-	if operationCount > 0 {
+func displayTransferSummary(pullCount int, pushCount int, pullStats *cli.ArtifactStats, pushStats *cli.ArtifactStats) {
+	totalOps := pullCount + pushCount
+	if totalOps > 0 {
 		logger.Info("")
 		logger.Info("========================================")
-		logger.Info("%s", title)
+		logger.Info("test-results: Artifact Transfer Summary")
 		logger.Info("========================================")
-		logger.Info("Operations: %d", operationCount)
 		
-		if stats.FileCount > 0 || stats.TotalSize > 0 {
-			logger.Info("Files transferred: %d", stats.FileCount)
-			logger.Info("Total size: %s", cli.FormatBytes(stats.TotalSize))
-		} else {
-			logger.Info("Operations completed successfully")
+		if pullCount > 0 {
+			if pullStats.FileCount > 0 || pullStats.TotalSize > 0 {
+				logger.Info("Pull operations: %d (%d files, %s)", pullCount, pullStats.FileCount, cli.FormatBytes(pullStats.TotalSize))
+			} else {
+				logger.Info("Pull operations: %d", pullCount)
+			}
 		}
+		
+		if pushCount > 0 {
+			if pushStats.FileCount > 0 || pushStats.TotalSize > 0 {
+				logger.Info("Push operations: %d (%d files, %s)", pushCount, pushStats.FileCount, cli.FormatBytes(pushStats.TotalSize))
+			} else {
+				logger.Info("Push operations: %d", pushCount)
+			}
+		}
+		
+		totalFiles := pullStats.FileCount + pushStats.FileCount
+		totalSize := pullStats.TotalSize + pushStats.TotalSize
+		if totalFiles > 0 || totalSize > 0 {
+			logger.Info("Total: %d operations (%d files, %s)", totalOps, totalFiles, cli.FormatBytes(totalSize))
+		} else {
+			logger.Info("Total: %d operations", totalOps)
+		}
+		
 		logger.Info("========================================")
 	}
 }

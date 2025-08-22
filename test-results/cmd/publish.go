@@ -64,7 +64,7 @@ var publishCmd = &cobra.Command{
 		defer os.RemoveAll(dirPath)
 
 		totalStats := &cli.ArtifactStats{}
-		uploadCount := 0
+		pushCount := 0
 
 		for _, path := range paths {
 			parser, err := cli.FindParser(path, cmd)
@@ -123,10 +123,10 @@ var publishCmd = &cobra.Command{
 		if stats != nil {
 			totalStats.FileCount += stats.FileCount
 			totalStats.TotalSize += stats.TotalSize
-			uploadCount++
+			pushCount++
 		}
 
-		if err = pushSummaryWithStats(result.TestResults, "job", path.Join("test-results", "summary.json"), cmd, totalStats, &uploadCount); err != nil {
+		if err = pushSummaryWithStats(result.TestResults, "job", path.Join("test-results", "summary.json"), cmd, totalStats, &pushCount); err != nil {
 			return err
 		}
 
@@ -149,7 +149,7 @@ var publishCmd = &cobra.Command{
 		if stats != nil {
 			totalStats.FileCount += stats.FileCount
 			totalStats.TotalSize += stats.TotalSize
-			uploadCount++
+			pushCount++
 		}
 
 		noRaw, err := cmd.Flags().GetBool("no-raw")
@@ -177,18 +177,18 @@ var publishCmd = &cobra.Command{
 				if stats != nil {
 					totalStats.FileCount += stats.FileCount
 					totalStats.TotalSize += stats.TotalSize
-					uploadCount++
+					pushCount++
 				}
 			}
 		}
 
-		displayUploadSummary(uploadCount, totalStats)
+		displayPushSummary(pushCount, totalStats)
 
 		return nil
 	},
 }
 
-func pushSummaryWithStats(testResult []parser.TestResults, level, path string, cmd *cobra.Command, totalStats *cli.ArtifactStats, uploadCount *int) error {
+func pushSummaryWithStats(testResult []parser.TestResults, level, path string, cmd *cobra.Command, totalStats *cli.ArtifactStats, pushCount *int) error {
 	skipCompression, err := cmd.Flags().GetBool("no-compress")
 	if err != nil {
 		return err
@@ -223,25 +223,24 @@ func pushSummaryWithStats(testResult []parser.TestResults, level, path string, c
 	if stats != nil {
 		totalStats.FileCount += stats.FileCount
 		totalStats.TotalSize += stats.TotalSize
-		*uploadCount++
+		*pushCount++
 	}
 	return nil
 }
 
-func displayUploadSummary(uploadCount int, stats *cli.ArtifactStats) {
-	if uploadCount > 0 {
+func displayPushSummary(pushCount int, stats *cli.ArtifactStats) {
+	if pushCount > 0 {
 		logger.Info("")
 		logger.Info("========================================")
-		logger.Info("Artifact Upload Summary")
+		logger.Info("test-results: Artifact Push Summary")
 		logger.Info("========================================")
-		logger.Info("Upload operations: %d", uploadCount)
 		
 		if stats.FileCount > 0 || stats.TotalSize > 0 {
-			logger.Info("Files uploaded: %d", stats.FileCount)
-			logger.Info("Total size: %s", cli.FormatBytes(stats.TotalSize))
+			logger.Info("Push operations: %d (%d files, %s)", pushCount, stats.FileCount, cli.FormatBytes(stats.TotalSize))
 		} else {
-			logger.Info("Uploads completed successfully")
+			logger.Info("Push operations: %d", pushCount)
 		}
+		
 		logger.Info("========================================")
 	}
 }

@@ -48,6 +48,9 @@ teardown_file() {
 
   run test-results publish --no-compress junit-sample.xml
   assert_success
+  
+  assert_output --partial "test-results: Artifact Push Summary"
+  assert_output --regexp "Push operations: 4"
 
   run artifact pull job test-results/junit.xml
   assert_success
@@ -84,4 +87,50 @@ teardown_file() {
 
   run test-results compile --no-compress /tmp/some/file /tmp/some/file.json
   assert_failure
+}
+
+@test "test-results publish with --no-raw shows correct operation count" {
+  cd /tmp/test-results-cli
+  
+  run test-results publish --no-compress --no-raw junit-sample.xml
+  assert_success
+  
+  assert_output --partial "test-results: Artifact Push Summary"
+  assert_output --regexp "Push operations: 3"
+  
+  artifact yank job test-results
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID/$SEMAPHORE_JOB_ID.json
+}
+
+@test "test-results publish multiple files shows correct operation count" {
+  cd /tmp/test-results-cli
+  cp junit-sample.xml junit-sample2.xml
+  
+  run test-results publish --no-compress junit-sample.xml junit-sample2.xml
+  assert_success
+  
+  assert_output --partial "test-results: Artifact Push Summary"
+  assert_output --regexp "Push operations: 5"
+  
+  artifact yank job test-results
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID/$SEMAPHORE_JOB_ID.json
+}
+
+@test "test-results gen-pipeline-report shows transfer summary" {
+  cd /tmp/test-results-cli
+  
+  run test-results publish --no-compress junit-sample.xml
+  assert_success
+  
+  run test-results gen-pipeline-report
+  assert_success
+  
+  assert_output --partial "test-results: Artifact Transfer Summary"
+  assert_output --regexp "(Pull|Push) operations:"
+  assert_output --partial "Total:"
+  
+  artifact yank job test-results
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID.json
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID-summary.json
+  artifact yank workflow test-results/$SEMAPHORE_PIPELINE_ID/$SEMAPHORE_JOB_ID.json
 }
