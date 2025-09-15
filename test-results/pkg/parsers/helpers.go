@@ -44,8 +44,8 @@ func LoadXML(path string) (*parser.XMLElement, error) {
 	return &xmlElement, nil
 }
 
-// LoadJSON loads a JSON file from the given path
-func LoadJSON(path string) ([]byte, error) {
+// LoadFile loads a file from the given path
+func LoadFile(path string) ([]byte, error) {
 	// Check file cache first
 	reader, found := fileloader.Load(path, &bytes.Reader{})
 

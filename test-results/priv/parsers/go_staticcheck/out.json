@@ -16,13 +16,13 @@
   "statusMessage": "",
   "suites": [
     {
-      "id": "5a1cd260-9358-3478-a527-7d7aaa930ede",
-      "name": "handler.go",
+      "id": "14221393-6103-37ed-bb39-cc2cfffe13ef",
+      "name": "helper.go",
       "isSkipped": false,
       "isDisabled": false,
       "timestamp": "",
       "hostname": "",
-      "package": "server",
+      "package": "utils",
       "properties": null,
       "summary": {
         "total": 1,
@@ -37,71 +37,18 @@
       "systemErr": "",
       "tests": [
         {
-          "id": "4c85aafb-82ed-39a5-8e69-c7dae49d5a55",
-          "file": "server/handler.go",
-          "classname": "SA4006",
+          "id": "f92852f7-f5c9-31a1-95b1-6941f1f4b89d",
+          "file": "utils/helper.go",
+          "classname": "SA1019",
           "package": "",
-          "name": "SA4006 (line 45:2)",
+          "name": "SA1019 (line 23:10)",
           "duration": 1000000,
           "state": "error",
           "failure": null,
           "error": {
-            "message": "this value of err is never used",
-            "type": "SA4006",
-            "body": "Location: server/handler.go:45:2\nthis value of err is never used"
-          },
-          "systemOut": "",
-          "systemErr": "",
-          "semaphoreEnv": {
-            "projectId": "project-id",
-            "pipelineId": "ppl-id",
-            "workflowId": "wf-id",
-            "pipelineStartedAt": "job-creation-time",
-            "jobName": "job-name",
-            "jobId": "job-id",
-            "agentType": "agent-machine-type",
-            "agentOsImage": "agent-machine-os-image",
-            "gitRefType": "git-ref-type",
-            "gitRefName": "",
-            "gitRefSha": ""
-          }
-        }
-      ]
-    },
-    {
-      "id": "9aeeff07-acbf-3dd6-a677-5ada96a59669",
-      "name": "config.go",
-      "isSkipped": false,
-      "isDisabled": false,
-      "timestamp": "",
-      "hostname": "",
-      "package": "config",
-      "properties": null,
-      "summary": {
-        "total": 1,
-        "passed": 0,
-        "skipped": 0,
-        "error": 1,
-        "failed": 0,
-        "disabled": 0,
-        "duration": 1000000
-      },
-      "systemOut": "",
-      "systemErr": "",
-      "tests": [
-        {
-          "id": "b6a04857-b020-358c-bac4-22e60c9406c8",
-          "file": "config/config.go",
-          "classname": "ST1020",
-          "package": "",
-          "name": "ST1020 (line 15:1)",
-          "duration": 1000000,
-          "state": "error",
-          "failure": null,
-          "error": {
-            "message": "comment on exported function Config should be of the form \"Config ...\"",
-            "type": "ST1020",
-            "body": "Location: config/config.go:15:1\ncomment on exported function Config should be of the form \"Config ...\""
+            "message": "io/ioutil.ReadFile is deprecated:As of Go 1.16, this function simply calls os.ReadFile.",
+            "type": "SA1019",
+            "body": "Location: utils/helper.go:23:10\nio/ioutil.ReadFile is deprecated:As of Go 1.16, this function simply calls os.ReadFile."
           },
           "systemOut": "",
           "systemErr": "",
@@ -235,13 +182,13 @@
       ]
     },
     {
-      "id": "14221393-6103-37ed-bb39-cc2cfffe13ef",
-      "name": "helper.go",
+      "id": "5a1cd260-9358-3478-a527-7d7aaa930ede",
+      "name": "handler.go",
       "isSkipped": false,
       "isDisabled": false,
       "timestamp": "",
       "hostname": "",
-      "package": "utils",
+      "package": "server",
       "properties": null,
       "summary": {
         "total": 1,
@@ -256,18 +203,71 @@
       "systemErr": "",
       "tests": [
         {
-          "id": "f92852f7-f5c9-31a1-95b1-6941f1f4b89d",
-          "file": "utils/helper.go",
-          "classname": "SA1019",
+          "id": "4c85aafb-82ed-39a5-8e69-c7dae49d5a55",
+          "file": "server/handler.go",
+          "classname": "SA4006",
           "package": "",
-          "name": "SA1019 (line 23:10)",
+          "name": "SA4006 (line 45:2)",
           "duration": 1000000,
           "state": "error",
           "failure": null,
           "error": {
-            "message": "io/ioutil.ReadFile is deprecated:As of Go 1.16, this function simply calls os.ReadFile.",
-            "type": "SA1019",
-            "body": "Location: utils/helper.go:23:10\nio/ioutil.ReadFile is deprecated:As of Go 1.16, this function simply calls os.ReadFile."
+            "message": "this value of err is never used",
+            "type": "SA4006",
+            "body": "Location: server/handler.go:45:2\nthis value of err is never used"
+          },
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "9aeeff07-acbf-3dd6-a677-5ada96a59669",
+      "name": "config.go",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "config",
+      "properties": null,
+      "summary": {
+        "total": 1,
+        "passed": 0,
+        "skipped": 0,
+        "error": 1,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 1000000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "b6a04857-b020-358c-bac4-22e60c9406c8",
+          "file": "config/config.go",
+          "classname": "ST1020",
+          "package": "",
+          "name": "ST1020 (line 15:1)",
+          "duration": 1000000,
+          "state": "error",
+          "failure": null,
+          "error": {
+            "message": "comment on exported function Config should be of the form \"Config ...\"",
+            "type": "ST1020",
+            "body": "Location: config/config.go:15:1\ncomment on exported function Config should be of the form \"Config ...\""
           },
           "systemOut": "",
           "systemErr": "",

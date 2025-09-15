@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -56,7 +57,7 @@ func (s GoStaticcheck) GetSupportedExtensions() []string {
 func (s GoStaticcheck) IsApplicable(path string) bool {
 	logger.Debug("Checking applicability of %s parser", s.GetName())
 
-	data, err := LoadJSON(path)
+	data, err := LoadFile(path)
 	if err != nil {
 		logger.Debug("Failed to load file as JSON: %v", err)
 		return false
@@ -92,7 +93,7 @@ func (s GoStaticcheck) Parse(path string) parser.TestResults {
 	results.Framework = s.GetName()
 	results.EnsureID()
 
-	data, err := LoadJSON(path)
+	data, err := LoadFile(path)
 	if err != nil {
 		logger.Error("Failed to load file: %v", err)
 		results.Status = parser.StatusError
@@ -196,6 +197,10 @@ func (s GoStaticcheck) Parse(path string) parser.TestResults {
 		suite.Aggregate()
 		results.Suites = append(results.Suites, suite)
 	}
+
+	slices.SortFunc(results.Suites, func(suite1, suite2 parser.Suite) int {
+		return strings.Compare(suite1.ID, suite2.ID)
+	})
 
 	results.Aggregate()
 	results.Status = parser.StatusSuccess

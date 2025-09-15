@@ -28,7 +28,6 @@ func RunGoldenTest(t *testing.T, test GoldenTest) {
 	// Parse the input file
 	result := test.Parser.Parse(test.InputFile)
 
-	// Convert to JSON for comparison (no normalization - IDs are deterministic)
 	actualJSON, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
 		t.Fatalf("Failed to marshal result: %v", err)

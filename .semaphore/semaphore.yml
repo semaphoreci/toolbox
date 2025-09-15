@@ -908,8 +908,8 @@ blocks:
       epilogue:
         always:
           commands:
-            - '[[ -f revive.json ]] && test-results publish junit-report.json'
-            - '[[ -f staticcheck.json ]] && test-results publish junit-report.json'
+            - '[[ -f revive.json ]] && test-results publish revive.json'
+            - '[[ -f staticcheck.json ]] && test-results publish staticcheck.json'
 
   - name: "Security checks"
     dependencies: []
