@@ -1,0 +1,177 @@
+{
+  "id": "99ec6b78-8d28-33bb-9c4b-e38fd0000bf4",
+  "name": "Rspec Suite",
+  "framework": "rspec",
+  "isDisabled": false,
+  "summary": {
+    "total": 4,
+    "passed": 2,
+    "skipped": 0,
+    "error": 0,
+    "failed": 2,
+    "disabled": 0,
+    "duration": 13152000
+  },
+  "status": "success",
+  "statusMessage": "",
+  "suites": [
+    {
+      "id": "d1c92324-83c6-3660-b21b-bcb065629fe3",
+      "name": "spec/calculator/adder_spec.rb",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "",
+      "properties": null,
+      "summary": {
+        "total": 2,
+        "passed": 1,
+        "skipped": 0,
+        "error": 0,
+        "failed": 1,
+        "disabled": 0,
+        "duration": 12909000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "7fc512b7-55df-3e29-9b25-88e02cfc26ff",
+          "file": "spec/calculator/adder_spec.rb",
+          "classname": "spec.calculator.adder_spec",
+          "package": "",
+          "name": "Calculator::Adder sums arguments #1",
+          "duration": 436000,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "b8bf6da0-74e3-3a95-8a4e-41a669cbdb04",
+          "file": "spec/calculator/adder_spec.rb",
+          "classname": "spec.calculator.adder_spec",
+          "package": "",
+          "name": "Calculator::Adder sums arguments #2",
+          "duration": 12473000,
+          "state": "failed",
+          "failure": {
+            "message": "\nexpected: -1\n     got: 3\n\n(compared using ==)\n",
+            "type": "RSpec::Expectations::ExpectationNotMetError",
+            "body": "Failure/Error: expect(result).to eq(-1)\n\n  expected: -1\n       got: 3\n\n  (compared using ==)\n./spec/calculator/adder_spec.rb:11:in `block (2 levels) in \u003ctop (required)\u003e'"
+          },
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "7ec58d3e-ae4b-3245-964b-4fff0e02fc07",
+      "name": "spec/calculator/subtractor_spec.rb",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "",
+      "properties": null,
+      "summary": {
+        "total": 2,
+        "passed": 1,
+        "skipped": 0,
+        "error": 0,
+        "failed": 1,
+        "disabled": 0,
+        "duration": 243000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "76162568-611a-3a79-ac1e-95c951f6a5e8",
+          "file": "spec/calculator/subtractor_spec.rb",
+          "classname": "spec.calculator.subtractor_spec",
+          "package": "",
+          "name": "Calculator::Subtractor subtracts arguments #1",
+          "duration": 97000,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "9bdb4000-eea2-389a-846a-b9f2fac2788f",
+          "file": "spec/calculator/subtractor_spec.rb",
+          "classname": "spec.calculator.subtractor_spec",
+          "package": "",
+          "name": "Calculator::Subtractor subtracts arguments #2",
+          "duration": 146000,
+          "state": "failed",
+          "failure": {
+            "message": "\nexpected: 3\n     got: -1\n\n(compared using ==)\n",
+            "type": "RSpec::Expectations::ExpectationNotMetError",
+            "body": "Failure/Error: expect(result).to eq(3)\n\n  expected: 3\n       got: -1\n\n  (compared using ==)\n./spec/calculator/subtractor_spec.rb:11:in `block (2 levels) in \u003ctop (required)\u003e'"
+          },
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    }
+  ]
+}

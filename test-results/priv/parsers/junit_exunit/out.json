@@ -1,0 +1,131 @@
+{
+  "id": "31c127ba-6edc-33b1-9f53-fc4a54e74c82",
+  "name": "",
+  "framework": "exunit",
+  "isDisabled": false,
+  "summary": {
+    "total": 3,
+    "passed": 1,
+    "skipped": 0,
+    "error": 0,
+    "failed": 2,
+    "disabled": 0,
+    "duration": 1400000
+  },
+  "status": "success",
+  "statusMessage": "",
+  "suites": [
+    {
+      "id": "75d8a69b-dd7b-3d03-8900-8bdaeb969469",
+      "name": "Calculator.AdderTest",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "",
+      "properties": {
+        "date": "2021-03-29T12:19:22.461117Z",
+        "seed": "430315"
+      },
+      "summary": {
+        "total": 3,
+        "passed": 1,
+        "skipped": 0,
+        "error": 0,
+        "failed": 2,
+        "disabled": 0,
+        "duration": 1400000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "992b139a-7d82-386d-901c-b59a07116528",
+          "file": "test/calculator/adder_test.exs",
+          "classname": "Elixir.Calculator.AdderTest",
+          "package": "",
+          "name": "test fails with 8531 + 6984 = 1547 0.09411569755491345",
+          "duration": 0,
+          "state": "failed",
+          "failure": {
+            "message": "Assertion with == failed",
+            "type": "",
+            "body": "  1) test fails with 8531 + 6984 = 1547 0.09411569755491345 (Calculator.AdderTest)\n     test/calculator/adder_test.exs:15\n     Assertion with == failed\n     code:  assert Calculator.Adder.run(8531, 6984) == 1547\n     left:  15515\n     right: 1547\n     stacktrace:\n       test/calculator/adder_test.exs:16: (test)\n"
+          },
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "81421c62-c62d-3cbe-9c3e-e8c6003bef62",
+          "file": "test/calculator/adder_test.exs",
+          "classname": "Elixir.Calculator.AdderTest",
+          "package": "",
+          "name": "test succeeds with 4464 + 2317 = 6781 0.7790935912260967",
+          "duration": 0,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "b0dc2f95-e1ba-3727-a90e-e6acac6130bb",
+          "file": "test/calculator/adder_test.exs",
+          "classname": "Elixir.Calculator.AdderTest",
+          "package": "",
+          "name": "test fails with 6981 + 3883 = 3098 0.5046993437439501",
+          "duration": 0,
+          "state": "failed",
+          "failure": {
+            "message": "Assertion with == failed",
+            "type": "",
+            "body": "  3) test fails with 6981 + 3883 = 3098 0.5046993437439501 (Calculator.AdderTest)\n     test/calculator/adder_test.exs:15\n     Assertion with == failed\n     code:  assert Calculator.Adder.run(6981, 3883) == 3098\n     left:  10864\n     right: 3098\n     stacktrace:\n       test/calculator/adder_test.exs:16: (test)\n"
+          },
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    }
+  ]
+}

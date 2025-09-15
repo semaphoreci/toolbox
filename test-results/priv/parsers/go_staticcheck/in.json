@@ -1,0 +1,92 @@
+[
+  {
+    "code": "ST1000",
+    "severity": "error",
+    "location": {
+      "file": "main.go",
+      "line": 5,
+      "column": 2
+    },
+    "end": {
+      "file": "main.go", 
+      "line": 5,
+      "column": 8
+    },
+    "message": "at least one file in a package should have a package comment"
+  },
+  {
+    "code": "ST1003",
+    "severity": "error",
+    "location": {
+      "file": "main.go",
+      "line": 10,
+      "column": 6
+    },
+    "end": {
+      "file": "main.go",
+      "line": 10,
+      "column": 14
+    },
+    "message": "should not use underscores in package names"
+  },
+  {
+    "code": "SA1019",
+    "severity": "error",
+    "location": {
+      "file": "utils/helper.go",
+      "line": 23,
+      "column": 10
+    },
+    "end": {
+      "file": "utils/helper.go",
+      "line": 23,
+      "column": 25
+    },
+    "message": "io/ioutil.ReadFile is deprecated: As of Go 1.16, this function simply calls os.ReadFile."
+  },
+  {
+    "code": "SA4006",
+    "severity": "error",
+    "location": {
+      "file": "server/handler.go",
+      "line": 45,
+      "column": 2
+    },
+    "end": {
+      "file": "server/handler.go",
+      "line": 45,
+      "column": 5
+    },
+    "message": "this value of err is never used"
+  },
+  {
+    "code": "ST1020",
+    "severity": "error",
+    "location": {
+      "file": "config/config.go",
+      "line": 15,
+      "column": 1
+    },
+    "end": {
+      "file": "config/config.go",
+      "line": 15,
+      "column": 50
+    },
+    "message": "comment on exported function Config should be of the form \"Config ...\""
+  },
+  {
+    "code": "SA5001",
+    "severity": "error",
+    "location": {
+      "file": "main.go",
+      "line": 75,
+      "column": 15
+    },
+    "end": {
+      "file": "main.go",
+      "line": 75,
+      "column": 30
+    },
+    "message": "must not defer Close on a writable file"
+  }
+]

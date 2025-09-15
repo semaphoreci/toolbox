@@ -1,0 +1,241 @@
+{
+  "id": "fbebf2b6-a680-36d2-974c-0bed1f2db373",
+  "name": "PHPUnit Suite",
+  "framework": "phpunit",
+  "isDisabled": false,
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "skipped": 0,
+    "error": 0,
+    "failed": 0,
+    "disabled": 0,
+    "duration": 186277000
+  },
+  "status": "success",
+  "statusMessage": "",
+  "suites": [
+    {
+      "id": "d4658579-86b8-3408-990b-ca4bb6f81d19",
+      "name": "test1\\Tests\\Tests1\\FirstTest",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "",
+      "properties": null,
+      "summary": {
+        "total": 2,
+        "passed": 2,
+        "skipped": 0,
+        "error": 0,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 184274000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "e30f7360-c8e4-3205-b9b0-fe3d8b1c3d7a",
+          "file": "/app/tests1/FirstTest.php",
+          "classname": "Tests.Tests1.FirstTest",
+          "package": "",
+          "name": "testFakeFirst",
+          "duration": 184274000,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "83ab0d98-8ef5-3be2-9703-a68c2f7f773b",
+          "file": "/app/tests1/FirstTest.php",
+          "classname": "Tests.Tests1.FirstTest",
+          "package": "",
+          "name": "secondTakeOnFirstTest",
+          "duration": 0,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "1ca81e80-64a3-33da-86f8-74e385a03f2e",
+      "name": "test1\\Tests\\Tests1\\SecondTest",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "",
+      "properties": null,
+      "summary": {
+        "total": 1,
+        "passed": 1,
+        "skipped": 0,
+        "error": 0,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 1347000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "adaa6cb4-cbdd-32a4-a749-21efb1229fb9",
+          "file": "/app/tests1/SecondTest.php",
+          "classname": "Tests.Tests1.SecondTest",
+          "package": "",
+          "name": "testFakeSecond",
+          "duration": 1347000,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "a21996e5-c6ae-3f93-9437-af92ccf06e6c",
+      "name": "test2\\Tests\\Tests2\\FirstTest",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "",
+      "properties": null,
+      "summary": {
+        "total": 1,
+        "passed": 1,
+        "skipped": 0,
+        "error": 0,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 146000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "21e51212-ee2a-30ac-9861-a7ab077cdd17",
+          "file": "/app/tests2/FirstTest.php",
+          "classname": "Tests.Tests2.FirstTest",
+          "package": "",
+          "name": "testFakeFirst",
+          "duration": 146000,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "becb54cc-4955-3490-82d5-145b1f072a07",
+      "name": "test2\\Tests\\Tests2\\SecondTest",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "",
+      "properties": null,
+      "summary": {
+        "total": 1,
+        "passed": 1,
+        "skipped": 0,
+        "error": 0,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 510000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "5b50d509-832f-39a1-ac21-1bbc8ba45cc5",
+          "file": "/app/tests2/SecondTest.php",
+          "classname": "Tests.Tests2.SecondTest",
+          "package": "",
+          "name": "testFakeSecond",
+          "duration": 510000,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    }
+  ]
+}
