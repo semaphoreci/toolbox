@@ -49,7 +49,7 @@ blocks:
             - artifact push workflow bin/windows/sem-context.exe -d bin/windows/sem-context.exe
         - name: Build test-results CLI
           commands:
-            - sem-version go 1.20
+            - sem-version go 1.24.6
             - "export GOPATH=~/go"
             - "export PATH=/home/semaphore/go/bin:$PATH"
             - checkout
