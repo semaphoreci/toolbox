@@ -8,50 +8,39 @@ import (
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 )
 
-// RSpec ...
-type RSpec struct {
+// JUnitGeneric ...
+type JUnitGeneric struct {
 }
 
-// NewRSpec ...
-func NewRSpec() RSpec {
-	return RSpec{}
-}
-
-// GetName ...
-func (me RSpec) GetName() string {
-	return "rspec"
+// NewJUnitGeneric ...
+func NewJUnitGeneric() JUnitGeneric {
+	return JUnitGeneric{}
 }
 
 // IsApplicable ...
-func (me RSpec) IsApplicable(path string) bool {
-	xmlElement, err := LoadXML(path)
+func (me JUnitGeneric) IsApplicable(path string) bool {
 	logger.Debug("Checking applicability of %s parser", me.GetName())
+	return true
+}
 
-	if err != nil {
-		logger.Error("Loading XML failed: %v", err)
-		return false
-	}
+// GetName ...
+func (me JUnitGeneric) GetName() string {
+	return "generic"
+}
 
-	switch xmlElement.Tag() {
-	case "testsuite":
-		for attr, value := range xmlElement.Attributes {
-			switch attr {
-			case "name":
-				if strings.HasPrefix(value, "rspec") {
-					return true
-				}
-			}
-		}
-	}
-	return false
+// GetSupportedExtensions ...
+func (me JUnitGeneric) GetSupportedExtensions() []string {
+	return []string{".xml"}
+}
+
+// GetDescription ...
+func (me JUnitGeneric) GetDescription() string {
+	return "Generic JUnit XML format (catch-all)"
 }
 
 // Parse ...
-func (me RSpec) Parse(path string) parser.TestResults {
+func (me JUnitGeneric) Parse(path string) parser.TestResults {
 	results := parser.NewTestResults()
-	results.Name = strings.Title(me.GetName() + " suite")
-	results.Framework = me.GetName()
-	results.EnsureID()
 
 	xmlElement, err := LoadXML(path)
 
@@ -59,7 +48,6 @@ func (me RSpec) Parse(path string) parser.TestResults {
 		logger.Error("Loading XML failed: %v", err)
 		results.Status = parser.StatusError
 		results.StatusMessage = err.Error()
-		results.Framework = me.GetName()
 		return results
 	}
 
@@ -69,22 +57,26 @@ func (me RSpec) Parse(path string) parser.TestResults {
 		results = me.newTestResults(*xmlElement)
 	case "testsuite":
 		logger.Debug("No root <testsuites> element found")
+		results.Name = strings.Title(me.GetName() + " suite")
+		results.EnsureID()
 		results.Suites = append(results.Suites, me.newSuite(*xmlElement, results))
 	default:
 		tag := xmlElement.Tag()
 		logger.Debug("Invalid root element found: <%s>", tag)
 		results.Status = parser.StatusError
 		results.StatusMessage = fmt.Sprintf("Invalid root element found: <%s>, must be one of <testsuites>, <testsuite>", tag)
+		return results
 	}
 
-	results.ArrangeSuitesByTestFile()
 	results.Aggregate()
+	results.Status = parser.StatusSuccess
 
 	return results
 }
 
-func (me RSpec) newTestResults(xml parser.XMLElement) parser.TestResults {
+func (me JUnitGeneric) newTestResults(xml parser.XMLElement) parser.TestResults {
 	testResults := parser.NewTestResults()
+	logger.Trace("Parsing TestResults element with name: %s", xml.Attr("name"))
 
 	for attr, value := range xml.Attributes {
 		switch attr {
@@ -99,11 +91,9 @@ func (me RSpec) newTestResults(xml parser.XMLElement) parser.TestResults {
 		case "errors":
 			testResults.Summary.Error = parser.ParseInt(value)
 		case "disabled":
-			testResults.IsDisabled = parser.ParseBool(value)
+			testResults.Summary.Disabled = parser.ParseInt(value)
 		}
 	}
-
-	testResults.Framework = me.GetName()
 	testResults.EnsureID()
 
 	for _, node := range xml.Children {
@@ -117,8 +107,10 @@ func (me RSpec) newTestResults(xml parser.XMLElement) parser.TestResults {
 	return testResults
 }
 
-func (me RSpec) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
+func (me JUnitGeneric) newSuite(xml parser.XMLElement, results parser.TestResults) parser.Suite {
 	suite := parser.NewSuite()
+
+	logger.Trace("Parsing Suite element with name: %s", xml.Attr("name"))
 
 	for attr, value := range xml.Attributes {
 		switch attr {
@@ -133,9 +125,9 @@ func (me RSpec) newSuite(xml parser.XMLElement, testResults parser.TestResults) 
 		case "time":
 			suite.Summary.Duration = parser.ParseTime(value)
 		case "disabled":
-			suite.IsDisabled = parser.ParseBool(value)
+			suite.Summary.Disabled = parser.ParseInt(value)
 		case "skipped":
-			suite.IsSkipped = parser.ParseBool(value)
+			suite.Summary.Skipped = parser.ParseInt(value)
 		case "timestamp":
 			suite.Timestamp = value
 		case "hostname":
@@ -147,7 +139,7 @@ func (me RSpec) newSuite(xml parser.XMLElement, testResults parser.TestResults) 
 		}
 	}
 
-	suite.EnsureID(testResults)
+	suite.EnsureID(results)
 
 	for _, node := range xml.Children {
 		switch node.Tag() {
@@ -161,29 +153,27 @@ func (me RSpec) newSuite(xml parser.XMLElement, testResults parser.TestResults) 
 			suite.Tests = append(suite.Tests, me.newTest(node, suite))
 		}
 	}
-
 	suite.Aggregate()
 
 	return suite
 }
 
-func (me RSpec) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
+func (me JUnitGeneric) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
 	test := parser.NewTest()
+	logger.Trace("Parsing Test element with name: %s", xml.Attr("name"))
 
 	for attr, value := range xml.Attributes {
 		switch attr {
 		case "name":
 			test.Name = value
+		case "file":
+			test.File = value
 		case "time":
 			test.Duration = parser.ParseTime(value)
 		case "classname":
 			test.Classname = value
-		case "id":
-			test.ID = value
-		case "file":
-			test.File = strings.TrimPrefix(value, "./")
-		case "package":
-			test.Package = value
+		case "class":
+			test.Classname = value
 		}
 	}
 

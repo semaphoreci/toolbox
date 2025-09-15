@@ -18,22 +18,42 @@ limitations under the License.
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/semaphoreci/toolbox/test-results/pkg/cli"
 	"github.com/semaphoreci/toolbox/test-results/pkg/logger"
+	"github.com/semaphoreci/toolbox/test-results/pkg/parsers"
 	"github.com/spf13/cobra"
 )
 
+func formatCompileDescription() string {
+	var description strings.Builder
+	description.WriteString(`Parses test result files to well defined json schema
+
+It traverses through directory structure specified by <file-path> and compiles
+test result files (XML, JSON, etc.) based on the detected or specified parser.
+
+Available parsers:
+`)
+	
+	for _, parser := range parsers.GetAvailableParsers() {
+		description.WriteString(fmt.Sprintf("  %-15s - %s\n", parser.Name, parser.Description))
+	}
+	
+	description.WriteString(`
+Use --parser flag to specify a parser, or "auto" for automatic detection.`)
+	
+	return description.String()
+}
+
 // compileCmd represents the compile command
 var compileCmd = &cobra.Command{
-	Use:   "compile <xml-file-path>... <json-file>]",
-	Short: "parses xml files to well defined json schema",
-	Long: `Parses xml file to well defined json schema
-
-	It traverses through directory structure specified by <xml-file-path> and compiles
-	every .xml file.
-	`,
+	Use:   "compile <file-path>... <json-file>]",
+	Short: "parses test result files to well defined json schema",
+	Long: formatCompileDescription(),
 	Args: cobra.MinimumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		inputs := args[:len(args)-1]
@@ -49,9 +69,39 @@ var compileCmd = &cobra.Command{
 			return err
 		}
 
-		paths, err := cli.LoadFiles(inputs, ".xml")
-		if err != nil {
-			return err
+		// Get supported extensions from all parsers
+		supportedExts := parsers.GetSupportedExtensions()
+		extMap := make(map[string]bool)
+		for _, ext := range supportedExts {
+			extMap[ext] = true
+		}
+		
+		// Load all files with supported extensions
+		paths := []string{}
+		for _, input := range inputs {
+			file, err := os.Stat(input)
+			if err != nil {
+				return err
+			}
+			
+			if file.IsDir() {
+				// Walk directory and get all files with supported extensions
+				err := filepath.WalkDir(input, func(path string, d os.DirEntry, err error) error {
+					if d.Type().IsRegular() {
+						ext := filepath.Ext(d.Name())
+						if extMap[ext] {
+							paths = append(paths, path)
+						}
+					}
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+			} else {
+				// Single file - always include it (parser will validate)
+				paths = append(paths, input)
+			}
 		}
 
 		dirPath, err := os.MkdirTemp("", "test-results-*")

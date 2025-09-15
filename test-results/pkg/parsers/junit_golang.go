@@ -8,28 +8,75 @@ import (
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 )
 
-// Generic ...
-type Generic struct {
+// JUnitGoLang ...
+type JUnitGoLang struct {
 }
 
-// NewGeneric ...
-func NewGeneric() Generic {
-	return Generic{}
-}
-
-// IsApplicable ...
-func (me Generic) IsApplicable(path string) bool {
-	logger.Debug("Checking applicability of %s parser", me.GetName())
-	return true
+// NewJUnitGoLang ...
+func NewJUnitGoLang() JUnitGoLang {
+	return JUnitGoLang{}
 }
 
 // GetName ...
-func (me Generic) GetName() string {
-	return "generic"
+func (me JUnitGoLang) GetName() string {
+	return "golang"
+}
+
+// GetDescription ...
+func (me JUnitGoLang) GetDescription() string {
+	return "Go test output (JUnit format with go.version property)"
+}
+
+// GetSupportedExtensions ...
+func (me JUnitGoLang) GetSupportedExtensions() []string {
+	return []string{".xml"}
+}
+
+// IsApplicable ...
+func (me JUnitGoLang) IsApplicable(path string) bool {
+	xmlElement, err := LoadXML(path)
+	logger.Debug("Checking applicability of %s parser", me.GetName())
+
+	if err != nil {
+		logger.Error("Loading XML failed: %v", err)
+		return false
+	}
+
+	switch xmlElement.Tag() {
+	case "testsuites":
+		testsuites := xmlElement.Children
+
+		for _, testsuite := range testsuites {
+			switch testsuite.Tag() {
+			case "testsuite":
+				if hasProperty(testsuite, "go.version") {
+					return true
+				}
+			}
+		}
+
+	case "testsuite":
+		if hasProperty(*xmlElement, "go.version") {
+			return true
+		}
+	}
+
+	return false
+}
+
+func hasProperty(testsuiteElement parser.XMLElement, property string) bool {
+	for _, child := range testsuiteElement.Children {
+		switch child.Tag() {
+		case "properties":
+			properties := parser.ParseProperties(child)
+			return parser.PropertyExists(properties, property)
+		}
+	}
+	return false
 }
 
 // Parse ...
-func (me Generic) Parse(path string) parser.TestResults {
+func (me JUnitGoLang) Parse(path string) parser.TestResults {
 	results := parser.NewTestResults()
 
 	xmlElement, err := LoadXML(path)
@@ -49,24 +96,24 @@ func (me Generic) Parse(path string) parser.TestResults {
 		logger.Debug("No root <testsuites> element found")
 		results.Name = strings.Title(me.GetName() + " suite")
 		results.EnsureID()
+		results.Framework = me.GetName()
 		results.Suites = append(results.Suites, me.newSuite(*xmlElement, results))
 	default:
 		tag := xmlElement.Tag()
 		logger.Debug("Invalid root element found: <%s>", tag)
 		results.Status = parser.StatusError
 		results.StatusMessage = fmt.Sprintf("Invalid root element found: <%s>, must be one of <testsuites>, <testsuite>", tag)
-		return results
 	}
 
 	results.Aggregate()
-	results.Status = parser.StatusSuccess
 
 	return results
 }
 
-func (me Generic) newTestResults(xml parser.XMLElement) parser.TestResults {
+func (me JUnitGoLang) newTestResults(xml parser.XMLElement) parser.TestResults {
 	testResults := parser.NewTestResults()
-	logger.Trace("Parsing TestResults element with name: %s", xml.Attr("name"))
+
+	testResults.Framework = me.GetName()
 
 	for attr, value := range xml.Attributes {
 		switch attr {
@@ -81,9 +128,10 @@ func (me Generic) newTestResults(xml parser.XMLElement) parser.TestResults {
 		case "errors":
 			testResults.Summary.Error = parser.ParseInt(value)
 		case "disabled":
-			testResults.Summary.Disabled = parser.ParseInt(value)
+			testResults.IsDisabled = parser.ParseBool(value)
 		}
 	}
+
 	testResults.EnsureID()
 
 	for _, node := range xml.Children {
@@ -92,15 +140,14 @@ func (me Generic) newTestResults(xml parser.XMLElement) parser.TestResults {
 			testResults.Suites = append(testResults.Suites, me.newSuite(node, testResults))
 		}
 	}
+
 	testResults.Summary.Passed = testResults.Summary.Total - testResults.Summary.Error - testResults.Summary.Failed
 
 	return testResults
 }
 
-func (me Generic) newSuite(xml parser.XMLElement, results parser.TestResults) parser.Suite {
+func (me JUnitGoLang) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
 	suite := parser.NewSuite()
-
-	logger.Trace("Parsing Suite element with name: %s", xml.Attr("name"))
 
 	for attr, value := range xml.Attributes {
 		switch attr {
@@ -115,9 +162,9 @@ func (me Generic) newSuite(xml parser.XMLElement, results parser.TestResults) pa
 		case "time":
 			suite.Summary.Duration = parser.ParseTime(value)
 		case "disabled":
-			suite.Summary.Disabled = parser.ParseInt(value)
+			suite.IsDisabled = parser.ParseBool(value)
 		case "skipped":
-			suite.Summary.Skipped = parser.ParseInt(value)
+			suite.IsSkipped = parser.ParseBool(value)
 		case "timestamp":
 			suite.Timestamp = value
 		case "hostname":
@@ -129,7 +176,7 @@ func (me Generic) newSuite(xml parser.XMLElement, results parser.TestResults) pa
 		}
 	}
 
-	suite.EnsureID(results)
+	suite.EnsureID(testResults)
 
 	for _, node := range xml.Children {
 		switch node.Tag() {
@@ -143,14 +190,14 @@ func (me Generic) newSuite(xml parser.XMLElement, results parser.TestResults) pa
 			suite.Tests = append(suite.Tests, me.newTest(node, suite))
 		}
 	}
+
 	suite.Aggregate()
 
 	return suite
 }
 
-func (me Generic) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
+func (me JUnitGoLang) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
 	test := parser.NewTest()
-	logger.Trace("Parsing Test element with name: %s", xml.Attr("name"))
 
 	for attr, value := range xml.Attributes {
 		switch attr {
@@ -161,8 +208,6 @@ func (me Generic) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test
 		case "time":
 			test.Duration = parser.ParseTime(value)
 		case "classname":
-			test.Classname = value
-		case "class":
 			test.Classname = value
 		}
 	}

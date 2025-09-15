@@ -6,7 +6,7 @@ import (
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 )
 
-func Test_Mocha_CommonParse(t *testing.T) {
+func Test_JUnitMocha_CommonParse(t *testing.T) {
 	parserWants := map[string]parser.TestResults{
 		"empty": {
 			ID:         "",
@@ -561,7 +561,7 @@ func Test_Mocha_CommonParse(t *testing.T) {
 	}
 
 	testCases := buildParserTestCases(commonParserTestCases, parserWants)
-	runParserTests(t, NewMocha(), testCases)
+	runParserTests(t, NewJUnitMocha(), testCases)
 }
 
 func Test_Mocha_SpecificParse(t *testing.T) {
@@ -569,5 +569,5 @@ func Test_Mocha_SpecificParse(t *testing.T) {
 	parserWants := map[string]parser.TestResults{}
 
 	testCases := buildParserTestCases(specificParserTestCases, parserWants)
-	runParserTests(t, NewMocha(), testCases)
+	runParserTests(t, NewJUnitMocha(), testCases)
 }

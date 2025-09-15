@@ -1,9 +1,9 @@
-FROM golang:1.23
+FROM golang:1.24
 
 WORKDIR /app
 
 COPY go.* ./
 
-RUN go install gotest.tools/gotestsum@latest
-RUN go install golang.org/x/lint/golint@latest
+RUN go install gotest.tools/gotestsum@v1.13.0
+RUN go install honnef.co/go/tools/cmd/staticcheck@v0.6.1
 RUN go install github.com/mgechev/revive@v1.9.0

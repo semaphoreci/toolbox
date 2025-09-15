@@ -3,6 +3,7 @@ package parsers
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 
 	"github.com/semaphoreci/toolbox/test-results/pkg/fileloader"
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
@@ -42,4 +43,30 @@ func LoadXML(path string) (*parser.XMLElement, error) {
 	}
 
 	return &xmlElement, nil
+}
+
+// LoadJSON loads a JSON file from the given path
+func LoadJSON(path string) ([]byte, error) {
+	// Check file cache first
+	reader, found := fileloader.Load(path, &bytes.Reader{})
+	
+	if found {
+		buf := new(bytes.Buffer)
+		_, err := buf.ReadFrom(reader)
+		if err != nil {
+			return nil, err
+		}
+		return buf.Bytes(), nil
+	}
+
+	// Load from file system using os.ReadFile instead of ioutil
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Cache for future use
+	fileloader.Load(path, bytes.NewReader(data))
+	
+	return data, nil
 }

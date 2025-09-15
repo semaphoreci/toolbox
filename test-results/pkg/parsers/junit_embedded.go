@@ -7,27 +7,37 @@ import (
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 )
 
-// Embedded ...
-type Embedded struct {
+// JUnitEmbedded ...
+type JUnitEmbedded struct {
 }
 
-// NewEmbedded initialize an empty embedded parser
-func NewEmbedded() Embedded {
-	return Embedded{}
+// NewJUnitEmbedded initialize an empty embedded parser
+func NewJUnitEmbedded() JUnitEmbedded {
+	return JUnitEmbedded{}
 }
 
 // GetName returns the parser name
-func (e Embedded) GetName() string {
+func (e JUnitEmbedded) GetName() string {
 	return "embedded"
 }
 
+// GetDescription returns the parser description
+func (e JUnitEmbedded) GetDescription() string {
+	return "Works with nested junit testsuites"
+}
+
+// GetSupportedExtensions ...
+func (me JUnitEmbedded) GetSupportedExtensions() []string {
+	return []string{".xml"}
+}
+
 // IsApplicable checks if the current xml is compatible with embedded parser.
-func (e Embedded) IsApplicable(string) bool {
+func (e JUnitEmbedded) IsApplicable(string) bool {
 	return false
 }
 
 // Parse parses the string given using the embedded format
-func (e Embedded) Parse(path string) parser.TestResults {
+func (e JUnitEmbedded) Parse(path string) parser.TestResults {
 	results := parser.NewTestResults()
 	results.Name = "Suite"
 	results.Framework = e.GetName()
@@ -93,7 +103,7 @@ func flattenSingleSuite(xmlNode parser.XMLElement, suiteNamePrefix string, newSu
 	}
 }
 
-func (e Embedded) newTestResults(xmlElement parser.XMLElement) parser.TestResults {
+func (e JUnitEmbedded) newTestResults(xmlElement parser.XMLElement) parser.TestResults {
 	results := parser.NewTestResults()
 	results.Name = "Suite"
 
@@ -128,7 +138,7 @@ func (e Embedded) newTestResults(xmlElement parser.XMLElement) parser.TestResult
 	return results
 }
 
-func (e Embedded) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
+func (e JUnitEmbedded) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
 	suite := parser.NewSuite()
 
 	logger.Trace("Parsing Suite element with name: %s", xml.Attr("name"))
@@ -178,7 +188,7 @@ func (e Embedded) newSuite(xml parser.XMLElement, testResults parser.TestResults
 	return suite
 }
 
-func (e Embedded) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
+func (e JUnitEmbedded) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
 	test := parser.NewTest()
 	logger.Trace("Parsing Test element with name: %s", xml.Attr("name"))
 

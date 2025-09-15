@@ -8,22 +8,32 @@ import (
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 )
 
-// GoLang ...
-type GoLang struct {
+// JUnitMocha ...
+type JUnitMocha struct {
 }
 
-// NewGoLang ...
-func NewGoLang() GoLang {
-	return GoLang{}
+// NewJUnitMocha ...
+func NewJUnitMocha() JUnitMocha {
+	return JUnitMocha{}
 }
 
 // GetName ...
-func (me GoLang) GetName() string {
-	return "golang"
+func (me JUnitMocha) GetName() string {
+	return "mocha"
+}
+
+// GetDescription ...
+func (me JUnitMocha) GetDescription() string {
+	return "JavaScript Mocha test output (JUnit format)"
+}
+
+// GetSupportedExtensions ...
+func (me JUnitMocha) GetSupportedExtensions() []string {
+	return []string{".xml"}
 }
 
 // IsApplicable ...
-func (me GoLang) IsApplicable(path string) bool {
+func (me JUnitMocha) IsApplicable(path string) bool {
 	xmlElement, err := LoadXML(path)
 	logger.Debug("Checking applicability of %s parser", me.GetName())
 
@@ -34,39 +44,21 @@ func (me GoLang) IsApplicable(path string) bool {
 
 	switch xmlElement.Tag() {
 	case "testsuites":
-		testsuites := xmlElement.Children
-
-		for _, testsuite := range testsuites {
-			switch testsuite.Tag() {
-			case "testsuite":
-				if hasProperty(testsuite, "go.version") {
+		for attr, value := range xmlElement.Attributes {
+			logger.Trace("%s %s", attr, value)
+			switch attr {
+			case "name":
+				if strings.Contains(strings.ToLower(value), "mocha") {
 					return true
 				}
 			}
-		}
-
-	case "testsuite":
-		if hasProperty(*xmlElement, "go.version") {
-			return true
-		}
-	}
-
-	return false
-}
-
-func hasProperty(testsuiteElement parser.XMLElement, property string) bool {
-	for _, child := range testsuiteElement.Children {
-		switch child.Tag() {
-		case "properties":
-			properties := parser.ParseProperties(child)
-			return parser.PropertyExists(properties, property)
 		}
 	}
 	return false
 }
 
 // Parse ...
-func (me GoLang) Parse(path string) parser.TestResults {
+func (me JUnitMocha) Parse(path string) parser.TestResults {
 	results := parser.NewTestResults()
 
 	xmlElement, err := LoadXML(path)
@@ -100,7 +92,7 @@ func (me GoLang) Parse(path string) parser.TestResults {
 	return results
 }
 
-func (me GoLang) newTestResults(xml parser.XMLElement) parser.TestResults {
+func (me JUnitMocha) newTestResults(xml parser.XMLElement) parser.TestResults {
 	testResults := parser.NewTestResults()
 
 	testResults.Framework = me.GetName()
@@ -136,13 +128,13 @@ func (me GoLang) newTestResults(xml parser.XMLElement) parser.TestResults {
 	return testResults
 }
 
-func (me GoLang) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
+func (me JUnitMocha) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
 	suite := parser.NewSuite()
 
 	for attr, value := range xml.Attributes {
 		switch attr {
 		case "name":
-			suite.Name = value
+			suite.Name = strings.TrimPrefix(value, "Mocha")
 		case "tests":
 			suite.Summary.Total = parser.ParseInt(value)
 		case "failures":
@@ -167,7 +159,6 @@ func (me GoLang) newSuite(xml parser.XMLElement, testResults parser.TestResults)
 	}
 
 	suite.EnsureID(testResults)
-
 	for _, node := range xml.Children {
 		switch node.Tag() {
 		case "properties":
@@ -186,7 +177,7 @@ func (me GoLang) newSuite(xml parser.XMLElement, testResults parser.TestResults)
 	return suite
 }
 
-func (me GoLang) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
+func (me JUnitMocha) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
 	test := parser.NewTest()
 
 	for attr, value := range xml.Attributes {

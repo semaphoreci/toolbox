@@ -8,22 +8,32 @@ import (
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 )
 
-// ExUnit ...
-type ExUnit struct {
+// JUnitRSpec ...
+type JUnitRSpec struct {
 }
 
-// NewExUnit ...
-func NewExUnit() ExUnit {
-	return ExUnit{}
+// NewJUnitRSpec ...
+func NewJUnitRSpec() JUnitRSpec {
+	return JUnitRSpec{}
 }
 
 // GetName ...
-func (me ExUnit) GetName() string {
-	return "exunit"
+func (me JUnitRSpec) GetName() string {
+	return "rspec"
+}
+
+// GetDescription ...
+func (me JUnitRSpec) GetDescription() string {
+	return "Ruby RSpec test output (JUnit format)"
+}
+
+// GetSupportedExtensions ...
+func (me JUnitRSpec) GetSupportedExtensions() []string {
+	return []string{".xml"}
 }
 
 // IsApplicable ...
-func (me ExUnit) IsApplicable(path string) bool {
+func (me JUnitRSpec) IsApplicable(path string) bool {
 	xmlElement, err := LoadXML(path)
 	logger.Debug("Checking applicability of %s parser", me.GetName())
 
@@ -33,40 +43,25 @@ func (me ExUnit) IsApplicable(path string) bool {
 	}
 
 	switch xmlElement.Tag() {
-	case "testsuites":
-		testsuites := xmlElement.Children
-
-		for _, testsuite := range testsuites {
-			switch testsuite.Tag() {
-			case "testsuite":
-				for attr, value := range testsuite.Attributes {
-					switch attr {
-					case "name":
-						if strings.HasPrefix(value, "Elixir.") {
-							return true
-						}
-					}
-				}
-			}
-		}
-
 	case "testsuite":
 		for attr, value := range xmlElement.Attributes {
 			switch attr {
 			case "name":
-				if strings.HasPrefix(value, "Elixir.") {
+				if strings.HasPrefix(value, "rspec") {
 					return true
 				}
 			}
 		}
 	}
-
 	return false
 }
 
 // Parse ...
-func (me ExUnit) Parse(path string) parser.TestResults {
+func (me JUnitRSpec) Parse(path string) parser.TestResults {
 	results := parser.NewTestResults()
+	results.Name = strings.Title(me.GetName() + " suite")
+	results.Framework = me.GetName()
+	results.EnsureID()
 
 	xmlElement, err := LoadXML(path)
 
@@ -74,6 +69,7 @@ func (me ExUnit) Parse(path string) parser.TestResults {
 		logger.Error("Loading XML failed: %v", err)
 		results.Status = parser.StatusError
 		results.StatusMessage = err.Error()
+		results.Framework = me.GetName()
 		return results
 	}
 
@@ -83,11 +79,7 @@ func (me ExUnit) Parse(path string) parser.TestResults {
 		results = me.newTestResults(*xmlElement)
 	case "testsuite":
 		logger.Debug("No root <testsuites> element found")
-		results.Name = strings.Title(me.GetName() + " suite")
-		results.EnsureID()
-		results.Framework = me.GetName()
 		results.Suites = append(results.Suites, me.newSuite(*xmlElement, results))
-
 	default:
 		tag := xmlElement.Tag()
 		logger.Debug("Invalid root element found: <%s>", tag)
@@ -95,15 +87,14 @@ func (me ExUnit) Parse(path string) parser.TestResults {
 		results.StatusMessage = fmt.Sprintf("Invalid root element found: <%s>, must be one of <testsuites>, <testsuite>", tag)
 	}
 
+	results.ArrangeSuitesByTestFile()
 	results.Aggregate()
 
 	return results
 }
 
-func (me ExUnit) newTestResults(xml parser.XMLElement) parser.TestResults {
+func (me JUnitRSpec) newTestResults(xml parser.XMLElement) parser.TestResults {
 	testResults := parser.NewTestResults()
-
-	testResults.Framework = me.GetName()
 
 	for attr, value := range xml.Attributes {
 		switch attr {
@@ -122,6 +113,7 @@ func (me ExUnit) newTestResults(xml parser.XMLElement) parser.TestResults {
 		}
 	}
 
+	testResults.Framework = me.GetName()
 	testResults.EnsureID()
 
 	for _, node := range xml.Children {
@@ -130,19 +122,18 @@ func (me ExUnit) newTestResults(xml parser.XMLElement) parser.TestResults {
 			testResults.Suites = append(testResults.Suites, me.newSuite(node, testResults))
 		}
 	}
-
 	testResults.Summary.Passed = testResults.Summary.Total - testResults.Summary.Error - testResults.Summary.Failed
 
 	return testResults
 }
 
-func (me ExUnit) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
+func (me JUnitRSpec) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
 	suite := parser.NewSuite()
 
 	for attr, value := range xml.Attributes {
 		switch attr {
 		case "name":
-			suite.Name = strings.TrimPrefix(value, "Elixir.")
+			suite.Name = value
 		case "tests":
 			suite.Summary.Total = parser.ParseInt(value)
 		case "failures":
@@ -186,19 +177,23 @@ func (me ExUnit) newSuite(xml parser.XMLElement, testResults parser.TestResults)
 	return suite
 }
 
-func (me ExUnit) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
+func (me JUnitRSpec) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
 	test := parser.NewTest()
 
 	for attr, value := range xml.Attributes {
 		switch attr {
 		case "name":
 			test.Name = value
-		case "file":
-			test.File = value
 		case "time":
 			test.Duration = parser.ParseTime(value)
 		case "classname":
 			test.Classname = value
+		case "id":
+			test.ID = value
+		case "file":
+			test.File = strings.TrimPrefix(value, "./")
+		case "package":
+			test.Package = value
 		}
 	}
 

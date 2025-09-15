@@ -6,12 +6,12 @@ import (
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 )
 
-func Test_Embedded_CommonParse(t *testing.T) {
+func Test_JUnitGoLang_CommonParse(t *testing.T) {
 	parserWants := map[string]parser.TestResults{
 		"empty": {
-			ID:         "c5bec5ae-e57f-3dac-98fa-825a5a2cfd55",
-			Name:       "Suite",
-			Framework:  "embedded",
+			ID:         "",
+			Name:       "",
+			Framework:  "",
 			IsDisabled: false,
 			Summary: parser.Summary{
 				Total:    0,
@@ -27,31 +27,13 @@ func Test_Embedded_CommonParse(t *testing.T) {
 			Suites:        []parser.Suite{},
 		},
 		"basic": {
-			ID:         "c5bec5ae-e57f-3dac-98fa-825a5a2cfd55",
-			Name:       "Suite",
-			Framework:  "embedded",
+			ID:         "69cd6757-6b3d-30ca-bb19-0b892b4f399e",
+			Name:       "Golang Suite",
+			Framework:  "golang",
 			IsDisabled: false,
 			Summary: parser.Summary{
-				Total:    0,
-				Passed:   0,
-				Skipped:  0,
-				Error:    0,
-				Failed:   0,
-				Disabled: 0,
-				Duration: 0,
-			},
-			Status:        "error",
-			StatusMessage: "Invalid root element found: <testsuite>, must be <testsuites>",
-			Suites:        []parser.Suite{},
-		},
-		"multi-suite": {
-			ID:         "e5daf1d3-9529-39d7-9540-1ae32be44597",
-			Name:       "ff",
-			Framework:  "embedded",
-			IsDisabled: false,
-			Summary: parser.Summary{
-				Total:    0,
-				Passed:   0,
+				Total:    3,
+				Passed:   3,
 				Skipped:  0,
 				Error:    0,
 				Failed:   0,
@@ -62,7 +44,127 @@ func Test_Embedded_CommonParse(t *testing.T) {
 			StatusMessage: "",
 			Suites: []parser.Suite{
 				{
-					ID:         "ffb1f320-3376-329b-b2af-ba38a8f54b9e",
+					ID:         "57959178-09f2-30bd-ad59-bef48adce2bb",
+					Name:       "foo",
+					IsSkipped:  false,
+					IsDisabled: false,
+					Timestamp:  "",
+					Hostname:   "",
+					Package:    "",
+					Properties: parser.Properties(nil),
+					Summary: parser.Summary{
+						Total:    3,
+						Passed:   3,
+						Skipped:  0,
+						Error:    0,
+						Failed:   0,
+						Disabled: 0,
+						Duration: 0,
+					},
+					SystemOut: "",
+					SystemErr: "",
+					Tests: []parser.Test{
+						{
+							ID:        "6873a1b1-7da8-3fe1-b08d-1695c5fee6eb",
+							File:      "",
+							Classname: "",
+							Package:   "",
+							Name:      "bar",
+							Duration:  0,
+							State:     "passed",
+							Failure:   (*parser.Failure)(nil),
+							Error:     (*parser.Error)(nil),
+							SystemOut: "",
+							SystemErr: "",
+							SemEnv: parser.SemEnv{
+								ProjectID:    "project-id",
+								PipelineID:   "ppl-id",
+								WorkflowID:   "wf-id",
+								JobStartedAt: "job-creation-time",
+								JobName:      "job-name",
+								JobID:        "job-id",
+								AgentType:    "agent-machine-type",
+								AgentOsImage: "agent-machine-os-image",
+								GitRefType:   "git-ref-type",
+								GitRefName:   "",
+								GitRefSha:    "",
+							},
+						},
+						{
+							ID:        "fcb2a9a2-0bbc-3151-9e80-a51d5dde9911",
+							File:      "",
+							Classname: "",
+							Package:   "",
+							Name:      "baz",
+							Duration:  0,
+							State:     "passed",
+							Failure:   (*parser.Failure)(nil),
+							Error:     (*parser.Error)(nil),
+							SystemOut: "",
+							SystemErr: "",
+							SemEnv: parser.SemEnv{
+								ProjectID:    "project-id",
+								PipelineID:   "ppl-id",
+								WorkflowID:   "wf-id",
+								JobStartedAt: "job-creation-time",
+								JobName:      "job-name",
+								JobID:        "job-id",
+								AgentType:    "agent-machine-type",
+								AgentOsImage: "agent-machine-os-image",
+								GitRefType:   "git-ref-type",
+								GitRefName:   "",
+								GitRefSha:    "",
+							},
+						},
+						{
+							ID:        "6873a1b1-7da8-3fe1-b08d-1695c5fee6eb",
+							File:      "",
+							Classname: "",
+							Package:   "",
+							Name:      "bar",
+							Duration:  0,
+							State:     "passed",
+							Failure:   (*parser.Failure)(nil),
+							Error:     (*parser.Error)(nil),
+							SystemOut: "",
+							SystemErr: "",
+							SemEnv: parser.SemEnv{
+								ProjectID:    "project-id",
+								PipelineID:   "ppl-id",
+								WorkflowID:   "wf-id",
+								JobStartedAt: "job-creation-time",
+								JobName:      "job-name",
+								JobID:        "job-id",
+								AgentType:    "agent-machine-type",
+								AgentOsImage: "agent-machine-os-image",
+								GitRefType:   "git-ref-type",
+								GitRefName:   "",
+								GitRefSha:    "",
+							},
+						},
+					},
+				},
+			},
+		},
+		"multi-suite": {
+			ID:         "488d730c-9521-3018-acd2-ce18a75a7077",
+			Name:       "ff",
+			Framework:  "golang",
+			IsDisabled: false,
+			Summary: parser.Summary{
+				Total:    10,
+				Passed:   10,
+				Skipped:  0,
+				Error:    0,
+				Failed:   0,
+				Disabled: 0,
+				Duration: 0,
+			},
+			Status:        "success",
+			StatusMessage: "",
+			Suites: []parser.Suite{
+				{
+					ID:         "618eb6d2-8166-317a-a050-6ad11e07ca06",
 					Name:       "foo",
 					IsSkipped:  false,
 					IsDisabled: false,
@@ -83,7 +185,7 @@ func Test_Embedded_CommonParse(t *testing.T) {
 					SystemErr: "",
 					Tests: []parser.Test{
 						{
-							ID:        "bf1cc6f2-0718-328a-a459-63decbcdffa4",
+							ID:        "b13cacea-737b-3230-97e3-ae52a6189811",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -109,7 +211,7 @@ func Test_Embedded_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "15dc34e6-d36f-34bd-888d-b9b7e4520409",
+							ID:        "f9006f90-a341-396a-9003-799f50228f2e",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -137,7 +239,7 @@ func Test_Embedded_CommonParse(t *testing.T) {
 					},
 				},
 				{
-					ID:         "ffb1f320-3376-329b-b2af-ba38a8f54b9e",
+					ID:         "618eb6d2-8166-317a-a050-6ad11e07ca06",
 					Name:       "1234",
 					IsSkipped:  false,
 					IsDisabled: false,
@@ -158,7 +260,7 @@ func Test_Embedded_CommonParse(t *testing.T) {
 					SystemErr: "",
 					Tests: []parser.Test{
 						{
-							ID:        "bf1cc6f2-0718-328a-a459-63decbcdffa4",
+							ID:        "b13cacea-737b-3230-97e3-ae52a6189811",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -184,7 +286,7 @@ func Test_Embedded_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "15dc34e6-d36f-34bd-888d-b9b7e4520409",
+							ID:        "f9006f90-a341-396a-9003-799f50228f2e",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -212,7 +314,7 @@ func Test_Embedded_CommonParse(t *testing.T) {
 					},
 				},
 				{
-					ID:         "ffb1f320-3376-329b-b2af-ba38a8f54b9e",
+					ID:         "618eb6d2-8166-317a-a050-6ad11e07ca06",
 					Name:       "",
 					IsSkipped:  false,
 					IsDisabled: false,
@@ -233,7 +335,7 @@ func Test_Embedded_CommonParse(t *testing.T) {
 					SystemErr: "",
 					Tests: []parser.Test{
 						{
-							ID:        "bf1cc6f2-0718-328a-a459-63decbcdffa4",
+							ID:        "b13cacea-737b-3230-97e3-ae52a6189811",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -259,7 +361,7 @@ func Test_Embedded_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "15dc34e6-d36f-34bd-888d-b9b7e4520409",
+							ID:        "f9006f90-a341-396a-9003-799f50228f2e",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -287,7 +389,7 @@ func Test_Embedded_CommonParse(t *testing.T) {
 					},
 				},
 				{
-					ID:         "e8401d00-7a2a-3657-8dcc-6f70363209b4",
+					ID:         "4d4f9483-afc4-3e47-97f7-e216ec50f225",
 					Name:       "1235",
 					IsSkipped:  false,
 					IsDisabled: false,
@@ -308,8 +410,8 @@ func Test_Embedded_CommonParse(t *testing.T) {
 					SystemErr: "",
 					Tests: []parser.Test{
 						{
-							ID:        "ca5ded3d-e00f-3ecd-bec2-45ba1c6e8f1e",
-							File:      "",
+							ID:        "dc4fbbdf-b51d-3892-b431-5b5ae1b62edb",
+							File:      "foo/bar:123",
 							Classname: "",
 							Package:   "",
 							Name:      "bar",
@@ -334,8 +436,8 @@ func Test_Embedded_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "e8e2c6a9-04d4-3bae-b22b-d7a59df84872",
-							File:      "",
+							ID:        "161480c3-8d4f-3225-9278-6233a50527b5",
+							File:      "foo/baz",
 							Classname: "",
 							Package:   "",
 							Name:      "baz",
@@ -362,7 +464,7 @@ func Test_Embedded_CommonParse(t *testing.T) {
 					},
 				},
 				{
-					ID:         "025c7d51-d97d-3a7b-a0a8-e77f52257f21",
+					ID:         "b7188c45-d812-35bd-ad23-cceaed6bbbc8",
 					Name:       "diff by classname",
 					IsSkipped:  false,
 					IsDisabled: false,
@@ -383,8 +485,8 @@ func Test_Embedded_CommonParse(t *testing.T) {
 					SystemErr: "",
 					Tests: []parser.Test{
 						{
-							ID:        "9479025e-2885-3a99-a1c2-d70b43de3775",
-							File:      "",
+							ID:        "a288b576-ebf4-312d-81ac-6ca5f78aba93",
+							File:      "foo/bar",
 							Classname: "foo",
 							Package:   "",
 							Name:      "bar",
@@ -409,8 +511,8 @@ func Test_Embedded_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "495cb879-c83b-3b99-8724-2ecb28d5282e",
-							File:      "",
+							ID:        "2ae85bd1-6ea3-3b82-8ee7-494f378b238e",
+							File:      "foo/bar",
 							Classname: "bar",
 							Package:   "",
 							Name:      "bar",
@@ -439,9 +541,9 @@ func Test_Embedded_CommonParse(t *testing.T) {
 			},
 		},
 		"invalid-root": {
-			ID:         "c5bec5ae-e57f-3dac-98fa-825a5a2cfd55",
-			Name:       "Suite",
-			Framework:  "embedded",
+			ID:         "",
+			Name:       "",
+			Framework:  "",
 			IsDisabled: false,
 			Summary: parser.Summary{
 				Total:    0,
@@ -453,19 +555,19 @@ func Test_Embedded_CommonParse(t *testing.T) {
 				Duration: 0,
 			},
 			Status:        "error",
-			StatusMessage: "Invalid root element found: <nontestsuites>,  must be <testsuites>",
+			StatusMessage: "Invalid root element found: <nontestsuites>, must be one of <testsuites>, <testsuite>",
 			Suites:        []parser.Suite{},
 		},
 	}
 
 	testCases := buildParserTestCases(commonParserTestCases, parserWants)
-	runParserTests(t, NewEmbedded(), testCases)
+	runParserTests(t, NewJUnitGoLang(), testCases)
 }
 
-func Test_Embedded_SpecificParse(t *testing.T) {
+func Test_JUnitGoLang_SpecificParse(t *testing.T) {
 	specificParserTestCases := map[string]string{}
 	parserWants := map[string]parser.TestResults{}
 
 	testCases := buildParserTestCases(specificParserTestCases, parserWants)
-	runParserTests(t, NewEmbedded(), testCases)
+	runParserTests(t, NewJUnitGoLang(), testCases)
 }

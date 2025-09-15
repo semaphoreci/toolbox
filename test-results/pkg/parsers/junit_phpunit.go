@@ -8,27 +8,37 @@ import (
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 )
 
-// PHPUnit ...
-type PHPUnit struct {
+// JUnitPHPUnit ...
+type JUnitPHPUnit struct {
 }
 
-// NewPHPUnit ...
-func NewPHPUnit() PHPUnit {
-	return PHPUnit{}
+// NewJUnitPHPUnit ...
+func NewJUnitPHPUnit() JUnitPHPUnit {
+	return JUnitPHPUnit{}
 }
 
 // GetName ...
-func (me PHPUnit) GetName() string {
+func (me JUnitPHPUnit) GetName() string {
 	return "phpunit"
 }
 
+// GetDescription ...
+func (me JUnitPHPUnit) GetDescription() string {
+	return "PHP PHPUnit test output (JUnit format)"
+}
+
+// GetSupportedExtensions ...
+func (me JUnitPHPUnit) GetSupportedExtensions() []string {
+	return []string{".xml"}
+}
+
 // IsApplicable ...
-func (me PHPUnit) IsApplicable(path string) bool {
+func (me JUnitPHPUnit) IsApplicable(path string) bool {
 	return false
 }
 
 // Parse ...
-func (me PHPUnit) Parse(path string) parser.TestResults {
+func (me JUnitPHPUnit) Parse(path string) parser.TestResults {
 	results := parser.NewTestResults()
 	results.Name = "PHPUnit Suite"
 	results.Framework = me.GetName()
@@ -105,7 +115,7 @@ func prefixSuiteName(suiteName string, prefix string) string {
 	return prefix + "\\" + suiteName
 }
 
-func (me PHPUnit) newTestResults(xml parser.XMLElement) parser.TestResults {
+func (me JUnitPHPUnit) newTestResults(xml parser.XMLElement) parser.TestResults {
 	testResults := parser.NewTestResults()
 	testResults.Name = "PHPUnit Suite"
 
@@ -140,7 +150,7 @@ func (me PHPUnit) newTestResults(xml parser.XMLElement) parser.TestResults {
 	return testResults
 }
 
-func (me PHPUnit) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
+func (me JUnitPHPUnit) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
 	suite := parser.NewSuite()
 
 	for attr, value := range xml.Attributes {
@@ -190,7 +200,7 @@ func (me PHPUnit) newSuite(xml parser.XMLElement, testResults parser.TestResults
 	return suite
 }
 
-func (me PHPUnit) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
+func (me JUnitPHPUnit) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
 	test := parser.NewTest()
 	for attr, value := range xml.Attributes {
 		switch attr {

@@ -8,22 +8,32 @@ import (
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 )
 
-// Mocha ...
-type Mocha struct {
+// JUnitExUnit ...
+type JUnitExUnit struct {
 }
 
-// NewMocha ...
-func NewMocha() Mocha {
-	return Mocha{}
+// NewJUnitExUnit ...
+func NewJUnitExUnit() JUnitExUnit {
+	return JUnitExUnit{}
 }
 
 // GetName ...
-func (me Mocha) GetName() string {
-	return "mocha"
+func (me JUnitExUnit) GetName() string {
+	return "exunit"
+}
+
+// GetDescription ...
+func (me JUnitExUnit) GetDescription() string {
+	return "Elixir ExUnit test output"
+}
+
+// GetSupportedExtensions ...
+func (me JUnitExUnit) GetSupportedExtensions() []string {
+	return []string{".xml"}
 }
 
 // IsApplicable ...
-func (me Mocha) IsApplicable(path string) bool {
+func (me JUnitExUnit) IsApplicable(path string) bool {
 	xmlElement, err := LoadXML(path)
 	logger.Debug("Checking applicability of %s parser", me.GetName())
 
@@ -34,21 +44,38 @@ func (me Mocha) IsApplicable(path string) bool {
 
 	switch xmlElement.Tag() {
 	case "testsuites":
+		testsuites := xmlElement.Children
+
+		for _, testsuite := range testsuites {
+			switch testsuite.Tag() {
+			case "testsuite":
+				for attr, value := range testsuite.Attributes {
+					switch attr {
+					case "name":
+						if strings.HasPrefix(value, "Elixir.") {
+							return true
+						}
+					}
+				}
+			}
+		}
+
+	case "testsuite":
 		for attr, value := range xmlElement.Attributes {
-			logger.Trace("%s %s", attr, value)
 			switch attr {
 			case "name":
-				if strings.Contains(strings.ToLower(value), "mocha") {
+				if strings.HasPrefix(value, "Elixir.") {
 					return true
 				}
 			}
 		}
 	}
+
 	return false
 }
 
 // Parse ...
-func (me Mocha) Parse(path string) parser.TestResults {
+func (me JUnitExUnit) Parse(path string) parser.TestResults {
 	results := parser.NewTestResults()
 
 	xmlElement, err := LoadXML(path)
@@ -70,6 +97,7 @@ func (me Mocha) Parse(path string) parser.TestResults {
 		results.EnsureID()
 		results.Framework = me.GetName()
 		results.Suites = append(results.Suites, me.newSuite(*xmlElement, results))
+
 	default:
 		tag := xmlElement.Tag()
 		logger.Debug("Invalid root element found: <%s>", tag)
@@ -82,7 +110,7 @@ func (me Mocha) Parse(path string) parser.TestResults {
 	return results
 }
 
-func (me Mocha) newTestResults(xml parser.XMLElement) parser.TestResults {
+func (me JUnitExUnit) newTestResults(xml parser.XMLElement) parser.TestResults {
 	testResults := parser.NewTestResults()
 
 	testResults.Framework = me.GetName()
@@ -118,13 +146,13 @@ func (me Mocha) newTestResults(xml parser.XMLElement) parser.TestResults {
 	return testResults
 }
 
-func (me Mocha) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
+func (me JUnitExUnit) newSuite(xml parser.XMLElement, testResults parser.TestResults) parser.Suite {
 	suite := parser.NewSuite()
 
 	for attr, value := range xml.Attributes {
 		switch attr {
 		case "name":
-			suite.Name = strings.TrimPrefix(value, "Mocha")
+			suite.Name = strings.TrimPrefix(value, "Elixir.")
 		case "tests":
 			suite.Summary.Total = parser.ParseInt(value)
 		case "failures":
@@ -149,6 +177,7 @@ func (me Mocha) newSuite(xml parser.XMLElement, testResults parser.TestResults) 
 	}
 
 	suite.EnsureID(testResults)
+
 	for _, node := range xml.Children {
 		switch node.Tag() {
 		case "properties":
@@ -167,7 +196,7 @@ func (me Mocha) newSuite(xml parser.XMLElement, testResults parser.TestResults) 
 	return suite
 }
 
-func (me Mocha) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
+func (me JUnitExUnit) newTest(xml parser.XMLElement, suite parser.Suite) parser.Test {
 	test := parser.NewTest()
 
 	for attr, value := range xml.Attributes {

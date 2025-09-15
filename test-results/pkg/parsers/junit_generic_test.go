@@ -6,7 +6,7 @@ import (
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 )
 
-func Test_ExUnit_CommonParse(t *testing.T) {
+func Test_JUnitGeneric_CommonParse(t *testing.T) {
 	parserWants := map[string]parser.TestResults{
 		"empty": {
 			ID:         "",
@@ -27,9 +27,9 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 			Suites:        []parser.Suite{},
 		},
 		"basic": {
-			ID:         "b37fd0fa-7cfa-3b6b-a992-67b61d24b79f",
-			Name:       "Exunit Suite",
-			Framework:  "exunit",
+			ID:         "17990af8-cb17-371c-9a8e-215e0e201902",
+			Name:       "Generic Suite",
+			Framework:  "",
 			IsDisabled: false,
 			Summary: parser.Summary{
 				Total:    3,
@@ -44,7 +44,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 			StatusMessage: "",
 			Suites: []parser.Suite{
 				{
-					ID:         "3e3fd52e-60da-3a34-ace5-e69db05bc15e",
+					ID:         "b088d75b-c907-3ac1-9f80-489cfacb1619",
 					Name:       "foo",
 					IsSkipped:  false,
 					IsDisabled: false,
@@ -65,7 +65,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 					SystemErr: "",
 					Tests: []parser.Test{
 						{
-							ID:        "45f44cee-c48f-394e-ac8b-dcbb23e1a942",
+							ID:        "ef10d448-a91f-32a7-8fc3-fd5172c721a1",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -91,7 +91,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "6c196f52-d10d-3b0f-b678-3faf8dcb851c",
+							ID:        "e4bc6441-fb93-34ea-997b-01ef03694739",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -117,7 +117,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "45f44cee-c48f-394e-ac8b-dcbb23e1a942",
+							ID:        "ef10d448-a91f-32a7-8fc3-fd5172c721a1",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -147,9 +147,9 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 			},
 		},
 		"multi-suite": {
-			ID:         "09cccd60-46cb-31a4-846f-c8329a1164f9",
+			ID:         "cd9c81c6-06c6-3623-b337-6819885fbfe8",
 			Name:       "ff",
-			Framework:  "exunit",
+			Framework:  "",
 			IsDisabled: false,
 			Summary: parser.Summary{
 				Total:    10,
@@ -164,7 +164,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 			StatusMessage: "",
 			Suites: []parser.Suite{
 				{
-					ID:         "46c015b1-a078-3514-8beb-a2b7f4c74cd8",
+					ID:         "b3d01848-18ba-3046-b1c9-8806a10742d6",
 					Name:       "foo",
 					IsSkipped:  false,
 					IsDisabled: false,
@@ -185,7 +185,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 					SystemErr: "",
 					Tests: []parser.Test{
 						{
-							ID:        "a28f667a-0ee9-3abe-908f-8190a584cace",
+							ID:        "02875c11-ed95-3c22-9dfa-e8b518cd0c7b",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -211,7 +211,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "b01309a9-94a3-3831-a8c5-c8798692c567",
+							ID:        "46540538-366f-38bb-a7ae-ad8ec6eb732c",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -239,7 +239,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 					},
 				},
 				{
-					ID:         "46c015b1-a078-3514-8beb-a2b7f4c74cd8",
+					ID:         "b3d01848-18ba-3046-b1c9-8806a10742d6",
 					Name:       "1234",
 					IsSkipped:  false,
 					IsDisabled: false,
@@ -260,7 +260,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 					SystemErr: "",
 					Tests: []parser.Test{
 						{
-							ID:        "a28f667a-0ee9-3abe-908f-8190a584cace",
+							ID:        "02875c11-ed95-3c22-9dfa-e8b518cd0c7b",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -286,7 +286,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "b01309a9-94a3-3831-a8c5-c8798692c567",
+							ID:        "46540538-366f-38bb-a7ae-ad8ec6eb732c",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -314,7 +314,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 					},
 				},
 				{
-					ID:         "46c015b1-a078-3514-8beb-a2b7f4c74cd8",
+					ID:         "b3d01848-18ba-3046-b1c9-8806a10742d6",
 					Name:       "",
 					IsSkipped:  false,
 					IsDisabled: false,
@@ -335,7 +335,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 					SystemErr: "",
 					Tests: []parser.Test{
 						{
-							ID:        "a28f667a-0ee9-3abe-908f-8190a584cace",
+							ID:        "02875c11-ed95-3c22-9dfa-e8b518cd0c7b",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -361,7 +361,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "b01309a9-94a3-3831-a8c5-c8798692c567",
+							ID:        "46540538-366f-38bb-a7ae-ad8ec6eb732c",
 							File:      "",
 							Classname: "",
 							Package:   "",
@@ -389,7 +389,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 					},
 				},
 				{
-					ID:         "b2ca06e8-bc26-3b78-bd36-80c7889331eb",
+					ID:         "376e439f-2352-341a-8400-ff142935ddda",
 					Name:       "1235",
 					IsSkipped:  false,
 					IsDisabled: false,
@@ -410,7 +410,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 					SystemErr: "",
 					Tests: []parser.Test{
 						{
-							ID:        "4f3da13d-5e4f-38e6-ae5b-fb308ef1a98d",
+							ID:        "4f38be3c-b04b-35cb-8a24-fdb6b25fed01",
 							File:      "foo/bar:123",
 							Classname: "",
 							Package:   "",
@@ -436,7 +436,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "b63d1827-b824-3ba3-a85f-26f5fc3fcb3e",
+							ID:        "87130424-6a9f-3363-81d0-8094bb06d2da",
 							File:      "foo/baz",
 							Classname: "",
 							Package:   "",
@@ -464,7 +464,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 					},
 				},
 				{
-					ID:         "450a281c-92b2-323d-b8e2-9fe85868d5b4",
+					ID:         "db748ed5-c393-3a56-85b1-12fbedbf9c46",
 					Name:       "diff by classname",
 					IsSkipped:  false,
 					IsDisabled: false,
@@ -485,7 +485,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 					SystemErr: "",
 					Tests: []parser.Test{
 						{
-							ID:        "9ef66f37-f5e6-3fec-b062-57c47e8d73db",
+							ID:        "15d634ab-2881-39ab-aa5c-2b9150b5b78d",
 							File:      "foo/bar",
 							Classname: "foo",
 							Package:   "",
@@ -511,7 +511,7 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 							},
 						},
 						{
-							ID:        "145c69a5-fccd-330d-a99d-472da62ea30e",
+							ID:        "e6e5ef50-7e9a-31d1-b398-7293542604f3",
 							File:      "foo/bar",
 							Classname: "bar",
 							Package:   "",
@@ -561,13 +561,13 @@ func Test_ExUnit_CommonParse(t *testing.T) {
 	}
 
 	testCases := buildParserTestCases(commonParserTestCases, parserWants)
-	runParserTests(t, NewExUnit(), testCases)
+	runParserTests(t, NewJUnitGeneric(), testCases)
 }
 
-func Test_ExUnit_SpecificParse(t *testing.T) {
+func Test_JUnitGeneric_SpecificParse(t *testing.T) {
 	specificParserTestCases := map[string]string{}
 	parserWants := map[string]parser.TestResults{}
 
 	testCases := buildParserTestCases(specificParserTestCases, parserWants)
-	runParserTests(t, NewExUnit(), testCases)
+	runParserTests(t, NewJUnitGeneric(), testCases)
 }
