@@ -27,7 +27,7 @@ func (e JUnitEmbedded) GetDescription() string {
 }
 
 // GetSupportedExtensions ...
-func (me JUnitEmbedded) GetSupportedExtensions() []string {
+func (e JUnitEmbedded) GetSupportedExtensions() []string {
 	return []string{".xml"}
 }
 

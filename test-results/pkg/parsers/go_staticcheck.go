@@ -44,11 +44,11 @@ func (s GoStaticcheck) GetName() string {
 
 // GetDescription returns the description of the parser
 func (s GoStaticcheck) GetDescription() string {
-	return "Go staticcheck linter JSON output"
+	return "Go staticcheck linter JSON output. Note, staticchecks emits one json object per problem found, not an array of objects."
 }
 
 // GetSupportedExtensions ...
-func (me GoStaticcheck) GetSupportedExtensions() []string {
+func (s GoStaticcheck) GetSupportedExtensions() []string {
 	return []string{".json"}
 }
 

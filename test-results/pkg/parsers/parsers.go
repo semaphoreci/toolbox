@@ -16,9 +16,10 @@ var availableParsers = []parser.Parser{
 	NewJUnitGoLang(),
 	NewJUnitPHPUnit(),
 	NewJUnitEmbedded(),
+	NewJUnitGeneric(),
 	// Custom parsers
 	NewGoStaticcheck(),
-	NewJUnitGeneric(), // Generic should be last as it's a catch-all
+	NewGoRevive(),
 }
 
 // FindParser ...
@@ -36,7 +37,7 @@ func FindParser(name string, path string) (parser.Parser, error) {
 	// First filter by file extension
 	fileExt := filepath.Ext(path)
 	var compatibleParsers []parser.Parser
-	
+
 	for _, p := range availableParsers {
 		supportedExts := p.GetSupportedExtensions()
 		for _, ext := range supportedExts {
@@ -96,7 +97,7 @@ func GetSupportedExtensions() []string {
 			extMap[ext] = true
 		}
 	}
-	
+
 	var extensions []string
 	for ext := range extMap {
 		extensions = append(extensions, ext)

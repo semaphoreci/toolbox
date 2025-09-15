@@ -1,0 +1,46 @@
+[
+  {
+    "Severity": "warning",
+    "Failure": "receiver name ms should be consistent with previous receiver name s for GoStaticcheck",
+    "RuleName": "receiver-naming",
+    "Category": "naming",
+    "Position": {
+      "Start": {
+        "Filename": "pkg/parsers/go_staticcheck.go",
+        "Offset": 1046,
+        "Line": 46,
+        "Column": 1
+      },
+      "End": {
+        "Filename": "pkg/parsers/go_staticcheck.go",
+        "Offset": 1141,
+        "Line": 48,
+        "Column": 2
+      }
+    },
+    "Confidence": 1,
+    "ReplacementLine": ""
+  },
+  {
+    "Severity": "warning",
+    "Failure": "receiver name ms should be consistent with previous receiver name s for GoStaticcheck",
+    "RuleName": "receiver-naming",
+    "Category": "naming",
+    "Position": {
+      "Start": {
+        "Filename": "pkg/parsers/go_staticcheck.go",
+        "Offset": 1173,
+        "Line": 51,
+        "Column": 1
+      },
+      "End": {
+        "Filename": "pkg/parsers/go_staticcheck.go",
+        "Offset": 1260,
+        "Line": 53,
+        "Column": 2
+      }
+    },
+    "Confidence": 1,
+    "ReplacementLine": ""
+  }
+]

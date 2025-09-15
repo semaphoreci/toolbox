@@ -3,15 +3,8 @@ PHONY: run
 run:
 	go run main.go $(arg)
 
-regen:
-	go run main.go compile --no-compress priv/parsers/junit_generic/in.xml priv/parsers/junit_generic/out.json
-	go run main.go compile --no-compress priv/parsers/junit_rspec/in.xml priv/parsers/junit_rspec/out.json
-	go run main.go compile --no-compress priv/parsers/junit_exunit/in.xml priv/parsers/junit_exunit/out.json
-	go run main.go compile --no-compress priv/parsers/junit_golang/in.xml priv/parsers/junit_golang/out.json
-	go run main.go compile --no-compress -p phpunit priv/parsers/junit_phpunit/in.xml priv/parsers/junit_phpunit/out.json
-	go run main.go compile --no-compress -p embedded priv/parsers/junit_embedded/in.xml priv/parsers/junit_embedded/out.json
-	go run main.go compile --no-compress -p go:staticcheck priv/parsers/go_staticcheck/in.json priv/parsers/go_staticcheck/out.json
-	go run main.go compile --no-compress priv/merging priv/merging/out.json
+regen.golden:
+	go test ./pkg/parsers -update-golden
 
 test.setup:
 	docker compose build
@@ -22,15 +15,6 @@ lint:
 
 test:
 	docker compose run --rm cli gotestsum --format short-verbose --junitfile junit-report.xml --packages="./..."
-
-test.parsers:
-	go test ./pkg/parsers -run TestParsersWithGoldenFiles
-
-test.parsers.update:
-	go test ./pkg/parsers -run TestParsersWithGoldenFiles -update-golden
-
-update-golden: test.parsers.update
-	@echo "Golden files updated successfully"
 
 test.watch:
 	gotestsum --watch ./...

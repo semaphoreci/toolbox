@@ -22,7 +22,7 @@ func Ensure(reader *bytes.Reader) (fileName string) {
 		panic(err)
 	}
 
-	defer file.Close() // #nosec
+	defer file.Close()
 
 	fileName = file.Name()
 

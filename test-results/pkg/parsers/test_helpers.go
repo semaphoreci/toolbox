@@ -3,7 +3,6 @@ package parsers
 import (
 	"encoding/json"
 	"flag"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -42,7 +41,7 @@ func RunGoldenTest(t *testing.T, test GoldenTest) {
 			t.Fatalf("Failed to create golden file directory: %v", err)
 		}
 
-		err = ioutil.WriteFile(test.GoldenFile, actualJSON, 0644)
+		err = os.WriteFile(test.GoldenFile, actualJSON, 0644)
 		if err != nil {
 			t.Fatalf("Failed to update golden file: %v", err)
 		}
@@ -52,7 +51,7 @@ func RunGoldenTest(t *testing.T, test GoldenTest) {
 	}
 
 	// Read the golden file
-	expectedJSON, err := ioutil.ReadFile(test.GoldenFile)
+	expectedJSON, err := os.ReadFile(test.GoldenFile)
 	if err != nil {
 		if os.IsNotExist(err) {
 			t.Fatalf("Golden file does not exist: %s\nRun with -update-golden flag to create it", test.GoldenFile)
@@ -108,7 +107,7 @@ func AssertParserSupportsExtension(t *testing.T, p parser.Parser, ext string, ex
 func CreateTempFile(t *testing.T, pattern string, content string) string {
 	t.Helper()
 
-	tmpfile, err := ioutil.TempFile("", pattern)
+	tmpfile, err := os.CreateTemp("", pattern)
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
@@ -153,7 +152,7 @@ func AssertTestSummary(t *testing.T, got, want parser.Summary) {
 func LoadFixture(t *testing.T, path string) string {
 	t.Helper()
 
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("Failed to load fixture %s: %v", path, err)
 	}

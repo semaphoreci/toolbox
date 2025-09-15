@@ -2,7 +2,6 @@ package parsers
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 
 	"github.com/semaphoreci/toolbox/test-results/pkg/fileloader"
@@ -16,7 +15,7 @@ func LoadPath(path string) (*bytes.Reader, error) {
 	reader, found := fileloader.Load(path, &bytes.Reader{})
 
 	if !found {
-		file, err := ioutil.ReadFile(path) // #nosec
+		file, err := os.ReadFile(path)
 
 		if err != nil {
 			return nil, err
@@ -49,7 +48,7 @@ func LoadXML(path string) (*parser.XMLElement, error) {
 func LoadJSON(path string) ([]byte, error) {
 	// Check file cache first
 	reader, found := fileloader.Load(path, &bytes.Reader{})
-	
+
 	if found {
 		buf := new(bytes.Buffer)
 		_, err := buf.ReadFrom(reader)
@@ -59,7 +58,6 @@ func LoadJSON(path string) ([]byte, error) {
 		return buf.Bytes(), nil
 	}
 
-	// Load from file system using os.ReadFile instead of ioutil
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -67,6 +65,6 @@ func LoadJSON(path string) ([]byte, error) {
 
 	// Cache for future use
 	fileloader.Load(path, bytes.NewReader(data))
-	
+
 	return data, nil
 }
