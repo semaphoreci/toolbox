@@ -40,14 +40,14 @@ test result files (XML, JSON, etc.) and publishes them as one artifact.
 
 Available parsers:
 `)
-	
+
 	for _, parser := range parsers.GetAvailableParsers() {
 		description.WriteString(fmt.Sprintf("  %-15s - %s\n", parser.Name, parser.Description))
 	}
-	
+
 	description.WriteString(`
 Use --parser flag to specify a parser, or "auto" for automatic detection.`)
-	
+
 	return description.String()
 }
 
@@ -56,7 +56,7 @@ var publishCmd = &cobra.Command{
 	Use:   "publish <file-path>...",
 	Short: "parses test result files to well defined json schema and publishes results to artifacts storage",
 	Long:  formatPublishDescription(),
-	Args: cobra.MinimumNArgs(1),
+	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		inputs := args
 		err := cli.SetLogLevel(cmd)
@@ -75,7 +75,7 @@ var publishCmd = &cobra.Command{
 		for _, ext := range supportedExts {
 			extMap[ext] = true
 		}
-		
+
 		// Load all files with supported extensions
 		paths := []string{}
 		for _, input := range inputs {
@@ -83,7 +83,7 @@ var publishCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			
+
 			if file.IsDir() {
 				// Walk directory and get all files with supported extensions
 				err := filepath.WalkDir(input, func(path string, d os.DirEntry, err error) error {
@@ -213,9 +213,10 @@ var publishCmd = &cobra.Command{
 			}
 
 			for idx, rawFilePath := range paths {
-				outPath := path.Join("test-results", "junit.xml")
+				pathExt := path.Ext(rawFilePath)
+				outPath := path.Join("test-results", fmt.Sprintf("junit%s", pathExt))
 				if !singlePath {
-					outPath = path.Join("test-results", fmt.Sprintf("junit-%d.xml", idx))
+					outPath = path.Join("test-results", fmt.Sprintf("junit-%d%s", idx, pathExt))
 				}
 
 				_, stats, err = cli.PushArtifacts("job", rawFilePath, outPath, cmd)
@@ -279,7 +280,7 @@ func pushSummaryWithStats(testResult []parser.TestResults, level, path string, c
 
 func init() {
 
-	desc := `Skips uploading raw XML files`
+	desc := `Skips uploading raw input files`
 	publishCmd.Flags().BoolP("no-raw", "", false, desc)
 	publishCmd.Flags().BoolP("force", "f", false, "force artifact push, passes -f flag to artifact CLI")
 	publishCmd.Flags().Int32P("trim-output-to", "s", 0, "trim stdout to N characters, defaults to 0(unlimited)")

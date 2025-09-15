@@ -845,8 +845,8 @@ blocks:
       epilogue:
         always:
           commands:
-            - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST' 
-  
+            - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
+
   - name: "Cache CLI: Tests"
     dependencies: []
     task:
@@ -880,7 +880,7 @@ blocks:
             - go install github.com/mgechev/revive@latest
             - make lint
 
-  - name: "Test Results CLI"
+  - name: "Test Results CLI: Tests"
     dependencies: []
     task:
       prologue:
@@ -895,6 +895,21 @@ blocks:
         always:
           commands:
             - '[[ -f junit-report.xml ]] && test-results publish junit-report.xml'
+  - name: "Test Results CLI: Lint"
+    dependencies: []
+    task:
+      prologue:
+        commands:
+          - checkout && cd test-results
+      jobs:
+        - name: Test
+          commands:
+          - make lint
+      epilogue:
+        always:
+          commands:
+            - '[[ -f revive.json ]] && test-results publish junit-report.json'
+            - '[[ -f staticcheck.json ]] && test-results publish junit-report.json'
 
   - name: "Security checks"
     dependencies: []
