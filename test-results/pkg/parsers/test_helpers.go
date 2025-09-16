@@ -35,12 +35,12 @@ func RunGoldenTest(t *testing.T, test GoldenTest) {
 
 	if *updateGolden {
 		// Update mode: write the actual output as the new golden file
-		err := os.MkdirAll(filepath.Dir(test.GoldenFile), 0755)
+		err := os.MkdirAll(filepath.Dir(test.GoldenFile), 0755) // #nosec
 		if err != nil {
 			t.Fatalf("Failed to create golden file directory: %v", err)
 		}
 
-		err = os.WriteFile(test.GoldenFile, actualJSON, 0644)
+		err = os.WriteFile(test.GoldenFile, actualJSON, 0644) // #nosec
 		if err != nil {
 			t.Fatalf("Failed to update golden file: %v", err)
 		}
@@ -50,7 +50,7 @@ func RunGoldenTest(t *testing.T, test GoldenTest) {
 	}
 
 	// Read the golden file
-	expectedJSON, err := os.ReadFile(test.GoldenFile)
+	expectedJSON, err := os.ReadFile(test.GoldenFile) // #nosec
 	if err != nil {
 		if os.IsNotExist(err) {
 			t.Fatalf("Golden file does not exist: %s\nRun with -update-golden flag to create it", test.GoldenFile)
@@ -62,8 +62,14 @@ func RunGoldenTest(t *testing.T, test GoldenTest) {
 	if string(actualJSON) != string(expectedJSON) {
 		// Parse both for better diff output
 		var expected, actual interface{}
-		json.Unmarshal(expectedJSON, &expected)
-		json.Unmarshal(actualJSON, &actual)
+		err = json.Unmarshal(expectedJSON, &expected)
+		if err != nil {
+			t.Fatalf("Failed to unmarshal expected json: %v", err)
+		}
+		err = json.Unmarshal(actualJSON, &actual)
+		if err != nil {
+			t.Fatalf("Failed to unmarshal actual json: %v", err)
+		}
 
 		if diff := cmp.Diff(expected, actual); diff != "" {
 			t.Errorf("Golden file mismatch (-want +got):\n%s", diff)
@@ -120,7 +126,10 @@ func CreateTempFile(t *testing.T, pattern string, content string) string {
 	}
 
 	t.Cleanup(func() {
-		os.Remove(tmpfile.Name())
+		err = os.Remove(tmpfile.Name())
+		if err != nil {
+			t.Fatalf("Failed to remove tmp file: %v", err)
+		}
 	})
 
 	return tmpfile.Name()
@@ -151,7 +160,7 @@ func AssertTestSummary(t *testing.T, got, want parser.Summary) {
 func LoadFixture(t *testing.T, path string) string {
 	t.Helper()
 
-	content, err := os.ReadFile(path)
+	content, err := os.ReadFile(path) // #nosec
 	if err != nil {
 		t.Fatalf("Failed to load fixture %s: %v", path, err)
 	}

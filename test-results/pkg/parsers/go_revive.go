@@ -3,7 +3,6 @@ package parsers
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -61,7 +60,7 @@ func (r GoRevive) IsApplicable(path string) bool {
 		return false
 	}
 
-	data, err := os.ReadFile(path)
+	data, err := LoadFile(path)
 	if err != nil {
 		return false
 	}
@@ -93,7 +92,7 @@ func (r GoRevive) Parse(path string) parser.TestResults {
 	results.Framework = r.GetName()
 	results.EnsureID()
 
-	data, err := os.ReadFile(path)
+	data, err := LoadFile(path)
 	if err != nil {
 		logger.Error("Failed to read file: %v", err)
 		results.Status = parser.StatusError

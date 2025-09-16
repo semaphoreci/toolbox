@@ -32,6 +32,7 @@ MONOREPO_TMP_DIR?=/tmp/monorepo
 SECURITY_TOOLBOX_TMP_DIR?=$(MONOREPO_TMP_DIR)/security-toolbox
 SECURITY_TOOLBOX_BRANCH?=main
 LANGUAGE=go
+APP_DIRECTORY=/app
 
 check.prepare:
 	rm -rf $(MONOREPO_TMP_DIR)
@@ -44,14 +45,14 @@ check.prepare:
 
 check.static: check.prepare
 	docker run -it \
-		-v $$(pwd):/app \
+		-v $$(pwd):$(APP_DIRECTORY) \
 		-v $(SECURITY_TOOLBOX_TMP_DIR):$(SECURITY_TOOLBOX_TMP_DIR) \
 		registry.semaphoreci.com/ruby:3 \
 		bash -c 'cd $(APP_DIRECTORY) && $(SECURITY_TOOLBOX_TMP_DIR)/code --language $(LANGUAGE) -d'
 
 check.deps: check.prepare
 	docker run -it \
-		-v $$(pwd):/app \
+		-v $$(pwd):$(APP_DIRECTORY) \
 		-v $(SECURITY_TOOLBOX_TMP_DIR):$(SECURITY_TOOLBOX_TMP_DIR) \
 		-e TRIVY_DB_REPOSITORY -e TRIVY_JAVA_DB_REPOSITORY \
 		registry.semaphoreci.com/ruby:3 \

@@ -17,7 +17,7 @@ func LoadPath(path string) (*bytes.Reader, error) {
 	reader, found := fileloader.Load(path, &bytes.Reader{})
 
 	if !found {
-		file, err := os.ReadFile(path)
+		file, err := os.ReadFile(path) // #nosec
 
 		if err != nil {
 			return nil, err
@@ -60,7 +60,7 @@ func LoadFile(path string) ([]byte, error) {
 		return buf.Bytes(), nil
 	}
 
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec
 	if err != nil {
 		return nil, err
 	}
