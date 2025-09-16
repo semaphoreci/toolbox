@@ -28,25 +28,34 @@ test.cover:
 	rm c.out
 	scripts/lcov-to-md.sh
 
-SECURITY_TOOLBOX_BRANCH ?= master
-SECURITY_TOOLBOX_TMP_DIR ?= /tmp/security-toolbox
+MONOREPO_TMP_DIR?=/tmp/monorepo
+SECURITY_TOOLBOX_TMP_DIR?=$(MONOREPO_TMP_DIR)/security-toolbox
+SECURITY_TOOLBOX_BRANCH?=main
+LANGUAGE=go
 
 check.prepare:
-	rm -rf $(SECURITY_TOOLBOX_TMP_DIR)
-	git clone git@github.com:renderedtext/security-toolbox.git $(SECURITY_TOOLBOX_TMP_DIR) && (cd $(SECURITY_TOOLBOX_TMP_DIR) && git checkout $(SECURITY_TOOLBOX_BRANCH) && cd -)
+	rm -rf $(MONOREPO_TMP_DIR)
+	git clone --depth 1 --filter=blob:none --sparse https://github.com/semaphoreio/semaphore $(MONOREPO_TMP_DIR) && \
+		cd $(MONOREPO_TMP_DIR) && \
+		git config core.sparseCheckout true && \
+		git sparse-checkout init --cone && \
+		git sparse-checkout set security-toolbox && \
+		git checkout main && cd -
 
 check.static: check.prepare
-	docker run -it -v $$(pwd):/app \
+	docker run -it \
+		-v $$(pwd):/app \
 		-v $(SECURITY_TOOLBOX_TMP_DIR):$(SECURITY_TOOLBOX_TMP_DIR) \
-		registry.semaphoreci.com/ruby:2.7 \
-		bash -c 'cd /app && $(SECURITY_TOOLBOX_TMP_DIR)/code --language go -d'
+		registry.semaphoreci.com/ruby:3 \
+		bash -c 'cd $(APP_DIRECTORY) && $(SECURITY_TOOLBOX_TMP_DIR)/code --language $(LANGUAGE) -d'
 
 check.deps: check.prepare
-	docker run -it -v $$(pwd):/app \
+	docker run -it \
+		-v $$(pwd):/app \
 		-v $(SECURITY_TOOLBOX_TMP_DIR):$(SECURITY_TOOLBOX_TMP_DIR) \
 		-e TRIVY_DB_REPOSITORY -e TRIVY_JAVA_DB_REPOSITORY \
-		registry.semaphoreci.com/ruby:2.7 \
-		bash -c 'cd /app && $(SECURITY_TOOLBOX_TMP_DIR)/dependencies --language go -d'
+		registry.semaphoreci.com/ruby:3 \
+		bash -c 'cd $(APP_DIRECTORY) && $(SECURITY_TOOLBOX_TMP_DIR)/dependencies --language $(LANGUAGE) -d'
 
 build.darwin:
 	CGO_ENABLED=0 GOOS=darwin GOARCH=$(ARCH) go build -o bin/darwin/$(ARCH)/test-results main.go
