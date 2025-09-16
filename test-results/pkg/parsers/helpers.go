@@ -6,6 +6,8 @@ import (
 
 	"github.com/semaphoreci/toolbox/test-results/pkg/fileloader"
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // LoadPath ...
@@ -67,4 +69,9 @@ func LoadFile(path string) ([]byte, error) {
 	fileloader.Load(path, bytes.NewReader(data))
 
 	return data, nil
+}
+
+func Title(s string) string {
+	caser := cases.Title(language.English)
+	return caser.String(s)
 }

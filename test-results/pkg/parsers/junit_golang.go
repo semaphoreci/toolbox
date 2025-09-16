@@ -2,7 +2,6 @@ package parsers
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/semaphoreci/toolbox/test-results/pkg/logger"
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
@@ -94,7 +93,7 @@ func (me JUnitGoLang) Parse(path string) parser.TestResults {
 		results = me.newTestResults(*xmlElement)
 	case "testsuite":
 		logger.Debug("No root <testsuites> element found")
-		results.Name = strings.Title(me.GetName() + " suite")
+		results.Name = Title(me.GetName() + " suite")
 		results.EnsureID()
 		results.Framework = me.GetName()
 		results.Suites = append(results.Suites, me.newSuite(*xmlElement, results))

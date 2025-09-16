@@ -905,10 +905,6 @@ blocks:
         - name: Test
           commands:
           - make lint
-      epilogue:
-        always:
-          commands:
-            - '[[ -f staticcheck.json ]] && test-results publish staticcheck.json'
 
   - name: "Security checks"
     dependencies: []

@@ -59,7 +59,7 @@ func (me JUnitRSpec) IsApplicable(path string) bool {
 // Parse ...
 func (me JUnitRSpec) Parse(path string) parser.TestResults {
 	results := parser.NewTestResults()
-	results.Name = strings.Title(me.GetName() + " suite")
+	results.Name = Title(me.GetName() + " suite")
 	results.Framework = me.GetName()
 	results.EnsureID()
 
