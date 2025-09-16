@@ -225,7 +225,8 @@ teardown() {
 
   assert_output --partial "File not found, skipping: missing1.xml"
   assert_output --partial "File not found, skipping: missing2.xml"
-  assert_output --partial "Using generic parser"
+  assert_output --partial "Using golang parser"
+  assert_output --partial "Using rspec parser"
 
   [ -f output.json ]
 }
