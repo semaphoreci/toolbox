@@ -31,20 +31,36 @@ test-results publish results.xml
 
 The above command parses the content of the `results.xml` file, and publishes the results to Semaphore.
 
-While parsing the content, the CLI tries to find the best parser for your result type. The following test runners have a dedicated parser:
+### Specifying parsers for individual files
 
-- exunit
-- golang
-- mocha
-- rspec
-- phpunit
+You can specify different parsers for different files using the syntax `file:parser`:
 
-If a dedicated parser is not found, the CLI will parse the file using a generic parser. The generic parser uses [JUnit XML Schema](https://github.com/windyroad/JUnit-Schema/blob/master/JUnit.xsd) definition to extract data from the report.
+```bash
+test-results publish results.xml:golang lint.json:go:staticcheck coverage.xml:generic
+```
+
+This is useful when processing multiple files that require different parsers. The file:parser syntax takes precedence over the global `--parser` flag.
+
+### Available parsers
+
+To see the list of available parsers and their descriptions, run:
+
+```bash
+test-results publish --help
+```
+
+The CLI supports parsers for various test frameworks (RSpec, ExUnit, Mocha, Go, PHPUnit) and linters (Go staticcheck, Go revive). While parsing the content, the CLI tries to find the best parser for your result type by examining the file structure. If a dedicated parser is not found, the CLI will parse XML files using the generic parser, which uses [JUnit XML Schema](https://github.com/windyroad/JUnit-Schema/blob/master/JUnit.xsd) definition to extract data from the report.
 
 The parser can be selected manually by using the `--parser` option.
 
 ```bash
 test-results publish --parser exunit results.xml
+```
+
+When processing multiple files, you can set a default parser with `--parser` and override it for specific files:
+
+```bash
+test-results publish --parser junit results1.xml results2.xml lint.json:go:staticcheck
 ```
 
 The name of the generated report is based on the selected parser. If you want to overwrite this you can use the `--name` option:
@@ -67,7 +83,23 @@ If your job generates multiple reports: `integration.xml`, `unit.xml` you can us
 test-results publish integration.xml unit.xml
 ```
 
+You can also specify different parsers for each file:
+
+```bash
+test-results publish integration.xml:rspec unit.xml:golang lint.json:go:staticcheck
+```
+
 In addition, each report is published separately to artifact storage as a `junit-<index>.xml`. `<index>` is a number starting from 0 that corresponds to the order of the report passed to the command line.
+
+## Handling missing files
+
+By default, the CLI will fail if any specified file doesn't exist. You can use the `--ignore-missing` flag to skip missing files:
+
+```bash
+test-results publish --ignore-missing test1.xml test2.xml test3.xml
+```
+
+This is useful in CI pipelines where certain test files may not always be generated.
 
 ## Merging multiple JSON reports into a single summary report
 
@@ -108,6 +140,58 @@ test-results publish results.xml
 
 # other-results will overwrite results
 test-results publish --force other-results.xml
+```
+
+## Compiling test results without publishing
+
+You can use the `compile` command to parse test files and generate a JSON report without publishing to Semaphore:
+
+```bash
+test-results compile results.xml output.json
+```
+
+Like the publish command, compile supports file:parser syntax:
+
+```bash
+test-results compile results.xml:golang lint.json:go:staticcheck output.json
+```
+
+And the `--ignore-missing` flag:
+
+```bash
+test-results compile --ignore-missing test1.xml test2.xml output.json
+```
+
+This is useful for local testing or when you want to process test results without uploading them to Semaphore.
+
+## Using linter outputs as test results
+
+The CLI can process linter outputs and convert them to test results. This is useful for tracking code quality issues as part of your test suite.
+
+### Go staticcheck
+
+```bash
+# Run staticcheck and save output
+staticcheck -f json ./... > staticcheck.json
+
+# Publish as test results
+test-results publish staticcheck.json:go:staticcheck
+```
+
+### Go revive
+
+```bash
+# Run revive and save output
+revive -formatter json -config revive.toml ./... > revive.json
+
+# Publish as test results
+test-results publish revive.json:go:revive
+```
+
+You can combine linter results with test results in a single command:
+
+```bash
+test-results publish unit.xml:golang staticcheck.json:go:staticcheck revive.json:go:revive
 ```
 
 ## Using the CLI on a local machine

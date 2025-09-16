@@ -130,3 +130,170 @@ teardown() {
   assert_output --partial "← Pushed:"
   assert_output --partial "= Total:"
 }
+
+@test "test-results compile with file:parser syntax for single file" {
+  cd /tmp/test-results-cli
+  cp $BATS_TEST_DIRNAME/test-results/golang.xml .
+
+  run test-results compile --no-compress golang.xml:junit output.json
+  assert_success
+  assert_output --partial "Using junit parser"
+  
+  [ -f output.json ]
+}
+
+@test "test-results compile with file:parser syntax for multiple files with different parsers" {
+  cd /tmp/test-results-cli
+  cp $BATS_TEST_DIRNAME/test-results/golang.xml .
+  cp $BATS_TEST_DIRNAME/test-results/staticcheck.json .
+
+  run test-results compile --no-compress golang.xml:junit staticcheck.json:go:staticcheck output.json
+  assert_success
+  
+  assert_output --partial "Using junit parser"
+  assert_output --partial "Using go:staticcheck parser"
+  
+  [ -f output.json ]
+}
+
+@test "test-results compile with mix of explicit parser and auto-detect" {
+  cd /tmp/test-results-cli
+  cp $BATS_TEST_DIRNAME/test-results/junit-sample.xml .
+  cp $BATS_TEST_DIRNAME/test-results/staticcheck.json .
+
+  run test-results compile --no-compress junit-sample.xml staticcheck.json:go:staticcheck output.json
+  assert_success
+  
+  assert_output --partial "Using rspec parser"
+  assert_output --partial "Using go:staticcheck parser"
+  
+  [ -f output.json ]
+}
+
+@test "test-results publish with file:parser syntax for single file" {
+  cd /tmp/test-results-cli
+  cp $BATS_TEST_DIRNAME/test-results/golang.xml .
+
+  run test-results publish --no-compress golang.xml:junit
+  assert_success
+  assert_output --partial "Using junit parser"
+  
+  assert_output --partial "[test-results] Artifact transfers:"
+  assert_output --partial "← Pushed:"
+}
+
+@test "test-results publish with file:parser syntax for multiple files" {
+  cd /tmp/test-results-cli
+  cp $BATS_TEST_DIRNAME/test-results/golang.xml .
+  cp $BATS_TEST_DIRNAME/test-results/revive.json .
+
+  run test-results publish --no-compress golang.xml:junit revive.json:go:revive
+  assert_success
+  
+  assert_output --partial "Using junit parser"
+  assert_output --partial "Using go:revive parser"
+  assert_output --partial "← Pushed: 5 operations"
+}
+
+@test "test-results compile fails without --ignore-missing when file doesn't exist" {
+  cd /tmp/test-results-cli
+
+  run test-results compile --no-compress missing-file.xml output.json
+  assert_failure
+  assert_output --partial "failed to stat missing-file.xml"
+}
+
+@test "test-results compile succeeds with --ignore-missing when file doesn't exist" {
+  cd /tmp/test-results-cli
+  cp $BATS_TEST_DIRNAME/test-results/junit-sample.xml .
+
+  run test-results compile --no-compress --ignore-missing junit-sample.xml missing-file.xml output.json
+  assert_success
+  assert_output --partial "File not found, skipping: missing-file.xml"
+  assert_output --partial "Using rspec parser"
+  
+  [ -f output.json ]
+}
+
+@test "test-results compile with --ignore-missing processes only existing files" {
+  cd /tmp/test-results-cli
+  cp $BATS_TEST_DIRNAME/test-results/golang.xml .
+  cp $BATS_TEST_DIRNAME/test-results/rspec2.xml .
+
+  run test-results compile --no-compress --ignore-missing golang.xml missing1.xml rspec2.xml missing2.xml output.json
+  assert_success
+  
+  assert_output --partial "File not found, skipping: missing1.xml"
+  assert_output --partial "File not found, skipping: missing2.xml"
+  assert_output --partial "Using junit parser"
+  
+  [ -f output.json ]
+}
+
+@test "test-results publish fails without --ignore-missing when file doesn't exist" {
+  cd /tmp/test-results-cli
+
+  run test-results publish --no-compress missing-file.xml
+  assert_failure
+  assert_output --partial "failed to stat missing-file.xml"
+}
+
+@test "test-results publish succeeds with --ignore-missing when file doesn't exist" {
+  cd /tmp/test-results-cli
+  cp $BATS_TEST_DIRNAME/test-results/junit-sample.xml .
+
+  run test-results publish --no-compress --ignore-missing junit-sample.xml missing-file.xml
+  assert_success
+  assert_output --partial "File not found, skipping: missing-file.xml"
+  assert_output --partial "Using rspec parser"
+  assert_output --partial "[test-results] Artifact transfers:"
+}
+
+# Edge cases
+
+@test "test-results compile file:parser overrides global --parser flag" {
+  cd /tmp/test-results-cli
+  cp $BATS_TEST_DIRNAME/test-results/golang.xml .
+
+  run test-results compile --no-compress --parser rspec golang.xml:junit output.json
+  assert_success
+  
+  assert_output --partial "Using junit parser"
+  refute_output --partial "Using rspec parser"
+  
+  [ -f output.json ]
+}
+
+@test "test-results compile with file:parser and --ignore-missing combined" {
+  cd /tmp/test-results-cli
+  cp $BATS_TEST_DIRNAME/test-results/golang.xml .
+  cp $BATS_TEST_DIRNAME/test-results/staticcheck.json .
+
+  run test-results compile --no-compress --ignore-missing golang.xml:junit missing.xml:rspec staticcheck.json:go:staticcheck output.json
+  assert_success
+  
+  assert_output --partial "File not found, skipping: missing.xml"
+  assert_output --partial "Using junit parser"
+  assert_output --partial "Using go:staticcheck parser"
+  
+  [ -f output.json ]
+}
+
+@test "test-results publish with invalid parser in file:parser syntax" {
+  cd /tmp/test-results-cli
+  cp $BATS_TEST_DIRNAME/test-results/golang.xml .
+
+  run test-results publish --no-compress golang.xml:invalid-parser
+  assert_failure
+  assert_output --partial "parser not found: invalid-parser"
+}
+
+@test "test-results compile creates empty result when all files are missing with --ignore-missing" {
+  cd /tmp/test-results-cli
+
+  run test-results compile --no-compress --ignore-missing missing1.xml missing2.json output.json
+  assert_success
+  assert_output --partial "No files to process"
+  
+  [ -f output.json ]
+}

@@ -24,7 +24,7 @@ func (me JUnitPHPUnit) GetName() string {
 
 // GetDescription ...
 func (me JUnitPHPUnit) GetDescription() string {
-	return "PHP PHPUnit test output (JUnit format)"
+	return "PHPUnit test output in JUnit format"
 }
 
 // GetSupportedExtensions ...

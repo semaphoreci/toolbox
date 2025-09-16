@@ -1,21 +1,5 @@
 package cmd
 
-/*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 import (
 	"encoding/json"
 	"fmt"
@@ -38,6 +22,14 @@ func formatPublishDescription() string {
 It traverses through directory structure specified by <file-path>, compiles
 test result files (XML, JSON, etc.) and publishes them as one artifact.
 
+You can specify parsers for individual files using the syntax:
+  file.xml:parser-name
+
+Examples:
+  test-results publish results.xml
+  test-results publish results.xml:golang lint.json:go:staticcheck
+  test-results publish --ignore-missing test1.xml test2.xml test3.xml
+
 Available parsers:
 `)
 
@@ -46,7 +38,8 @@ Available parsers:
 	}
 
 	description.WriteString(`
-Use --parser flag to specify a parser, or "auto" for automatic detection.`)
+Use --parser flag to specify a default parser for all files, or "auto" for automatic detection.
+Use --ignore-missing to skip files that don't exist instead of failing.`)
 
 	return description.String()
 }
@@ -69,28 +62,42 @@ var publishCmd = &cobra.Command{
 			return err
 		}
 
-		// Get supported extensions from all parsers
+		ignoreMissing, err := cmd.Flags().GetBool("ignore-missing")
+		if err != nil {
+			return err
+		}
+
+		fileParsers := cli.ParseFileArgs(inputs)
+
 		supportedExts := parsers.GetSupportedExtensions()
 		extMap := make(map[string]bool)
 		for _, ext := range supportedExts {
 			extMap[ext] = true
 		}
 
-		// Load all files with supported extensions
-		paths := []string{}
-		for _, input := range inputs {
-			file, err := os.Stat(input)
+		var allPairs []cli.FileParserPair
+		var rawFilePaths []string
+
+		for _, pair := range fileParsers {
+			file, err := os.Stat(pair.Path)
 			if err != nil {
-				return err
+				if os.IsNotExist(err) && ignoreMissing {
+					logger.Warn("File not found, skipping: %s", pair.Path)
+					continue
+				}
+				return fmt.Errorf("failed to stat %s: %v", pair.Path, err)
 			}
 
 			if file.IsDir() {
-				// Walk directory and get all files with supported extensions
-				err := filepath.WalkDir(input, func(path string, d os.DirEntry, err error) error {
+				err := filepath.WalkDir(pair.Path, func(path string, d os.DirEntry, err error) error {
+					if err != nil {
+						return err
+					}
 					if d.Type().IsRegular() {
 						ext := filepath.Ext(d.Name())
 						if extMap[ext] {
-							paths = append(paths, path)
+							allPairs = append(allPairs, cli.FileParserPair{Path: path, Parser: ""})
+							rawFilePaths = append(rawFilePaths, path)
 						}
 					}
 					return nil
@@ -99,29 +106,40 @@ var publishCmd = &cobra.Command{
 					return err
 				}
 			} else {
-				// Single file - always include it (parser will validate)
-				paths = append(paths, input)
+				allPairs = append(allPairs, pair)
+				rawFilePaths = append(rawFilePaths, pair.Path)
 			}
 		}
 
-		dirPath, err := os.MkdirTemp("", "test-results-*")
+		if len(allPairs) == 0 {
+			logger.Warn("No files to process")
+			return nil
+		}
 
+		dirPath, err := os.MkdirTemp("", "test-results-*")
 		if err != nil {
 			return err
 		}
-
 		defer os.RemoveAll(dirPath)
 
 		pushStats := &cli.ArtifactStats{}
 
-		for _, path := range paths {
-			parser, err := cli.FindParser(path, cmd)
+		for _, pair := range allPairs {
+			parser, err := cli.FindParserForFile(pair, cmd)
 			if err != nil {
+				if ignoreMissing {
+					logger.Warn("Could not find parser for %s, skipping: %v", pair.Path, err)
+					continue
+				}
 				return err
 			}
 
-			testResults, err := cli.Parse(parser, path, cmd)
+			testResults, err := cli.Parse(parser, pair.Path, cmd)
 			if err != nil {
+				if ignoreMissing {
+					logger.Warn("Failed to parse %s, skipping: %v", pair.Path, err)
+					continue
+				}
 				return err
 			}
 
@@ -208,11 +226,11 @@ var publishCmd = &cobra.Command{
 
 		if !noRaw {
 			singlePath := true
-			if len(paths) > 1 {
+			if len(rawFilePaths) > 1 {
 				singlePath = false
 			}
 
-			for idx, rawFilePath := range paths {
+			for idx, rawFilePath := range rawFilePaths {
 				pathExt := path.Ext(rawFilePath)
 				outPath := path.Join("test-results", fmt.Sprintf("junit%s", pathExt))
 				if !singlePath {
@@ -221,6 +239,10 @@ var publishCmd = &cobra.Command{
 
 				_, stats, err = cli.PushArtifacts("job", rawFilePath, outPath, cmd)
 				if err != nil {
+					if ignoreMissing && os.IsNotExist(err) {
+						logger.Warn("Raw file no longer exists, skipping: %s", rawFilePath)
+						continue
+					}
 					return err
 				}
 				if stats != nil {
@@ -285,6 +307,7 @@ func init() {
 	publishCmd.Flags().BoolP("force", "f", false, "force artifact push, passes -f flag to artifact CLI")
 	publishCmd.Flags().Int32P("trim-output-to", "s", 0, "trim stdout to N characters, defaults to 0(unlimited)")
 	publishCmd.Flags().BoolP("omit-output-for-passed", "o", false, "omit stdout if test passed, defaults to false")
+	publishCmd.Flags().Bool("ignore-missing", false, "ignore missing files instead of failing")
 
 	rootCmd.AddCommand(publishCmd)
 }

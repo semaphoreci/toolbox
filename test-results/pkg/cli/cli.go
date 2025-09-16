@@ -29,6 +29,51 @@ type ArtifactStats struct {
 	TotalSize  int64
 }
 
+// FileParserPair represents a file and its optional parser
+type FileParserPair struct {
+	Path   string
+	Parser string // empty means use default/auto-detect
+}
+
+// ParseFileArgs parses arguments like "file.xml:parser" into pairs
+func ParseFileArgs(args []string) []FileParserPair {
+	var pairs []FileParserPair
+	for _, arg := range args {
+		parts := strings.SplitN(arg, ":", 2)
+		if len(parts) == 2 {
+			// Has explicit parser
+			pairs = append(pairs, FileParserPair{Path: parts[0], Parser: parts[1]})
+		} else {
+			// Use default parser logic
+			pairs = append(pairs, FileParserPair{Path: parts[0], Parser: ""})
+		}
+	}
+	return pairs
+}
+
+// FindParserForFile finds parser with optional override
+func FindParserForFile(pair FileParserPair, cmd *cobra.Command) (parser.Parser, error) {
+	if pair.Parser != "" {
+		// Use specified parser
+		p, err := parsers.FindParser(pair.Parser, pair.Path)
+		if err != nil {
+			logger.Error("Could not find specified parser %s: %v", pair.Parser, err)
+			return nil, fmt.Errorf("parser %s not found", pair.Parser)
+		}
+		logger.Info("Using %s parser (explicitly specified)", p.GetName())
+		return p, nil
+	}
+	// Use default logic (from -p flag or auto-detect)
+	return FindParser(pair.Path, cmd)
+}
+
+// EmptyResult returns an empty result structure
+func EmptyResult() *parser.Result {
+	return &parser.Result{
+		TestResults: []parser.TestResults{},
+	}
+}
+
 // LoadFiles checks if path exists and can be `stat`ed at given `path`
 func LoadFiles(inPaths []string, ext string) ([]string, error) {
 	paths := []string{}

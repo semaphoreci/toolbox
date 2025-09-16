@@ -24,7 +24,7 @@ func (me JUnitExUnit) GetName() string {
 
 // GetDescription ...
 func (me JUnitExUnit) GetDescription() string {
-	return "Elixir ExUnit test output"
+	return "ExUnit test output in JUnit format"
 }
 
 // GetSupportedExtensions ...

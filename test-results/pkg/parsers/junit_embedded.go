@@ -23,7 +23,7 @@ func (e JUnitEmbedded) GetName() string {
 
 // GetDescription returns the parser description
 func (e JUnitEmbedded) GetDescription() string {
-	return "Works with nested junit testsuites"
+	return "JUnit format with nested testsuites"
 }
 
 // GetSupportedExtensions ...

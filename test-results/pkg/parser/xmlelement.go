@@ -7,7 +7,6 @@ import (
 	"github.com/semaphoreci/toolbox/test-results/pkg/logger"
 )
 
-// XMLElement ...
 type XMLElement struct {
 	XMLName    xml.Name
 	Attributes map[string]string `xml:"-"`
@@ -15,22 +14,18 @@ type XMLElement struct {
 	Contents   []byte            `xml:",chardata"`
 }
 
-// NewXMLElement ...
 func NewXMLElement() XMLElement {
 	return XMLElement{}
 }
 
-// Attr ...
 func (me *XMLElement) Attr(attr string) string {
 	return me.Attributes[attr]
 }
 
-// Tag ...
 func (me *XMLElement) Tag() string {
 	return me.XMLName.Local
 }
 
-// UnmarshalXML ...
 func (me *XMLElement) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	logger.Trace("Decoding element: %s", start.Name.Local)
 	type alias XMLElement
@@ -43,7 +38,6 @@ func (me *XMLElement) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error
 	return nil
 }
 
-// Parse ...
 func (me *XMLElement) Parse(reader *bytes.Reader) error {
 	decoder := xml.NewDecoder(reader)
 

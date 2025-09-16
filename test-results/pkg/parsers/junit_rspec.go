@@ -24,7 +24,7 @@ func (me JUnitRSpec) GetName() string {
 
 // GetDescription ...
 func (me JUnitRSpec) GetDescription() string {
-	return "Ruby RSpec test output (JUnit format)"
+	return "RSpec test output in JUnit format"
 }
 
 // GetSupportedExtensions ...

@@ -24,7 +24,7 @@ func (me JUnitGoLang) GetName() string {
 
 // GetDescription ...
 func (me JUnitGoLang) GetDescription() string {
-	return "Go test output (JUnit format with go.version property)"
+	return "Go test output in JUnit format"
 }
 
 // GetSupportedExtensions ...

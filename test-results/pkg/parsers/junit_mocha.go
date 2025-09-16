@@ -24,7 +24,7 @@ func (me JUnitMocha) GetName() string {
 
 // GetDescription ...
 func (me JUnitMocha) GetDescription() string {
-	return "JavaScript Mocha test output (JUnit format)"
+	return "Mocha test output in JUnit format"
 }
 
 // GetSupportedExtensions ...

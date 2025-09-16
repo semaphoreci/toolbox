@@ -47,7 +47,7 @@ func (r GoRevive) GetName() string {
 
 // GetDescription returns the description of the parser
 func (r GoRevive) GetDescription() string {
-	return "Go revive linter JSON output"
+	return "Revive linter output (JSON array)"
 }
 
 // GetSupportedExtensions ...
