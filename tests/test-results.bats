@@ -135,10 +135,10 @@ teardown() {
   cd /tmp/test-results-cli
   cp $BATS_TEST_DIRNAME/test-results/golang.xml .
 
-  run test-results compile --no-compress golang.xml:junit output.json
+  run test-results compile --no-compress golang.xml:generic output.json
   assert_success
-  assert_output --partial "Using junit parser"
-  
+  assert_output --partial "Using generic parser"
+
   [ -f output.json ]
 }
 
@@ -147,12 +147,12 @@ teardown() {
   cp $BATS_TEST_DIRNAME/test-results/golang.xml .
   cp $BATS_TEST_DIRNAME/test-results/staticcheck.json .
 
-  run test-results compile --no-compress golang.xml:junit staticcheck.json:go:staticcheck output.json
+  run test-results compile --no-compress golang.xml:generic staticcheck.json:go:staticcheck output.json
   assert_success
-  
-  assert_output --partial "Using junit parser"
+
+  assert_output --partial "Using generic parser"
   assert_output --partial "Using go:staticcheck parser"
-  
+
   [ -f output.json ]
 }
 
@@ -163,10 +163,10 @@ teardown() {
 
   run test-results compile --no-compress junit-sample.xml staticcheck.json:go:staticcheck output.json
   assert_success
-  
+
   assert_output --partial "Using rspec parser"
   assert_output --partial "Using go:staticcheck parser"
-  
+
   [ -f output.json ]
 }
 
@@ -174,10 +174,10 @@ teardown() {
   cd /tmp/test-results-cli
   cp $BATS_TEST_DIRNAME/test-results/golang.xml .
 
-  run test-results publish --no-compress golang.xml:junit
+  run test-results publish --no-compress golang.xml:generic
   assert_success
-  assert_output --partial "Using junit parser"
-  
+  assert_output --partial "Using generic parser"
+
   assert_output --partial "[test-results] Artifact transfers:"
   assert_output --partial "← Pushed:"
 }
@@ -187,10 +187,10 @@ teardown() {
   cp $BATS_TEST_DIRNAME/test-results/golang.xml .
   cp $BATS_TEST_DIRNAME/test-results/revive.json .
 
-  run test-results publish --no-compress golang.xml:junit revive.json:go:revive
+  run test-results publish --no-compress golang.xml:generic revive.json:go:revive
   assert_success
-  
-  assert_output --partial "Using junit parser"
+
+  assert_output --partial "Using generic parser"
   assert_output --partial "Using go:revive parser"
   assert_output --partial "← Pushed: 5 operations"
 }
@@ -211,7 +211,7 @@ teardown() {
   assert_success
   assert_output --partial "File not found, skipping: missing-file.xml"
   assert_output --partial "Using rspec parser"
-  
+
   [ -f output.json ]
 }
 
@@ -222,11 +222,11 @@ teardown() {
 
   run test-results compile --no-compress --ignore-missing golang.xml missing1.xml rspec2.xml missing2.xml output.json
   assert_success
-  
+
   assert_output --partial "File not found, skipping: missing1.xml"
   assert_output --partial "File not found, skipping: missing2.xml"
-  assert_output --partial "Using junit parser"
-  
+  assert_output --partial "Using generic parser"
+
   [ -f output.json ]
 }
 
@@ -255,12 +255,12 @@ teardown() {
   cd /tmp/test-results-cli
   cp $BATS_TEST_DIRNAME/test-results/golang.xml .
 
-  run test-results compile --no-compress --parser rspec golang.xml:junit output.json
+  run test-results compile --no-compress --parser rspec golang.xml:generic output.json
   assert_success
-  
-  assert_output --partial "Using junit parser"
+
+  assert_output --partial "Using generic parser"
   refute_output --partial "Using rspec parser"
-  
+
   [ -f output.json ]
 }
 
@@ -269,13 +269,13 @@ teardown() {
   cp $BATS_TEST_DIRNAME/test-results/golang.xml .
   cp $BATS_TEST_DIRNAME/test-results/staticcheck.json .
 
-  run test-results compile --no-compress --ignore-missing golang.xml:junit missing.xml:rspec staticcheck.json:go:staticcheck output.json
+  run test-results compile --no-compress --ignore-missing golang.xml:generic missing.xml:rspec staticcheck.json:go:staticcheck output.json
   assert_success
-  
+
   assert_output --partial "File not found, skipping: missing.xml"
-  assert_output --partial "Using junit parser"
+  assert_output --partial "Using generic parser"
   assert_output --partial "Using go:staticcheck parser"
-  
+
   [ -f output.json ]
 }
 
@@ -294,6 +294,6 @@ teardown() {
   run test-results compile --no-compress --ignore-missing missing1.xml missing2.json output.json
   assert_success
   assert_output --partial "No files to process"
-  
+
   [ -f output.json ]
 }
