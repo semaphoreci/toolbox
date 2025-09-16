@@ -31,7 +31,8 @@ func FindParser(name string, path string) (parser.Parser, error) {
 				return p, nil
 			}
 		}
-		logger.Debug("Parser not found")
+		logger.Debug("Parser not found: %s", name)
+		return nil, fmt.Errorf("parser not found: %s", name)
 	}
 
 	// First filter by file extension
