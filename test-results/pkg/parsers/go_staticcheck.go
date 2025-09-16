@@ -63,7 +63,6 @@ func (s GoStaticcheck) IsApplicable(path string) bool {
 		return false
 	}
 
-	// Try to parse as staticcheck JSON lines
 	scanner := bufio.NewScanner(strings.NewReader(string(data)))
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -130,14 +129,12 @@ func (s GoStaticcheck) Parse(path string) parser.TestResults {
 	// Group issues by file
 	fileGroups := groupIssuesByFile(issues)
 
-	// Create a test suite for each file
 	for file, fileIssues := range fileGroups {
 		suite := parser.NewSuite()
 		suite.Name = filepath.Base(file)
 		suite.Package = filepath.Dir(file)
 		suite.EnsureID(results)
 
-		// Create a test for each issue
 		for _, issue := range fileIssues {
 			test := parser.NewTest()
 			test.Name = fmt.Sprintf("%s (line %d:%d)", issue.Code, issue.Location.Line, issue.Location.Column)
@@ -145,7 +142,6 @@ func (s GoStaticcheck) Parse(path string) parser.TestResults {
 			test.File = issue.Location.File
 			test.Duration = time.Millisecond // Minimal duration
 
-			// Map severity to state
 			switch issue.Severity {
 			case "error":
 				test.State = parser.StateError
@@ -167,21 +163,10 @@ func (s GoStaticcheck) Parse(path string) parser.TestResults {
 			suite.Tests = append(suite.Tests, test)
 		}
 
-		// Add a passing test if no issues in the file (optional - can be removed)
-		if len(fileIssues) == 0 {
-			test := parser.NewTest()
-			test.Name = "No issues found"
-			test.State = parser.StatePassed
-			test.Duration = time.Millisecond
-			test.EnsureID(suite)
-			suite.Tests = append(suite.Tests, test)
-		}
-
 		suite.Aggregate()
 		results.Suites = append(results.Suites, suite)
 	}
 
-	// If no issues at all, create a single passing suite
 	if len(issues) == 0 {
 		suite := parser.NewSuite()
 		suite.Name = "Staticcheck"
