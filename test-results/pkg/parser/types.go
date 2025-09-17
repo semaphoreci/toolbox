@@ -482,3 +482,13 @@ func (t *TestResult) String() []string {
 func UUID(id uuid.UUID, str string) uuid.UUID {
 	return uuid.NewMD5(id, []byte(str))
 }
+
+// TrimTextTo trims a string to the last N characters, adding a truncation marker if needed
+func TrimTextTo(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	// Keep the last N characters
+	truncated := s[len(s)-int(n):]
+	return "...[truncated]...\n" + truncated
+}

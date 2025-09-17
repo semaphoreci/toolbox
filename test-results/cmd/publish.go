@@ -305,7 +305,6 @@ func init() {
 	desc := `Skips uploading raw input files`
 	publishCmd.Flags().BoolP("no-raw", "", false, desc)
 	publishCmd.Flags().BoolP("force", "f", false, "force artifact push, passes -f flag to artifact CLI")
-	publishCmd.Flags().Int32P("trim-output-to", "s", 0, "trim stdout to N characters, defaults to 0(unlimited)")
 	publishCmd.Flags().BoolP("omit-output-for-passed", "o", false, "omit stdout if test passed, defaults to false")
 	publishCmd.Flags().Bool("ignore-missing", false, "ignore missing files instead of failing")
 

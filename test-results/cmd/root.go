@@ -44,6 +44,7 @@ func init() {
 	rootCmd.PersistentFlags().StringP("suite-prefix", "S", "", "prefix for each suite")
 	rootCmd.PersistentFlags().StringP("parser", "p", "auto", "override parser to be used")
 	rootCmd.PersistentFlags().Bool("no-compress", false, "skip gzip compression for the output")
+	rootCmd.PersistentFlags().IntP("trim-output-to", "s", 1000, "trim stdout/stderr to last N characters (max 10000), defaults to 1000")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
