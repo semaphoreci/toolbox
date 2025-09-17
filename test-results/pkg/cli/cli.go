@@ -1,11 +1,8 @@
 package cli
 
 import (
-	"bytes"
-	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -15,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/semaphoreci/toolbox/test-results/pkg/compression"
 	"github.com/semaphoreci/toolbox/test-results/pkg/logger"
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 	"github.com/semaphoreci/toolbox/test-results/pkg/parsers"
@@ -27,6 +25,51 @@ type ArtifactStats struct {
 	Operations int
 	FileCount  int
 	TotalSize  int64
+}
+
+// FileParserPair represents a file and its optional parser
+type FileParserPair struct {
+	Path   string
+	Parser string // empty means use default/auto-detect
+}
+
+// ParseFileArgs parses arguments like "file.xml:parser" into pairs
+func ParseFileArgs(args []string) []FileParserPair {
+	var pairs []FileParserPair
+	for _, arg := range args {
+		parts := strings.SplitN(arg, ":", 2)
+		if len(parts) == 2 {
+			// Has explicit parser
+			pairs = append(pairs, FileParserPair{Path: parts[0], Parser: parts[1]})
+		} else {
+			// Use default parser logic
+			pairs = append(pairs, FileParserPair{Path: parts[0], Parser: ""})
+		}
+	}
+	return pairs
+}
+
+// FindParserForFile finds parser with optional override
+func FindParserForFile(pair FileParserPair, cmd *cobra.Command) (parser.Parser, error) {
+	if pair.Parser != "" {
+		// Use specified parser
+		p, err := parsers.FindParser(pair.Parser, pair.Path)
+		if err != nil {
+			logger.Error("Could not find specified parser %s: %v", pair.Parser, err)
+			return nil, fmt.Errorf("parser %s not found", pair.Parser)
+		}
+		logger.Info("Using %s parser (explicitly specified)", p.GetName())
+		return p, nil
+	}
+	// Use default logic (from -p flag or auto-detect)
+	return FindParser(pair.Path, cmd)
+}
+
+// EmptyResult returns an empty result structure
+func EmptyResult() *parser.Result {
+	return &parser.Result{
+		TestResults: []parser.TestResults{},
+	}
 }
 
 // LoadFiles checks if path exists and can be `stat`ed at given `path`
@@ -244,7 +287,7 @@ func writeToFile(data []byte, file *os.File, compress bool) (string, error) {
 
 	dataToWrite := data
 	if compress {
-		compressedData, err := GzipCompress(data)
+		compressedData, err := compression.GzipCompress(data)
 		if err != nil {
 			logger.Error("Output file write failed: %v", err)
 			return "", err
@@ -429,71 +472,21 @@ func Load(path string) (*parser.Result, error) {
 	}
 	defer jsonFile.Close()
 
-	bytes, err := io.ReadAll(jsonFile)
+	// Get a reader that handles both compressed and uncompressed files
+	reader, closeFunc, err := compression.GzipDecompress(jsonFile)
 	if err != nil {
 		return nil, err
 	}
+	defer closeFunc()
 
-	decompressedBytes, err := GzipDecompress(bytes)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(decompressedBytes, &result)
-
+	// Stream decode JSON directly from reader
+	decoder := json.NewDecoder(reader)
+	err = decoder.Decode(&result)
 	if err != nil {
 		return nil, err
 	}
 
 	return &result, nil
-}
-
-func IsGzipCompressed(bytes []byte) bool {
-	if len(bytes) < 2 {
-		return false
-	}
-
-	return bytes[0] == 0x1f && bytes[1] == 0x8b
-}
-
-// takes a slice of data bytes, compresses it and replaces with compressed bytes
-func GzipCompress(data []byte) ([]byte, error) {
-	var buf bytes.Buffer
-
-	writer := gzip.NewWriter(&buf)
-
-	_, err := writer.Write(data)
-	if err != nil {
-		return data, err
-	}
-
-	err = writer.Close()
-	if err != nil {
-		return data, err
-	}
-
-	return buf.Bytes(), nil
-}
-
-func GzipDecompress(data []byte) ([]byte, error) {
-	if !IsGzipCompressed(data) {
-		return data, nil
-	}
-
-	reader, err := gzip.NewReader(bytes.NewReader(data))
-	if err != nil {
-		logger.Error("Decompression failed: %v", err)
-		return data, err
-	}
-	defer reader.Close()
-
-	newData, err := io.ReadAll(reader)
-	if err != nil {
-		logger.Error("Decompression failed: %v", err)
-		return data, err
-	}
-
-	return newData, nil
 }
 
 func parseArtifactStats(output string) *ArtifactStats {
@@ -562,40 +555,40 @@ func DisplayTransferSummary(pullStats *ArtifactStats, pushStats *ArtifactStats) 
 	totalOps := pullStats.Operations + pushStats.Operations
 	if totalOps > 0 {
 		logger.Info("[test-results] Artifact transfers:")
-		
+
 		if pullStats.Operations > 0 {
 			if pullStats.FileCount > 0 || pullStats.TotalSize > 0 {
-				logger.Info("  → Pulled: %d %s, %d %s, %s", 
+				logger.Info("  → Pulled: %d %s, %d %s, %s",
 					pullStats.Operations, Pluralize(pullStats.Operations, "operation", "operations"),
 					pullStats.FileCount, Pluralize(pullStats.FileCount, "file", "files"),
 					FormatBytes(pullStats.TotalSize))
 			} else {
-				logger.Info("  → Pulled: %d %s", 
+				logger.Info("  → Pulled: %d %s",
 					pullStats.Operations, Pluralize(pullStats.Operations, "operation", "operations"))
 			}
 		}
-		
+
 		if pushStats.Operations > 0 {
 			if pushStats.FileCount > 0 || pushStats.TotalSize > 0 {
-				logger.Info("  ← Pushed: %d %s, %d %s, %s", 
+				logger.Info("  ← Pushed: %d %s, %d %s, %s",
 					pushStats.Operations, Pluralize(pushStats.Operations, "operation", "operations"),
 					pushStats.FileCount, Pluralize(pushStats.FileCount, "file", "files"),
 					FormatBytes(pushStats.TotalSize))
 			} else {
-				logger.Info("  ← Pushed: %d %s", 
+				logger.Info("  ← Pushed: %d %s",
 					pushStats.Operations, Pluralize(pushStats.Operations, "operation", "operations"))
 			}
 		}
-		
+
 		totalFiles := pullStats.FileCount + pushStats.FileCount
 		totalSize := pullStats.TotalSize + pushStats.TotalSize
 		if totalFiles > 0 || totalSize > 0 {
-			logger.Info("  = Total: %d %s, %d %s, %s", 
+			logger.Info("  = Total: %d %s, %d %s, %s",
 				totalOps, Pluralize(totalOps, "operation", "operations"),
 				totalFiles, Pluralize(totalFiles, "file", "files"),
 				FormatBytes(totalSize))
 		} else {
-			logger.Info("  = Total: %d %s", 
+			logger.Info("  = Total: %d %s",
 				totalOps, Pluralize(totalOps, "operation", "operations"))
 		}
 	}

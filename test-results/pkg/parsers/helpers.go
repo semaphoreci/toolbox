@@ -2,10 +2,12 @@ package parsers
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 
 	"github.com/semaphoreci/toolbox/test-results/pkg/fileloader"
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // LoadPath ...
@@ -15,7 +17,7 @@ func LoadPath(path string) (*bytes.Reader, error) {
 	reader, found := fileloader.Load(path, &bytes.Reader{})
 
 	if !found {
-		file, err := ioutil.ReadFile(path) // #nosec
+		file, err := os.ReadFile(path) // #nosec
 
 		if err != nil {
 			return nil, err
@@ -42,4 +44,34 @@ func LoadXML(path string) (*parser.XMLElement, error) {
 	}
 
 	return &xmlElement, nil
+}
+
+// LoadFile loads a file from the given path
+func LoadFile(path string) ([]byte, error) {
+	// Check file cache first
+	reader, found := fileloader.Load(path, &bytes.Reader{})
+
+	if found {
+		buf := new(bytes.Buffer)
+		_, err := buf.ReadFrom(reader)
+		if err != nil {
+			return nil, err
+		}
+		return buf.Bytes(), nil
+	}
+
+	data, err := os.ReadFile(path) // #nosec
+	if err != nil {
+		return nil, err
+	}
+
+	// Cache for future use
+	fileloader.Load(path, bytes.NewReader(data))
+
+	return data, nil
+}
+
+func Title(s string) string {
+	caser := cases.Title(language.English)
+	return caser.String(s)
 }

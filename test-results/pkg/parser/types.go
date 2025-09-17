@@ -39,12 +39,10 @@ const (
 	StatusError Status = "error"
 )
 
-// Result ...
 type Result struct {
 	TestResults []TestResults `json:"testResults"`
 }
 
-// NewResult ...
 func NewResult() Result {
 	return Result{
 		TestResults: []TestResults{},
@@ -101,7 +99,6 @@ func (me *Result) hasTestResults(testResults TestResults) (int, bool) {
 	return -1, false
 }
 
-// TestResults ...
 type TestResults struct {
 	ID            string  `json:"id"`
 	Name          string  `json:"name"`
@@ -113,7 +110,6 @@ type TestResults struct {
 	Suites        []Suite `json:"suites"`
 }
 
-// NewTestResults ...
 func NewTestResults() TestResults {
 	return TestResults{
 		Suites:        []Suite{},
@@ -122,7 +118,6 @@ func NewTestResults() TestResults {
 	}
 }
 
-// Combine ...
 func (me *TestResults) Combine(other TestResults) {
 	if me.ID == other.ID {
 		for i := range other.Suites {
@@ -150,7 +145,6 @@ func (me *TestResults) hasSuite(suite Suite) (int, bool) {
 	return -1, false
 }
 
-// ArrangeSuitesByTestFile ...
 func (me *TestResults) ArrangeSuitesByTestFile() {
 	newSuites := []Suite{}
 
@@ -180,7 +174,6 @@ func (me *TestResults) ArrangeSuitesByTestFile() {
 	me.Aggregate()
 }
 
-// EnsureSuiteByName ...
 func EnsureSuiteByName(suites []Suite, name string) (int, *Suite) {
 	for i := range suites {
 		if suites[i].Name == name {
@@ -193,7 +186,6 @@ func EnsureSuiteByName(suites []Suite, name string) (int, *Suite) {
 	return -1, &suite
 }
 
-// EnsureID ...
 func (me *TestResults) EnsureID() {
 	if me.ID == "" {
 		me.ID = me.Name
@@ -206,7 +198,6 @@ func (me *TestResults) EnsureID() {
 	me.ID = UUID(uuid.Nil, me.ID).String()
 }
 
-// RegenerateID ...
 func (me *TestResults) RegenerateID() {
 	me.ID = ""
 	me.EnsureID()
@@ -237,7 +228,6 @@ func (me *TestResults) Aggregate() {
 	me.Summary = summary
 }
 
-// Suite ...
 type Suite struct {
 	ID         string     `json:"id"`
 	Name       string     `json:"name"`
@@ -253,12 +243,10 @@ type Suite struct {
 	Tests      []Test     `json:"tests"`
 }
 
-// NewSuite ...
 func NewSuite() Suite {
 	return Suite{Tests: []Test{}}
 }
 
-// Combine ...
 func (me *Suite) Combine(other Suite) {
 	if me.ID == other.ID {
 		for i := range other.Tests {
@@ -344,7 +332,6 @@ func (me *Suite) Aggregate() {
 	me.Summary = summary
 }
 
-// EnsureID ...
 func (me *Suite) EnsureID(tr TestResults) {
 	if me.ID == "" {
 		me.ID = me.Name
@@ -358,7 +345,6 @@ func (me *Suite) EnsureID(tr TestResults) {
 	me.ID = UUID(oldID, me.ID).String()
 }
 
-// AppendTest ...
 func (me *Suite) AppendTest(test Test) {
 	me.Tests = append(me.Tests, test)
 	me.Aggregate()
@@ -413,7 +399,6 @@ func NewSemEnv() SemEnv {
 	}
 }
 
-// Test ...
 type Test struct {
 	ID        string        `json:"id"`
 	File      string        `json:"file"`
@@ -429,7 +414,6 @@ type Test struct {
 	SemEnv    SemEnv        `json:"semaphoreEnv"`
 }
 
-// NewTest ...
 func NewTest() Test {
 	return Test{
 		State:  StatePassed,
@@ -437,7 +421,6 @@ func NewTest() Test {
 	}
 }
 
-// EnsureID ...
 func (me *Test) EnsureID(s Suite) {
 	// Determine the ID based on the various test details
 	testIdentity := fmt.Sprintf("%s.%s.%s.%s.%s", me.ID, me.Name, me.Classname, me.Package, me.File)
@@ -451,23 +434,18 @@ type err struct {
 	Body    string `json:"body"`
 }
 
-// Failure ...
 type Failure err
 
-// NewFailure ...
 func NewFailure() Failure {
 	return Failure{}
 }
 
-// Error ...
 type Error err
 
-// NewError ...
 func NewError() Error {
 	return Error{}
 }
 
-// Summary ...
 type Summary struct {
 	Total    int           `json:"total"`
 	Passed   int           `json:"passed"`
@@ -501,7 +479,6 @@ func (t *TestResult) String() []string {
 	return []string{t.TestID, t.GitSha, fmt.Sprintf("%d", t.Duration.Milliseconds()), t.JobID, string(t.State)}
 }
 
-// UUID ...
 func UUID(id uuid.UUID, str string) uuid.UUID {
 	return uuid.NewMD5(id, []byte(str))
 }

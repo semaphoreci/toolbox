@@ -3,21 +3,16 @@ PHONY: run
 run:
 	go run main.go $(arg)
 
-regen:
-	go run main.go compile --no-compress priv/parsers/generic/in.xml priv/parsers/generic/out.json
-	go run main.go compile --no-compress priv/parsers/rspec/in.xml priv/parsers/rspec/out.json
-	go run main.go compile --no-compress priv/parsers/exunit/in.xml priv/parsers/exunit/out.json
-	go run main.go compile --no-compress priv/parsers/golang/in.xml priv/parsers/golang/out.json
-	go run main.go compile --no-compress -p phpunit priv/parsers/phpunit/in.xml priv/parsers/phpunit/out.json
-	go run main.go compile --no-compress -p embedded priv/parsers/embedded/in.xml priv/parsers/embedded/out.json
-	go run main.go compile --no-compress priv/merging priv/merging/out.json
+regen.golden:
+	go test ./pkg/parsers -update-golden
 
 test.setup:
 	docker compose build
 	docker compose run cli go get ./...
 
 lint:
-	docker compose run --rm cli revive -formatter friendly -config lint.toml ./...
+	docker compose run --rm cli revive -formatter json -config lint.toml ./... > revive.json
+	docker compose run --rm cli staticcheck -f json ./... > staticcheck.json
 
 test:
 	docker compose run --rm cli gotestsum --format short-verbose --junitfile junit-report.xml --packages="./..."
@@ -33,25 +28,35 @@ test.cover:
 	rm c.out
 	scripts/lcov-to-md.sh
 
-SECURITY_TOOLBOX_BRANCH ?= master
-SECURITY_TOOLBOX_TMP_DIR ?= /tmp/security-toolbox
+MONOREPO_TMP_DIR?=/tmp/monorepo
+SECURITY_TOOLBOX_TMP_DIR?=$(MONOREPO_TMP_DIR)/security-toolbox
+SECURITY_TOOLBOX_BRANCH?=main
+LANGUAGE=go
+APP_DIRECTORY=/app
 
 check.prepare:
-	rm -rf $(SECURITY_TOOLBOX_TMP_DIR)
-	git clone git@github.com:renderedtext/security-toolbox.git $(SECURITY_TOOLBOX_TMP_DIR) && (cd $(SECURITY_TOOLBOX_TMP_DIR) && git checkout $(SECURITY_TOOLBOX_BRANCH) && cd -)
+	rm -rf $(MONOREPO_TMP_DIR)
+	git clone --depth 1 --filter=blob:none --sparse https://github.com/semaphoreio/semaphore $(MONOREPO_TMP_DIR) && \
+		cd $(MONOREPO_TMP_DIR) && \
+		git config core.sparseCheckout true && \
+		git sparse-checkout init --cone && \
+		git sparse-checkout set security-toolbox && \
+		git checkout main && cd -
 
 check.static: check.prepare
-	docker run -it -v $$(pwd):/app \
+	docker run -it \
+		-v $$(pwd):$(APP_DIRECTORY) \
 		-v $(SECURITY_TOOLBOX_TMP_DIR):$(SECURITY_TOOLBOX_TMP_DIR) \
-		registry.semaphoreci.com/ruby:2.7 \
-		bash -c 'cd /app && $(SECURITY_TOOLBOX_TMP_DIR)/code --language go -d'
+		registry.semaphoreci.com/ruby:3 \
+		bash -c 'cd $(APP_DIRECTORY) && $(SECURITY_TOOLBOX_TMP_DIR)/code --language $(LANGUAGE) -d'
 
 check.deps: check.prepare
-	docker run -it -v $$(pwd):/app \
+	docker run -it \
+		-v $$(pwd):$(APP_DIRECTORY) \
 		-v $(SECURITY_TOOLBOX_TMP_DIR):$(SECURITY_TOOLBOX_TMP_DIR) \
 		-e TRIVY_DB_REPOSITORY -e TRIVY_JAVA_DB_REPOSITORY \
-		registry.semaphoreci.com/ruby:2.7 \
-		bash -c 'cd /app && $(SECURITY_TOOLBOX_TMP_DIR)/dependencies --language go -d'
+		registry.semaphoreci.com/ruby:3 \
+		bash -c 'cd $(APP_DIRECTORY) && $(SECURITY_TOOLBOX_TMP_DIR)/dependencies --language $(LANGUAGE) -d'
 
 build.darwin:
 	CGO_ENABLED=0 GOOS=darwin GOARCH=$(ARCH) go build -o bin/darwin/$(ARCH)/test-results main.go

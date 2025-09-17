@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite tests="2" failures="1" time="0.002" name="github.com/example/project/pkg/sample">
+    <properties>
+      <property name="go.version" value="go1.21 darwin/arm64"></property>
+    </properties>
+    <testcase classname="github.com/example/project/pkg/sample" name="TestAddition" time="0.001"></testcase>
+    <testcase classname="github.com/example/project/pkg/sample" name="TestSubtraction" time="0.001">
+      <failure message="Failed" type="">sample_test.go:15:
+        expected: 5
+             got: 3</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

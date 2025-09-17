@@ -1,0 +1,244 @@
+{
+  "id": "391d4dcc-8789-3a46-b18d-807429727762",
+  "name": "",
+  "framework": "mocha",
+  "isDisabled": false,
+  "summary": {
+    "total": 6,
+    "passed": 6,
+    "skipped": 0,
+    "error": 0,
+    "failed": 0,
+    "disabled": 0,
+    "duration": 0
+  },
+  "status": "success",
+  "statusMessage": "",
+  "suites": [
+    {
+      "id": "564edd8f-bca4-3fd5-bb0a-9e3587c0bef1",
+      "name": "foo",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "",
+      "properties": null,
+      "summary": {
+        "total": 2,
+        "passed": 2,
+        "skipped": 0,
+        "error": 0,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 0
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "b4a00cb4-1347-31b8-ab8b-c0a3f7025227",
+          "file": "",
+          "classname": "",
+          "package": "",
+          "name": "foo.1",
+          "duration": 0,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "b60febdf-e1e0-3456-aab0-1710a1a816a8",
+          "file": "",
+          "classname": "",
+          "package": "",
+          "name": "foo.2",
+          "duration": 0,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "564edd8f-bca4-3fd5-bb0a-9e3587c0bef1",
+      "name": "foo",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "",
+      "properties": null,
+      "summary": {
+        "total": 2,
+        "passed": 2,
+        "skipped": 0,
+        "error": 0,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 0
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "f7adf9c6-6662-3b6d-b11e-d3877d25dcfa",
+          "file": "",
+          "classname": "",
+          "package": "",
+          "name": "foo.3",
+          "duration": 0,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "48572e85-8897-35b8-92dd-6b8825dcf7c8",
+          "file": "",
+          "classname": "",
+          "package": "",
+          "name": "foo.4",
+          "duration": 0,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "9a857bef-8946-369f-8325-abc0441c3379",
+      "name": "bar",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "",
+      "properties": null,
+      "summary": {
+        "total": 2,
+        "passed": 2,
+        "skipped": 0,
+        "error": 0,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 0
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "972f8c92-58ee-3919-a7ef-493918b5c612",
+          "file": "",
+          "classname": "",
+          "package": "",
+          "name": "bar.1",
+          "duration": 0,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "9ee3fce0-5d2c-3135-a3b4-dc89e32a73d2",
+          "file": "",
+          "classname": "",
+          "package": "",
+          "name": "bar.2",
+          "duration": 0,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    }
+  ]
+}

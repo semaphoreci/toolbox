@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="rspec" tests="2" skipped="0" failures="1" errors="0" time="0.003" timestamp="2024-01-15T10:00:00+00:00" hostname="test-host">
+  <properties>
+    <property name="seed" value="12345" />
+  </properties>
+  <testcase classname="spec.models.user_spec" name="User validations validates presence of email" file="./spec/models/user_spec.rb" time="0.001"></testcase>
+  <testcase classname="spec.models.user_spec" name="User validations validates uniqueness of email" file="./spec/models/user_spec.rb" time="0.002">
+    <failure message="expected email to be unique" type="RSpec::Expectations::ExpectationNotMetError">Failure/Error: expect(user).to be_valid
+
+  expected: true
+       got: false
+
+./spec/models/user_spec.rb:15:in `block (3 levels) in &lt;top (required)&gt;'</failure>
+  </testcase>
+</testsuite>

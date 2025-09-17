@@ -49,7 +49,7 @@ blocks:
             - artifact push workflow bin/windows/sem-context.exe -d bin/windows/sem-context.exe
         - name: Build test-results CLI
           commands:
-            - sem-version go 1.20
+            - sem-version go 1.24.6
             - "export GOPATH=~/go"
             - "export PATH=/home/semaphore/go/bin:$PATH"
             - checkout
@@ -845,8 +845,8 @@ blocks:
       epilogue:
         always:
           commands:
-            - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST' 
-  
+            - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
+
   - name: "Cache CLI: Tests"
     dependencies: []
     task:
@@ -880,7 +880,7 @@ blocks:
             - go install github.com/mgechev/revive@latest
             - make lint
 
-  - name: "Test Results CLI"
+  - name: "Test Results CLI: Tests"
     dependencies: []
     task:
       prologue:
@@ -895,6 +895,16 @@ blocks:
         always:
           commands:
             - '[[ -f junit-report.xml ]] && test-results publish junit-report.xml'
+  - name: "Test Results CLI: Lint"
+    dependencies: []
+    task:
+      prologue:
+        commands:
+          - checkout && cd test-results
+      jobs:
+        - name: Test
+          commands:
+          - make lint
 
   - name: "Security checks"
     dependencies: []

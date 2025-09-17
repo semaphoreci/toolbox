@@ -1,0 +1,291 @@
+{
+  "id": "c7f5804e-ef6c-3817-822a-fecc7f191c84",
+  "name": "Go Staticcheck Analysis",
+  "framework": "go:staticcheck",
+  "isDisabled": false,
+  "summary": {
+    "total": 6,
+    "passed": 0,
+    "skipped": 0,
+    "error": 6,
+    "failed": 0,
+    "disabled": 0,
+    "duration": 6000000
+  },
+  "status": "success",
+  "statusMessage": "",
+  "suites": [
+    {
+      "id": "14221393-6103-37ed-bb39-cc2cfffe13ef",
+      "name": "helper.go",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "utils",
+      "properties": null,
+      "summary": {
+        "total": 1,
+        "passed": 0,
+        "skipped": 0,
+        "error": 1,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 1000000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "f92852f7-f5c9-31a1-95b1-6941f1f4b89d",
+          "file": "utils/helper.go",
+          "classname": "SA1019",
+          "package": "",
+          "name": "SA1019 (line 23:10)",
+          "duration": 1000000,
+          "state": "error",
+          "failure": null,
+          "error": {
+            "message": "io/ioutil.ReadFile is deprecated:As of Go 1.16, this function simply calls os.ReadFile.",
+            "type": "SA1019",
+            "body": "Location: utils/helper.go:23:10\nio/ioutil.ReadFile is deprecated:As of Go 1.16, this function simply calls os.ReadFile."
+          },
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "2353173e-40d4-3ea5-9ffc-2e6fcafe60ff",
+      "name": "main.go",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": ".",
+      "properties": null,
+      "summary": {
+        "total": 3,
+        "passed": 0,
+        "skipped": 0,
+        "error": 3,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 3000000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "16e3907f-890e-3cab-a62f-30be8e7d6b27",
+          "file": "main.go",
+          "classname": "ST1000",
+          "package": "",
+          "name": "ST1000 (line 5:2)",
+          "duration": 1000000,
+          "state": "error",
+          "failure": null,
+          "error": {
+            "message": "at least one file in a package should have a package comment",
+            "type": "ST1000",
+            "body": "Location: main.go:5:2\nat least one file in a package should have a package comment"
+          },
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "1f482e42-2717-3a6a-9927-9864514da788",
+          "file": "main.go",
+          "classname": "ST1003",
+          "package": "",
+          "name": "ST1003 (line 10:6)",
+          "duration": 1000000,
+          "state": "error",
+          "failure": null,
+          "error": {
+            "message": "should not use underscores in package names",
+            "type": "ST1003",
+            "body": "Location: main.go:10:6\nshould not use underscores in package names"
+          },
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "9e878016-8af1-35df-a8ae-b76e530f3b87",
+          "file": "main.go",
+          "classname": "SA5001",
+          "package": "",
+          "name": "SA5001 (line 75:15)",
+          "duration": 1000000,
+          "state": "error",
+          "failure": null,
+          "error": {
+            "message": "must not defer Close on a writable file",
+            "type": "SA5001",
+            "body": "Location: main.go:75:15\nmust not defer Close on a writable file"
+          },
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "5a1cd260-9358-3478-a527-7d7aaa930ede",
+      "name": "handler.go",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "server",
+      "properties": null,
+      "summary": {
+        "total": 1,
+        "passed": 0,
+        "skipped": 0,
+        "error": 1,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 1000000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "4c85aafb-82ed-39a5-8e69-c7dae49d5a55",
+          "file": "server/handler.go",
+          "classname": "SA4006",
+          "package": "",
+          "name": "SA4006 (line 45:2)",
+          "duration": 1000000,
+          "state": "error",
+          "failure": null,
+          "error": {
+            "message": "this value of err is never used",
+            "type": "SA4006",
+            "body": "Location: server/handler.go:45:2\nthis value of err is never used"
+          },
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    },
+    {
+      "id": "9aeeff07-acbf-3dd6-a677-5ada96a59669",
+      "name": "config.go",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "config",
+      "properties": null,
+      "summary": {
+        "total": 1,
+        "passed": 0,
+        "skipped": 0,
+        "error": 1,
+        "failed": 0,
+        "disabled": 0,
+        "duration": 1000000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "b6a04857-b020-358c-bac4-22e60c9406c8",
+          "file": "config/config.go",
+          "classname": "ST1020",
+          "package": "",
+          "name": "ST1020 (line 15:1)",
+          "duration": 1000000,
+          "state": "error",
+          "failure": null,
+          "error": {
+            "message": "comment on exported function Config should be of the form \"Config ...\"",
+            "type": "ST1020",
+            "body": "Location: config/config.go:15:1\ncomment on exported function Config should be of the form \"Config ...\""
+          },
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    }
+  ]
+}

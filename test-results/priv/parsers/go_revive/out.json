@@ -1,0 +1,102 @@
+{
+  "id": "5daf675a-c738-38b7-8f01-9b29bd803e2e",
+  "name": "Go Revive Analysis",
+  "framework": "go:revive",
+  "isDisabled": false,
+  "summary": {
+    "total": 2,
+    "passed": 0,
+    "skipped": 0,
+    "error": 0,
+    "failed": 2,
+    "disabled": 0,
+    "duration": 2000000
+  },
+  "status": "success",
+  "statusMessage": "",
+  "suites": [
+    {
+      "id": "82222425-b435-3500-9ebe-3cfa210619fe",
+      "name": "pkg/parsers/go_staticcheck.go",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "",
+      "hostname": "",
+      "package": "",
+      "properties": null,
+      "summary": {
+        "total": 2,
+        "passed": 0,
+        "skipped": 0,
+        "error": 0,
+        "failed": 2,
+        "disabled": 0,
+        "duration": 2000000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "eb34c62c-b030-30bd-8cb8-de695ac27720",
+          "file": "pkg/parsers/go_staticcheck.go:46",
+          "classname": "naming",
+          "package": "",
+          "name": "go_staticcheck.go:46:1 - receiver-naming",
+          "duration": 1000000,
+          "state": "failed",
+          "failure": {
+            "message": "receiver name ms should be consistent with previous receiver name s for GoStaticcheck",
+            "type": "receiver-naming (warning)",
+            "body": "Rule: receiver-naming\nCategory: naming\nSeverity: warning\nConfidence: 1\n\nreceiver name ms should be consistent with previous receiver name s for GoStaticcheck"
+          },
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "345400c9-941e-3c8f-9a93-1d6db7d86158",
+          "file": "pkg/parsers/go_staticcheck.go:51",
+          "classname": "naming",
+          "package": "",
+          "name": "go_staticcheck.go:51:1 - receiver-naming",
+          "duration": 1000000,
+          "state": "failed",
+          "failure": {
+            "message": "receiver name ms should be consistent with previous receiver name s for GoStaticcheck",
+            "type": "receiver-naming (warning)",
+            "body": "Rule: receiver-naming\nCategory: naming\nSeverity: warning\nConfidence: 1\n\nreceiver name ms should be consistent with previous receiver name s for GoStaticcheck"
+          },
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    }
+  ]
+}
