@@ -894,7 +894,7 @@ blocks:
       epilogue:
         always:
           commands:
-            - '[[ -f junit-report.xml ]] && test-results publish junit-report.xml'
+            - test-results publish --ignore-missing junit-report.xml
   - name: "Test Results CLI: Lint"
     dependencies: []
     task:
@@ -905,6 +905,10 @@ blocks:
         - name: Test
           commands:
           - make lint
+      epilogue:
+        always:
+          commands:
+            - test-results publish --ignore-missing revive.json:go:revive staticcheck.json:go:staticcheck
 
   - name: "Security checks"
     dependencies: []
@@ -945,7 +949,7 @@ blocks:
       epilogue:
         always:
           commands:
-            - '[[ -f results.xml ]] && test-results publish --name="$CLI_NAME: Security checks" results.xml'
+            - 'test-results publish --ignore-missing --name="$CLI_NAME: Security checks" results.xml'
 
   - name: SHM Test Focal
     dependencies:
