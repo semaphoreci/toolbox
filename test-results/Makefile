@@ -11,8 +11,8 @@ test.setup:
 	docker compose run cli go get ./...
 
 lint:
-	docker compose run --rm cli revive -formatter json -config lint.toml ./... > revive.json
-	docker compose run --rm cli staticcheck -f json ./... > staticcheck.json
+	docker compose run --rm cli bash -c "revive -formatter json -config lint.toml ./... > revive.json"
+	docker compose run --rm cli bash -c "staticcheck -f json ./... > staticcheck.json"
 
 test:
 	docker compose run --rm cli gotestsum --format short-verbose --junitfile junit-report.xml --packages="./..."
