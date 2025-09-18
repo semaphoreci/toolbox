@@ -40,7 +40,7 @@ var combineCmd = &cobra.Command{
 				return err
 			}
 
-			newResult, err := cli.Load(inFile)
+			newResult, err := cli.Load(inFile, cmd)
 
 			if err != nil {
 				logger.Error(err.Error())
@@ -69,7 +69,6 @@ var combineCmd = &cobra.Command{
 }
 
 func init() {
-	combineCmd.Flags().Int32P("trim-output-to", "s", 0, "trim stdout to N characters, defaults to 0(unlimited)")
 	combineCmd.Flags().BoolP("omit-output-for-passed", "o", false, "omit stdout if test passed, defaults to false")
 	rootCmd.AddCommand(combineCmd)
 }

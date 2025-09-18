@@ -211,36 +211,6 @@ func DecorateResults(result *parser.Result, cmd *cobra.Command) error {
 		}
 	}
 
-	trimStdoutTo, err := cmd.Flags().GetInt32("trim-output-to")
-	if err != nil {
-		logger.Error("Reading flag trim-output-to failed with error: %v", err)
-		return err
-	}
-
-	if trimStdoutTo > 0 {
-		for idx := range result.TestResults {
-			for suiteIdx := range result.TestResults[idx].Suites {
-				if len(result.TestResults[idx].Suites[suiteIdx].SystemErr) > int(trimStdoutTo) {
-					result.TestResults[idx].Suites[suiteIdx].SystemErr = result.TestResults[idx].Suites[suiteIdx].SystemErr[:trimStdoutTo]
-				}
-
-				if len(result.TestResults[idx].Suites[suiteIdx].SystemOut) > int(trimStdoutTo) {
-					result.TestResults[idx].Suites[suiteIdx].SystemOut = result.TestResults[idx].Suites[suiteIdx].SystemOut[:trimStdoutTo]
-				}
-
-				for caseIdx := range result.TestResults[idx].Suites[suiteIdx].Tests {
-					if len(result.TestResults[idx].Suites[suiteIdx].Tests[caseIdx].SystemErr) > int(trimStdoutTo) {
-						result.TestResults[idx].Suites[suiteIdx].Tests[caseIdx].SystemErr = result.TestResults[idx].Suites[suiteIdx].Tests[caseIdx].SystemErr[:trimStdoutTo]
-					}
-
-					if len(result.TestResults[idx].Suites[suiteIdx].Tests[caseIdx].SystemOut) > int(trimStdoutTo) {
-						result.TestResults[idx].Suites[suiteIdx].Tests[caseIdx].SystemOut = result.TestResults[idx].Suites[suiteIdx].Tests[caseIdx].SystemOut[:trimStdoutTo]
-					}
-				}
-			}
-		}
-	}
-
 	return nil
 }
 
@@ -440,7 +410,7 @@ func MergeFiles(path string, cmd *cobra.Command) (*parser.Result, error) {
 			return err
 		}
 
-		newResult, err := Load(inFile)
+		newResult, err := Load(inFile, cmd)
 		if err != nil {
 			logger.Error(err.Error())
 			return err
@@ -464,7 +434,7 @@ func MergeFiles(path string, cmd *cobra.Command) (*parser.Result, error) {
 }
 
 // Load ...
-func Load(path string) (*parser.Result, error) {
+func Load(path string, cmd *cobra.Command) (*parser.Result, error) {
 	var result parser.Result
 	jsonFile, err := os.Open(filepath.Clean(path))
 	if err != nil {
@@ -486,7 +456,58 @@ func Load(path string) (*parser.Result, error) {
 		return nil, err
 	}
 
+	ApplyOutputTrimming(&result, cmd)
+
 	return &result, nil
+}
+
+func ApplyOutputTrimming(result *parser.Result, cmd *cobra.Command) {
+	if result == nil {
+		return
+	}
+
+	trimTo := 1000
+	maxTrimLength := 10000
+
+	trimToFlag, err := cmd.Flags().GetInt("trim-output-to")
+	if err == nil {
+		trimTo = trimToFlag
+	}
+
+	if trimTo > maxTrimLength || trimTo <= 0 {
+		trimTo = maxTrimLength
+	}
+
+	for i := range result.TestResults {
+		for j := range result.TestResults[i].Suites {
+			suite := &result.TestResults[i].Suites[j]
+
+			// Trim suite level output
+			suite.SystemErr = parser.TrimTextTo(suite.SystemErr, trimTo)
+			suite.SystemOut = parser.TrimTextTo(suite.SystemOut, trimTo)
+
+			// Trim test level output
+			for k := range suite.Tests {
+				test := &suite.Tests[k]
+				test.SystemErr = parser.TrimTextTo(test.SystemErr, trimTo)
+				test.SystemOut = parser.TrimTextTo(test.SystemOut, trimTo)
+
+				// Trim failure fields if present
+				if test.Failure != nil {
+					test.Failure.Message = parser.TrimTextTo(test.Failure.Message, trimTo)
+					test.Failure.Type = parser.TrimTextTo(test.Failure.Type, trimTo)
+					test.Failure.Body = parser.TrimTextTo(test.Failure.Body, trimTo)
+				}
+
+				// Trim error fields if present
+				if test.Error != nil {
+					test.Error.Message = parser.TrimTextTo(test.Error.Message, trimTo)
+					test.Error.Type = parser.TrimTextTo(test.Error.Type, trimTo)
+					test.Error.Body = parser.TrimTextTo(test.Error.Body, trimTo)
+				}
+			}
+		}
+	}
 }
 
 func parseArtifactStats(output string) *ArtifactStats {

@@ -465,3 +465,56 @@ func newSuite(id string, name string) Suite {
 	suite.Name = name
 	return suite
 }
+
+func TestTrimTextTo(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		limit    int
+		expected string
+	}{
+		{
+			name:     "text shorter than limit",
+			input:    "short text",
+			limit:    100,
+			expected: "short text",
+		},
+		{
+			name:     "text exactly at limit",
+			input:    "exactly10!",
+			limit:    10,
+			expected: "exactly10!",
+		},
+		{
+			name:     "text longer than limit",
+			input:    "this is a very long text that needs trimming",
+			limit:    10,
+			expected: "...[truncated]...\ns trimming",
+		},
+		{
+			name:     "empty string",
+			input:    "",
+			limit:    10,
+			expected: "",
+		},
+		{
+			name:     "unicode text trimming",
+			input:    "Hello 世界 this is a test message",
+			limit:    10,
+			expected: "...[truncated]...\nst message",
+		},
+		{
+			name:     "multiline text trimming",
+			input:    "line1\nline2\nline3\nline4\nline5",
+			limit:    15,
+			expected: "...[truncated]...\nne3\nline4\nline5",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := TrimTextTo(tt.input, tt.limit)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
