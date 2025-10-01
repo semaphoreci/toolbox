@@ -13,6 +13,7 @@ setup() {
   source ~/.phpbrew/bashrc
   . /home/semaphore/.nvm/nvm.sh
   export PATH="$PATH:/home/semaphore/.yarn/bin"
+  export KIEX_HOME="$HOME/.kiex"
   source "/home/semaphore/.kiex/scripts/kiex"
   export PATH="/home/semaphore/.rbenv/bin:$PATH"
   export NVM_DIR=/home/semaphore/.nvm
