@@ -13,6 +13,7 @@ setup() {
   source ~/.phpbrew/bashrc
   . /home/semaphore/.nvm/nvm.sh
   export PATH="$PATH:/home/semaphore/.yarn/bin"
+  export KIEX_HOME="$HOME/.kiex"
   source "/home/semaphore/.kiex/scripts/kiex"
   export PATH="/home/semaphore/.rbenv/bin:$PATH"
   export NVM_DIR=/home/semaphore/.nvm
@@ -91,6 +92,12 @@ setup() {
 
 @test "change erlang to 28.0" {
   sem-version erlang 28.0
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "28"
+}
+
+@test "change erlang to 28.1" {
+  sem-version erlang 28.1
   run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
   assert_line --partial "28"
 }
