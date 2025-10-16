@@ -99,6 +99,9 @@ install::install_elixir() {
       "1.17"* | "1.18"*)
         local erlang_version="27.0"
         ;;
+      "1.19"*)
+        local erlang_version="28.0"
+        ;;
       *)
         echo "Installation of '${language}' version '${language_version}' is not yet supported"
         return 1;
