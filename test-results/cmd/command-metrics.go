@@ -6,9 +6,52 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/spf13/cobra"
 )
+
+const maxDirectiveLabelLength = 80
+
+func sanitizeDirective(raw string) string {
+	replacer := strings.NewReplacer(
+		"\r\n", " ",
+		"\n", " ",
+		"\r", " ",
+		"\t", " ",
+		"[", "(",
+		"]", ")",
+		"{", "(",
+		"}", ")",
+	)
+
+	clean := replacer.Replace(raw)
+	clean = strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) {
+			return -1
+		}
+		return r
+	}, clean)
+
+	// Collapse repeated whitespace to a single space.
+	clean = strings.Join(strings.Fields(clean), " ")
+	clean = strings.TrimSpace(clean)
+
+	if clean == "" {
+		return "(unnamed command)"
+	}
+
+	runes := []rune(clean)
+	if len(runes) > maxDirectiveLabelLength {
+		truncationLimit := maxDirectiveLabelLength
+		if truncationLimit > 3 {
+			truncationLimit = truncationLimit - 3
+		}
+		clean = string(runes[:truncationLimit]) + "..."
+	}
+
+	return clean
+}
 
 var commandMetricsCmd = &cobra.Command{
 	Use:   "command-metrics",
@@ -60,7 +103,8 @@ var commandMetricsCmd = &cobra.Command{
 			if duration < 1 {
 				duration = 1
 			}
-			out += fmt.Sprintf("    %s[%ds] :step%d, %d, %ds\n", node.Directive, duration, i, node.StartedAt, duration)
+			label := sanitizeDirective(node.Directive)
+			out += fmt.Sprintf("    %s[%ds] :step%d, %d, %ds\n", label, duration, i, node.StartedAt, duration)
 		}
 		out += "```\n"
 
