@@ -175,6 +175,7 @@ self_hosted::create_initial_content() {
   mkdir -p /tmp/self-hosted-Windows/toolbox/bin
   cp ~/$SEMAPHORE_GIT_DIR/cache-cli/bin/windows/cache.exe /tmp/self-hosted-Windows/toolbox/bin/cache.exe
   cp ~/$SEMAPHORE_GIT_DIR/sem-context/bin/windows/sem-context.exe /tmp/self-hosted-Windows/toolbox/bin/sem-context.exe
+  cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/windows/test-results.exe /tmp/self-hosted-Windows/toolbox/bin/test-results.exe
 }
 
 self_hosted::pack() {
@@ -213,7 +214,6 @@ self_hosted::pack() {
   cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/linux/arm64/test-results /tmp/self-hosted-Linux-arm/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/darwin/amd64/test-results /tmp/self-hosted-Darwin/toolbox/
   cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/darwin/arm64/test-results /tmp/self-hosted-Darwin-arm/toolbox/
-  cp ~/$SEMAPHORE_GIT_DIR/test-results/bin/windows/test-results.exe /tmp/self-hosted-Windows/toolbox/
 }
 
 hosted::pack() {
