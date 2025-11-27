@@ -49,33 +49,38 @@ params-check::mysql () {
   default_params="$default_params$username$password$db "
   echo "$service_version $default_params"
 }
-
 params-check::postgres () {
-  default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgres -v /var/tmp/postgres:/var/lib/postgresql/data -v /var/run/postgresql:/var/run/postgresql'
   service_version="9.6"
   sudo mkdir -p /var/run/postgresql && sudo chmod -R 0777 /var/run/postgresql
   sudo mkdir -p /var/tmp/postgres && sudo chmod -R 0777 /var/tmp/postgres
   params=""
-  if [ "${1:0:1}" == "-" ];then
+  if [ "${1:0:1}" == "-" ]; then
     params="$@"
   else
     service_version="${1:-$service_version}"
     tmp="${@:2}"
-    params="${tmp:-$default_params}"
+    params="$tmp"
   fi
-  if [ "$default_params" != "$params" ];then
+  version_major="$(printf '%s\n' "$service_version" | cut -d'.' -f1)"
+  version_major="${version_major:-0}"
+  default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgres -v /var/tmp/postgres:/var/lib/postgresql/data -v /var/run/postgresql:/var/run/postgresql'
+  if [ "$version_major" -ge 18 ]; then
+    default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgres -v /var/tmp/postgres:/var/lib/postgresql -v /var/run/postgresql:/var/run/postgresql'
+  fi
+  params="${params:-$default_params}"
+  if [ "$default_params" != "$params" ]; then
     username=""; password=""; db=""; dbname="";
     for words in $params; do
       case $words in
        --username=* )
-         username=" -e POSTGRES_USER=$(echo $words|cut -d'=' -f2) "
+         username=" -e POSTGRES_USER=$(echo "$words" | cut -d'=' -f2) "
        ;;
        --password=* )
-         password=$(echo $words|cut -d'=' -f2) 
+         password=$(echo "$words" | cut -d'=' -f2)
          password=" -e POSTGRES_PASSWORD=${password:-'postgres'}"
        ;;
        --db=* )
-         dbname=$(echo $words|cut -d'=' -f2)
+         dbname=$(echo "$words" | cut -d'=' -f2)
        ;;
        *)
        ;;
@@ -84,6 +89,7 @@ params-check::postgres () {
     [ "$dbname" ] && db=" -e POSTGRES_DB=$dbname"
     [ "$username$password" ] && default_params="$default_params$username$password$db "
   fi
+
   echo "$service_version $default_params"
 }
 params-check::postgis () {
