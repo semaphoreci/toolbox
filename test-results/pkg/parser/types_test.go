@@ -518,3 +518,149 @@ func TestTrimTextTo(t *testing.T) {
 		})
 	}
 }
+
+func TestResult_FilterFailedTests(t *testing.T) {
+	t.Run("filters only failed and errored tests", func(t *testing.T) {
+		result := NewResult()
+		testResults := NewTestResults()
+		testResults.ID = "test-results-1"
+		testResults.Name = "Test Suite"
+
+		suite := NewSuite()
+		suite.ID = "suite-1"
+		suite.Name = "Suite 1"
+
+		// Add passed test
+		passedTest := NewTest()
+		passedTest.ID = "1"
+		passedTest.Name = "passed test"
+		passedTest.State = StatePassed
+		suite.Tests = append(suite.Tests, passedTest)
+
+		// Add failed test
+		failedTest := NewTest()
+		failedTest.ID = "2"
+		failedTest.Name = "failed test"
+		failedTest.State = StateFailed
+		failedTest.Failure = &Failure{Message: "assertion failed"}
+		suite.Tests = append(suite.Tests, failedTest)
+
+		// Add errored test
+		erroredTest := NewTest()
+		erroredTest.ID = "3"
+		erroredTest.Name = "errored test"
+		erroredTest.State = StateError
+		erroredTest.Error = &Error{Message: "exception thrown"}
+		suite.Tests = append(suite.Tests, erroredTest)
+
+		// Add skipped test
+		skippedTest := NewTest()
+		skippedTest.ID = "4"
+		skippedTest.Name = "skipped test"
+		skippedTest.State = StateSkipped
+		suite.Tests = append(suite.Tests, skippedTest)
+
+		suite.Aggregate()
+		testResults.Suites = append(testResults.Suites, suite)
+		testResults.Aggregate()
+		result.TestResults = append(result.TestResults, testResults)
+
+		// Filter failed tests
+		filtered := result.FilterFailedTests()
+
+		// Verify structure is preserved
+		assert.Equal(t, 1, len(filtered.TestResults))
+		assert.Equal(t, "test-results-1", filtered.TestResults[0].ID)
+		assert.Equal(t, 1, len(filtered.TestResults[0].Suites))
+		assert.Equal(t, "suite-1", filtered.TestResults[0].Suites[0].ID)
+
+		// Verify only failed and errored tests are included
+		assert.Equal(t, 2, len(filtered.TestResults[0].Suites[0].Tests))
+		assert.Equal(t, StateFailed, filtered.TestResults[0].Suites[0].Tests[0].State)
+		assert.Equal(t, StateError, filtered.TestResults[0].Suites[0].Tests[1].State)
+
+		// Verify summary is preserved from original
+		assert.Equal(t, 4, filtered.TestResults[0].Summary.Total)
+		assert.Equal(t, 1, filtered.TestResults[0].Summary.Passed)
+		assert.Equal(t, 1, filtered.TestResults[0].Summary.Failed)
+		assert.Equal(t, 1, filtered.TestResults[0].Summary.Error)
+		assert.Equal(t, 1, filtered.TestResults[0].Summary.Skipped)
+	})
+
+	t.Run("returns empty tests when no failures", func(t *testing.T) {
+		result := NewResult()
+		testResults := NewTestResults()
+		testResults.ID = "test-results-1"
+
+		suite := NewSuite()
+		suite.ID = "suite-1"
+
+		// Add only passed tests
+		for i := 0; i < 3; i++ {
+			test := NewTest()
+			test.ID = fmt.Sprintf("%d", i)
+			test.Name = fmt.Sprintf("passed test %d", i)
+			test.State = StatePassed
+			suite.Tests = append(suite.Tests, test)
+		}
+
+		suite.Aggregate()
+		testResults.Suites = append(testResults.Suites, suite)
+		testResults.Aggregate()
+		result.TestResults = append(result.TestResults, testResults)
+
+		// Filter failed tests
+		filtered := result.FilterFailedTests()
+
+		// Verify structure is preserved but tests array is empty
+		assert.Equal(t, 1, len(filtered.TestResults))
+		assert.Equal(t, 1, len(filtered.TestResults[0].Suites))
+		assert.Equal(t, 0, len(filtered.TestResults[0].Suites[0].Tests))
+
+		// Verify summary is preserved
+		assert.Equal(t, 3, filtered.TestResults[0].Summary.Total)
+		assert.Equal(t, 3, filtered.TestResults[0].Summary.Passed)
+		assert.Equal(t, 0, filtered.TestResults[0].Summary.Failed)
+	})
+
+	t.Run("handles empty result", func(t *testing.T) {
+		result := NewResult()
+		filtered := result.FilterFailedTests()
+
+		assert.Equal(t, 0, len(filtered.TestResults))
+	})
+
+	t.Run("preserves suite-level summary", func(t *testing.T) {
+		result := NewResult()
+		testResults := NewTestResults()
+		testResults.ID = "test-results-1"
+
+		suite := NewSuite()
+		suite.ID = "suite-1"
+		suite.Summary = Summary{
+			Total:    10,
+			Passed:   7,
+			Failed:   2,
+			Error:    1,
+			Duration: time.Duration(1000),
+		}
+
+		// Add one failed test
+		failedTest := NewTest()
+		failedTest.ID = "1"
+		failedTest.State = StateFailed
+		suite.Tests = append(suite.Tests, failedTest)
+
+		testResults.Suites = append(testResults.Suites, suite)
+		testResults.Summary = suite.Summary
+		result.TestResults = append(result.TestResults, testResults)
+
+		filtered := result.FilterFailedTests()
+
+		// Verify suite summary is preserved
+		assert.Equal(t, 10, filtered.TestResults[0].Suites[0].Summary.Total)
+		assert.Equal(t, 7, filtered.TestResults[0].Suites[0].Summary.Passed)
+		assert.Equal(t, 2, filtered.TestResults[0].Suites[0].Summary.Failed)
+		assert.Equal(t, time.Duration(1000), filtered.TestResults[0].Suites[0].Summary.Duration)
+	})
+}

@@ -492,3 +492,54 @@ func TrimTextTo(s string, n int) string {
 	truncated := s[len(s)-int(n):]
 	return "...[truncated]...\n" + truncated
 }
+
+// FilterFailedTests returns a new Result containing only failed/errored tests
+// while preserving the original summary statistics
+func (r *Result) FilterFailedTests() Result {
+	filtered := Result{
+		TestResults: make([]TestResults, 0, len(r.TestResults)),
+	}
+
+	for _, tr := range r.TestResults {
+		filteredTR := TestResults{
+			ID:            tr.ID,
+			Name:          tr.Name,
+			Framework:     tr.Framework,
+			IsDisabled:    tr.IsDisabled,
+			Summary:       tr.Summary, // Preserve original summary
+			Status:        tr.Status,
+			StatusMessage: tr.StatusMessage,
+			Suites:        make([]Suite, 0, len(tr.Suites)),
+		}
+
+		for _, suite := range tr.Suites {
+			filteredSuite := Suite{
+				ID:         suite.ID,
+				Name:       suite.Name,
+				IsSkipped:  suite.IsSkipped,
+				IsDisabled: suite.IsDisabled,
+				Timestamp:  suite.Timestamp,
+				Hostname:   suite.Hostname,
+				Package:    suite.Package,
+				Properties: suite.Properties,
+				Summary:    suite.Summary, // Preserve original summary
+				SystemOut:  suite.SystemOut,
+				SystemErr:  suite.SystemErr,
+				Tests:      make([]Test, 0),
+			}
+
+			// Only include failed or errored tests
+			for _, test := range suite.Tests {
+				if test.State == StateFailed || test.State == StateError {
+					filteredSuite.Tests = append(filteredSuite.Tests, test)
+				}
+			}
+
+			filteredTR.Suites = append(filteredTR.Suites, filteredSuite)
+		}
+
+		filtered.TestResults = append(filtered.TestResults, filteredTR)
+	}
+
+	return filtered
+}

@@ -31,6 +31,11 @@ var genPipelineReportCmd = &cobra.Command{
 			return err
 		}
 
+		generateMCPSummary, err := cmd.Flags().GetBool("generate-mcp-summary")
+		if err != nil {
+			return err
+		}
+
 		pullStats := &cli.ArtifactStats{}
 		pushStats := &cli.ArtifactStats{}
 
@@ -96,6 +101,12 @@ var genPipelineReportCmd = &cobra.Command{
 			return err
 		}
 
+		if generateMCPSummary {
+			if err = pushMCPSummariesWithStats(result, "workflow", path.Join("test-results", pipelineID+"-mcp-summary.json"), cmd, pushStats); err != nil {
+				return err
+			}
+		}
+
 		cli.DisplayTransferSummary(pullStats, pushStats)
 
 		return nil
@@ -142,7 +153,41 @@ func pushSummariesWithStats(testResult []parser.TestResults, level, path string,
 	return nil
 }
 
+func pushMCPSummariesWithStats(result *parser.Result, level, path string, cmd *cobra.Command, pushStats *cli.ArtifactStats) error {
+	if len(result.TestResults) == 0 {
+		logger.Info("no test results to process for MCP summary")
+		return nil
+	}
+
+	logger.Info("starting to generate MCP summary")
+	mcpResult := result.FilterFailedTests()
+
+	jsonData, err := json.Marshal(mcpResult)
+	if err != nil {
+		return err
+	}
+
+	// Write without compression
+	mcpFileName, err := cli.WriteToTmpFile(jsonData, false)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(mcpFileName)
+
+	_, stats, err := cli.PushArtifacts(level, mcpFileName, path, cmd)
+	if err != nil {
+		return err
+	}
+	if stats != nil {
+		pushStats.Operations++
+		pushStats.FileCount += stats.FileCount
+		pushStats.TotalSize += stats.TotalSize
+	}
+	return nil
+}
+
 func init() {
 	genPipelineReportCmd.Flags().BoolP("force", "f", false, "force artifact push, passes -f flag to artifact CLI")
+	genPipelineReportCmd.Flags().Bool("generate-mcp-summary", false, "generate and push a summary with only failed tests (no compression)")
 	rootCmd.AddCommand(genPipelineReportCmd)
 }
