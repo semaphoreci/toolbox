@@ -184,7 +184,7 @@ var compileCmd = &cobra.Command{
 
 		if generateMCPSummary {
 			mcpResult := result.FilterFailedTests()
-			mcpJsonData, err := json.Marshal(mcpResult)
+			mcpJSONData, err := json.Marshal(mcpResult)
 			if err != nil {
 				logger.Error("Marshaling MCP summary failed with: %v", err)
 				return err
@@ -195,7 +195,7 @@ var compileCmd = &cobra.Command{
 			mcpOutput := filepath.Join(outputDir, "mcp-summary.json")
 
 			// Write without compression
-			_, err = cli.WriteToFilePath(mcpJsonData, mcpOutput, false)
+			_, err = cli.WriteToFilePath(mcpJSONData, mcpOutput, false)
 			if err != nil {
 				return err
 			}

@@ -495,12 +495,12 @@ func TrimTextTo(s string, n int) string {
 
 // FilterFailedTests returns a new Result containing only failed/errored tests
 // while preserving the original summary statistics
-func (r *Result) FilterFailedTests() Result {
+func (me *Result) FilterFailedTests() Result {
 	filtered := Result{
-		TestResults: make([]TestResults, 0, len(r.TestResults)),
+		TestResults: make([]TestResults, 0, len(me.TestResults)),
 	}
 
-	for _, tr := range r.TestResults {
+	for _, tr := range me.TestResults {
 		filteredTR := TestResults{
 			ID:            tr.ID,
 			Name:          tr.Name,
