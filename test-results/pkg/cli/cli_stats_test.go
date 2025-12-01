@@ -31,7 +31,7 @@ func TestParseArtifactStats(t *testing.T) {
 			},
 		},
 		{
-			name: "single file",
+			name:   "single file",
 			output: `[2024-01-15 10:30:45.126] Pushed 1 file. Total of 512 KB`,
 			expected: ArtifactStats{
 				FileCount: 1,
@@ -39,7 +39,7 @@ func TestParseArtifactStats(t *testing.T) {
 			},
 		},
 		{
-			name: "bytes only",
+			name:   "bytes only",
 			output: `[2024-01-15 10:30:45.126] Pushed 2 files. Total of 1024 B`,
 			expected: ArtifactStats{
 				FileCount: 2,

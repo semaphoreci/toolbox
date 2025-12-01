@@ -77,7 +77,7 @@ func TestIsGzipCompressed(t *testing.T) {
 			isCompressed, reader, err := compression.IsGzipCompressed(bytes.NewReader(tc.Input))
 			assert.NoError(t, err)
 			assert.Equal(t, tc.Want, isCompressed)
-			
+
 			// Verify we can still read the original data
 			data, err := io.ReadAll(reader)
 			assert.NoError(t, err)
@@ -119,12 +119,12 @@ func TestGzipCompressDecompress(t *testing.T) {
 			compressed, err := compression.GzipCompress([]byte(tc.Input))
 			assert.NoError(t, err)
 			assert.True(t, compression.IsGzipCompressedBytes(compressed))
-			
+
 			// Test GzipDecompress with reader
 			reader, closeFunc, err := compression.GzipDecompress(bytes.NewReader(compressed))
 			assert.NoError(t, err)
 			defer closeFunc()
-			
+
 			decompressed, err := io.ReadAll(reader)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.Input, string(decompressed))
@@ -134,11 +134,11 @@ func TestGzipCompressDecompress(t *testing.T) {
 
 func TestGzipDecompressWithUncompressedData(t *testing.T) {
 	input := []byte("This is uncompressed data")
-	
+
 	reader, closeFunc, err := compression.GzipDecompress(bytes.NewReader(input))
 	assert.NoError(t, err)
 	defer closeFunc()
-	
+
 	// Should return the original data since it's not compressed
 	output, err := io.ReadAll(reader)
 	assert.NoError(t, err)
@@ -147,16 +147,16 @@ func TestGzipDecompressWithUncompressedData(t *testing.T) {
 
 func TestGzipDecompressWithCompressedData(t *testing.T) {
 	original := []byte("This will be compressed")
-	
+
 	// First compress it
 	compressed, err := compression.GzipCompress(original)
 	assert.NoError(t, err)
-	
+
 	// Now decompress it
 	reader, closeFunc, err := compression.GzipDecompress(bytes.NewReader(compressed))
 	assert.NoError(t, err)
 	defer closeFunc()
-	
+
 	decompressed, err := io.ReadAll(reader)
 	assert.NoError(t, err)
 	assert.Equal(t, original, decompressed)

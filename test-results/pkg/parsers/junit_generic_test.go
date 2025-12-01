@@ -15,7 +15,7 @@ func TestJUnitGeneric(t *testing.T) {
 	t.Setenv("SEMAPHORE_AGENT_MACHINE_OS_IMAGE", "agent-machine-os-image")
 	t.Setenv("SEMAPHORE_JOB_CREATION_TIME", "job-creation-time")
 	t.Setenv("SEMAPHORE_GIT_REF_TYPE", "git-ref-type")
-	
+
 	t.Run("Golden File Test", func(t *testing.T) {
 		test := GoldenTest{
 			Name:       "JUnitGeneric",
@@ -25,17 +25,17 @@ func TestJUnitGeneric(t *testing.T) {
 		}
 		RunGoldenTest(t, test)
 	})
-	
+
 	t.Run("Parser Identification", func(t *testing.T) {
 		p := NewJUnitGeneric()
-		
+
 		// Generic parser should accept all valid JUnit XML files
 		// It's the catch-all parser
 		AssertParserApplicable(t, p, FixturePath("priv/parsers/junit_generic/in.xml"), true)
 		AssertParserApplicable(t, p, FixturePath("priv/parsers/junit_golang/in.xml"), true)
 		AssertParserApplicable(t, p, FixturePath("priv/parsers/junit_rspec/in.xml"), true)
 	})
-	
+
 	t.Run("Extensions", func(t *testing.T) {
 		p := NewJUnitGeneric()
 		AssertParserSupportsExtension(t, p, ".xml", true)

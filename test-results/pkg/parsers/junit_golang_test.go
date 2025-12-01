@@ -15,7 +15,7 @@ func TestJUnitGoLang(t *testing.T) {
 	t.Setenv("SEMAPHORE_AGENT_MACHINE_OS_IMAGE", "agent-machine-os-image")
 	t.Setenv("SEMAPHORE_JOB_CREATION_TIME", "job-creation-time")
 	t.Setenv("SEMAPHORE_GIT_REF_TYPE", "git-ref-type")
-	
+
 	t.Run("Golden File Test", func(t *testing.T) {
 		test := GoldenTest{
 			Name:       "JUnitGoLang",
@@ -25,18 +25,18 @@ func TestJUnitGoLang(t *testing.T) {
 		}
 		RunGoldenTest(t, test)
 	})
-	
+
 	t.Run("Parser Identification", func(t *testing.T) {
 		p := NewJUnitGoLang()
-		
+
 		// Should identify Go test files
 		AssertParserApplicable(t, p, FixturePath("priv/parsers/junit_golang/in.xml"), true)
-		
+
 		// Should reject other parser files
 		AssertParserApplicable(t, p, FixturePath("priv/parsers/junit_rspec/in.xml"), false)
 		AssertParserApplicable(t, p, FixturePath("priv/parsers/junit_generic/in.xml"), false)
 	})
-	
+
 	t.Run("Extensions", func(t *testing.T) {
 		p := NewJUnitGoLang()
 		AssertParserSupportsExtension(t, p, ".xml", true)

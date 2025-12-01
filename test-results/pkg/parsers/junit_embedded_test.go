@@ -15,7 +15,7 @@ func TestJUnitEmbedded(t *testing.T) {
 	t.Setenv("SEMAPHORE_AGENT_MACHINE_OS_IMAGE", "agent-machine-os-image")
 	t.Setenv("SEMAPHORE_JOB_CREATION_TIME", "job-creation-time")
 	t.Setenv("SEMAPHORE_GIT_REF_TYPE", "git-ref-type")
-	
+
 	t.Run("Golden File Test", func(t *testing.T) {
 		test := GoldenTest{
 			Name:       "JUnitEmbedded",
@@ -25,17 +25,17 @@ func TestJUnitEmbedded(t *testing.T) {
 		}
 		RunGoldenTest(t, test)
 	})
-	
+
 	t.Run("Parser Identification", func(t *testing.T) {
 		p := NewJUnitEmbedded()
-		
+
 		// Embedded parser currently returns false for all IsApplicable checks
 		// It needs to be explicitly selected with -p embedded
 		AssertParserApplicable(t, p, FixturePath("priv/parsers/junit_embedded/in.xml"), false)
 		AssertParserApplicable(t, p, FixturePath("priv/parsers/junit_generic/in.xml"), false)
 		AssertParserApplicable(t, p, FixturePath("priv/parsers/junit_golang/in.xml"), false)
 	})
-	
+
 	t.Run("Extensions", func(t *testing.T) {
 		p := NewJUnitEmbedded()
 		AssertParserSupportsExtension(t, p, ".xml", true)
