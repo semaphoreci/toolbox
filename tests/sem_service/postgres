@@ -65,4 +65,18 @@ psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 17
 sem-service status postgres
 sem-service stop postgres
 
+sem-service start postgres 18.1
+createdb -U postgres -h 0.0.0.0 fooo
+psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep "18\.1"
+sem-service status postgres
+sem-service stop postgres
+
+sem-service start postgres 18
+createdb -U postgres -h 0.0.0.0 fooo
+psql -h 0.0.0.0 -U postgres -c "\l" | grep fooo
+psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 18
+sem-service status postgres
+sem-service stop postgres
+
 cat /tmp/toolbox_semservice
