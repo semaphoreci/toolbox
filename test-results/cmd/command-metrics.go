@@ -6,34 +6,18 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"unicode"
 
+	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
 	"github.com/spf13/cobra"
 )
 
 const maxDirectiveLabelLength = 80
 
 func sanitizeDirective(raw string) string {
-	replacer := strings.NewReplacer(
-		"\r\n", " ",
-		"\n", " ",
-		"\r", " ",
-		"\t", " ",
-		"[", "(",
-		"]", ")",
-		"{", "(",
-		"}", ")",
-	)
+	// Escape special Mermaid characters
+	clean := parser.EscapeGanttLabel(raw)
 
-	clean := replacer.Replace(raw)
-	clean = strings.Map(func(r rune) rune {
-		if unicode.IsControl(r) {
-			return -1
-		}
-		return r
-	}, clean)
-
-	// Collapse repeated whitespace to a single space.
+	// Collapse repeated whitespace to a single space
 	clean = strings.Join(strings.Fields(clean), " ")
 	clean = strings.TrimSpace(clean)
 

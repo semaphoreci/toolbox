@@ -27,9 +27,9 @@ func TestSanitizeDirective(t *testing.T) {
 			expected: "echo hello world",
 		},
 		{
-			name:     "replaces brackets",
+			name:     "replaces brackets with Mermaid entity codes",
 			input:    "if [ \"$VAR\" == 1 ] { echo ok }",
-			expected: "if ( \"$VAR\" == 1 ) ( echo ok )",
+			expected: "if #91; \"$VAR\" == 1 #93; #123; echo ok #125;",
 		},
 		{
 			name:     "drops control characters",
@@ -45,6 +45,16 @@ func TestSanitizeDirective(t *testing.T) {
 			name:     "provides fallback for empty values",
 			input:    "   ",
 			expected: "(unnamed command)",
+		},
+		{
+			name:     "escapes angle brackets from heredoc with Mermaid entity codes",
+			input:    "json_data=$(cat <<EOF\n{\n  \"key\": \"value\"\n}\nEOF\n)",
+			expected: "json_data=$(cat #60;#60;EOF #123; \"key\"#58; \"value\" #125; EOF )",
+		},
+		{
+			name:     "escapes commas and colons in JSON",
+			input:    `json=$(cat <<EOF {"a": "b", "c": "d"} EOF)`,
+			expected: `json=$(cat #60;#60;EOF #123;"a"#58; "b"#44; "c"#58; "d"#125; EOF)`,
 		},
 	}
 
@@ -126,7 +136,7 @@ func TestCommandMetricsGeneratesMermaidTimeline(t *testing.T) {
 	require.Contains(t, text, "# Existing content")
 	require.Contains(t, text, "## 🧭 Job Timeline")
 
-	require.Contains(t, text, `if ( "$A" == "main" ); then echo hi fi[2s] :step0, 10, 2s`)
+	require.Contains(t, text, `if #91; "$A" == "main" #93;; then echo hi fi[2s] :step0, 10, 2s`)
 	require.Contains(t, text, `(unnamed command)[1s] :step1, 12, 1s`)
 	require.Contains(t, text, strings.Repeat("b", 77)+`...[5s] :step2, 20, 5s`)
 }
