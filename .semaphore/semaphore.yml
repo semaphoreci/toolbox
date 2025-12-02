@@ -194,7 +194,7 @@ blocks:
             - bats tests/sem_version_jammy/${TEST}.bats
 
 
-  - name: Sem Version Tests Jammy ARM
+  - name: Sem Version Tests Noble ARM
     dependencies:
       - "Build local CLIs"
     task:
@@ -240,7 +240,7 @@ blocks:
                 - ruby
                 - scala
           commands:
-            - bats tests/sem_version_jammy/${TEST}.bats
+            - bats tests/sem_version_noble/${TEST}.bats
 
   - name: Sem Version Tests Noble
     dependencies:
@@ -288,7 +288,7 @@ blocks:
           commands:
             - bats tests/sem_version_noble/${TEST}.bats
 
-  - name: Sem Service Tests Jammy ARM
+  - name: Sem Service Tests Noble ARM
     dependencies:
       - "Build local CLIs"
     task:
@@ -318,7 +318,7 @@ blocks:
           - git submodule init && git submodule update
           - sudo ./tests/support/bats-core/install.sh /usr/local
       jobs:
-        - name: Sem Service Tests Jammy ARM
+        - name: Sem Service Tests Noble ARM
           matrix:
             - env_var: SERVICE
               values:
