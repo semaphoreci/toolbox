@@ -67,6 +67,11 @@ var publishCmd = &cobra.Command{
 			return err
 		}
 
+		generateMCPSummary, err := cmd.Flags().GetBool("generate-mcp-summary")
+		if err != nil {
+			return err
+		}
+
 		fileParsers := cli.ParseFileArgs(inputs)
 
 		supportedExts := parsers.GetSupportedExtensions()
@@ -196,6 +201,12 @@ var publishCmd = &cobra.Command{
 			return err
 		}
 
+		if generateMCPSummary {
+			if err = pushMCPSummaryWithStats(result, "job", path.Join("test-results", "mcp-summary.json"), cmd, pushStats); err != nil {
+				return err
+			}
+		}
+
 		pipelineID, found := os.LookupEnv("SEMAPHORE_PIPELINE_ID")
 		if !found {
 			logger.Error("SEMAPHORE_PIPELINE_ID env is missing")
@@ -300,6 +311,39 @@ func pushSummaryWithStats(testResult []parser.TestResults, level, path string, c
 	return nil
 }
 
+func pushMCPSummaryWithStats(result *parser.Result, level, path string, cmd *cobra.Command, pushStats *cli.ArtifactStats) error {
+	if len(result.TestResults) == 0 {
+		logger.Info("no test results to process for MCP summary")
+		return nil
+	}
+
+	logger.Info("starting to generate MCP summary")
+	mcpResult := result.FilterFailedTests()
+
+	jsonData, err := json.Marshal(mcpResult)
+	if err != nil {
+		return err
+	}
+
+	// Write without compression
+	mcpFileName, err := cli.WriteToTmpFile(jsonData, false)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(mcpFileName)
+
+	_, stats, err := cli.PushArtifacts(level, mcpFileName, path, cmd)
+	if err != nil {
+		return err
+	}
+	if stats != nil {
+		pushStats.Operations++
+		pushStats.FileCount += stats.FileCount
+		pushStats.TotalSize += stats.TotalSize
+	}
+	return nil
+}
+
 func init() {
 
 	desc := `Skips uploading raw input files`
@@ -307,6 +351,7 @@ func init() {
 	publishCmd.Flags().BoolP("force", "f", false, "force artifact push, passes -f flag to artifact CLI")
 	publishCmd.Flags().BoolP("omit-output-for-passed", "o", false, "omit stdout if test passed, defaults to false")
 	publishCmd.Flags().Bool("ignore-missing", false, "ignore missing files instead of failing")
+	publishCmd.Flags().Bool("generate-mcp-summary", false, "generate and push a summary with only failed tests (no compression)")
 
 	rootCmd.AddCommand(publishCmd)
 }

@@ -67,6 +67,11 @@ var compileCmd = &cobra.Command{
 			return err
 		}
 
+		generateMCPSummary, err := cmd.Flags().GetBool("generate-mcp-summary")
+		if err != nil {
+			return err
+		}
+
 		fileParsers := cli.ParseFileArgs(inputs)
 
 		supportedExts := parsers.GetSupportedExtensions()
@@ -176,6 +181,28 @@ var compileCmd = &cobra.Command{
 		}
 
 		logger.Info("Compiled test results saved to %s", output)
+
+		if generateMCPSummary {
+			mcpResult := result.FilterFailedTests()
+			mcpJSONData, err := json.Marshal(mcpResult)
+			if err != nil {
+				logger.Error("Marshaling MCP summary failed with: %v", err)
+				return err
+			}
+
+			// Generate MCP summary filename based on output path
+			outputDir := filepath.Dir(output)
+			mcpOutput := filepath.Join(outputDir, "mcp-summary.json")
+
+			// Write without compression
+			_, err = cli.WriteToFilePath(mcpJSONData, mcpOutput, false)
+			if err != nil {
+				return err
+			}
+
+			logger.Info("MCP summary saved to %s", mcpOutput)
+		}
+
 		return nil
 	},
 }
@@ -183,5 +210,6 @@ var compileCmd = &cobra.Command{
 func init() {
 	compileCmd.Flags().BoolP("omit-output-for-passed", "o", false, "omit stdout if test passed, defaults to false")
 	compileCmd.Flags().Bool("ignore-missing", false, "ignore missing files instead of failing")
+	compileCmd.Flags().Bool("generate-mcp-summary", false, "generate a summary with only failed tests (no compression)")
 	rootCmd.AddCommand(compileCmd)
 }

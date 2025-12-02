@@ -36,7 +36,7 @@ func IsGzipCompressed(reader io.Reader) (bool, io.Reader, error) {
 	if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
 		return false, reader, err
 	}
-	
+
 	if n < 2 {
 		// Not enough data to determine, treat as uncompressed
 		reader = io.MultiReader(bytes.NewReader(header[:n]), reader)
