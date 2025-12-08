@@ -1,24 +1,30 @@
 package metrics
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
-const LocalBackend = "local"
-const CacheDownloadSize = "cache_download_size"
-const CacheDownloadTime = "cache_download_time"
-const CacheUser = "cache_user"
-const CacheServer = "cache_server"
-const CacheTotalRate = "cache_total_rate"
-const CacheCorruptionRate = "cache_corruption_rate"
+const (
+	LocalBackend = "local"
+
+	MeasurementName = "usercache"
+	CommandStore    = "store"
+	CommandRestore  = "restore"
+)
+
+type CacheEvent struct {
+	Command   string
+	Server    string
+	User      string
+	SizeBytes int64
+	Duration  time.Duration
+	Corrupt   bool
+}
 
 type MetricsManager interface {
 	Enabled() bool
-	Publish(metric Metric) error
-	PublishBatch(metrics []Metric) error
-}
-
-type Metric struct {
-	Name  string
-	Value string
+	LogEvent(event CacheEvent) error
 }
 
 func InitMetricsManager(backend string) (MetricsManager, error) {

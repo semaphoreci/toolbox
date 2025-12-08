@@ -72,16 +72,16 @@ func RunStore(cmd *cobra.Command, args []string) {
 			for _, entry := range lookupResult.Entries {
 				log.Infof("Using default cache path '%s'.", entry.Path)
 				key := entry.Keys[0]
-				compressAndStore(storage, archiver, key, entry.Path)
+				compressAndStore(storage, archiver, metricsManager, key, entry.Path)
 			}
 		}
 	} else {
 		path := filepath.FromSlash(args[1])
-		compressAndStore(storage, archiver, args[0], path)
+		compressAndStore(storage, archiver, metricsManager, args[0], path)
 	}
 }
 
-func compressAndStore(storage storage.Storage, archiver archive.Archiver, rawKey, path string) {
+func compressAndStore(storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, rawKey, path string) {
 	key := NormalizeKey(rawKey)
 	if _, err := os.Stat(path); err == nil {
 		if ok, _ := storage.HasKey(key); ok {
@@ -108,6 +108,7 @@ func compressAndStore(storage storage.Storage, archiver archive.Archiver, rawKey
 
 		uploadDuration := time.Since(uploadStart)
 		log.Infof("Upload complete. Duration: %v.", uploadDuration)
+		publishStoreMetrics(metricsManager, compressedFileSize, uploadDuration)
 
 		err = os.Remove(compressedFilePath)
 		if err != nil {
@@ -135,6 +136,21 @@ func compress(archiver archive.Archiver, key, path string) (string, int64, error
 
 	log.Infof("Compression complete. Duration: %v. Size: %v bytes.", compressionDuration.String(), files.HumanReadableSize(info.Size()))
 	return dst, info.Size(), nil
+}
+
+func publishStoreMetrics(metricsManager metrics.MetricsManager, fileSize int64, uploadDuration time.Duration) {
+	event := metrics.CacheEvent{
+		Command:   metrics.CommandStore,
+		Server:    metrics.CacheServerIP(),
+		User:      metrics.CacheUsername(),
+		SizeBytes: fileSize,
+		Duration:  uploadDuration,
+	}
+
+	err := metricsManager.LogEvent(event)
+	if err != nil {
+		log.Errorf("Error publishing store metrics: %v", err)
+	}
 }
 
 func NormalizeKey(key string) string {

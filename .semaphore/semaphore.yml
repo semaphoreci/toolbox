@@ -641,6 +641,7 @@ blocks:
     task:
       prologue:
         commands:
+          - rm -f /tmp/toolbox_metrics
           - checkout
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
           - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
@@ -696,7 +697,6 @@ blocks:
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
-
         - name: "Non-cache tests"
           matrix:
             - env_var: TEST
@@ -708,8 +708,13 @@ blocks:
                 - tests/enetwork.bats
                 - tests/sem-semantic-release.bats
                 - tests/system_metrics_collector.bats
+                - tests/toolbox_metrics.bats
           commands:
             - source release/install_in_tests.sh
+            - truncate -s 10M 10mfile
+            - cache store test10m 10mfile
+            - rm -f 10mfile
+            - cache restore test10m
             - git submodule init && git submodule update
             - sudo ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST

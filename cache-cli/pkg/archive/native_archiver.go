@@ -295,8 +295,13 @@ func (a *NativeArchiver) newGzipReader(dstFile *os.File) (io.ReadCloser, error) 
 }
 
 func (a *NativeArchiver) publishCorruptionMetric() {
-	err := a.MetricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"})
+	event := metrics.CacheEvent{
+		Command: metrics.CommandRestore,
+		Corrupt: true,
+	}
+
+	err := a.MetricsManager.LogEvent(event)
 	if err != nil {
-		log.Errorf("error publishing %s metric: %v", metrics.CacheCorruptionRate, err)
+		log.Errorf("error publishing corruption metric: %v", err)
 	}
 }

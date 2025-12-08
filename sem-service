@@ -559,7 +559,7 @@ service::duration() {
   end=$(date +%s%3N)
   duration=$(( end - start ))
   if [[ "$type" == "total" ]]; then
-    echo "semservice,service=$service,state=${state[$docker_status]},version=$version,location=$download_location duration=${duration}" >> /tmp/toolbox_semservice
+    echo "semservice,service=$service,state=${state[$docker_status]},version=$version,location=$download_location duration=${duration}" >> /tmp/toolox_metrics
   fi
 
   return 0

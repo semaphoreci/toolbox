@@ -4,4 +4,3 @@ IFS=$'\n\t'
 
 sem-service start rethinkdb
 docker ps -a | grep rethinkdb
-cat /tmp/toolbox_semservice

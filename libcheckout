@@ -270,7 +270,7 @@ function checkout::metric() {
     ref_type=${SEMAPHORE_GIT_REF_TYPE:-""}
     size=${1:-"0"}
     [[ $size -gt 0 ]] && status='success' || status='fail'
-    echo "libcheckout,provider='$SEMAPHORE_GIT_PROVIDER',reftype='$ref_type',status=$status size=$1" >> /tmp/toolbox_checkout
+    echo "libcheckout,provider='$SEMAPHORE_GIT_PROVIDER',reftype='$ref_type',status=$status size=$1" >> /tmp/toolbox_metrics
   fi
 }
 

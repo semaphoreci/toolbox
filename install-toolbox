@@ -33,13 +33,17 @@ install_cmd() {
     `sudo $@`
   fi
 }
+log_install_status() {
+  local component=${1:-"toolbox"}
+  echo "toolboxerror,component='${component}' value=1" >> /tmp/toolbox_metrics
+}
 
 install_cmd ln -sf ~/.toolbox/retry $INSTALL_PATH/retry
 install_cmd chmod +x $INSTALL_PATH/retry
 if [[ $? -eq 0 ]];then
   echo "retry installed"
 else
-  echo "toolbox_install_error_retry" >> /tmp/toolbox_metrics
+  log_install_status 'retry'
 fi
 
 install_cmd ln -sf ~/.toolbox/ssh-session-cli $INSTALL_PATH/semaphore
@@ -47,7 +51,7 @@ install_cmd chmod +x $INSTALL_PATH/semaphore
 if [[ $? -eq 0 ]];then
   echo "ssh-session-cli installed"
 else
-  echo "toolbox_install_error_ssh-session-cli" >> /tmp/toolbox_metrics
+  log_install_status 'ssh-session-cli'
 fi
 
 install_cmd ln -sf ~/.toolbox/cache $INSTALL_PATH/cache
@@ -55,7 +59,7 @@ install_cmd chmod +x $INSTALL_PATH/cache
 if [[ $? -eq 0 ]];then
   echo "cache installed"
 else
-  echo "toolbox_install_error_cache" >> /tmp/toolbox_metrics
+  log_install_status 'cache'
 fi
 
 install_cmd ln -sf ~/.toolbox/sem-context $INSTALL_PATH/sem-context
@@ -63,7 +67,7 @@ install_cmd chmod +x $INSTALL_PATH/sem-context
 if [[ $? -eq 0 ]];then
   echo "sem-context installed"
 else
-  echo "toolbox_install_error_sem-context" >> /tmp/toolbox_metrics
+  log_install_status 'sem-context'
 fi
 
 install_cmd ln -sf ~/.toolbox/sem-service $INSTALL_PATH/sem-service
@@ -71,7 +75,7 @@ install_cmd chmod +x $INSTALL_PATH/sem-service
 if [[ $? -eq 0 ]];then
   echo "sem-service installed"
 else
-  echo "toolbox_install_error_sem-service" >> /tmp/toolbox_metrics
+    log_install_status 'sem-service'
 fi
 
 install_cmd ln -sf ~/.toolbox/sem-dockerize $INSTALL_PATH/sem-dockerize
@@ -79,7 +83,7 @@ install_cmd chmod +x $INSTALL_PATH/sem-dockerize
 if [[ $? -eq 0 ]];then
   echo "sem-dockerize installed"
 else
-  echo "toolbox_install_error_sem-dockerize" >> /tmp/toolbox_metrics
+  log_install_status 'sem-dockerize'
 fi
 
 install_cmd ln -sf ~/.toolbox/sem-service-check-params $INSTALL_PATH/sem-service-check-params
@@ -87,7 +91,7 @@ install_cmd chmod +x $INSTALL_PATH/sem-service-check-params
 if [[ $? -eq 0 ]];then
   echo "sem-service-check-params installed"
 else
-  echo "toolbox_install_error_sem-service-check-params" >> /tmp/toolbox_metrics
+  log_install_status 'sem-service-check-params'
 fi
 
 install_cmd ln -sf ~/.toolbox/sem-semantic-release $INSTALL_PATH/sem-semantic-release
@@ -95,7 +99,7 @@ install_cmd chmod +x $INSTALL_PATH/sem-semantic-release
 if [[ $? -eq 0 ]];then
   echo "sem-semantic-release installed"
 else
-  echo "toolbox_install_error_sem-semantic-release" >> /tmp/toolbox_metrics
+  log_install_status 'sem-semantic-release'
 fi
 
 
@@ -105,7 +109,7 @@ install_cmd chmod +x $INSTALL_PATH/artifact
 if [[ $? -eq 0 ]];then
   echo "artifacts installed"
 else
-  echo "toolbox_install_error_artifacts" >> /tmp/toolbox_metrics
+  log_install_status 'artifacts'
 fi
 
 echo "Installing the test results CLI"
@@ -114,7 +118,7 @@ install_cmd chmod +x $INSTALL_PATH/test-results
 if [[ $? -eq 0 ]];then
   echo "test-results installed"
 else
-  echo "toolbox_install_error_test-results" >> /tmp/toolbox_metrics
+  log_install_status 'test-results'
 fi
 
 
@@ -127,7 +131,7 @@ if [[ `uname` != "Darwin" ]]; then
   if [[ $? -eq 0 ]];then
     echo "install-package installed"
   else
-    echo "toolbox_install_error_install-package" >> /tmp/toolbox_metrics
+    log_install_status 'install-package'
   fi
 
   echo "Installing the SPC CLI"
@@ -136,7 +140,7 @@ if [[ `uname` != "Darwin" ]]; then
   if [[ $? -eq 0 ]];then
     echo "spc installed"
   else
-    echo "toolbox_install_error_spc" >> /tmp/toolbox_metrics
+    log_install_status 'spc'
   fi
 
   echo "Installing the when CLI"
@@ -147,7 +151,7 @@ if [[ `uname` != "Darwin" ]]; then
   if [[ $? -eq 0 ]];then
     echo "when installed"
   else
-    echo "toolbox_install_error_when" >> /tmp/toolbox_metrics
+    log_install_status 'when'
   fi
 
   echo "Installing the enetwork CLI"
@@ -156,7 +160,7 @@ if [[ `uname` != "Darwin" ]]; then
   if [[ $? -eq 0 ]];then
     echo "enetwork installed"
   else
-    echo "toolbox_install_error_enetwork" >> /tmp/toolbox_metrics
+    log_install_status 'enetwork'
   fi
 
 

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io/fs"
 	"os"
 	"regexp"
@@ -151,41 +150,18 @@ func downloadKey(storage storage.Storage, key string) (*os.File, error) {
 }
 
 func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo, downloadDuration time.Duration) {
-	metricsToPublish := []metrics.Metric{
-		{Name: metrics.CacheDownloadSize, Value: fmt.Sprintf("%d", fileInfo.Size())},
-		{Name: metrics.CacheDownloadTime, Value: downloadDuration.String()},
+	event := metrics.CacheEvent{
+		Command:   metrics.CommandRestore,
+		Server:    metrics.CacheServerIP(),
+		User:      metrics.CacheUsername(),
+		SizeBytes: fileInfo.Size(),
+		Duration:  downloadDuration,
 	}
 
-	username := os.Getenv("SEMAPHORE_CACHE_USERNAME")
-	if username != "" {
-		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: metrics.CacheUser, Value: username})
-	}
-
-	cacheServerIP := getCacheServerIP()
-	if cacheServerIP != "" {
-		metricsToPublish = append(metricsToPublish, metrics.Metric{Name: metrics.CacheServer, Value: cacheServerIP})
-	}
-
-	metricsToPublish = append(metricsToPublish, metrics.Metric{Name: metrics.CacheTotalRate, Value: "1"})
-
-	err := metricsManager.PublishBatch(metricsToPublish)
+	err := metricsManager.LogEvent(event)
 	if err != nil {
 		log.Errorf("Error publishing metrics: %v", err)
 	}
-}
-
-func getCacheServerIP() string {
-	cacheURL := os.Getenv("SEMAPHORE_CACHE_URL")
-	if cacheURL != "" {
-		ipAndPort := strings.Split(cacheURL, ":")
-		if len(ipAndPort) != 2 {
-			return ""
-		}
-
-		return ipAndPort[0]
-	}
-
-	return ""
 }
 
 func init() {

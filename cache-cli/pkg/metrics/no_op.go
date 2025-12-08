@@ -11,10 +11,6 @@ func (b *NoOpMetricsManager) Enabled() bool {
 	return false
 }
 
-func (b *NoOpMetricsManager) PublishBatch(metrics []Metric) error {
-	return nil
-}
-
-func (b *NoOpMetricsManager) Publish(metric Metric) error {
+func (b *NoOpMetricsManager) LogEvent(event CacheEvent) error {
 	return nil
 }

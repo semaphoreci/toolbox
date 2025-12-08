@@ -47,8 +47,9 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc-001", tempDir)
+			metricsManager := metrics.NewNoOpMetricsManager()
+			archiver := archive.NewShellOutArchiver(metricsManager)
+			compressAndStore(storage, archiver, metricsManager, "abc-001", tempDir)
 			RunRestore(restoreCmd, []string{"abc-001"})
 			output := readOutputFromFile(t)
 
@@ -67,8 +68,9 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc/00/22", tempDir)
+			metricsManager := metrics.NewNoOpMetricsManager()
+			archiver := archive.NewShellOutArchiver(metricsManager)
+			compressAndStore(storage, archiver, metricsManager, "abc/00/22", tempDir)
 			RunRestore(restoreCmd, []string{"abc/00/22"})
 			output := readOutputFromFile(t)
 
@@ -88,8 +90,9 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc-001", tempDir)
+			metricsManager := metrics.NewNoOpMetricsManager()
+			archiver := archive.NewShellOutArchiver(metricsManager)
+			compressAndStore(storage, archiver, metricsManager, "abc-001", tempDir)
 			RunRestore(restoreCmd, []string{"abc"})
 			output := readOutputFromFile(t)
 
@@ -108,9 +111,10 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc-001", tempDir)
-			compressAndStore(storage, archiver, "abc-002", tempDir)
+			metricsManager := metrics.NewNoOpMetricsManager()
+			archiver := archive.NewShellOutArchiver(metricsManager)
+			compressAndStore(storage, archiver, metricsManager, "abc-001", tempDir)
+			compressAndStore(storage, archiver, metricsManager, "abc-002", tempDir)
 			RunRestore(restoreCmd, []string{"abc-001,abc-002"})
 			output := readOutputFromFile(t)
 
@@ -130,8 +134,9 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc", tempDir)
+			metricsManager := metrics.NewNoOpMetricsManager()
+			archiver := archive.NewShellOutArchiver(metricsManager)
+			compressAndStore(storage, archiver, metricsManager, "abc", tempDir)
 			RunRestore(restoreCmd, []string{"abc-001,abc"})
 			output := readOutputFromFile(t)
 
@@ -151,8 +156,9 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc", tempDir)
+			metricsManager := metrics.NewNoOpMetricsManager()
+			archiver := archive.NewShellOutArchiver(metricsManager)
+			compressAndStore(storage, archiver, metricsManager, "abc", tempDir)
 			RunRestore(restoreCmd, []string{"^abc"})
 			output := readOutputFromFile(t)
 
@@ -173,8 +179,9 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc", tempDir)
+			metricsManager := metrics.NewNoOpMetricsManager()
+			archiver := archive.NewShellOutArchiver(metricsManager)
+			compressAndStore(storage, archiver, metricsManager, "abc", tempDir)
 
 			// set the environment variables to download using HTTP instead before restoring
 			os.Setenv("SEMAPHORE_CACHE_CDN_URL", "http://sftp-server:80")
@@ -204,8 +211,9 @@ func Test__Restore(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(tempDir, "*")
 			_ = tempFile.Close()
 
-			archiver := archive.NewShellOutArchiver(metrics.NewNoOpMetricsManager())
-			compressAndStore(storage, archiver, "abc", tempDir)
+			metricsManager := metrics.NewNoOpMetricsManager()
+			archiver := archive.NewShellOutArchiver(metricsManager)
+			compressAndStore(storage, archiver, metricsManager, "abc", tempDir)
 
 			// Set just the URL, but not the user/pass
 			// This means SFTP will still be used.

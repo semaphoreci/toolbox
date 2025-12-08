@@ -82,4 +82,3 @@ sem-service start mongodb 8 --username=xxx --password=xxx
 sleep 5
 echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
-cat /tmp/toolbox_semservice

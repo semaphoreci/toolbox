@@ -19,4 +19,3 @@ sem-service start valkey 7
 sem-service status valkey
 
 
-cat /tmp/toolbox_semservice

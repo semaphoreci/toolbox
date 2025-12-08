@@ -277,6 +277,7 @@ func Test__Compress(t *testing.T) {
 }
 
 func Test__Decompress(t *testing.T) {
+	os.Setenv("SEMAPHORE_TOOLBOX_METRICS_ENABLED", "true")
 	runTestForAllArchiverTypes(t, true, func(archiverType string, archiver Archiver) {
 		t.Run(archiverType+" sends metric on failure", func(t *testing.T) {
 			tempFile, _ := ioutil.TempFile(os.TempDir(), "*")
@@ -289,7 +290,8 @@ func Test__Decompress(t *testing.T) {
 			metricsFile := filepath.Join(os.TempDir(), "toolbox_metrics")
 			bytes, err := ioutil.ReadFile(metricsFile)
 			assert.Nil(t, err)
-			assert.Contains(t, string(bytes), fmt.Sprintf("%s 1", metrics.CacheCorruptionRate))
+			assert.Contains(t, string(bytes), "usercache")
+			assert.Contains(t, string(bytes), "command=restore,corrupt=1")
 
 			os.Remove(tempFile.Name())
 			os.Remove(metricsFile)
