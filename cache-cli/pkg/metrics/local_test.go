@@ -1,96 +1,75 @@
 package metrics
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
 	assert "github.com/stretchr/testify/assert"
 )
 
-func Test__Publish(t *testing.T) {
+func TestLogEventWritesInfluxLine(t *testing.T) {
 	os.Setenv("SEMAPHORE_TOOLBOX_METRICS_ENABLED", "true")
+	os.Setenv("SEMAPHORE_CACHE_USERNAME", "tester")
+	os.Setenv("SEMAPHORE_CACHE_URL", "10.0.0.5:1234")
+
 	metricsManager, err := NewLocalMetricsBackend()
 	assert.Nil(t, err)
 
-	t.Run("valid cache metrics", func(t *testing.T) {
-		err = metricsManager.PublishBatch([]Metric{
-			{Name: CacheDownloadSize, Value: "1000"},
-			{Name: CacheDownloadTime, Value: "30"},
-			{Name: CacheUser, Value: "tester"},
-			{Name: CacheServer, Value: "0.0.0.0"},
-		})
+	event := CacheEvent{
+		Command:   CommandStore,
+		SizeBytes: 2048,
+		Duration:  time.Second,
+	}
 
-		assert.Nil(t, err)
+	err = metricsManager.LogEvent(event)
+	assert.Nil(t, err)
 
-		bytes, err := ioutil.ReadFile(metricsManager.CacheMetricsPath)
-		assert.Nil(t, err)
+	bytes, err := ioutil.ReadFile(metricsManager.ToolboxMetricsPath)
+	assert.Nil(t, err)
+	assert.Contains(t, string(bytes), "usercache,server=10.0.0.5,user=tester,command=store,corrupt=0 size=2048,duration=1000")
 
-		assert.Contains(t, string(bytes), fmt.Sprintf("%s 1000", CacheDownloadSize))
-		assert.Contains(t, string(bytes), fmt.Sprintf("%s 30", CacheDownloadTime))
-		assert.Contains(t, string(bytes), fmt.Sprintf("%s tester", CacheUser))
-		assert.Contains(t, string(bytes), fmt.Sprintf("%s 0.0.0.0", CacheServer))
+	os.Remove(metricsManager.ToolboxMetricsPath)
+}
 
-		_, err = os.Stat(metricsManager.ToolboxMetricsPath)
-		assert.NotNil(t, err)
+func TestLogEventMarksCorruption(t *testing.T) {
+	os.Setenv("SEMAPHORE_TOOLBOX_METRICS_ENABLED", "true")
+	os.Setenv("SEMAPHORE_CACHE_USERNAME", "")
+	os.Setenv("SEMAPHORE_CACHE_URL", "")
 
-		os.Remove(metricsManager.CacheMetricsPath)
-	})
+	metricsManager, err := NewLocalMetricsBackend()
+	assert.Nil(t, err)
 
-	t.Run("valid toolbox metrics", func(t *testing.T) {
-		err = metricsManager.PublishBatch([]Metric{
-			{Name: CacheTotalRate, Value: "1"},
-			{Name: CacheCorruptionRate, Value: "1"},
-		})
+	event := CacheEvent{
+		Command: CommandRestore,
+		Corrupt: true,
+	}
 
-		assert.Nil(t, err)
+	err = metricsManager.LogEvent(event)
+	assert.Nil(t, err)
 
-		bytes, err := ioutil.ReadFile(metricsManager.ToolboxMetricsPath)
-		assert.Nil(t, err)
+	bytes, err := ioutil.ReadFile(metricsManager.ToolboxMetricsPath)
+	assert.Nil(t, err)
+	assert.Contains(t, string(bytes), "command=restore,corrupt=1")
+	assert.Contains(t, string(bytes), "size=0,duration=0")
 
-		assert.Contains(t, string(bytes), fmt.Sprintf("%s 1", CacheTotalRate))
-		assert.Contains(t, string(bytes), fmt.Sprintf("%s 1", CacheCorruptionRate))
+	os.Remove(metricsManager.ToolboxMetricsPath)
+}
 
-		_, err = os.Stat(metricsManager.CacheMetricsPath)
-		assert.NotNil(t, err)
+func TestLogEventDisabled(t *testing.T) {
+	os.Setenv("SEMAPHORE_TOOLBOX_METRICS_ENABLED", "false")
+	metricsManager, err := NewLocalMetricsBackend()
+	assert.Nil(t, err)
 
-		os.Remove(metricsManager.ToolboxMetricsPath)
-	})
+	event := CacheEvent{
+		Command:   CommandStore,
+		SizeBytes: 100,
+	}
 
-	t.Run("invalid metrics are ignored", func(t *testing.T) {
-		err = metricsManager.PublishBatch([]Metric{
-			{Name: "some-invalid-metric-name", Value: "invalid"},
-		})
+	err = metricsManager.LogEvent(event)
+	assert.Nil(t, err)
 
-		assert.Nil(t, err)
-
-		_, err = os.Stat(metricsManager.CacheMetricsPath)
-		assert.NotNil(t, err)
-
-		_, err = os.Stat(metricsManager.ToolboxMetricsPath)
-		assert.NotNil(t, err)
-	})
-
-	t.Run("ignores metrics if it is not enabled", func(t *testing.T) {
-		os.Setenv("SEMAPHORE_TOOLBOX_METRICS_ENABLED", "false")
-
-		err = metricsManager.PublishBatch([]Metric{
-			{Name: CacheDownloadSize, Value: "1000"},
-			{Name: CacheDownloadTime, Value: "30"},
-			{Name: CacheUser, Value: "tester"},
-			{Name: CacheServer, Value: "0.0.0.0"},
-			{Name: CacheTotalRate, Value: "1"},
-			{Name: CacheCorruptionRate, Value: "1"},
-			{Name: "some-invalid-metric-name", Value: "invalid"},
-		})
-
-		assert.Nil(t, err)
-
-		_, err = os.Stat(metricsManager.CacheMetricsPath)
-		assert.NotNil(t, err)
-
-		_, err = os.Stat(metricsManager.ToolboxMetricsPath)
-		assert.NotNil(t, err)
-	})
+	_, err = os.Stat(metricsManager.ToolboxMetricsPath)
+	assert.NotNil(t, err)
 }

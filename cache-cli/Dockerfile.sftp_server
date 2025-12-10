@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install -y openssh-server nginx
+RUN apt-get update && apt-get install -y openssh-server nginx --no-install-recommends
 RUN mkdir -p /var/run/sshd
 
 COPY sshd_config /etc/ssh/sshd_config

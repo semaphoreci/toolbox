@@ -5,13 +5,11 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-
-	log "github.com/sirupsen/logrus"
+	"strings"
 )
 
 type LocalMetricsManager struct {
 	ToolboxMetricsPath string
-	CacheMetricsPath   string
 }
 
 func NewLocalMetricsBackend() (*LocalMetricsManager, error) {
@@ -22,7 +20,6 @@ func NewLocalMetricsBackend() (*LocalMetricsManager, error) {
 
 	return &LocalMetricsManager{
 		ToolboxMetricsPath: filepath.Join(basePath, "toolbox_metrics"),
-		CacheMetricsPath:   filepath.Join(basePath, "cache_metrics"),
 	}, nil
 }
 
@@ -30,45 +27,56 @@ func (b *LocalMetricsManager) Enabled() bool {
 	return os.Getenv("SEMAPHORE_TOOLBOX_METRICS_ENABLED") == "true"
 }
 
-func (b *LocalMetricsManager) PublishBatch(metrics []Metric) error {
+func (b *LocalMetricsManager) LogEvent(event CacheEvent) error {
 	if !b.Enabled() {
 		return nil
 	}
 
-	for _, metric := range metrics {
-		err := b.Publish(metric)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return publishEventToFile(b.ToolboxMetricsPath, event)
 }
 
-func (b *LocalMetricsManager) Publish(metric Metric) error {
-	if !b.Enabled() {
-		return nil
+func publishEventToFile(file string, event CacheEvent) error {
+	server := event.Server
+	if server == "" {
+		server = CacheServerIP()
 	}
 
-	switch metric.Name {
-	case CacheDownloadSize, CacheDownloadTime, CacheUser, CacheServer:
-		return publishMetricToFile(b.CacheMetricsPath, metric.Name, metric.Value)
-	case CacheTotalRate, CacheCorruptionRate:
-		return publishMetricToFile(b.ToolboxMetricsPath, metric.Name, metric.Value)
+	user := event.User
+	if user == "" {
+		user = CacheUsername()
 	}
 
-	log.Warnf("Ignoring metric %s", metric.Name)
-	return nil
-}
+	command := event.Command
+	if command == "" {
+		command = CommandRestore
+	}
 
-func publishMetricToFile(file, metricName, metricValue string) error {
+	corruptValue := 0
+	if event.Corrupt {
+		corruptValue = 1
+	}
+
+	durationMs := event.Duration.Milliseconds()
+	if durationMs < 0 {
+		durationMs = 0
+	}
+
 	// #nosec
 	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
 
-	line := fmt.Sprintf("%s %s\n", metricName, metricValue)
+	line := fmt.Sprintf(
+		"%s,server=%s,user=%s,command=%s,corrupt=%d size=%d,duration=%d\n",
+		MeasurementName,
+		escapeTagValue(server),
+		escapeTagValue(user),
+		escapeTagValue(command),
+		corruptValue,
+		event.SizeBytes,
+		durationMs,
+	)
 
 	_, err = f.WriteString(line)
 	if err != nil {
@@ -77,4 +85,13 @@ func publishMetricToFile(file, metricName, metricValue string) error {
 	}
 
 	return f.Close()
+}
+
+func escapeTagValue(value string) string {
+	if value == "" {
+		return "unknown"
+	}
+
+	replacer := strings.NewReplacer(",", "\\,", " ", "\\ ", "=", "\\=")
+	return replacer.Replace(value)
 }

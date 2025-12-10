@@ -38,8 +38,8 @@ func (a *ShellOutArchiver) Compress(dst, src string) error {
 func (a *ShellOutArchiver) Decompress(src string) (string, error) {
 	restorationPath, err := a.findRestorationPath(src)
 	if err != nil {
-		if metricErr := a.metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
-			log.Errorf("Error publishing %s metric: %v", metrics.CacheCorruptionRate, metricErr)
+		if metricErr := a.metricsManager.LogEvent(metrics.CacheEvent{Command: metrics.CommandRestore, Corrupt: true}); metricErr != nil {
+			log.Errorf("Error publishing corruption metric: %v", metricErr)
 		}
 
 		return "", fmt.Errorf("error finding restoration path: %v", err)
@@ -48,8 +48,8 @@ func (a *ShellOutArchiver) Decompress(src string) (string, error) {
 	cmd := a.decompressionCmd(restorationPath, src)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		if metricErr := a.metricsManager.Publish(metrics.Metric{Name: metrics.CacheCorruptionRate, Value: "1"}); metricErr != nil {
-			log.Errorf("Error publishing %s metric: %v", metrics.CacheCorruptionRate, metricErr)
+		if metricErr := a.metricsManager.LogEvent(metrics.CacheEvent{Command: metrics.CommandRestore, Corrupt: true}); metricErr != nil {
+			log.Errorf("Error publishing corruption metric: %v", metricErr)
 		}
 
 		return "", fmt.Errorf("error executing decompression command: %s, %v", string(output), err)

@@ -38,4 +38,3 @@ curl -XGET 'https://0.0.0.0:9200' -ksu admin:admin | grep number | grep 2.7.0
 docker inspect opensearch | grep '"ES_JAVA_OPTS=-Xms256m -Xmx256m"'
 sem-service stop opensearch
 
-cat /tmp/toolbox_semservice

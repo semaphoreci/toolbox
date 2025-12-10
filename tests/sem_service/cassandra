@@ -4,4 +4,3 @@ IFS=$'\n\t'
 
 sem-service start cassandra
 docker ps -a | grep cassandra
-cat /tmp/toolbox_semservice

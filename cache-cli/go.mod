@@ -12,7 +12,7 @@ require (
 	github.com/aws/smithy-go v1.13.5
 	github.com/klauspost/pgzip v1.2.6
 	github.com/pkg/sftp v1.13.5
-	github.com/sirupsen/logrus v1.9.2
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.35.0

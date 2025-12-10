@@ -4,4 +4,3 @@ IFS=$'\n\t'
 
 sem-service start memcached
 sem-service status memcached
-cat /tmp/toolbox_semservice
