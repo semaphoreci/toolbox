@@ -66,7 +66,7 @@ func ParseTime(s string) time.Duration {
 	return d
 }
 
-// ParseInt parsers string respresentation of integer to integer value
+// ParseInt parsers string representation of integer to integer value
 func ParseInt(s string) int {
 	i, err := strconv.Atoi(s)
 	if err != nil {

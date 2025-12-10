@@ -4,7 +4,7 @@
 # Simple log system metrics collector. Polls the system state every 1s and
 # saves the result to /tmp/system-metrics.
 #
-# The simple nature of the script allows it to seemlesly run in any Linux based
+# The simple nature of the script allows it to seamlessly run in any Linux based
 # VM, Docker image, or on a MacVM host.
 #
 # The recommended way to start the script is to run it in the background.

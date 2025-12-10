@@ -27,5 +27,5 @@ func Execute() {
 
 func init() {
 	Store = &store.ArtifactStore{}
-	RootCmd.PersistentFlags().BoolVar(&flags.IgnoreFailure, "ignore-failure", false, "Ignore if failure occures, and always return 0.")
+	RootCmd.PersistentFlags().BoolVar(&flags.IgnoreFailure, "ignore-failure", false, "Ignore if failure occurs, and always return 0.")
 }
