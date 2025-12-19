@@ -24,8 +24,32 @@ setup() {
 }
 
 #  kubectl
-@test "change kubectl to 1.27.1" {
-  sem-version kubectl 1.27.1
+@test "change kubectl to 1.15.3" {
+  sem-version kubectl 1.15.3
   run kubectl version
-  assert_line --partial "1.27.1"
+  assert_line --partial "1.15.3"
+}
+
+@test "change kubectl to 1.28.13" {
+  sem-version kubectl 1.28.13
+  run kubectl version
+  assert_line --partial "1.28.13"
+}
+
+@test "change kubectl to 1.29.8" {
+  sem-version kubectl 1.29.8
+  run kubectl version
+  assert_line --partial "1.29.8"
+}
+
+@test "change kubectl to 1.30.4" {
+  sem-version kubectl 1.30.4
+  run kubectl version
+  assert_line --partial "1.30.4"
+}
+
+@test "change kubectl to 1.31.0" {
+  sem-version kubectl 1.31.0
+  run kubectl version
+  assert_line --partial "1.31.0"
 }
