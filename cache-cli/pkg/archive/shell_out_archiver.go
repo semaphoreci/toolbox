@@ -77,7 +77,6 @@ func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
 
 	// Use -k to keep existing files (don't overwrite)
 	// This is supported on both GNU tar (Linux) and BSD tar (macOS)
-	// and handles the case where mise pre-populates Go modules before cache restore
 	args = append(args, "-k")
 
 	return exec.Command("tar", args...)
