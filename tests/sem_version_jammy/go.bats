@@ -59,11 +59,20 @@ setup() {
   assert_line --partial "go1.21.1"
 }
 
-@test "sem-version go 1.25.0" {
+@test "sem-version go 1.24.11" {
 
-  sem-version go 1.25.0
+  sem-version go 1.24.11
   run echo ${PATH}
   assert_line --partial "$(go env GOPATH)/bin"
   run go version
-  assert_line --partial "go1.25.0"
+  assert_line --partial "go1.24.11"
+}
+
+@test "sem-version go 1.25.5" {
+
+  sem-version go 1.25.5
+  run echo ${PATH}
+  assert_line --partial "$(go env GOPATH)/bin"
+  run go version
+  assert_line --partial "go1.25.5"
 }

@@ -40,6 +40,14 @@ setup() {
   assert_line --partial "gcc version 12."
 }
 
+@test "change gcc to 13" {
+
+  run sem-version c 13
+  assert_success
+  run gcc -v
+  assert_line --partial "gcc version 13."
+}
+
 @test "change gcc to 16" {
 
   run sem-version c 16

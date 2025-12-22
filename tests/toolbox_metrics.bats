@@ -25,6 +25,9 @@ setup() {
   sem-service start postgres
   sem-service start redis
   sem-version go 1.20
+
+  sed -E -i  "/^libcheckout,provider='?(github|bitbucket)'?,reftype='?[^']*'?,status=(success|fail) size=[0-9]+$/d" /tmp/toolbox_metrics
+
   sed -E -i  '/^semservice,service=[a-z]*,state=(success|fail),version=[0-9a-zA-Z.]+,location=(disk|local|remote) duration=[0-9]+$/d' /tmp/toolbox_metrics 
 
   sed -E -i  '/^semversion,software=[a-z]*,state=(success|fail),version=[0-9a-zA-Z.-]+,osversion=[0-9.]+ duration=[0-9]+$/d' /tmp/toolbox_metrics
