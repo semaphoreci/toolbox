@@ -7,6 +7,7 @@ VERSION="0.7"
 DATE_FORMAT='%H:%M %d/%m/%Y'
 TOTAL_TIME=0
 
+export packages_host=${SEMAPHORE_TOOLBOX_PACKAGE_HOST:-'packages.semaphoreci.com'}
 SEMAPHORE_ARCH=$(uname -m)
 
 ################################################################################

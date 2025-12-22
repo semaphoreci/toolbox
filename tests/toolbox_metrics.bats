@@ -32,7 +32,7 @@ setup() {
 
   sed -E -i  '/^semversion,software=[a-z]*,state=(success|fail),version=[0-9a-zA-Z.-]+,osversion=[0-9.]+ duration=[0-9]+$/d' /tmp/toolbox_metrics
 
-  sed -E -i  '/^libcheckout,provider=(github|bitbucket),reftype=[].*,status=(success|fail) size=[0-9]+$/d' /tmp/toolbox_metrics
+  sed -E -i  "/^libcheckout,provider='?(github|bitbucket)'?,reftype='?[^']*'?,status=(success|fail) size=[0-9]+$/d" /tmp/toolbox_metrics
 
   sed -E -i  '/^usercache,server=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3},user=[a-z,0-9,-]+,command=(store|restore),corrupt=[0,1] size=[0-9]+,duration=[0-9]+$/d' /tmp/toolbox_metrics
   

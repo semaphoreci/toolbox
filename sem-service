@@ -8,7 +8,7 @@ DATE_FORMAT='%H:%M %d/%m/%Y'
 docker_status=0
 state=('success' 'fail')
 download_location='local'
-registry_host='registry.semaphoreci.com'
+registry_host=${SEMAPHORE_TOOLBOX_SERVICE_HOST:-'registry.semaphoreci.com'}
 [[ $(uname -m) =~ "aarch" ]] && registry_host="${registry_host}/arm"
 
 declare -A sem_services
@@ -40,8 +40,8 @@ service::pull_image() {
   if [[ -z $image_name ]]; then
     service:err "Image name can't be empty"
   fi
-  if ! echo "$image_name" | grep -E '^registry.semaphoreci.com/arm/[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
-    if ! echo "$image_name" | grep -E '^registry.semaphoreci.com/[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
+  if ! echo "$image_name" | grep -E '^'"${registry_host}"'/arm/[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
+    if ! echo "$image_name" | grep -E '^'"${registry_host}"'/[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
       if ! echo "$image_name" | grep -E '^[[:alnum:]]+(:[[:alnum:]]+.*)?$' &>/dev/null; then
         service::err "Invalid image name provided '${image_name}'"
       fi
