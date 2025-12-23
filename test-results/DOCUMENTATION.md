@@ -43,7 +43,7 @@
 ## Configuration & Environment
 - Viper auto-loads `$HOME/.test-results.yaml` when present; command flags override config.
 - Key env vars: `SEMAPHORE_PIPELINE_ID`, `SEMAPHORE_WORKFLOW_ID`, `SEMAPHORE_JOB_ID`, `SEMAPHORE_AGENT_MACHINE_TYPE`, etc.; parsers read them to enrich metadata.
-- Flags to know: `--parser`, `--ignore-missing`, `--no-compress`, `--suite-prefix`, `--omit-output-for-passed`, `--trim-output-to`, `--name`.
+- Flags to know: `--parser`, `--ignore-missing`, `--no-compress`, `--suite-prefix`, `--omit-output-for-passed`, `--trim-output-to`, `--no-trim-output`, `--name`.
 
 ## Development Workflow
 - Requires Go 1.24+. Use `make test.setup` once to build the `cli` Docker image and fetch module deps.
