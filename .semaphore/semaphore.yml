@@ -2,8 +2,8 @@ version: v1.0
 name: Toolbox S2 project
 agent:
   machine:
-    type: e2-standard-2
-    os_image: ubuntu2004
+    type: f1-standard-2
+    os_image: ubuntu2404
 
 execution_time_limit:
   minutes: 30
@@ -102,8 +102,8 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
-          os_image: ubuntu2004
+          type: f1-standard-2
+          os_image: ubuntu2404
       prologue:
         commands:
           - checkout
@@ -153,7 +153,7 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
+          type: f1-standard-2
           os_image: ubuntu2204
       prologue:
         commands:
@@ -334,8 +334,8 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
-          os_image: ubuntu2004
+          type: f1-standard-2
+          os_image: ubuntu2404
         containers:
           - name: main
             image: "registry.semaphoreci.com/android:34-flutter"
@@ -499,8 +499,8 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
-          os_image: ubuntu2004
+          type: f1-standard-2
+          os_image: ubuntu2404
         containers:
           - name: main
             image: "semaphoreci/ruby:2.6.2"
@@ -579,8 +579,8 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
-          os_image: ubuntu2004
+          type: f1-standard-2
+          os_image: ubuntu2404
         containers:
           - name: main
             image: "semaphoreci/alpine:3.9"
@@ -731,7 +731,7 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
+          type: f1-standard-2
           os_image: ubuntu2404
       prologue:
         commands:
@@ -919,8 +919,8 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
-          os_image: ubuntu2004
+          type: f1-standard-2
+          os_image: ubuntu2404
         containers:
           - name: main
             image: "registry.semaphoreci.com/ubuntu:20.04"
