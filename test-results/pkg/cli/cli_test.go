@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/semaphoreci/toolbox/test-results/pkg/parser"
+	"github.com/spf13/cobra"
 
 	"github.com/semaphoreci/toolbox/test-results/pkg/cli"
 	"github.com/stretchr/testify/assert"
@@ -148,6 +149,168 @@ func TestWriteToTmpFile(t *testing.T) {
 		for err := range errChan {
 			require.NoError(t, err)
 		}
+	})
+}
+
+func TestApplyOutputTrimming(t *testing.T) {
+	longText := func(n int) string {
+		s := ""
+		for i := 0; i < n; i++ {
+			s += "x"
+		}
+		return s
+	}
+
+	createTestResult := func(text string) *parser.Result {
+		return &parser.Result{
+			TestResults: []parser.TestResults{
+				{
+					ID:   "test-1",
+					Name: "Test",
+					Suites: []parser.Suite{
+						{
+							Name:      "Suite1",
+							SystemOut: text,
+							SystemErr: text,
+							Tests: []parser.Test{
+								{
+									Name:      "Test1",
+									SystemOut: text,
+									SystemErr: text,
+									Failure: &parser.Failure{
+										Message: text,
+										Body:    text,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+
+	createCmd := func(trimTo int, noTrim bool) *cobra.Command {
+		cmd := &cobra.Command{}
+		cmd.Flags().Int("trim-output-to", trimTo, "")
+		cmd.Flags().Bool("no-trim-output", noTrim, "")
+		return cmd
+	}
+
+	t.Run("default trimming to 1000 characters", func(t *testing.T) {
+		result := createTestResult(longText(2000))
+		cmd := createCmd(1000, false)
+
+		cli.ApplyOutputTrimming(result, cmd)
+
+		suite := result.TestResults[0].Suites[0]
+		assert.True(t, len(suite.SystemOut) <= 1000+len("...[truncated]...\n"))
+		assert.True(t, len(suite.SystemErr) <= 1000+len("...[truncated]...\n"))
+		assert.Contains(t, suite.SystemOut, "...[truncated]...")
+	})
+
+	t.Run("custom trim length", func(t *testing.T) {
+		result := createTestResult(longText(5000))
+		cmd := createCmd(3000, false)
+
+		cli.ApplyOutputTrimming(result, cmd)
+
+		suite := result.TestResults[0].Suites[0]
+		assert.True(t, len(suite.SystemOut) <= 3000+len("...[truncated]...\n"))
+		assert.Contains(t, suite.SystemOut, "...[truncated]...")
+	})
+
+	t.Run("no trimming when --no-trim-output is set", func(t *testing.T) {
+		originalText := longText(5000)
+		result := createTestResult(originalText)
+		cmd := createCmd(1000, true)
+
+		cli.ApplyOutputTrimming(result, cmd)
+
+		suite := result.TestResults[0].Suites[0]
+		assert.Equal(t, originalText, suite.SystemOut)
+		assert.Equal(t, originalText, suite.SystemErr)
+		assert.Equal(t, originalText, suite.Tests[0].SystemOut)
+		assert.Equal(t, originalText, suite.Tests[0].Failure.Message)
+	})
+
+	t.Run("no trimming when --trim-output-to is 0", func(t *testing.T) {
+		originalText := longText(5000)
+		result := createTestResult(originalText)
+		cmd := createCmd(0, false)
+
+		cli.ApplyOutputTrimming(result, cmd)
+
+		suite := result.TestResults[0].Suites[0]
+		assert.Equal(t, originalText, suite.SystemOut)
+		assert.Equal(t, originalText, suite.SystemErr)
+	})
+
+	t.Run("no trimming when --trim-output-to is negative", func(t *testing.T) {
+		originalText := longText(5000)
+		result := createTestResult(originalText)
+		cmd := createCmd(-1, false)
+
+		cli.ApplyOutputTrimming(result, cmd)
+
+		suite := result.TestResults[0].Suites[0]
+		assert.Equal(t, originalText, suite.SystemOut)
+	})
+
+	t.Run("text shorter than trim limit is not modified", func(t *testing.T) {
+		originalText := longText(500)
+		result := createTestResult(originalText)
+		cmd := createCmd(1000, false)
+
+		cli.ApplyOutputTrimming(result, cmd)
+
+		suite := result.TestResults[0].Suites[0]
+		assert.Equal(t, originalText, suite.SystemOut)
+		assert.NotContains(t, suite.SystemOut, "...[truncated]...")
+	})
+
+	t.Run("nil result does not panic", func(t *testing.T) {
+		cmd := createCmd(1000, false)
+		assert.NotPanics(t, func() {
+			cli.ApplyOutputTrimming(nil, cmd)
+		})
+	})
+
+	t.Run("trims failure and error fields", func(t *testing.T) {
+		result := &parser.Result{
+			TestResults: []parser.TestResults{
+				{
+					ID: "test-1",
+					Suites: []parser.Suite{
+						{
+							Tests: []parser.Test{
+								{
+									Failure: &parser.Failure{
+										Message: longText(2000),
+										Type:    longText(2000),
+										Body:    longText(2000),
+									},
+									Error: &parser.Error{
+										Message: longText(2000),
+										Type:    longText(2000),
+										Body:    longText(2000),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		cmd := createCmd(1000, false)
+
+		cli.ApplyOutputTrimming(result, cmd)
+
+		test := result.TestResults[0].Suites[0].Tests[0]
+		assert.Contains(t, test.Failure.Message, "...[truncated]...")
+		assert.Contains(t, test.Failure.Body, "...[truncated]...")
+		assert.Contains(t, test.Error.Message, "...[truncated]...")
+		assert.Contains(t, test.Error.Body, "...[truncated]...")
 	})
 }
 

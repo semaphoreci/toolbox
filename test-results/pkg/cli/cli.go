@@ -466,16 +466,22 @@ func ApplyOutputTrimming(result *parser.Result, cmd *cobra.Command) {
 		return
 	}
 
+	// Check if trimming is disabled via --no-trim-output flag
+	noTrim, err := cmd.Flags().GetBool("no-trim-output")
+	if err == nil && noTrim {
+		return
+	}
+
 	trimTo := 1000
-	maxTrimLength := 10000
 
 	trimToFlag, err := cmd.Flags().GetInt("trim-output-to")
 	if err == nil {
 		trimTo = trimToFlag
 	}
 
-	if trimTo > maxTrimLength || trimTo <= 0 {
-		trimTo = maxTrimLength
+	// If trimTo is 0 or negative, disable trimming
+	if trimTo <= 0 {
+		return
 	}
 
 	for i := range result.TestResults {

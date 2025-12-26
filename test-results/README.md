@@ -75,6 +75,21 @@ The generated tests in a report will sometimes contain a prefix in the name. For
 test-results publish --suite-prefix "Elixir." results.xml
 ```
 
+## Trimming test output
+
+By default, the CLI trims stdout/stderr fields to the last 1000 characters and prepends `...[truncated]...` when trimming occurs. You can change the limit or disable trimming entirely:
+
+```bash
+# Keep the last 5000 characters
+test-results publish --trim-output-to 5000 results.xml
+
+# Disable trimming
+test-results publish --no-trim-output results.xml
+
+# Also disables trimming
+test-results publish --trim-output-to 0 results.xml
+```
+
 ## Multiple reports from one job
 
 If your job generates multiple reports: `integration.xml`, `unit.xml` you can use this command to merge and publish them
