@@ -67,11 +67,19 @@ func (a *ShellOutArchiver) compressionCommand(dst, src string) *exec.Cmd {
 }
 
 func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
+	args := []string{}
+
 	if filepath.IsAbs(dst) {
-		return exec.Command("tar", "xzPf", tempFile, "-C", ".")
+		args = append(args, "xzPf", tempFile, "-C", ".")
+	} else {
+		args = append(args, "xzf", tempFile, "-C", ".")
 	}
 
-	return exec.Command("tar", "xzf", tempFile, "-C", ".")
+	// Use -k to keep existing files (don't overwrite)
+	// This is supported on both GNU tar (Linux) and BSD tar (macOS)
+	args = append(args, "-k")
+
+	return exec.Command("tar", args...)
 }
 
 func (a *ShellOutArchiver) findRestorationPath(src string) (string, error) {
