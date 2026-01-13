@@ -466,10 +466,21 @@ func ApplyOutputTrimming(result *parser.Result, cmd *cobra.Command) {
 		return
 	}
 
-	// Check if trimming is disabled via --no-trim-output flag
+	// Check if trimming is disabled via --no-trim-output flag (highest priority)
 	noTrim, err := cmd.Flags().GetBool("no-trim-output")
 	if err == nil && noTrim {
 		return
+	}
+
+	// Check if trimming is disabled via SEMAPHORE_TEST_RESULTS_NO_TRIM env var
+	// This is set by the backend when the organization has the feature enabled.
+	// CLI flags take priority over env var.
+	if noTrimEnv := os.Getenv("SEMAPHORE_TEST_RESULTS_NO_TRIM"); noTrimEnv == "true" {
+		// Only apply env var if --trim-output-to was not explicitly set
+		trimToFlag, _ := cmd.Flags().GetInt("trim-output-to")
+		if trimToFlag == 1000 { // default value, meaning not explicitly set
+			return
+		}
 	}
 
 	trimTo := 1000

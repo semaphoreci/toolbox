@@ -312,6 +312,61 @@ func TestApplyOutputTrimming(t *testing.T) {
 		assert.Contains(t, test.Error.Message, "...[truncated]...")
 		assert.Contains(t, test.Error.Body, "...[truncated]...")
 	})
+
+	t.Run("no trimming when SEMAPHORE_TEST_RESULTS_NO_TRIM env var is true", func(t *testing.T) {
+		originalText := longText(5000)
+		result := createTestResult(originalText)
+		cmd := createCmd(1000, false) // default trim value
+
+		os.Setenv("SEMAPHORE_TEST_RESULTS_NO_TRIM", "true")
+		defer os.Unsetenv("SEMAPHORE_TEST_RESULTS_NO_TRIM")
+
+		cli.ApplyOutputTrimming(result, cmd)
+
+		suite := result.TestResults[0].Suites[0]
+		assert.Equal(t, originalText, suite.SystemOut)
+		assert.Equal(t, originalText, suite.SystemErr)
+		assert.Equal(t, originalText, suite.Tests[0].SystemOut)
+	})
+
+	t.Run("env var ignored when SEMAPHORE_TEST_RESULTS_NO_TRIM is not 'true'", func(t *testing.T) {
+		result := createTestResult(longText(2000))
+		cmd := createCmd(1000, false)
+
+		os.Setenv("SEMAPHORE_TEST_RESULTS_NO_TRIM", "false")
+		defer os.Unsetenv("SEMAPHORE_TEST_RESULTS_NO_TRIM")
+
+		cli.ApplyOutputTrimming(result, cmd)
+
+		suite := result.TestResults[0].Suites[0]
+		assert.Contains(t, suite.SystemOut, "...[truncated]...")
+	})
+
+	t.Run("explicit --trim-output-to flag takes priority over env var", func(t *testing.T) {
+		result := createTestResult(longText(5000))
+		cmd := createCmd(500, false) // explicit non-default value
+
+		os.Setenv("SEMAPHORE_TEST_RESULTS_NO_TRIM", "true")
+		defer os.Unsetenv("SEMAPHORE_TEST_RESULTS_NO_TRIM")
+
+		cli.ApplyOutputTrimming(result, cmd)
+
+		suite := result.TestResults[0].Suites[0]
+		// Should still trim because explicit flag takes priority
+		assert.True(t, len(suite.SystemOut) <= 500+len("...[truncated]...\n"))
+		assert.Contains(t, suite.SystemOut, "...[truncated]...")
+	})
+
+	t.Run("--no-trim-output flag takes priority over everything", func(t *testing.T) {
+		originalText := longText(5000)
+		result := createTestResult(originalText)
+		cmd := createCmd(500, true) // noTrim=true
+
+		cli.ApplyOutputTrimming(result, cmd)
+
+		suite := result.TestResults[0].Suites[0]
+		assert.Equal(t, originalText, suite.SystemOut)
+	})
 }
 
 func TestWriteToFilePath(t *testing.T) {
