@@ -9,14 +9,15 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 )
 
 type ShellOutArchiver struct {
-	metricsManager metrics.MetricsManager
-	skipExisting   bool
+	metricsManager   metrics.MetricsManager
+	ignoreCollisions bool
 }
 
 func NewShellOutArchiver(metricsManager metrics.MetricsManager) *ShellOutArchiver {
@@ -25,8 +26,8 @@ func NewShellOutArchiver(metricsManager metrics.MetricsManager) *ShellOutArchive
 
 func NewShellOutArchiverWithOptions(metricsManager metrics.MetricsManager, opts ArchiverOptions) *ShellOutArchiver {
 	return &ShellOutArchiver{
-		metricsManager: metricsManager,
-		skipExisting:   opts.SkipExisting,
+		metricsManager:   metricsManager,
+		ignoreCollisions: opts.IgnoreCollisions,
 	}
 }
 
@@ -84,10 +85,10 @@ func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
 		args = append(args, "xzf", tempFile, "-C", ".")
 	}
 
-	// When skipExisting is enabled, skip existing files without overwriting.
+	// When ignoreCollisions is enabled, skip existing files without overwriting.
 	// GNU tar uses --skip-old-files (silent, exit 0).
 	// BSD tar uses -k (silent, exit 0).
-	if a.skipExisting {
+	if a.ignoreCollisions {
 		if isGNUTar() {
 			args = append(args, "--skip-old-files")
 		} else {
@@ -98,15 +99,25 @@ func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
 	return exec.Command("tar", args...)
 }
 
+var (
+	gnuTarOnce   sync.Once
+	gnuTarCached bool
+)
+
 // isGNUTar returns true if the system tar is GNU tar.
 // GNU tar includes "GNU tar" in its --version output.
+// The result is cached to avoid repeated subprocess calls.
 func isGNUTar() bool {
-	cmd := exec.Command("tar", "--version")
-	output, err := cmd.Output()
-	if err != nil {
-		return false
-	}
-	return strings.Contains(string(output), "GNU tar")
+	gnuTarOnce.Do(func() {
+		cmd := exec.Command("tar", "--version")
+		output, err := cmd.Output()
+		if err != nil {
+			gnuTarCached = false
+			return
+		}
+		gnuTarCached = strings.Contains(string(output), "GNU tar")
+	})
+	return gnuTarCached
 }
 
 func (a *ShellOutArchiver) findRestorationPath(src string) (string, error) {

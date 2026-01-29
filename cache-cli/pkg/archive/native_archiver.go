@@ -17,9 +17,9 @@ import (
 )
 
 type NativeArchiver struct {
-	MetricsManager metrics.MetricsManager
-	UseParallelism bool
-	SkipExisting   bool
+	MetricsManager   metrics.MetricsManager
+	UseParallelism   bool
+	IgnoreCollisions bool
 }
 
 func NewNativeArchiver(metricsManager metrics.MetricsManager, useParallelism bool) *NativeArchiver {
@@ -31,9 +31,9 @@ func NewNativeArchiver(metricsManager metrics.MetricsManager, useParallelism boo
 
 func NewNativeArchiverWithOptions(metricsManager metrics.MetricsManager, useParallelism bool, opts ArchiverOptions) *NativeArchiver {
 	return &NativeArchiver{
-		MetricsManager: metricsManager,
-		UseParallelism: useParallelism,
-		SkipExisting:   opts.SkipExisting,
+		MetricsManager:   metricsManager,
+		UseParallelism:   useParallelism,
+		IgnoreCollisions: opts.IgnoreCollisions,
 	}
 }
 
@@ -215,7 +215,7 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 				continue
 			}
 
-			// nil outFile means the file should be skipped (e.g., SkipExisting is enabled)
+			// nil outFile means the file should be skipped (e.g., IgnoreCollisions is enabled)
 			if outFile == nil {
 				// Discard the file contents from the tar reader
 				if _, err := io.Copy(io.Discard, tarReader); err != nil {
@@ -263,7 +263,7 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 }
 
 // openFile opens a file for writing during decompression.
-// Returns (nil, nil) if the file should be skipped (e.g., when SkipExisting is true and file exists).
+// Returns (nil, nil) if the file should be skipped (e.g., when IgnoreCollisions is true and file exists).
 func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*os.File, error) {
 	outFile, err := os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_EXCL, header.FileInfo().Mode())
 
@@ -274,8 +274,8 @@ func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*o
 
 	// Since we are using O_EXCL, this error could mean that the file already exists.
 	if errors.Is(err, os.ErrExist) {
-		// If SkipExisting is enabled, skip this file silently.
-		if a.SkipExisting {
+		// If IgnoreCollisions is enabled, skip this file silently.
+		if a.IgnoreCollisions {
 			return nil, nil
 		}
 		// Otherwise, attempt to remove it before opening again.

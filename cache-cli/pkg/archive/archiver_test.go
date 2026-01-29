@@ -298,9 +298,9 @@ func Test__Compress(t *testing.T) {
 			// Delete only tempFile2, keep tempFile1 to simulate existing file
 			assert.NoError(t, os.Remove(tempFile2.Name()))
 
-			// Create an archiver with SkipExisting enabled for decompression
+			// Create an archiver with IgnoreCollisions enabled for decompression
 			metricsManager := metrics.NewNoOpMetricsManager()
-			opts := ArchiverOptions{SkipExisting: true}
+			opts := ArchiverOptions{IgnoreCollisions: true}
 			var skipArchiver Archiver
 			switch archiverType {
 			case "shell-out":
@@ -321,9 +321,10 @@ func Test__Compress(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, originalContent, content1)
 
-			// Verify tempFile2 was restored
-			_, err = os.Stat(tempFile2.Name())
+			// Verify tempFile2 was restored with correct content
+			content2, err := ioutil.ReadFile(tempFile2.Name())
 			assert.NoError(t, err)
+			assert.Equal(t, cachedContent, content2)
 
 			assert.NoError(t, os.RemoveAll(tempDirBase))
 			assert.NoError(t, os.Remove(compressedFileName))
