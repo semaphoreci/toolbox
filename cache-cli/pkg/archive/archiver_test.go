@@ -273,6 +273,62 @@ func Test__Compress(t *testing.T) {
 			assert.NoError(t, os.Remove(tempFile.Name()))
 			assert.NoError(t, os.Remove(compressedFileName))
 		})
+
+		t.Run(archiverType+" skips existing files without error", func(t *testing.T) {
+			cwd, _ := os.Getwd()
+			tempDir, _ := ioutil.TempDir(cwd, "*")
+			tempFile1, _ := ioutil.TempFile(tempDir, "*")
+			tempFile2, _ := ioutil.TempFile(tempDir, "*")
+
+			// Write content to both files
+			originalContent := []byte("original content")
+			cachedContent := []byte("cached content")
+			_, _ = tempFile1.Write(originalContent)
+			_, _ = tempFile2.Write(cachedContent)
+			_ = tempFile1.Close()
+			_ = tempFile2.Close()
+
+			tempDirBase := filepath.Base(tempDir)
+
+			// Create archive with both files
+			compressedFileName := tmpFileNameWithPrefix("abc0008")
+			err := archiver.Compress(compressedFileName, tempDirBase)
+			assert.NoError(t, err)
+
+			// Delete only tempFile2, keep tempFile1 to simulate existing file
+			assert.NoError(t, os.Remove(tempFile2.Name()))
+
+			// Create an archiver with IgnoreCollisions enabled for decompression
+			metricsManager := metrics.NewNoOpMetricsManager()
+			opts := ArchiverOptions{IgnoreCollisions: true}
+			var skipArchiver Archiver
+			switch archiverType {
+			case "shell-out":
+				skipArchiver = NewShellOutArchiverWithOptions(metricsManager, opts)
+			case "native":
+				skipArchiver = NewNativeArchiverWithOptions(metricsManager, false, opts)
+			case "native-parallel":
+				skipArchiver = NewNativeArchiverWithOptions(metricsManager, true, opts)
+			}
+
+			// Decompress - should skip tempFile1 (already exists) and restore tempFile2
+			unpackedAt, err := skipArchiver.Decompress(compressedFileName)
+			assert.NoError(t, err)
+			assert.Equal(t, tempDirBase+string(os.PathSeparator), unpackedAt)
+
+			// Verify tempFile1 still has original content (was not overwritten)
+			content1, err := ioutil.ReadFile(tempFile1.Name())
+			assert.NoError(t, err)
+			assert.Equal(t, originalContent, content1)
+
+			// Verify tempFile2 was restored with correct content
+			content2, err := ioutil.ReadFile(tempFile2.Name())
+			assert.NoError(t, err)
+			assert.Equal(t, cachedContent, content2)
+
+			assert.NoError(t, os.RemoveAll(tempDirBase))
+			assert.NoError(t, os.Remove(compressedFileName))
+		})
 	})
 }
 
