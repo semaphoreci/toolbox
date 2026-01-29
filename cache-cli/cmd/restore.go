@@ -42,7 +42,7 @@ func RunRestore(cmd *cobra.Command, args []string) {
 	utils.Check(err)
 
 	archiver := archive.NewArchiverWithOptions(metricsManager, archive.ArchiverOptions{
-		SkipExisting: ignoreCollisions,
+		IgnoreCollisions: ignoreCollisions,
 	})
 
 	if len(args) == 0 {

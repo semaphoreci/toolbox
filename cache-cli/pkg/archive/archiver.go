@@ -12,7 +12,7 @@ type Archiver interface {
 }
 
 type ArchiverOptions struct {
-	SkipExisting bool
+	IgnoreCollisions bool
 }
 
 func NewArchiver(metricsManager metrics.MetricsManager) Archiver {
