@@ -275,11 +275,6 @@ func Test__Compress(t *testing.T) {
 		})
 
 		t.Run(archiverType+" skips existing files without error", func(t *testing.T) {
-			// This test only applies to shell-out archiver which uses tar -k flag
-			if archiverType != "shell-out" {
-				t.Skip("Test only applies to shell-out archiver")
-			}
-
 			cwd, _ := os.Getwd()
 			tempDir, _ := ioutil.TempDir(cwd, "*")
 			tempFile1, _ := ioutil.TempFile(tempDir, "*")
@@ -303,8 +298,21 @@ func Test__Compress(t *testing.T) {
 			// Delete only tempFile2, keep tempFile1 to simulate existing file
 			assert.NoError(t, os.Remove(tempFile2.Name()))
 
+			// Create an archiver with SkipExisting enabled for decompression
+			metricsManager := metrics.NewNoOpMetricsManager()
+			opts := ArchiverOptions{SkipExisting: true}
+			var skipArchiver Archiver
+			switch archiverType {
+			case "shell-out":
+				skipArchiver = NewShellOutArchiverWithOptions(metricsManager, opts)
+			case "native":
+				skipArchiver = NewNativeArchiverWithOptions(metricsManager, false, opts)
+			case "native-parallel":
+				skipArchiver = NewNativeArchiverWithOptions(metricsManager, true, opts)
+			}
+
 			// Decompress - should skip tempFile1 (already exists) and restore tempFile2
-			unpackedAt, err := archiver.Decompress(compressedFileName)
+			unpackedAt, err := skipArchiver.Decompress(compressedFileName)
 			assert.NoError(t, err)
 			assert.Equal(t, tempDirBase+string(os.PathSeparator), unpackedAt)
 
