@@ -16,6 +16,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var ignoreCollisions bool
+
 var restoreCmd = &cobra.Command{
 	Use:   "restore [keys]",
 	Short: "Restore keys from the cache.",
@@ -39,7 +41,9 @@ func RunRestore(cmd *cobra.Command, args []string) {
 	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
 	utils.Check(err)
 
-	archiver := archive.NewArchiver(metricsManager)
+	archiver := archive.NewArchiverWithOptions(metricsManager, archive.ArchiverOptions{
+		IgnoreCollisions: ignoreCollisions,
+	})
 
 	if len(args) == 0 {
 		lookupResults := files.Lookup(files.LookupOptions{
@@ -165,5 +169,6 @@ func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo,
 }
 
 func init() {
+	restoreCmd.Flags().BoolVar(&ignoreCollisions, "ignore-collisions", false, "Silently ignore file collisions, keeping existing files")
 	RootCmd.AddCommand(restoreCmd)
 }
