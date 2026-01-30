@@ -1,5 +1,7 @@
 FROM golang:1.23
 
+RUN apt-get update && apt-get install -y zstd && apt-get clean
+
 RUN go install gotest.tools/gotestsum@v1.12.3
 RUN mkdir /root/.ssh
 COPY id_rsa /root/.ssh/semaphore_cache_key
