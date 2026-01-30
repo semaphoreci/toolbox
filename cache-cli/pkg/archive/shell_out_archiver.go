@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/klauspost/compress/zstd"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 )
@@ -60,18 +61,36 @@ func (a *ShellOutArchiver) Decompress(src string) (string, error) {
 
 func (a *ShellOutArchiver) compressionCommand(dst, src string) *exec.Cmd {
 	if filepath.IsAbs(src) {
-		return exec.Command("tar", "czPf", dst, src)
+		return exec.Command("tar", "cPf", dst, "--zstd", src)
 	}
 
-	return exec.Command("tar", "czf", dst, src)
+	return exec.Command("tar", "cf", dst, "--zstd", src)
 }
 
 func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
 	if filepath.IsAbs(dst) {
-		return exec.Command("tar", "xzPf", tempFile, "-C", ".")
+		return exec.Command("tar", "xPf", tempFile, "-C", ".")
 	}
 
-	return exec.Command("tar", "xzf", tempFile, "-C", ".")
+	return exec.Command("tar", "xf", tempFile, "-C", ".")
+}
+
+func openDecompressingReader(file *os.File) (io.ReadCloser, error) {
+	is_zstd, err := IsZstdCompressed(file)
+	if err != nil {
+		return nil, err
+	}
+
+	if is_zstd {
+		var reader *zstd.Decoder
+		reader, err = zstd.NewReader(file)
+		if err != nil {
+			return nil, err
+		}
+		return reader.IOReadCloser(), nil
+	}
+
+	return gzip.NewReader(file)
 }
 
 func (a *ShellOutArchiver) findRestorationPath(src string) (string, error) {
@@ -85,24 +104,24 @@ func (a *ShellOutArchiver) findRestorationPath(src string) (string, error) {
 	// #nosec
 	defer file.Close()
 
-	gzipReader, err := gzip.NewReader(file)
+	reader, err := openDecompressingReader(file)
 	if err != nil {
 		log.Errorf("error creating gzip reader: %v", err)
 		return "", err
 	}
 
-	tr := tar.NewReader(gzipReader)
+	tr := tar.NewReader(reader)
 	header, err := tr.Next()
 	if err == io.EOF {
 		log.Warning("No files in archive.")
-		_ = gzipReader.Close()
+		_ = reader.Close()
 		return "", nil
 	}
 
 	if err != nil {
-		_ = gzipReader.Close()
+		_ = reader.Close()
 		return "", fmt.Errorf("error reading archive %s: %v", src, err)
 	}
 
-	return filepath.FromSlash(header.Name), gzipReader.Close()
+	return filepath.FromSlash(header.Name), reader.Close()
 }
