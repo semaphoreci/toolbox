@@ -46,10 +46,10 @@ version::change_ruby() {
   [[ "$software_version" == "2.7" ]] && software_version="2.7.8"
   [[ "$software_version" == "3.0" ]] && software_version="3.0.7"
   [[ "$software_version" == "3.1" ]] && software_version="3.1.7"
-  [[ "$software_version" == "3.2" ]] && software_version="3.2.9"
+  [[ "$software_version" == "3.2" ]] && software_version="3.2.10"
   [[ "$software_version" == "3.3" ]] && software_version="3.3.10"
   [[ "$software_version" == "3.4" ]] && software_version="3.4.8"
-  [[ "$software_version" == "4.0" ]] && software_version="4.0.0"
+  [[ "$software_version" == "4.0" ]] && software_version="4.0.1"
 
   if ! [ -d ~/.rbenv/versions/"${software_version}" ]; then
     sem-install ruby "${software_version}"
@@ -76,7 +76,7 @@ version::change_elixir() {
   [[ "$software_version" == "1.16" ]] && software_version="1.16.3"
   [[ "$software_version" == "1.17" ]] && software_version="1.17.3"
   [[ "$software_version" == "1.18" ]] && software_version="1.18.4"
-  [[ "$software_version" == "1.19" ]] && software_version="1.19.4"
+  [[ "$software_version" == "1.19" ]] && software_version="1.19.5"
 
   if [[ $(kiex list) != *"${software_version}"* ]];then
     sem-install elixir "${software_version}"
