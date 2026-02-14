@@ -8,17 +8,27 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
+	"sync"
 
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 	log "github.com/sirupsen/logrus"
 )
 
 type ShellOutArchiver struct {
-	metricsManager metrics.MetricsManager
+	metricsManager   metrics.MetricsManager
+	ignoreCollisions bool
 }
 
 func NewShellOutArchiver(metricsManager metrics.MetricsManager) *ShellOutArchiver {
 	return &ShellOutArchiver{metricsManager: metricsManager}
+}
+
+func NewShellOutArchiverWithOptions(metricsManager metrics.MetricsManager, opts ArchiverOptions) *ShellOutArchiver {
+	return &ShellOutArchiver{
+		metricsManager:   metricsManager,
+		ignoreCollisions: opts.IgnoreCollisions,
+	}
 }
 
 func (a *ShellOutArchiver) Compress(dst, src string) error {
@@ -67,11 +77,47 @@ func (a *ShellOutArchiver) compressionCommand(dst, src string) *exec.Cmd {
 }
 
 func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
+	args := []string{}
+
 	if filepath.IsAbs(dst) {
-		return exec.Command("tar", "xzPf", tempFile, "-C", ".")
+		args = append(args, "xzPf", tempFile, "-C", ".")
+	} else {
+		args = append(args, "xzf", tempFile, "-C", ".")
 	}
 
-	return exec.Command("tar", "xzf", tempFile, "-C", ".")
+	// When ignoreCollisions is enabled, skip existing files without overwriting.
+	// GNU tar uses --skip-old-files (silent, exit 0).
+	// BSD tar uses -k (silent, exit 0).
+	if a.ignoreCollisions {
+		if isGNUTar() {
+			args = append(args, "--skip-old-files")
+		} else {
+			args = append(args, "-k")
+		}
+	}
+
+	return exec.Command("tar", args...)
+}
+
+var (
+	gnuTarOnce   sync.Once
+	gnuTarCached bool
+)
+
+// isGNUTar returns true if the system tar is GNU tar.
+// GNU tar includes "GNU tar" in its --version output.
+// The result is cached to avoid repeated subprocess calls.
+func isGNUTar() bool {
+	gnuTarOnce.Do(func() {
+		cmd := exec.Command("tar", "--version")
+		output, err := cmd.Output()
+		if err != nil {
+			gnuTarCached = false
+			return
+		}
+		gnuTarCached = strings.Contains(string(output), "GNU tar")
+	})
+	return gnuTarCached
 }
 
 func (a *ShellOutArchiver) findRestorationPath(src string) (string, error) {
