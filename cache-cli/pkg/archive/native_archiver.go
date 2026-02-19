@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/klauspost/compress/zstd"
 	pgzip "github.com/klauspost/pgzip"
 	"github.com/semaphoreci/toolbox/cache-cli/pkg/metrics"
 	log "github.com/sirupsen/logrus"
@@ -39,9 +40,12 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 		return err
 	}
 
-	// The order is 'tar > gzip > file'
-	gzipWriter := a.newGzipWriter(dstFile)
-	tarWriter := tar.NewWriter(gzipWriter)
+	// The order is 'tar > compress > file'
+	compressingWriter, err := a.newCompressingWriter(dstFile)
+	if err != nil {
+		return err
+	}
+	tarWriter := tar.NewWriter(compressingWriter)
 
 	// We walk through every file in the specified path, adding them to the tar archive.
 	err = filepath.Walk(src, func(fileName string, fileInfo os.FileInfo, e error) error {
@@ -99,8 +103,8 @@ func (a *NativeArchiver) Compress(dst, src string) error {
 		return fmt.Errorf("error closing tar writer: %v", err)
 	}
 
-	if err := gzipWriter.Close(); err != nil {
-		return fmt.Errorf("error closing gzip writer: %v", err)
+	if err := compressingWriter.Close(); err != nil {
+		return fmt.Errorf("error closing compressing writer: %v", err)
 	}
 
 	if err := dstFile.Close(); err != nil {
@@ -124,9 +128,9 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 
 	defer srcFile.Close()
 
-	uncompressedStream, err := a.newGzipReader(srcFile)
+	uncompressedStream, err := a.newDecompressingReader(srcFile)
 	if err != nil {
-		log.Errorf("error creating gzip reader: %v", err)
+		log.Errorf("error creating decompressing reader: %v", err)
 		a.publishCorruptionMetric()
 		return "", err
 	}
@@ -278,15 +282,65 @@ func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*o
 	return outFile, nil
 }
 
-func (a *NativeArchiver) newGzipWriter(dstFile *os.File) io.WriteCloser {
-	if a.UseParallelism {
-		return pgzip.NewWriter(dstFile)
+func (a *NativeArchiver) newCompressingWriter(dstFile *os.File) (io.WriteCloser, error) {
+	if !a.UseParallelism {
+		// zstd uses limited parallelism by default so we need to explicitly turn it off
+		return zstd.NewWriter(dstFile, zstd.WithEncoderConcurrency(1))
+	} else {
+		return zstd.NewWriter(dstFile)
 	}
-
-	return gzip.NewWriter(dstFile)
 }
 
-func (a *NativeArchiver) newGzipReader(dstFile *os.File) (io.ReadCloser, error) {
+func IsZstdCompressed(file *os.File) (bool, error) {
+	// Always reset file pointer before returning
+	defer file.Seek(0, io.SeekStart)
+
+	reader, err := zstd.NewReader(file)
+	if err != nil {
+		if err == zstd.ErrMagicMismatch {
+			return false, nil
+		}
+		return false, err
+	}
+	defer reader.Close()
+
+	// Try to read a byte to force magic number check
+	buf := make([]byte, 1)
+	_, err = reader.Read(buf)
+	if err == nil {
+		return true, nil
+	}
+	if err == zstd.ErrMagicMismatch {
+		return false, nil
+	}
+	return false, err
+}
+
+func (a *NativeArchiver) newDecompressingReader(dstFile *os.File) (io.ReadCloser, error) {
+	is_zstd, err := IsZstdCompressed(dstFile)
+	if err != nil {
+		return nil, err
+	}
+
+	if is_zstd {
+		var reader *zstd.Decoder
+		var err error
+
+		if !a.UseParallelism {
+			// zstd uses limited parallelism by default so we need to explicitly turn it off
+			reader, err = zstd.NewReader(dstFile, zstd.WithDecoderConcurrency(1))
+		} else {
+			reader, err = zstd.NewReader(dstFile)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		return reader.IOReadCloser(), nil
+	}
+
+	// Not zstd, fall back to previous behaviour with gzip
 	if a.UseParallelism {
 		return pgzip.NewReader(dstFile)
 	}
