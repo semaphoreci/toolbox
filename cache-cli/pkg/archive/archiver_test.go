@@ -274,6 +274,88 @@ func Test__Compress(t *testing.T) {
 			assert.NoError(t, os.Remove(compressedFileName))
 		})
 
+		t.Run(archiverType+" overwrites existing files by default", func(t *testing.T) {
+			cwd, _ := os.Getwd()
+			tempDir, _ := ioutil.TempDir(cwd, "*")
+			tempFile1, _ := ioutil.TempFile(tempDir, "*")
+
+			originalContent := []byte("original content")
+			cachedContent := []byte("cached content")
+			_, _ = tempFile1.Write(cachedContent)
+			_ = tempFile1.Close()
+
+			tempDirBase := filepath.Base(tempDir)
+
+			// Create archive with cached content
+			compressedFileName := tmpFileNameWithPrefix("abc0009")
+			err := archiver.Compress(compressedFileName, tempDirBase)
+			assert.NoError(t, err)
+
+			// Overwrite with different content to simulate existing file
+			assert.NoError(t, ioutil.WriteFile(tempFile1.Name(), originalContent, 0600))
+
+			// Decompress with default archiver (no IgnoreCollisions) - should overwrite
+			_, err = archiver.Decompress(compressedFileName)
+			assert.NoError(t, err)
+
+			// Verify file was overwritten with cached content
+			content, err := ioutil.ReadFile(tempFile1.Name())
+			assert.NoError(t, err)
+			assert.Equal(t, cachedContent, content)
+
+			assert.NoError(t, os.RemoveAll(tempDirBase))
+			assert.NoError(t, os.Remove(compressedFileName))
+		})
+
+		t.Run(archiverType+" skips existing symlinks with ignore collisions", func(t *testing.T) {
+			if archiverType == "shell-out" {
+				t.Skip("shell-out archiver delegates symlink handling to tar")
+			}
+
+			cwd, _ := os.Getwd()
+			tempDir, _ := ioutil.TempDir(cwd, "*")
+			tempFile1, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile1.Close()
+
+			symlinkName := tempFile1.Name() + "-link"
+			assert.NoError(t, os.Symlink(tempFile1.Name(), symlinkName))
+
+			tempDirBase := filepath.Base(tempDir)
+
+			// Create archive containing the symlink
+			compressedFileName := tmpFileNameWithPrefix("abc0010")
+			err := archiver.Compress(compressedFileName, tempDirBase)
+			assert.NoError(t, err)
+
+			// Change the symlink target to a different file
+			altTarget := tempFile1.Name() + "-alt"
+			assert.NoError(t, ioutil.WriteFile(altTarget, []byte("alt"), 0600))
+			assert.NoError(t, os.Remove(symlinkName))
+			assert.NoError(t, os.Symlink(altTarget, symlinkName))
+
+			// Decompress with IgnoreCollisions - symlink should not be overwritten
+			metricsManager := metrics.NewNoOpMetricsManager()
+			opts := ArchiverOptions{IgnoreCollisions: true}
+			var skipArchiver Archiver
+			switch archiverType {
+			case "native":
+				skipArchiver = NewNativeArchiverWithOptions(metricsManager, false, opts)
+			case "native-parallel":
+				skipArchiver = NewNativeArchiverWithOptions(metricsManager, true, opts)
+			}
+
+			_, err = skipArchiver.Decompress(compressedFileName)
+			assert.NoError(t, err)
+
+			// Verify symlink still points to the alt target (was not overwritten)
+			target, err := os.Readlink(symlinkName)
+			assert.NoError(t, err)
+			assert.Equal(t, altTarget, target)
+
+			assert.NoError(t, os.RemoveAll(tempDirBase))
+			assert.NoError(t, os.Remove(compressedFileName))
+		})
+
 		t.Run(archiverType+" skips existing files without error", func(t *testing.T) {
 			cwd, _ := os.Getwd()
 			tempDir, _ := ioutil.TempDir(cwd, "*")

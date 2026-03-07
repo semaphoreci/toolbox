@@ -76,6 +76,9 @@ func (a *ShellOutArchiver) compressionCommand(dst, src string) *exec.Cmd {
 	return exec.Command("tar", "czf", dst, src)
 }
 
+// decompressionCmd builds the tar extraction command.
+// When ignoreCollisions is enabled, GNU tar uses --skip-old-files (silently skips, exit 0),
+// while BSD tar uses -k (skips but may return non-zero on some systems).
 func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
 	if filepath.IsAbs(dst) {
 		if a.ignoreCollisions {
@@ -104,11 +107,13 @@ var (
 // isGNUTar returns true if the system tar is GNU tar.
 // GNU tar includes "GNU tar" in its --version output.
 // The result is cached to avoid repeated subprocess calls.
+// If tar --version fails, it defaults to false (assumes BSD tar).
 func isGNUTar() bool {
 	gnuTarOnce.Do(func() {
 		cmd := exec.Command("tar", "--version")
 		output, err := cmd.Output()
 		if err != nil {
+			log.Warnf("Could not determine tar version, assuming BSD tar: %v", err)
 			gnuTarCached = false
 			return
 		}

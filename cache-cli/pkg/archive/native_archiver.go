@@ -195,9 +195,12 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 			}
 
 		case tar.TypeSymlink:
-			// we have to remove the symlink first, if it exists.
-			// Otherwise os.Symlink will complain.
+			// If the symlink already exists, either skip it (IgnoreCollisions)
+			// or remove it before recreating (os.Symlink requires no existing file).
 			if _, err := os.Lstat(header.Name); err == nil {
+				if a.IgnoreCollisions {
+					continue
+				}
 				_ = os.Remove(header.Name)
 			}
 
@@ -217,10 +220,11 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 
 			// nil outFile means the file should be skipped (e.g., IgnoreCollisions is enabled)
 			if outFile == nil {
-				// Discard the file contents from the tar reader
+				// The tar reader is sequential; we must consume this entry's bytes
+				// before advancing to the next header.
 				// #nosec
 				if _, err := io.Copy(io.Discard, tarReader); err != nil {
-					log.Errorf("Error skipping file '%s': %v", header.Name, err)
+					log.Errorf("Error draining tar entry for '%s' (skipped due to existing file): %v", header.Name, err)
 					hadError = true
 				}
 				continue
@@ -263,8 +267,9 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 	return restorationPath, nil
 }
 
-// openFile opens a file for writing during decompression.
-// Returns (nil, nil) if the file should be skipped (e.g., when IgnoreCollisions is true and file exists).
+// openFile attempts to open a file for writing during decompression, or signals
+// that the file should be skipped by returning (nil, nil) when IgnoreCollisions
+// is true and the file already exists.
 func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*os.File, error) {
 	outFile, err := os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_EXCL, header.FileInfo().Mode())
 

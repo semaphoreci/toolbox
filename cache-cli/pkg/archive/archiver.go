@@ -11,7 +11,9 @@ type Archiver interface {
 	Decompress(src string) (string, error)
 }
 
+// ArchiverOptions configures optional behaviors for archive decompression.
 type ArchiverOptions struct {
+	// IgnoreCollisions skips extracting files that already exist on disk.
 	IgnoreCollisions bool
 }
 
