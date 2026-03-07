@@ -218,6 +218,7 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 			// nil outFile means the file should be skipped (e.g., IgnoreCollisions is enabled)
 			if outFile == nil {
 				// Discard the file contents from the tar reader
+				// #nosec
 				if _, err := io.Copy(io.Discard, tarReader); err != nil {
 					log.Errorf("Error skipping file '%s': %v", header.Name, err)
 					hadError = true

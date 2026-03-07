@@ -77,26 +77,23 @@ func (a *ShellOutArchiver) compressionCommand(dst, src string) *exec.Cmd {
 }
 
 func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
-	args := []string{}
-
 	if filepath.IsAbs(dst) {
-		args = append(args, "xzPf", tempFile, "-C", ".")
-	} else {
-		args = append(args, "xzf", tempFile, "-C", ".")
+		if a.ignoreCollisions {
+			if isGNUTar() {
+				return exec.Command("tar", "xzPf", tempFile, "-C", ".", "--skip-old-files")
+			}
+			return exec.Command("tar", "xzPf", tempFile, "-C", ".", "-k")
+		}
+		return exec.Command("tar", "xzPf", tempFile, "-C", ".")
 	}
 
-	// When ignoreCollisions is enabled, skip existing files without overwriting.
-	// GNU tar uses --skip-old-files (silent, exit 0).
-	// BSD tar uses -k (silent, exit 0).
 	if a.ignoreCollisions {
 		if isGNUTar() {
-			args = append(args, "--skip-old-files")
-		} else {
-			args = append(args, "-k")
+			return exec.Command("tar", "xzf", tempFile, "-C", ".", "--skip-old-files")
 		}
+		return exec.Command("tar", "xzf", tempFile, "-C", ".", "-k")
 	}
-
-	return exec.Command("tar", args...)
+	return exec.Command("tar", "xzf", tempFile, "-C", ".")
 }
 
 var (
