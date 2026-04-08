@@ -154,7 +154,6 @@ semantic-release::main() {
     else
         npx semantic-release | tee /tmp/semantic-release.log 
     fi
-    if [[ ! $? ]]; then return $?; fi
 
     semantic-release::scrape_version
 }
