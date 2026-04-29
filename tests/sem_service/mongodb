@@ -3,11 +3,11 @@ set -euo pipefail
 IFS=$'\n\t'
 
 
-sudo apt-get purge -y mongo-tools mongodb-clients
-wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo apt-key add -
-echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
+sudo apt-get purge -y mongo-tools mongodb-clients || true
+curl -fsSL https://pgp.mongodb.com/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
+echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 sudo apt-get update
-sudo apt-get install -y mongodb-org-tools mongodb-org-shell
+sudo apt-get install -y mongodb-mongosh mongodb-database-tools
 
 #sudo apt-get install -y mongodb-clients
 
@@ -24,61 +24,61 @@ sem-service stop mongodb
 sem-service stop mongodb
 sem-service start mongodb 4.2 --username=xxx --password=xxx
 sleep 3
-echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+echo "show dbs" | mongosh -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
 sem-service status mongodb
 sem-service stop mongodb
 sem-service stop mongodb
 sem-service start mongodb 5.0.9 --username=xxx --password=xxx
 sleep 3
-echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+echo "show dbs" | mongosh -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
 sem-service status mongodb
 sem-service stop mongodb
 sem-service stop mongodb
 sem-service start mongodb 5 --username=xxx --password=xxx
 sleep 3
-echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+echo "show dbs" | mongosh -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
 sem-service status mongodb
 sem-service stop mongodb
 sem-service stop mongodb
 sem-service start mongodb 6.0.8 --username=xxx --password=xxx
 sleep 5
-echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+echo "show dbs" | mongosh -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
 sem-service status mongodb
 sem-service stop mongodb
 sem-service stop mongodb
 sem-service start mongodb 6 --username=xxx --password=xxx
 sleep 5
-echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+echo "show dbs" | mongosh -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
 sem-service status mongodb
 sem-service stop mongodb
 sem-service stop mongodb
 sem-service start mongodb 7.0.18 --username=xxx --password=xxx
 sleep 5
-echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+echo "show dbs" | mongosh -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
 sem-service status mongodb
 sem-service stop mongodb
 sem-service stop mongodb
 sem-service start mongodb 7 --username=xxx --password=xxx
 sleep 5
-echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+echo "show dbs" | mongosh -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
 sem-service status mongodb
 sem-service stop mongodb
 sem-service stop mongodb
 sem-service start mongodb 8.0.6 --username=xxx --password=xxx
 sleep 5
-echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+echo "show dbs" | mongosh -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 
 sem-service status mongodb
 sem-service stop mongodb
 sem-service stop mongodb
 sem-service start mongodb 8 --username=xxx --password=xxx
 sleep 5
-echo "show dbs" | mongo -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
+echo "show dbs" | mongosh -u "xxx" -p "xxx" 127.0.0.1  --authenticationDatabase "admin"
 

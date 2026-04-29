@@ -2,8 +2,8 @@ version: v1.0
 name: Toolbox S2 project
 agent:
   machine:
-    type: e2-standard-2
-    os_image: ubuntu2004
+    type: f1-standard-2
+    os_image: ubuntu2404
 
 execution_time_limit:
   minutes: 30
@@ -15,7 +15,7 @@ blocks:
       jobs:
         - name: Build cache CLI
           commands:
-            - sem-version go 1.22
+            - sem-version go 1.25.6
             - "export GOPATH=~/go"
             - "export PATH=/home/semaphore/go/bin:$PATH"
             - checkout
@@ -32,7 +32,7 @@ blocks:
             - artifact push workflow bin/windows/cache.exe -d bin/windows/cache.exe
         - name: Build sem-context CLI
           commands:
-            - sem-version go 1.22
+            - sem-version go 1.25.6
             - "export GOPATH=~/go"
             - "export PATH=/home/semaphore/go/bin:$PATH"
             - checkout
@@ -49,7 +49,7 @@ blocks:
             - artifact push workflow bin/windows/sem-context.exe -d bin/windows/sem-context.exe
         - name: Build test-results CLI
           commands:
-            - sem-version go 1.24.6
+            - sem-version go 1.25.6
             - "export GOPATH=~/go"
             - "export PATH=/home/semaphore/go/bin:$PATH"
             - checkout
@@ -96,56 +96,6 @@ blocks:
           commands:
             - make pwsh.test
 
-  - name: Sem Version Tests Focal
-    dependencies:
-      - "Build local CLIs"
-    task:
-      agent:
-        machine:
-          type: e2-standard-2
-          os_image: ubuntu2004
-      prologue:
-        commands:
-          - checkout
-          - sudo apt-get update
-          - sudo apt-get install -y libargon2-0
-          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
-          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
-          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
-          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
-          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
-          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
-          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
-          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
-          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
-          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
-          - bash release/create.sh
-          - source release/install_in_tests.sh
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
-
-      jobs:
-        - name: Sem Version
-          matrix:
-            - env_var: TEST
-              values:
-                - elixir
-                - erlang
-                - firefox
-                - gcc
-                - go
-                - java
-                - kubectl
-                - node
-                - php
-                - python
-                - ruby
-                - scala
-          commands:
-            - bats tests/sem_version_focal/${TEST}.bats
-
 
   - name: Sem Version Tests Jammy
     dependencies:
@@ -153,7 +103,7 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
+          type: f1-standard-2
           os_image: ubuntu2204
       prologue:
         commands:
@@ -334,8 +284,8 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
-          os_image: ubuntu2004
+          type: f1-standard-2
+          os_image: ubuntu2404
         containers:
           - name: main
             image: "registry.semaphoreci.com/android:34-flutter"
@@ -364,7 +314,7 @@ blocks:
           commands:
             - bats tests/sem_version_container.bats
 
-  - name: Sem Service Tests Focal
+  - name: Sem Service Tests Noble
     dependencies:
       - "Build local CLIs"
     task:
@@ -388,7 +338,7 @@ blocks:
           - cd ~/$SEMAPHORE_GIT_DIR/
           - source release/install_in_tests.sh
       jobs:
-        - name: Sem Service Tests Focal
+        - name: Sem Service Tests Noble
           matrix:
             - env_var: TEST
               values:
@@ -499,11 +449,11 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
-          os_image: ubuntu2004
+          type: f1-standard-2
+          os_image: ubuntu2204
         containers:
           - name: main
-            image: "semaphoreci/ruby:2.6.2"
+            image: "semaphoreci/ruby:3.4.8"
       prologue:
         commands:
           - checkout
@@ -579,8 +529,8 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
-          os_image: ubuntu2004
+          type: f1-standard-2
+          os_image: ubuntu2204
         containers:
           - name: main
             image: "semaphoreci/alpine:3.9"
@@ -657,10 +607,9 @@ blocks:
           - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source tests/sftp_server/start_on_linux.sh
-          - sudo apt-get install -y python3.8-dev
-          - sem-version python 3.8
-          - sem-version go 1.22
-          - sem-version php 7.3.23
+          - sem-version python 3.11
+          - sem-version go 1.25.6
+          - sem-version php 8.4.19
       jobs:
         - name: "Cache tests"
           matrix:
@@ -731,7 +680,7 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
+          type: f1-standard-2
           os_image: ubuntu2404
       prologue:
         commands:
@@ -750,10 +699,9 @@ blocks:
           - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
           - bash release/create.sh
           - source tests/sftp_server/start_on_linux.sh
-          - sudo apt-get install -y python3.8-dev
           - sem-version python 3.11
-          - sem-version go 1.22
-          - sem-version php 8.2.20
+          - sem-version go 1.25.6
+          - sem-version php 8.4.19
       jobs:
         - name: "Non-cache tests"
           matrix:
@@ -801,7 +749,7 @@ blocks:
           value: "on"
       prologue:
         commands:
-          - sem-version go 1.22
+          - sem-version go 1.25.6
           - checkout && cd cache-cli
       jobs:
         - name: Lint
@@ -919,11 +867,11 @@ blocks:
     task:
       agent:
         machine:
-          type: e2-standard-2
-          os_image: ubuntu2004
+          type: f1-standard-2
+          os_image: ubuntu2204
         containers:
           - name: main
-            image: "registry.semaphoreci.com/ubuntu:20.04"
+            image: "registry.semaphoreci.com/ubuntu:22.04"
       prologue:
         commands:
           - checkout

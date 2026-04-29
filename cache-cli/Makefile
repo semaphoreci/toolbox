@@ -10,14 +10,14 @@ check.prepare:
 check.static: check.prepare
 	docker run -it -v $$(pwd):/app \
 		-v $(SECURITY_TOOLBOX_TMP_DIR):$(SECURITY_TOOLBOX_TMP_DIR) \
-		registry.semaphoreci.com/ruby:2.7 \
+		registry.semaphoreci.com/ruby:3.4 \
 		bash -c 'cd /app && $(SECURITY_TOOLBOX_TMP_DIR)/code --language go -d'
 
 check.deps: check.prepare
 	docker run -it -v $$(pwd):/app \
 		-v $(SECURITY_TOOLBOX_TMP_DIR):$(SECURITY_TOOLBOX_TMP_DIR) \
 		-e TRIVY_DB_REPOSITORY -e TRIVY_JAVA_DB_REPOSITORY \
-		registry.semaphoreci.com/ruby:2.7 \
+		registry.semaphoreci.com/ruby:3.4 \
 		bash -c 'cd /app && $(SECURITY_TOOLBOX_TMP_DIR)/dependencies --language go -d'
 
 test.setup:
