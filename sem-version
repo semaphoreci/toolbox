@@ -46,10 +46,10 @@ version::change_ruby() {
   [[ "$software_version" == "2.7" ]] && software_version="2.7.8"
   [[ "$software_version" == "3.0" ]] && software_version="3.0.7"
   [[ "$software_version" == "3.1" ]] && software_version="3.1.7"
-  [[ "$software_version" == "3.2" ]] && software_version="3.2.10"
-  [[ "$software_version" == "3.3" ]] && software_version="3.3.10"
-  [[ "$software_version" == "3.4" ]] && software_version="3.4.8"
-  [[ "$software_version" == "4.0" ]] && software_version="4.0.1"
+  [[ "$software_version" == "3.2" ]] && software_version="3.2.11"
+  [[ "$software_version" == "3.3" ]] && software_version="3.3.11"
+  [[ "$software_version" == "3.4" ]] && software_version="3.4.9"
+  [[ "$software_version" == "4.0" ]] && software_version="4.0.3"
 
   if ! [ -d ~/.rbenv/versions/"${software_version}" ]; then
     sem-install ruby "${software_version}"
@@ -139,7 +139,7 @@ version::change_erlang() {
   [[ "$software_version" == "25" ]] && software_version="25.3"
   [[ "$software_version" == "26" ]] && software_version="26.2"
   [[ "$software_version" == "27" ]] && software_version="27.3"
-  [[ "$software_version" == "28" ]] && software_version="28.3"
+  [[ "$software_version" == "28" ]] && software_version="28.5"
 
   if [[ $(kerl list installations) != *"${software_version}"* ]]; then
     sem-install erlang "${software_version}"
