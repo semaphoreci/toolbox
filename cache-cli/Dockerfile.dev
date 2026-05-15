@@ -1,4 +1,4 @@
-FROM golang:1.23
+FROM golang:1.25
 
 RUN go install gotest.tools/gotestsum@v1.12.3
 RUN mkdir /root/.ssh

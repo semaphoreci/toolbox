@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-ARTIFACT_CLI_VERSION="v0.6.7"
+ARTIFACT_CLI_VERSION="v0.6.8"
 SPC_CLI_VERSION="v1.12.3"
 WHEN_CLI_VERSION="v1.4.0"
 # we include multiple when binaries for all supported Erlang versions

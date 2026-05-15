@@ -70,10 +70,10 @@ func (a *ShellOutArchiver) Decompress(src string) (string, error) {
 
 func (a *ShellOutArchiver) compressionCommand(dst, src string) *exec.Cmd {
 	if filepath.IsAbs(src) {
-		return exec.Command("tar", "czPf", dst, src)
+		return exec.Command("tar", "czPf", dst, src) // #nosec G204 -- command is literal "tar"; dst/src are cache paths, not user-controlled commands
 	}
 
-	return exec.Command("tar", "czf", dst, src)
+	return exec.Command("tar", "czf", dst, src) // #nosec G204 -- command is literal "tar"; dst/src are cache paths, not user-controlled commands
 }
 
 // decompressionCmd builds the tar extraction command.
@@ -83,20 +83,20 @@ func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
 	if filepath.IsAbs(dst) {
 		if a.ignoreCollisions {
 			if isGNUTar() {
-				return exec.Command("tar", "xzPf", tempFile, "-C", ".", "--skip-old-files")
+				return exec.Command("tar", "xzPf", tempFile, "-C", ".", "--skip-old-files") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
 			}
-			return exec.Command("tar", "xzPf", tempFile, "-C", ".", "-k")
+			return exec.Command("tar", "xzPf", tempFile, "-C", ".", "-k") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
 		}
-		return exec.Command("tar", "xzPf", tempFile, "-C", ".")
+		return exec.Command("tar", "xzPf", tempFile, "-C", ".") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
 	}
 
 	if a.ignoreCollisions {
 		if isGNUTar() {
-			return exec.Command("tar", "xzf", tempFile, "-C", ".", "--skip-old-files")
+			return exec.Command("tar", "xzf", tempFile, "-C", ".", "--skip-old-files") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
 		}
-		return exec.Command("tar", "xzf", tempFile, "-C", ".", "-k")
+		return exec.Command("tar", "xzf", tempFile, "-C", ".", "-k") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
 	}
-	return exec.Command("tar", "xzf", tempFile, "-C", ".")
+	return exec.Command("tar", "xzf", tempFile, "-C", ".") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
 }
 
 var (
