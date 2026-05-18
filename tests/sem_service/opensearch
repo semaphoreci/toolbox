@@ -38,3 +38,9 @@ curl -XGET 'https://0.0.0.0:9200' -ksu admin:admin | grep number | grep 2.7.0
 docker inspect opensearch | grep '"ES_JAVA_OPTS=-Xms256m -Xmx256m"'
 sem-service stop opensearch
 
+sem-service start opensearch 3.5.0
+sleep 5
+curl -XGET 'https://0.0.0.0:9200/_cluster/health?pretty' -ksu admin:'Semaphore123!' | grep status
+curl -XGET 'https://0.0.0.0:9200' -ksu admin:'Semaphore123!' | grep number | grep 3.5.0
+sem-service stop opensearch
+
