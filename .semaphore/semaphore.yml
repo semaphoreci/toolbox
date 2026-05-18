@@ -357,19 +357,19 @@ blocks:
           commands:
             - bash tests/sem_service/$TEST
 
-  - name: "Bats: xcode15 arm"
+  - name: "Bats: xcode26 arm"
     dependencies:
       - "Build local CLIs"
     task:
       agent:
         machine:
           type: a2-standard-4
-          os_image: macos-xcode15
+          os_image: macos-xcode26
 
       prologue:
         commands:
           - checkout
-          - brew untap homebrew/homebrew-cask-versions --force
+#          - brew untap homebrew/homebrew-cask-versions --force
           - brew update
           - brew upgrade ruby-build
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
@@ -430,7 +430,7 @@ blocks:
               values:
                 - tests/artifacts.bats
                 - tests/test-results.bats
-                - tests/xcode15_sem_version.bats
+                - tests/xcode26_sem_version.bats
                 - tests/sem-semantic-release.bats
                 - tests/system_metrics_collector.bats
           commands:
