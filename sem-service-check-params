@@ -216,6 +216,10 @@ params-check::opensearch () {
     service_version="${1:-$service_version}"
     shift
   fi
+  local major_version="${service_version%%.*}"
+  if [ "$major_version" -ge 3 ] 2>/dev/null; then
+    defaultEnv="$defaultEnv -e OPENSEARCH_INITIAL_ADMIN_PASSWORD=Semaphore123!"
+  fi
   defaultEnv="$defaultEnv $*"
   default_params=$(echo "docker run --net=host --rm --name opensearch -d $defaultEnv "|base64 --wrap=0)
   echo "$service_version $default_params"
