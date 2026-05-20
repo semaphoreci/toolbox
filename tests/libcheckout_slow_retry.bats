@@ -130,6 +130,33 @@ SCRIPT
   assert_output --partial "[checkout] Clone still slow after 2 attempts"
 }
 
+@test "slow retry - resilient clone retries on git error" {
+  export SEMAPHORE_GIT_CLONE_SLOW_RETRY=true
+  export SEMAPHORE_GIT_CLONE_RETRY_COUNT=3
+
+  # Mock git that always fails (not slow, just error)
+  local mock_dir="/tmp/slow_mock_bin_$$"
+  mkdir -p "$mock_dir"
+  cat > "$mock_dir/git" <<'SCRIPT'
+#!/bin/bash
+if [ "$1" = "clone" ]; then
+  echo "fatal: repository not found" >&2
+  exit 128
+else
+  command git "$@"
+fi
+SCRIPT
+  chmod +x "$mock_dir/git"
+  export PATH="$mock_dir:$PATH"
+
+  run checkout::resilient_clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+  assert_failure
+  assert_output --partial "[checkout] Clone failed, retrying..."
+  assert_output --partial "[checkout] Clone failed after 3 attempts"
+  # Should NOT try alt endpoints for git errors
+  refute_output --partial "trying alternative endpoints"
+}
+
 @test "slow retry - resilient clone succeeds on first try when fast" {
   export SEMAPHORE_GIT_CLONE_SLOW_RETRY=true
   export SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD=100

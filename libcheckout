@@ -293,25 +293,31 @@ function checkout::resilient_clone() {
 
   # Tier 1: normal clone with speed monitoring
   local attempt
+  local last_result=0
   for attempt in $(seq 1 "${retry_count}"); do
     checkout::clone_with_speed_check git clone "$@"
-    local result=$?
+    last_result=$?
 
-    if [ "$result" -eq 0 ]; then
+    if [ "$last_result" -eq 0 ]; then
       return 0
     fi
 
-    # exit code 2 = git error, not slow — let caller handle
-    if [ "$result" -eq 2 ]; then
-      return 1
-    fi
-
     if [ "$attempt" -lt "${retry_count}" ]; then
-      echo "[checkout] Slow clone detected, retrying... (attempt ${attempt}/${retry_count})"
+      if [ "$last_result" -eq 1 ]; then
+        echo "[checkout] Slow clone detected, retrying... (attempt ${attempt}/${retry_count})"
+      else
+        echo "[checkout] Clone failed, retrying... (attempt ${attempt}/${retry_count})"
+      fi
       rm -rf "${target_dir}"
       sleep 2
     fi
   done
+
+  # Only try alternative endpoints for slow clones, not git errors
+  if [ "$last_result" -eq 2 ]; then
+    echo "[checkout] Clone failed after ${retry_count} attempts"
+    return 1
+  fi
 
   echo "[checkout] Clone still slow after ${retry_count} attempts, trying alternative endpoints..."
 
