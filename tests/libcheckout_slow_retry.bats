@@ -127,7 +127,7 @@ SCRIPT
   run checkout::resilient_clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
   assert_failure
   assert_output --partial "[checkout] Slow clone detected"
-  assert_output --partial "[checkout] Clone still slow after 2 attempts"
+  assert_output --partial "[checkout] Clone failed after 2 attempts"
 }
 
 @test "slow retry - resilient clone retries on git error" {
@@ -152,9 +152,7 @@ SCRIPT
   run checkout::resilient_clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
   assert_failure
   assert_output --partial "[checkout] Clone failed, retrying..."
-  assert_output --partial "[checkout] Clone failed after 3 attempts"
-  # Should NOT try alt endpoints for git errors
-  refute_output --partial "trying alternative endpoints"
+  assert_output --partial "[checkout] Clone failed after 3 attempts, trying alternative endpoints"
 }
 
 @test "slow retry - resilient clone succeeds on first try when fast" {

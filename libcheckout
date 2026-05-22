@@ -313,13 +313,7 @@ function checkout::resilient_clone() {
     fi
   done
 
-  # Only try alternative endpoints for slow clones, not git errors
-  if [ "$last_result" -eq 2 ]; then
-    echo "[checkout] Clone failed after ${retry_count} attempts"
-    return 1
-  fi
-
-  echo "[checkout] Clone still slow after ${retry_count} attempts, trying alternative endpoints..."
+  echo "[checkout] Clone failed after ${retry_count} attempts, trying alternative endpoints..."
 
   # Tier 2: resolve alternative IPs via DNS-over-HTTPS
   local git_host
