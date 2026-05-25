@@ -34,6 +34,30 @@ teardown() {
   rm -rf /tmp/slow_mock_*
 }
 
+# Install fake curl + dig on PATH so tier 2 resolves alt IPs deterministically
+# without network. Returns 185.199.108.133 from DoH, 140.82.121.4 as current IP.
+mock_doh_and_dig() {
+  local mock_dir="/tmp/slow_mock_net_$$"
+  mkdir -p "$mock_dir"
+  cat > "$mock_dir/curl" <<'SCRIPT'
+#!/bin/bash
+for arg in "$@"; do
+  if [[ "$arg" == *"dns.google"* ]]; then
+    echo '{"Answer":[{"data":"185.199.108.133"}]}'
+    exit 0
+  fi
+done
+exec command curl "$@"
+SCRIPT
+  chmod +x "$mock_dir/curl"
+  cat > "$mock_dir/dig" <<'SCRIPT'
+#!/bin/bash
+echo "140.82.121.4"
+SCRIPT
+  chmod +x "$mock_dir/dig"
+  export PATH="$mock_dir:$PATH"
+}
+
 # === Flag disabled (default) ===
 
 @test "slow retry - disabled by default, normal clone works" {
@@ -82,7 +106,6 @@ teardown() {
   export SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD=999999999
   export SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT=5
 
-  # Mock: create dir with small data then hang
   local mock="/tmp/slow_mock_$$"
   cat > "$mock" <<'SCRIPT'
 #!/bin/bash
@@ -107,7 +130,8 @@ SCRIPT
   export SEMAPHORE_GIT_CLONE_RETRY_COUNT=2
   export SEMAPHORE_GIT_CLONE_ALT_IP_RETRIES=0
 
-  # Mock git to simulate slow clone
+  mock_doh_and_dig
+
   local mock_dir="/tmp/slow_mock_bin_$$"
   mkdir -p "$mock_dir"
   cat > "$mock_dir/git" <<'SCRIPT'
@@ -133,8 +157,10 @@ SCRIPT
 @test "slow retry - resilient clone retries on git error" {
   export SEMAPHORE_GIT_CLONE_SLOW_RETRY=true
   export SEMAPHORE_GIT_CLONE_RETRY_COUNT=3
+  export SEMAPHORE_GIT_CLONE_ALT_IP_RETRIES=0
 
-  # Mock git that always fails (not slow, just error)
+  mock_doh_and_dig
+
   local mock_dir="/tmp/slow_mock_bin_$$"
   mkdir -p "$mock_dir"
   cat > "$mock_dir/git" <<'SCRIPT'
@@ -165,35 +191,80 @@ SCRIPT
   refute_output --partial "[checkout] Slow clone detected"
 }
 
+@test "slow retry - tier 2 declines for non-github providers" {
+  export SEMAPHORE_GIT_CLONE_SLOW_RETRY=true
+  export SEMAPHORE_GIT_CLONE_RETRY_COUNT=1
+  export SEMAPHORE_GIT_URL="https://gitlab.com/org/repo.git"
+
+  local mock_dir="/tmp/slow_mock_bin_$$"
+  mkdir -p "$mock_dir"
+  cat > "$mock_dir/git" <<'SCRIPT'
+#!/bin/bash
+if [ "$1" = "clone" ]; then
+  echo "fatal: repository not found" >&2
+  exit 128
+fi
+SCRIPT
+  chmod +x "$mock_dir/git"
+  export PATH="$mock_dir:$PATH"
+
+  run checkout::resilient_clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+  assert_failure
+  assert_output --partial "Alternative endpoint fallback only supported for github.com (got: gitlab.com)"
+}
+
+@test "slow retry - tier 2 declines for SCP-form non-github URLs" {
+  export SEMAPHORE_GIT_CLONE_SLOW_RETRY=true
+  export SEMAPHORE_GIT_CLONE_RETRY_COUNT=1
+  export SEMAPHORE_GIT_URL="git@bitbucket.org:org/repo.git"
+
+  local mock_dir="/tmp/slow_mock_bin_$$"
+  mkdir -p "$mock_dir"
+  cat > "$mock_dir/git" <<'SCRIPT'
+#!/bin/bash
+if [ "$1" = "clone" ]; then
+  echo "fatal: repository not found" >&2
+  exit 128
+fi
+SCRIPT
+  chmod +x "$mock_dir/git"
+  export PATH="$mock_dir:$PATH"
+
+  run checkout::resilient_clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+  assert_failure
+  assert_output --partial "Alternative endpoint fallback only supported for github.com (got: bitbucket.org)"
+}
+
 # === resolve_alt_ips ===
 
-@test "slow retry - resolve_alt_ips returns IPs different from current" {
-  local current_ip="140.82.121.35"
+@test "slow retry - resolve_alt_ips returns mocked IPs different from current" {
+  mock_doh_and_dig
+  local current_ip="140.82.121.4"
 
-  run checkout::resolve_alt_ips "ssh.github.com" "$current_ip"
+  run checkout::resolve_alt_ips "github.com" "$current_ip"
   assert_success
-  # Should return at least one alternative IP
   [ -n "$output" ]
-  # Should not contain the current IP
   refute_output --partial "$current_ip"
+  assert_output --partial "185.199.108.133"
 }
 
 @test "slow retry - resolve_alt_ips with custom regions" {
+  mock_doh_and_dig
   export SEMAPHORE_GIT_CLONE_ALT_REGIONS="74.0.0.0/8"
-  local current_ip="140.82.121.35"
+  local current_ip="140.82.121.4"
 
-  run checkout::resolve_alt_ips "ssh.github.com" "$current_ip"
+  run checkout::resolve_alt_ips "github.com" "$current_ip"
   assert_success
+  assert_output --partial "185.199.108.133"
 }
 
 # === clone_with_alt_ip ===
 
-@test "slow retry - clone_with_alt_ip sets ProxyCommand for SSH" {
+@test "slow retry - clone_with_alt_ip sets ProxyCommand with port 22 for SSH" {
   export SEMAPHORE_GIT_URL="git@github.com:mojombo/grit.git"
   export SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD=100
   export SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT=15
 
-  # Mock: capture GIT_SSH_COMMAND instead of cloning
   local mock_dir="/tmp/slow_mock_bin_$$"
   mkdir -p "$mock_dir"
   cat > "$mock_dir/git" <<'SCRIPT'
@@ -204,9 +275,29 @@ SCRIPT
   chmod +x "$mock_dir/git"
   export PATH="$mock_dir:$PATH"
 
-  run checkout::clone_with_alt_ip "1.2.3.4" "ssh.github.com" git clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+  run checkout::clone_with_alt_ip "1.2.3.4" "github.com" "22" git clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
   assert_success
   assert_output --partial "ProxyCommand='nc 1.2.3.4 22'"
+}
+
+@test "slow retry - clone_with_alt_ip honors custom SSH port" {
+  export SEMAPHORE_GIT_URL="ssh://git@github.com:443/mojombo/grit.git"
+  export SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD=100
+  export SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT=15
+
+  local mock_dir="/tmp/slow_mock_bin_$$"
+  mkdir -p "$mock_dir"
+  cat > "$mock_dir/git" <<'SCRIPT'
+#!/bin/bash
+echo "GIT_SSH_COMMAND=$GIT_SSH_COMMAND"
+mkdir -p "${@: -1}"
+SCRIPT
+  chmod +x "$mock_dir/git"
+  export PATH="$mock_dir:$PATH"
+
+  run checkout::clone_with_alt_ip "1.2.3.4" "github.com" "443" git clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+  assert_success
+  assert_output --partial "ProxyCommand='nc 1.2.3.4 443'"
 }
 
 @test "slow retry - clone_with_alt_ip preserves existing GIT_SSH_COMMAND" {
@@ -225,20 +316,18 @@ SCRIPT
   chmod +x "$mock_dir/git"
   export PATH="$mock_dir:$PATH"
 
-  run checkout::clone_with_alt_ip "1.2.3.4" "ssh.github.com" git clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+  run checkout::clone_with_alt_ip "1.2.3.4" "github.com" "22" git clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
   assert_success
   assert_output --partial "ssh -i /path/to/key -o ProxyCommand='nc 1.2.3.4 22'"
 
-  # GIT_SSH_COMMAND should be restored after
   [ "$GIT_SSH_COMMAND" = "ssh -i /path/to/key" ]
 }
 
-@test "slow retry - clone_with_alt_ip uses curloptResolve for HTTPS" {
+@test "slow retry - clone_with_alt_ip uses curloptResolve for HTTPS with port 443" {
   export SEMAPHORE_GIT_URL="https://github.com/mojombo/grit.git"
   export SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD=100
   export SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT=15
 
-  # Mock: capture the -c option
   local mock_dir="/tmp/slow_mock_bin_$$"
   mkdir -p "$mock_dir"
   cat > "$mock_dir/git" <<'SCRIPT'
@@ -250,7 +339,7 @@ SCRIPT
   chmod +x "$mock_dir/git"
   export PATH="$mock_dir:$PATH"
 
-  run checkout::clone_with_alt_ip "1.2.3.4" "github.com" git clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+  run checkout::clone_with_alt_ip "1.2.3.4" "github.com" "443" git clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
   assert_success
   assert_output --partial "http.curloptResolve=github.com:443:1.2.3.4"
 }

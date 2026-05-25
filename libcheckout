@@ -315,12 +315,33 @@ function checkout::resilient_clone() {
 
   echo "[checkout] Clone failed after ${retry_count} attempts, trying alternative endpoints..."
 
-  # Tier 2: resolve alternative IPs via DNS-over-HTTPS
-  local git_host
+  # Tier 2: parse host + port from SEMAPHORE_GIT_URL, then resolve alt IPs via DoH
+  local git_host git_port
   if [[ "${SEMAPHORE_GIT_URL}" == https://* ]]; then
-    git_host="github.com"
+    git_host="${SEMAPHORE_GIT_URL#https://}"
+    git_host="${git_host%%/*}"
+    git_port=443
+  elif [[ "${SEMAPHORE_GIT_URL}" == ssh://* ]]; then
+    local rest="${SEMAPHORE_GIT_URL#ssh://}"
+    rest="${rest#*@}"
+    if [[ "$rest" =~ ^[^/]+:[0-9]+ ]]; then
+      git_host="${rest%%:*}"
+      local tail="${rest#*:}"
+      git_port="${tail%%/*}"
+    else
+      git_host="${rest%%/*}"
+      git_port=22
+    fi
   else
-    git_host="ssh.github.com"
+    local rest="${SEMAPHORE_GIT_URL#*@}"
+    git_host="${rest%%:*}"
+    git_port=22
+  fi
+
+  # GeoDNS-based alt-IP fallback is GitHub-specific; skip for other providers
+  if [ "$git_host" != "github.com" ]; then
+    echo "[checkout] Alternative endpoint fallback only supported for github.com (got: ${git_host})"
+    return 1
   fi
 
   local current_ip
@@ -344,7 +365,7 @@ function checkout::resilient_clone() {
     echo "[checkout] Switching to alternative GitHub endpoint (${alt_ip})"
     rm -rf "${target_dir}"
 
-    if checkout::clone_with_alt_ip "$alt_ip" "$git_host" git clone "$@"; then
+    if checkout::clone_with_alt_ip "$alt_ip" "$git_host" "$git_port" git clone "$@"; then
       return 0
     fi
 
@@ -422,16 +443,17 @@ function checkout::resolve_alt_ips() {
 function checkout::clone_with_alt_ip() {
   local alt_ip="$1"
   local git_host="$2"
-  shift 2
+  local git_port="$3"
+  shift 3
   # $@ is now: git clone [args...]
 
   if [[ "${SEMAPHORE_GIT_URL}" == https://* ]]; then
     # HTTPS: inject curloptResolve between 'git' and 'clone'
-    checkout::clone_with_speed_check git -c "http.curloptResolve=${git_host}:443:${alt_ip}" "${@:2}"
+    checkout::clone_with_speed_check git -c "http.curloptResolve=${git_host}:${git_port}:${alt_ip}" "${@:2}"
   else
     # SSH: route through alternative IP via ProxyCommand
     local orig_ssh_command="${GIT_SSH_COMMAND:-}"
-    export GIT_SSH_COMMAND="${orig_ssh_command:-ssh} -o ProxyCommand='nc ${alt_ip} 22'"
+    export GIT_SSH_COMMAND="${orig_ssh_command:-ssh} -o ProxyCommand='nc ${alt_ip} ${git_port}'"
     checkout::clone_with_speed_check "$@"
     local result=$?
     if [ -n "$orig_ssh_command" ]; then
