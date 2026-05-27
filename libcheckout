@@ -68,7 +68,7 @@ function checkout::fetch() {
 }
 
 function checkout::clone() {
-  retry git clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+  checkout::git_clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
   cd "${SEMAPHORE_GIT_DIR}" || exit
 
   checkout::switch_revision
@@ -188,9 +188,9 @@ function checkout::shallow() {
   fi
   echo "Performing shallow clone with depth: $SEMAPHORE_GIT_DEPTH"
 
-  if ! retry git clone --depth "${SEMAPHORE_GIT_DEPTH}" -b "${SEMAPHORE_GIT_BRANCH}" "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"; then
+  if ! checkout::git_clone --depth "${SEMAPHORE_GIT_DEPTH}" -b "${SEMAPHORE_GIT_BRANCH}" "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"; then
     echo "Branch not found performing full clone"
-    retry git clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+    checkout::git_clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
     cd "$SEMAPHORE_GIT_DIR" || exit
 
     if ! checkout::branch_checkout; then
@@ -226,7 +226,7 @@ function checkout::refbased() {
   fi
 
   if [ "${SEMAPHORE_GIT_REF_TYPE:-""}" = "pull-request" ]; then
-    retry git clone --depth "${SEMAPHORE_GIT_DEPTH}" "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+    checkout::git_clone --depth "${SEMAPHORE_GIT_DEPTH}" "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
     cd "${SEMAPHORE_GIT_DIR}" || exit
 
     # Try fetching refs/objects with a depth.
@@ -250,7 +250,7 @@ function checkout::refbased() {
   fi
 
   if [ "${SEMAPHORE_GIT_REF_TYPE:-""}" = "tag" ]; then
-    if ! retry git clone --depth "${SEMAPHORE_GIT_DEPTH}" -b "${SEMAPHORE_GIT_TAG_NAME}" "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"; then
+    if ! checkout::git_clone --depth "${SEMAPHORE_GIT_DEPTH}" -b "${SEMAPHORE_GIT_TAG_NAME}" "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"; then
       echo "Release $SEMAPHORE_GIT_TAG_NAME not found .... Exiting"
       return 1
     else
@@ -274,4 +274,200 @@ function checkout::metric() {
   fi
 }
 
+# === Slow clone detection and resilient retry ===
+# Enabled via SEMAPHORE_GIT_CLONE_SLOW_RETRY=true
+# When disabled (default), checkout::git_clone delegates to `retry git clone`
+
+function checkout::git_clone() {
+  if [ "${SEMAPHORE_GIT_CLONE_SLOW_RETRY:-false}" = "true" ]; then
+    checkout::resilient_clone "$@"
+  else
+    retry git clone "$@"
+  fi
+}
+
+function checkout::resilient_clone() {
+  local retry_count="${SEMAPHORE_GIT_CLONE_RETRY_COUNT:-2}"
+  local alt_ip_retries="${SEMAPHORE_GIT_CLONE_ALT_IP_RETRIES:-3}"
+  local target_dir="${SEMAPHORE_GIT_DIR}"
+
+  # Tier 1: normal clone with speed monitoring
+  local attempt
+  local last_result=0
+  for attempt in $(seq 1 "${retry_count}"); do
+    checkout::clone_with_speed_check git clone "$@"
+    last_result=$?
+
+    if [ "$last_result" -eq 0 ]; then
+      return 0
+    fi
+
+    if [ "$attempt" -lt "${retry_count}" ]; then
+      if [ "$last_result" -eq 1 ]; then
+        echo "[checkout] Slow clone detected, retrying... (attempt ${attempt}/${retry_count})"
+      else
+        echo "[checkout] Clone failed, retrying... (attempt ${attempt}/${retry_count})"
+      fi
+      rm -rf "${target_dir}"
+      sleep 2
+    fi
+  done
+
+  echo "[checkout] Clone failed after ${retry_count} attempts, trying alternative endpoints..."
+
+  # Tier 2: parse host + port from SEMAPHORE_GIT_URL, then resolve alt IPs via DoH
+  local git_host git_port
+  if [[ "${SEMAPHORE_GIT_URL}" == https://* ]]; then
+    git_host="${SEMAPHORE_GIT_URL#https://}"
+    git_host="${git_host%%/*}"
+    git_port=443
+  elif [[ "${SEMAPHORE_GIT_URL}" == ssh://* ]]; then
+    local rest="${SEMAPHORE_GIT_URL#ssh://}"
+    rest="${rest#*@}"
+    if [[ "$rest" =~ ^[^/]+:[0-9]+ ]]; then
+      git_host="${rest%%:*}"
+      local tail="${rest#*:}"
+      git_port="${tail%%/*}"
+    else
+      git_host="${rest%%/*}"
+      git_port=22
+    fi
+  else
+    local rest="${SEMAPHORE_GIT_URL#*@}"
+    git_host="${rest%%:*}"
+    git_port=22
+  fi
+
+  # GeoDNS-based alt-IP fallback is GitHub-specific; skip for other providers
+  if [ "$git_host" != "github.com" ]; then
+    echo "[checkout] Alternative endpoint fallback only supported for github.com (got: ${git_host})"
+    return 1
+  fi
+
+  local current_ip
+  current_ip=$(dig +short "$git_host" | head -1)
+
+  local alt_ips
+  alt_ips=$(checkout::resolve_alt_ips "$git_host" "$current_ip")
+
+  if [ -z "$alt_ips" ]; then
+    echo "[checkout] No alternative endpoints found"
+    return 1
+  fi
+
+  local alt_count=0
+  local alt_ip
+  while IFS= read -r alt_ip; do
+    [ -z "$alt_ip" ] && continue
+    alt_count=$((alt_count + 1))
+    [ "$alt_count" -gt "${alt_ip_retries}" ] && break
+
+    echo "[checkout] Switching to alternative GitHub endpoint (${alt_ip})"
+    rm -rf "${target_dir}"
+
+    if checkout::clone_with_alt_ip "$alt_ip" "$git_host" "$git_port" git clone "$@"; then
+      return 0
+    fi
+
+    echo "[checkout] Alternative endpoint (${alt_ip}) also slow, trying next..."
+  done <<< "$alt_ips"
+
+  echo "[checkout] All clone attempts failed"
+  return 1
+}
+
+function checkout::clone_with_speed_check() {
+  # Runs a git clone with speed monitoring.
+  # Returns: 0 = success, 1 = killed (slow), 2 = git error
+  local threshold="${SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD:-20000}"
+  local timeout="${SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT:-15}"
+  local check_interval=5
+  local target_dir="${SEMAPHORE_GIT_DIR}"
+
+  "$@" &
+  local pid=$!
+
+  local prev_size=0
+  local slow_seconds=0
+
+  while kill -0 "$pid" 2>/dev/null; do
+    sleep "$check_interval"
+    kill -0 "$pid" 2>/dev/null || break
+
+    local cur_size
+    cur_size=$(du -sk "${target_dir}" 2>/dev/null | awk '{print $1}')
+    cur_size=${cur_size:-0}
+
+    if [ "$cur_size" -gt 0 ]; then
+      local speed=$(( (cur_size - prev_size) * 1024 / check_interval ))
+      prev_size=$cur_size
+
+      if [ "$speed" -lt "$threshold" ]; then
+        slow_seconds=$((slow_seconds + check_interval))
+        if [ "$slow_seconds" -ge "$timeout" ]; then
+          echo "[checkout] Slow clone detected (${speed} bytes/sec for ${slow_seconds}s)"
+          kill "$pid" 2>/dev/null
+          wait "$pid" 2>/dev/null
+          return 1
+        fi
+      else
+        slow_seconds=0
+      fi
+    fi
+  done
+
+  wait "$pid"
+  local exit_code=$?
+
+  [ "$exit_code" -eq 0 ] && return 0
+  return 2
+}
+
+function checkout::resolve_alt_ips() {
+  local git_host="$1"
+  local current_ip="$2"
+  local regions
+  IFS=',' read -ra regions <<< "${SEMAPHORE_GIT_CLONE_ALT_REGIONS:-74.0.0.0/8,177.0.0.0/8,110.0.0.0/8}"
+
+  for region in "${regions[@]}"; do
+    local ip
+    ip=$(curl -sf "https://dns.google/resolve?name=${git_host}&type=A&edns_client_subnet=${region}" | \
+      grep -o '"data":"[^"]*"' | sed 's/"data":"//;s/"//' | head -1)
+
+    if [ -n "$ip" ] && [ "$ip" != "$current_ip" ]; then
+      echo "$ip"
+    fi
+  done | sort -u
+}
+
+function checkout::clone_with_alt_ip() {
+  local alt_ip="$1"
+  local git_host="$2"
+  local git_port="$3"
+  shift 3
+  # $@ is now: git clone [args...]
+
+  if [[ "${SEMAPHORE_GIT_URL}" == https://* ]]; then
+    # HTTPS: inject curloptResolve between 'git' and 'clone'
+    checkout::clone_with_speed_check git -c "http.curloptResolve=${git_host}:${git_port}:${alt_ip}" "${@:2}"
+  else
+    # SSH: route through alternative IP via ProxyCommand
+    local orig_ssh_command="${GIT_SSH_COMMAND:-}"
+    export GIT_SSH_COMMAND="${orig_ssh_command:-ssh} -o ProxyCommand='nc ${alt_ip} ${git_port}'"
+    checkout::clone_with_speed_check "$@"
+    local result=$?
+    if [ -n "$orig_ssh_command" ]; then
+      export GIT_SSH_COMMAND="$orig_ssh_command"
+    else
+      unset GIT_SSH_COMMAND
+    fi
+    return $result
+  fi
+}
+
 export -f checkout
+export -f checkout::git_clone
+export -f checkout::resilient_clone
+export -f checkout::clone_with_speed_check
+export -f checkout::resolve_alt_ips
+export -f checkout::clone_with_alt_ip
