@@ -750,15 +750,14 @@ function checkout::doh_resolve_one() {
   local provider="$1" git_host="$2" region="$3" current_ip="$4"
   local connect_timeout="$5" max_time="$6"
 
-  local url
-  local -a header=()
+  local url accept=""
   case "$provider" in
     google)
       url="https://dns.google/resolve?name=${git_host}&type=A&edns_client_subnet=${region}"
       ;;
     cloudflare)
       url="https://cloudflare-dns.com/dns-query?name=${git_host}&type=A&edns_client_subnet=${region}"
-      header=(-H "Accept: application/dns-json")
+      accept="application/dns-json"
       ;;
     *)
       return 1
@@ -768,8 +767,15 @@ function checkout::doh_resolve_one() {
   local response candidate
   # --connect-timeout / --max-time keep tier 2 from hanging when the resolver is
   # blocked or unreachable (common on locked-down self-hosted runners).
-  response=$(curl -sf --connect-timeout "${connect_timeout}" --max-time "${max_time}" \
-    "${header[@]}" "$url" 2>/dev/null) || return 1
+  # NB: the -H header is added without an array on purpose — expanding an empty
+  # array under `set -u` is an "unbound variable" error on bash 3.2 (macOS).
+  if [ -n "$accept" ]; then
+    response=$(curl -sf --connect-timeout "${connect_timeout}" --max-time "${max_time}" \
+      -H "Accept: ${accept}" "$url" 2>/dev/null) || return 1
+  else
+    response=$(curl -sf --connect-timeout "${connect_timeout}" --max-time "${max_time}" \
+      "$url" 2>/dev/null) || return 1
+  fi
 
   while IFS= read -r candidate; do
     [ -z "$candidate" ] && continue

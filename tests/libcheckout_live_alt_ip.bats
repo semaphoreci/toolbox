@@ -40,9 +40,12 @@ setup() {
   unset SEMAPHORE_GIT_CLONE_CHECK_INTERVAL
 
   export SEMAPHORE_GIT_URL="$REPO_HTTPS"
-  # Absolute target dir on the container's tmpfs: keeps the (large) live clones
-  # off the bind-mounted workspace and immune to checkout()'s internal `cd`.
-  export SEMAPHORE_GIT_DIR="$BATS_TEST_TMPDIR/repo"
+  # Own scratch dir (NOT $BATS_TEST_TMPDIR — that is empty on the older bats
+  # bundled in CI, which made the target resolve to "/repo" at the filesystem
+  # root → "Permission denied"). Absolute path keeps the (large) live clones off
+  # the bind-mounted workspace and immune to checkout()'s internal `cd`.
+  LIVE_WORKDIR="$(mktemp -d "${TMPDIR:-/tmp}/libcheckout-live.XXXXXX")"
+  export SEMAPHORE_GIT_DIR="$LIVE_WORKDIR/repo"
   export SEMAPHORE_GIT_DEPTH=1
   export SEMAPHORE_GIT_CLONE_SLOW_RETRY=true
 
@@ -52,11 +55,11 @@ setup() {
   export SEMAPHORE_GIT_CLONE_ALT_REGIONS="177.0.0.0/8,110.0.0.0/8,13.0.0.0/8,52.0.0.0/8"
 
   source ~/.toolbox/libcheckout
-  cd "$BATS_TEST_TMPDIR" || exit 1
+  cd "$LIVE_WORKDIR" || exit 1
 }
 
 teardown() {
-  rm -rf "${SEMAPHORE_GIT_DIR:?}" 2>/dev/null || true
+  [ -n "${LIVE_WORKDIR:-}" ] && rm -rf "$LIVE_WORKDIR" 2>/dev/null || true
   unpoison_github
 }
 
@@ -157,7 +160,11 @@ unpoison_github() {
 
 @test "live: checkout::resilient_clone recovers via tier 2 when the primary endpoint is dead" {
   require_network
-  [ "$(id -u)" -eq 0 ] || skip "needs root to poison /etc/hosts"
+  # We need to edit /etc/hosts — either as root (Docker image) or via
+  # passwordless sudo (Semaphore VM agents). poison_github skips if neither.
+  if [ "$(id -u)" -ne 0 ] && ! command -v sudo >/dev/null 2>&1; then
+    skip "need root or sudo to poison /etc/hosts"
+  fi
   has_working_alt_ip || skip "no working alternative IP from this network"
 
   local expected
