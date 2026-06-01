@@ -188,8 +188,24 @@ function checkout::shallow() {
   fi
   echo "Performing shallow clone with depth: $SEMAPHORE_GIT_DEPTH"
 
-  if ! checkout::git_clone --depth "${SEMAPHORE_GIT_DEPTH}" -b "${SEMAPHORE_GIT_BRANCH}" "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"; then
-    echo "Branch not found performing full clone"
+  checkout::git_clone --depth "${SEMAPHORE_GIT_DEPTH}" -b "${SEMAPHORE_GIT_BRANCH}" "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+  local clone_rc=$?
+
+  if [ "$clone_rc" -ne 0 ]; then
+    # Only a genuinely missing branch justifies downloading full history.
+    # Transient/network failures and auth/repo-not-found errors must not
+    # silently escalate to an expensive full-history clone (see
+    # checkout::should_full_clone_fallback).
+    if ! checkout::should_full_clone_fallback "$clone_rc"; then
+      echo "[checkout] Shallow clone failed (${CHECKOUT_LAST_CLONE_CLASS:-unknown}); not falling back to full-history clone"
+      return 1
+    fi
+
+    if [ "${CHECKOUT_LAST_CLONE_CLASS:-}" = "shallow-unsupported" ]; then
+      echo "Server does not support shallow clone; performing full clone"
+    else
+      echo "Branch not found performing full clone"
+    fi
     checkout::git_clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
     cd "$SEMAPHORE_GIT_DIR" || exit
 
@@ -286,40 +302,105 @@ function checkout::git_clone() {
   fi
 }
 
+# Emits a structured, greppable token for a resilient-clone lifecycle event so
+# the new path is observable in job logs (and in /tmp/toolbox_metrics when
+# SEMAPHORE_TOOLBOX_METRICS_ENABLED=true) ahead of any default-on rollout.
+# Events: tier1_retry, tier1_success, definitive_error, tier2_enter,
+# tier2_success, tier2_exhausted, doh_no_endpoint, stall_kill, wall_clock_kill.
+function checkout::resilient_event() {
+  local event="$1"
+  echo "[checkout] event=${event}"
+  if [[ "${SEMAPHORE_TOOLBOX_METRICS_ENABLED:-}" == "true" ]]; then
+    # Default the provider tag to "unknown" — some metric backends reject empty
+    # tag values, which would silently drop the whole line.
+    echo "libcheckout_resilient,provider=${SEMAPHORE_GIT_PROVIDER:-unknown},event=${event} count=1" >> /tmp/toolbox_metrics
+  fi
+}
+
+# One-time deprecation notice. The throughput knobs were renamed to align with
+# git's native http.lowSpeed* gate; legacy values are still honoured (mapped in
+# checkout::clone_with_speed_check), this only nudges operators to migrate.
+function checkout::warn_legacy_env() {
+  if [ -n "${SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD:-}" ] && [ -z "${SEMAPHORE_GIT_CLONE_LOW_SPEED_LIMIT:-}" ]; then
+    echo "[checkout] WARNING: SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD is deprecated; honouring it as SEMAPHORE_GIT_CLONE_LOW_SPEED_LIMIT (bytes/sec)."
+  fi
+  if [ -n "${SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT:-}" ] && [ -z "${SEMAPHORE_GIT_CLONE_LOW_SPEED_TIME:-}" ]; then
+    echo "[checkout] WARNING: SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT is deprecated; honouring it as SEMAPHORE_GIT_CLONE_LOW_SPEED_TIME (seconds)."
+  fi
+}
+
 function checkout::resilient_clone() {
-  local retry_count="${SEMAPHORE_GIT_CLONE_RETRY_COUNT:-2}"
+  # Default retry count matches the legacy `retry` helper (3 attempts) so the
+  # resilient path is not weaker than the path it replaces.
+  local retry_count="${SEMAPHORE_GIT_CLONE_RETRY_COUNT:-3}"
   local alt_ip_retries="${SEMAPHORE_GIT_CLONE_ALT_IP_RETRIES:-3}"
   local target_dir="${SEMAPHORE_GIT_DIR}"
 
-  # Tier 1: normal clone with speed monitoring
+  # Guard against non-numeric overrides flowing into seq / arithmetic below.
+  [[ "$retry_count" =~ ^[0-9]+$ ]] && [ "$retry_count" -ge 1 ] || retry_count=3
+  [[ "$alt_ip_retries" =~ ^[0-9]+$ ]] || alt_ip_retries=3
+
+  checkout::warn_legacy_env
+  CHECKOUT_LAST_CLONE_CLASS="unknown"
+
+  # Tier 1: normal clone under the slow/stall detection in clone_with_speed_check.
   local attempt
   local last_result=0
+  local class="unknown"
   for attempt in $(seq 1 "${retry_count}"); do
     checkout::clone_with_speed_check git clone "$@"
     last_result=$?
 
     if [ "$last_result" -eq 0 ]; then
+      CHECKOUT_LAST_CLONE_CLASS="ok"
+      checkout::resilient_event tier1_success
       return 0
+    fi
+
+    if [ "$last_result" -eq 2 ]; then
+      # git exited on its own; inspect why before wasting retries / alt-IP work.
+      class="$(checkout::classify_clone_error "${CHECKOUT_CLONE_ERRLOG:-}")"
+      case "$class" in
+        notfound-branch | notfound-repo | auth | shallow-unsupported)
+          # Definitive git-level outcomes: retrying or switching endpoints will
+          # not help. Fail fast with rc=3; the caller decides whether a
+          # full-history clone is a valid recovery (see should_full_clone_fallback).
+          echo "[checkout] Clone failed with a definitive error (${class}); failing fast without retry or endpoint fallback"
+          CHECKOUT_LAST_CLONE_CLASS="$class"
+          checkout::resilient_event definitive_error
+          rm -rf "${target_dir}"
+          return 3
+          ;;
+      esac
+    else
+      class="stall"
     fi
 
     if [ "$attempt" -lt "${retry_count}" ]; then
       if [ "$last_result" -eq 1 ]; then
-        echo "[checkout] Slow clone detected, retrying... (attempt ${attempt}/${retry_count})"
+        echo "[checkout] Clone stalled, retrying... (attempt ${attempt}/${retry_count})"
       else
-        echo "[checkout] Clone failed, retrying... (attempt ${attempt}/${retry_count})"
+        echo "[checkout] Clone failed (${class}), retrying... (attempt ${attempt}/${retry_count})"
       fi
+      checkout::resilient_event tier1_retry
       rm -rf "${target_dir}"
       sleep 2
     fi
   done
 
+  CHECKOUT_LAST_CLONE_CLASS="$class"
   echo "[checkout] Clone failed after ${retry_count} attempts, trying alternative endpoints..."
+  checkout::resilient_event tier2_enter
 
-  # Tier 2: parse host + port from SEMAPHORE_GIT_URL, then resolve alt IPs via DoH
+  # Tier 2: parse host + port from SEMAPHORE_GIT_URL, then resolve alt IPs via DoH.
+  # Only reached for transient/network failures — definitive git errors already
+  # returned above, so we never run DoH + alt-IP work on a 128-type failure.
   local git_host git_port
   if [[ "${SEMAPHORE_GIT_URL}" == https://* ]]; then
     git_host="${SEMAPHORE_GIT_URL#https://}"
-    git_host="${git_host%%/*}"
+    git_host="${git_host%%/*}"   # strip path
+    git_host="${git_host#*@}"    # strip optional userinfo (user[:pass]@)
+    git_host="${git_host%%:*}"   # strip optional :port so the gate sees a bare host
     git_port=443
   elif [[ "${SEMAPHORE_GIT_URL}" == ssh://* ]]; then
     local rest="${SEMAPHORE_GIT_URL#ssh://}"
@@ -338,9 +419,21 @@ function checkout::resilient_clone() {
     git_port=22
   fi
 
-  # GeoDNS-based alt-IP fallback is GitHub-specific; skip for other providers
-  if [ "$git_host" != "github.com" ]; then
-    echo "[checkout] Alternative endpoint fallback only supported for github.com (got: ${git_host})"
+  # GeoDNS-based alt-IP fallback is GitHub-specific. github.com is the HTTPS and
+  # SCP-form host; ssh.github.com is GitHub's SSH-over-443 host — both are
+  # eligible. Everything else is declined.
+  case "$git_host" in
+    github.com | ssh.github.com) ;;
+    *)
+      echo "[checkout] Alternative endpoint fallback only supported for github.com (got: ${git_host})"
+      return 1
+      ;;
+  esac
+
+  # SSH alt-IP routing needs nc. Check once, up front, instead of emitting the
+  # same warning on every alt-IP iteration (and skip the DoH work entirely).
+  if [[ "${SEMAPHORE_GIT_URL}" != https://* ]] && ! command -v nc >/dev/null 2>&1; then
+    echo "[checkout] 'nc' not available; cannot route SSH clone through alternative endpoint"
     return 1
   fi
 
@@ -352,6 +445,7 @@ function checkout::resilient_clone() {
 
   if [ -z "$alt_ips" ]; then
     echo "[checkout] No alternative endpoints found"
+    checkout::resilient_event doh_no_endpoint
     return 1
   fi
 
@@ -366,30 +460,175 @@ function checkout::resilient_clone() {
     rm -rf "${target_dir}"
 
     if checkout::clone_with_alt_ip "$alt_ip" "$git_host" "$git_port" git clone "$@"; then
+      checkout::resilient_event tier2_success
       return 0
     fi
 
-    echo "[checkout] Alternative endpoint (${alt_ip}) also slow, trying next..."
+    echo "[checkout] Alternative endpoint (${alt_ip}) also failed, trying next..."
   done <<< "$alt_ips"
 
   echo "[checkout] All clone attempts failed"
+  checkout::resilient_event tier2_exhausted
   return 1
 }
 
+# Decides whether a failed shallow clone should fall back to a full-history
+# clone. A full clone is a valid recovery only for failures it can actually fix.
+# Returns 0 (fall back) or 1 (do not fall back).
+function checkout::should_full_clone_fallback() {
+  local clone_rc="$1"
+
+  if [ "${SEMAPHORE_GIT_CLONE_SLOW_RETRY:-false}" = "true" ]; then
+    # Resilient path reports why it failed: rc=3 is a definitive git error and
+    # carries CHECKOUT_LAST_CLONE_CLASS; rc=1 is a transient/network/stall
+    # failure where escalating to full history just multiplies bandwidth.
+    # Escalate only for failures a non-shallow clone genuinely recovers:
+    #   * notfound-branch    — the branch exists but not at the shallow depth /
+    #                          the -b ref needs full history to resolve,
+    #   * shallow-unsupported — server/proxy can't do shallow; full clone omits
+    #                          --depth and succeeds.
+    # Never for auth / repo-not-found / transient — a full clone can't help.
+    if [ "$clone_rc" -eq 3 ]; then
+      case "${CHECKOUT_LAST_CLONE_CLASS:-}" in
+        notfound-branch | shallow-unsupported) return 0 ;;
+      esac
+    fi
+    return 1
+  fi
+
+  # Legacy (non-resilient) path: preserve the historical behavior of always
+  # attempting a full clone on any shallow failure.
+  return 0
+}
+
+# Classifies a captured git clone error log into a coarse failure class so
+# callers can decide on retries, alt-IP fallback, and full-clone escalation.
+# Echoes one of:
+#   shallow-unsupported | notfound-branch | notfound-repo | auth | network | unknown
+function checkout::classify_clone_error() {
+  local log="${1:-}"
+  if [ -z "$log" ] || [ ! -s "$log" ]; then
+    echo "unknown"
+    return
+  fi
+
+  local txt
+  txt="$(tr '[:upper:]' '[:lower:]' < "$log")"
+
+  case "$txt" in
+    *"does not support shallow"* | *"dumb http transport does not support"*)
+      # e.g. "fatal: dumb http transport does not support shallow capabilities"
+      # A non-shallow (full) clone is the correct recovery for this.
+      echo "shallow-unsupported"
+      ;;
+    *"remote branch"*"not found in upstream"* | *"could not find remote branch"* | *"not found in upstream"*)
+      # The bare "branch 'x' not found in upstream" form (no "remote branch")
+      # is still a missing branch — keep it here, not under notfound-repo.
+      echo "notfound-branch"
+      ;;
+    *"repository not found"* | *"does not appear to be a git repository"*)
+      echo "notfound-repo"
+      ;;
+    *"authentication failed"* | *"permission denied"* | *"could not read username"* | *"invalid username or password"* | *"access denied"*)
+      echo "auth"
+      ;;
+    *"could not resolve host"* | *"couldn't resolve host"* | *"connection timed out"* | *"connection refused"* | *"failed to connect"* | *"network is unreachable"* | *"unexpected disconnect"* | *"early eof"* | *"rpc failed"* | *"connection reset"* | *"timed out"* | *"ssl"* | *"tls"*)
+      echo "network"
+      ;;
+    *)
+      echo "unknown"
+      ;;
+  esac
+}
+
 function checkout::clone_with_speed_check() {
-  # Runs a git clone with speed monitoring.
-  # Returns: 0 = success, 1 = killed (slow), 2 = git error
-  local threshold="${SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD:-20000}"
-  local timeout="${SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT:-15}"
-  local grace="${SEMAPHORE_GIT_CLONE_SLOW_GRACE:-30}"
-  local check_interval=5
+  # Runs a git clone under slow/stall detection.
+  # Returns: 0 = success, 1 = aborted by a watchdog, 2 = git error.
+  #
+  # DEFAULT-ON slow detection is delegated entirely to git/curl via
+  # http.lowSpeedLimit / http.lowSpeedTime (injected below for HTTP(S) clones).
+  # curl measures *network* throughput — bytes actually read off the wire — so
+  # it never confuses CPU-bound phases (resolving deltas, checkout), server-side
+  # "Compressing objects" lulls, or the pack->loose-object rewrite (which
+  # shrinks on-disk size) for "slow". That is exactly the false-positive class a
+  # du-based throughput/stall proxy produces, so du is NOT used by default. When
+  # the wire goes quiet git aborts on its own and we classify the exit as a
+  # network failure.
+  #
+  # The du-based backstops below are OPT-IN for HTTP(S) (default off — the
+  # low-speed gate already bounds it without du's false positives). For SSH/SCP
+  # there is NO low-speed gate, so a hung SSH clone would otherwise block until
+  # the OS network timeout (minutes); there the stall guard defaults ON with a
+  # conservative bound (SEMAPHORE_GIT_CLONE_SSH_STALL_TIMEOUT, default 60s).
+  #   * stall guard (SEMAPHORE_GIT_CLONE_STALL_TIMEOUT) — no new on-disk bytes
+  #     for N seconds after grace,
+  #   * wall-clock cap (SEMAPHORE_GIT_CLONE_OVERALL_TIMEOUT) — absolute deadline.
+  #
+  # http.lowSpeedLimit defaults to 1000 B/s: low enough never to trip a healthy
+  # CI link, high enough to catch a wedged transfer within low_time seconds.
+  # Legacy SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD / _SLOW_TIMEOUT map onto
+  # http.lowSpeedLimit / _TIME (see checkout::warn_legacy_env).
+  local low_limit="${SEMAPHORE_GIT_CLONE_LOW_SPEED_LIMIT:-${SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD:-1000}}"
+  local low_time="${SEMAPHORE_GIT_CLONE_LOW_SPEED_TIME:-${SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT:-20}}"
+
+  # Per-transport default for the stall guard.
+  local stall_default=0
+  case "${SEMAPHORE_GIT_URL:-}" in
+    https://* | http://*) stall_default=0 ;;
+    *)                    stall_default="${SEMAPHORE_GIT_CLONE_SSH_STALL_TIMEOUT:-60}" ;;
+  esac
+  local stall_timeout="${SEMAPHORE_GIT_CLONE_STALL_TIMEOUT:-$stall_default}"
+  local overall_timeout="${SEMAPHORE_GIT_CLONE_OVERALL_TIMEOUT:-0}"
+  local grace="${SEMAPHORE_GIT_CLONE_SLOW_GRACE:-15}"
+  local check_interval="${SEMAPHORE_GIT_CLONE_CHECK_INTERVAL:-5}"
   local target_dir="${SEMAPHORE_GIT_DIR}"
 
-  "$@" &
-  local pid=$!
+  # Validate numerics; fall back to defaults rather than feed garbage to git
+  # config / arithmetic / sleep.
+  [[ "$low_limit"       =~ ^[0-9]+$ ]] || low_limit=1000
+  [[ "$low_time"        =~ ^[0-9]+$ ]] || low_time=20
+  [[ "$stall_timeout"   =~ ^[0-9]+$ ]] || stall_timeout=0
+  [[ "$overall_timeout" =~ ^[0-9]+$ ]] || overall_timeout=0
+  [[ "$grace"           =~ ^[0-9]+$ ]] || grace=15
+  { [[ "$check_interval" =~ ^[0-9]+$ ]] && [ "$check_interval" -ge 1 ]; } || check_interval=5
 
-  local prev_size=0
-  local slow_seconds=0
+  # Inject git/curl-native slow detection for HTTP(S) clones. We only touch a
+  # command that starts with `git`; everything else (test stubs, SSH) is run
+  # verbatim and relies on the opt-in backstops below.
+  local -a cmd=("$@")
+  if [ "${cmd[0]:-}" = "git" ] && { [[ "${SEMAPHORE_GIT_URL}" == https://* ]] || [[ "${SEMAPHORE_GIT_URL}" == http://* ]]; }; then
+    cmd=("${cmd[0]}" -c "http.lowSpeedLimit=${low_limit}" -c "http.lowSpeedTime=${low_time}" "${cmd[@]:1}")
+  fi
+
+  [ -n "${CHECKOUT_CLONE_ERRLOG:-}" ] && rm -f "${CHECKOUT_CLONE_ERRLOG}"
+  CHECKOUT_CLONE_ERRLOG="$(mktemp 2>/dev/null || echo "/tmp/checkout_clone_err.$$")"
+
+  # Launch the clone in its own process group (job control) so the entire
+  # process tree — git, git-remote-https, ssh, curl helpers — can be signalled
+  # and reaped together. libcheckout is sourced, so capture and restore the
+  # caller's monitor-mode state instead of leaking `set -m`.
+  local had_monitor=0
+  case "$-" in *m*) had_monitor=1 ;; esac
+  set -m
+  "${cmd[@]}" 2>"${CHECKOUT_CLONE_ERRLOG}" &
+  local pid=$!
+  [ "$had_monitor" -eq 1 ] || set +m
+
+  # No opt-in du backstop armed: nothing to poll. Just wait for git — for
+  # HTTP(S) the injected http.lowSpeedLimit gate is the active slow-detector.
+  if [ "$stall_timeout" -eq 0 ] && [ "$overall_timeout" -eq 0 ]; then
+    wait "$pid"
+    local rc=$?
+    cat "${CHECKOUT_CLONE_ERRLOG}" >&2 2>/dev/null
+    if [ "$rc" -eq 0 ]; then
+      rm -f "${CHECKOUT_CLONE_ERRLOG}"
+      return 0
+    fi
+    return 2
+  fi
+
+  local max_size=0
+  local stall_seconds=0
   local elapsed=0
 
   while kill -0 "$pid" 2>/dev/null; do
@@ -397,64 +636,180 @@ function checkout::clone_with_speed_check() {
     kill -0 "$pid" 2>/dev/null || break
     elapsed=$((elapsed + check_interval))
 
+    # Absolute wall-clock cap (opt-in).
+    if [ "$overall_timeout" -gt 0 ] && [ "$elapsed" -ge "$overall_timeout" ]; then
+      echo "[checkout] Clone exceeded wall-clock cap (${elapsed}s >= ${overall_timeout}s), aborting"
+      checkout::resilient_event wall_clock_kill
+      checkout::kill_clone "$pid"
+      cat "${CHECKOUT_CLONE_ERRLOG}" >&2 2>/dev/null
+      return 1
+    fi
+
+    # Stall guard (opt-in).
+    [ "$stall_timeout" -gt 0 ] || continue
+
     local cur_size
     cur_size=$(du -sk "${target_dir}" 2>/dev/null | awk '{print $1}')
     cur_size=${cur_size:-0}
 
-    # Don't arm slow-detection during the startup grace window. Server-side
-    # object counting/compression and connection setup can run for seconds
-    # with little or no on-disk growth before the receive phase ramps up;
-    # penalizing it would kill healthy clones of large repos.
+    # Startup grace: connection setup and server-side object enumeration can
+    # run for seconds with no on-disk growth. Track size but don't arm the
+    # stall guard until grace elapses.
     if [ "$elapsed" -lt "$grace" ]; then
-      prev_size=$cur_size
+      [ "$cur_size" -gt "$max_size" ] && max_size=$cur_size
       continue
     fi
 
-    if [ "$cur_size" -gt 0 ]; then
-      local speed=$(( (cur_size - prev_size) * 1024 / check_interval ))
-      prev_size=$cur_size
+    # Forward progress == a new on-disk high-water mark; otherwise the stall
+    # timer advances. Also covers the pre-write case (size never leaves 0) and
+    # never fires on a clone that keeps growing.
+    if [ "$cur_size" -gt "$max_size" ]; then
+      max_size=$cur_size
+      stall_seconds=0
+    else
+      stall_seconds=$((stall_seconds + check_interval))
+    fi
 
-      if [ "$speed" -lt "$threshold" ]; then
-        slow_seconds=$((slow_seconds + check_interval))
-        if [ "$slow_seconds" -ge "$timeout" ]; then
-          echo "[checkout] Slow clone detected (${speed} bytes/sec for ${slow_seconds}s)"
-          kill "$pid" 2>/dev/null
-          wait "$pid" 2>/dev/null
-          return 1
-        fi
-      else
-        slow_seconds=0
-      fi
+    if [ "$stall_seconds" -ge "$stall_timeout" ]; then
+      echo "[checkout] Clone stalled: no progress for ${stall_seconds}s, aborting"
+      checkout::resilient_event stall_kill
+      checkout::kill_clone "$pid"
+      cat "${CHECKOUT_CLONE_ERRLOG}" >&2 2>/dev/null
+      return 1
     fi
   done
 
   wait "$pid"
   local exit_code=$?
+  cat "${CHECKOUT_CLONE_ERRLOG}" >&2 2>/dev/null
 
-  [ "$exit_code" -eq 0 ] && return 0
+  if [ "$exit_code" -eq 0 ]; then
+    rm -f "${CHECKOUT_CLONE_ERRLOG}"
+    return 0
+  fi
   return 2
+}
+
+# Terminates a clone and its whole process group, escalating TERM -> KILL, then
+# reaps it so callers never rm -rf a directory a live git is still writing to.
+function checkout::kill_clone() {
+  local pid="$1"
+
+  # Group-signal only when the child is in its own process group (job control
+  # gave it pgid == pid). Falling back to the bare pid avoids the catastrophe
+  # of signalling our own group if, for any reason, it was not isolated.
+  local pgid self_pgid
+  pgid="$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')"
+  self_pgid="$(ps -o pgid= -p $$ 2>/dev/null | tr -d ' ')"
+
+  local can_group_kill=0
+  if [ -n "$pgid" ] && [ "$pgid" != "$self_pgid" ]; then
+    can_group_kill=1
+  fi
+
+  if [ "$can_group_kill" -eq 1 ]; then
+    kill -TERM -- -"$pgid" 2>/dev/null
+  else
+    kill -TERM "$pid" 2>/dev/null
+  fi
+
+  local waited=0
+  while kill -0 "$pid" 2>/dev/null && [ "$waited" -lt 5 ]; do
+    sleep 1
+    waited=$((waited + 1))
+  done
+
+  if kill -0 "$pid" 2>/dev/null; then
+    if [ "$can_group_kill" -eq 1 ]; then
+      kill -KILL -- -"$pgid" 2>/dev/null
+    else
+      kill -KILL "$pid" 2>/dev/null
+    fi
+  fi
+
+  wait "$pid" 2>/dev/null
+}
+
+# Validates that a string is a syntactically valid dotted-quad IPv4 address.
+function checkout::is_valid_ipv4() {
+  local ip="${1:-}"
+  [[ "$ip" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$ ]] || return 1
+  local octet
+  for octet in "${BASH_REMATCH[@]:1:4}"; do
+    [ "$octet" -le 255 ] || return 1
+  done
+  return 0
+}
+
+# Queries one DoH provider for one EDNS-client-subnet region and echoes the
+# first syntactically valid IPv4 answer that differs from current_ip.
+# A DoH response can legitimately carry CNAME 'data' fields (hostnames) or, if
+# tampered with, arbitrary strings; never feed an unvalidated value into a git
+# config option or an `nc` ProxyCommand — hence the is_valid_ipv4 gate.
+function checkout::doh_resolve_one() {
+  local provider="$1" git_host="$2" region="$3" current_ip="$4"
+  local connect_timeout="$5" max_time="$6"
+
+  local url
+  local -a header=()
+  case "$provider" in
+    google)
+      url="https://dns.google/resolve?name=${git_host}&type=A&edns_client_subnet=${region}"
+      ;;
+    cloudflare)
+      url="https://cloudflare-dns.com/dns-query?name=${git_host}&type=A&edns_client_subnet=${region}"
+      header=(-H "Accept: application/dns-json")
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+
+  local response candidate
+  # --connect-timeout / --max-time keep tier 2 from hanging when the resolver is
+  # blocked or unreachable (common on locked-down self-hosted runners).
+  response=$(curl -sf --connect-timeout "${connect_timeout}" --max-time "${max_time}" \
+    "${header[@]}" "$url" 2>/dev/null) || return 1
+
+  while IFS= read -r candidate; do
+    [ -z "$candidate" ] && continue
+    if checkout::is_valid_ipv4 "$candidate" && [ "$candidate" != "$current_ip" ]; then
+      echo "$candidate"
+      return 0
+    fi
+  done < <(printf '%s' "$response" | grep -o '"data":"[^"]*"' | sed 's/"data":"//;s/"//')
+  return 1
 }
 
 function checkout::resolve_alt_ips() {
   local git_host="$1"
   local current_ip="$2"
+
+  # EDNS-client-subnet hints. These /8 netblocks steer GeoDNS toward GitHub's
+  # git-capable frontends in geographically distinct regions (US/EU/APAC-ish),
+  # yielding edge IPs different from the runner's current one — the whole point
+  # of tier 2 when the local-resolved edge is the unhealthy one. Override via
+  # SEMAPHORE_GIT_CLONE_ALT_REGIONS if GitHub's GeoDNS mapping shifts.
   local regions
   IFS=',' read -ra regions <<< "${SEMAPHORE_GIT_CLONE_ALT_REGIONS:-74.0.0.0/8,177.0.0.0/8,110.0.0.0/8}"
+
+  # DoH providers, tried in order per region, so dns.google is not a single
+  # point of failure for tier 2. (Cloudflare may ignore EDNS-client-subnet, but
+  # still provides an alternative resolution when Google DoH is blocked.)
+  local providers
+  IFS=',' read -ra providers <<< "${SEMAPHORE_GIT_CLONE_DOH_PROVIDERS:-google,cloudflare}"
 
   local connect_timeout="${SEMAPHORE_GIT_CLONE_DOH_CONNECT_TIMEOUT:-5}"
   local max_time="${SEMAPHORE_GIT_CLONE_DOH_MAX_TIME:-10}"
 
+  local region provider ip
   for region in "${regions[@]}"; do
-    local ip
-    # --connect-timeout / --max-time keep tier 2 from hanging when dns.google
-    # is blocked or unreachable (common on locked-down self-hosted runners).
-    ip=$(curl -sf --connect-timeout "${connect_timeout}" --max-time "${max_time}" \
-      "https://dns.google/resolve?name=${git_host}&type=A&edns_client_subnet=${region}" | \
-      grep -o '"data":"[^"]*"' | sed 's/"data":"//;s/"//' | head -1)
-
-    if [ -n "$ip" ] && [ "$ip" != "$current_ip" ]; then
-      echo "$ip"
-    fi
+    ip=""
+    for provider in "${providers[@]}"; do
+      ip="$(checkout::doh_resolve_one "$provider" "$git_host" "$region" "$current_ip" "$connect_timeout" "$max_time")"
+      [ -n "$ip" ] && break
+    done
+    [ -n "$ip" ] && echo "$ip"
   done | sort -u
 }
 
@@ -465,6 +820,13 @@ function checkout::clone_with_alt_ip() {
   shift 3
   # $@ is now: git clone [args...]
 
+  # Defense in depth: even though resolve_alt_ips validates, never interpolate
+  # an unvalidated IP into git config or a shell command here either.
+  if ! checkout::is_valid_ipv4 "$alt_ip"; then
+    echo "[checkout] Refusing to use invalid alternative IP: ${alt_ip}"
+    return 1
+  fi
+
   if [[ "${SEMAPHORE_GIT_URL}" == https://* ]]; then
     # HTTPS: inject curloptResolve between 'git' and 'clone'
     checkout::clone_with_speed_check git -c "http.curloptResolve=${git_host}:${git_port}:${alt_ip}" "${@:2}"
@@ -474,11 +836,17 @@ function checkout::clone_with_alt_ip() {
       echo "[checkout] 'nc' not available; cannot route SSH clone through alternative endpoint"
       return 1
     fi
-    local orig_ssh_command="${GIT_SSH_COMMAND:-}"
+    # Capture whether GIT_SSH_COMMAND was *set* (even if empty) so we restore
+    # the exact prior state instead of conflating "unset" with "set-empty".
+    local had_ssh_command=0 orig_ssh_command=""
+    if [ -n "${GIT_SSH_COMMAND+x}" ]; then
+      had_ssh_command=1
+      orig_ssh_command="${GIT_SSH_COMMAND}"
+    fi
     export GIT_SSH_COMMAND="${orig_ssh_command:-ssh} -o ProxyCommand='nc ${alt_ip} ${git_port}'"
     checkout::clone_with_speed_check "$@"
     local result=$?
-    if [ -n "$orig_ssh_command" ]; then
+    if [ "$had_ssh_command" -eq 1 ]; then
       export GIT_SSH_COMMAND="$orig_ssh_command"
     else
       unset GIT_SSH_COMMAND
@@ -490,6 +858,13 @@ function checkout::clone_with_alt_ip() {
 export -f checkout
 export -f checkout::git_clone
 export -f checkout::resilient_clone
+export -f checkout::resilient_event
+export -f checkout::warn_legacy_env
+export -f checkout::should_full_clone_fallback
+export -f checkout::classify_clone_error
 export -f checkout::clone_with_speed_check
+export -f checkout::kill_clone
+export -f checkout::is_valid_ipv4
+export -f checkout::doh_resolve_one
 export -f checkout::resolve_alt_ips
 export -f checkout::clone_with_alt_ip

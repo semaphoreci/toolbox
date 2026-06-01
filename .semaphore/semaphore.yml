@@ -677,6 +677,51 @@ blocks:
           commands:
             - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
 
+  # Real-network coverage for the resilient-clone / alternative-endpoint path.
+  # Drives the actual checkout / checkout::resilient_clone functions against a
+  # real public repository (semaphoreio/semaphore) over DoH-resolved alternative
+  # IPs — including a tier-2 failover where the primary github.com endpoint is
+  # made unreachable via /etc/hosts. Individual tests skip (not fail) when the
+  # network / DoH / a serving alternative IP is unavailable, so this is a real
+  # signal without being flaky on a transient outage.
+  - name: "Bats: Live checkout (real GitHub)"
+    dependencies:
+      - "Build local CLIs"
+    task:
+      agent:
+        machine:
+          type: f1-standard-2
+          os_image: ubuntu2404
+      prologue:
+        commands:
+          - checkout
+          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+          - bash release/create.sh
+          # dig (dnsutils) is required by the DoH alternative-IP resolution path.
+          - sudo apt-get update && sudo apt-get install -y dnsutils
+      jobs:
+        - name: "Live alt-IP clone (semaphoreio/semaphore)"
+          commands:
+            - source release/install_in_tests.sh
+            - git submodule init && git submodule update
+            - sudo ./tests/support/bats-core/install.sh /usr/local
+            - bats --report-formatter junit --tap --timing tests/libcheckout_live_alt_ip.bats
+      epilogue:
+        always:
+          commands:
+            - 'test-results publish report.xml --name="Bats: Live checkout" --suite-prefix=tests/libcheckout_live_alt_ip.bats'
+
   - name: "Bats: Ubuntu 24.04"
     dependencies:
         - "Build local CLIs"
