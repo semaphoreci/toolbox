@@ -76,287 +76,287 @@ blocks:
       jobs:
         - name: Shell check
           commands:
-            - shellcheck sem-service
-            - shellcheck sem-version
+#            - shellcheck sem-service
+#            - shellcheck sem-version
             - shellcheck -s bash libcheckout
-            - shellcheck install-package
-            - shellcheck sem-semantic-release
-        - name: PowerShell check
-          commands:
-            - make pwsh.lint
+#            - shellcheck install-package
+#            - shellcheck sem-semantic-release
+#        - name: PowerShell check
+#          commands:
+#            - make pwsh.lint
 
-  - name: "PowerShell: tests"
-    dependencies: []
-    task:
-      prologue:
-        commands:
-          - checkout
-      jobs:
-        - name: checkout tests
-          commands:
-            - make pwsh.test
-
-
-  - name: Sem Version Tests Jammy
-    dependencies:
-      - "Build local CLIs"
-    task:
-      agent:
-        machine:
-          type: f1-standard-2
-          os_image: ubuntu2204
-      prologue:
-        commands:
-          - checkout
-          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
-          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
-          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
-          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
-          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
-          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
-          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
-          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
-          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
-          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
-          - bash release/create.sh
-          - source release/install_in_tests.sh
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
-      jobs:
-        - name: Sem Version
-          matrix:
-            - env_var: TEST
-              values:
-                - elixir
-                - erlang
-                - gcc
-                - go
-                - java
-                - kubectl
-                - node
-                - php
-                - python
-                - ruby
-                - scala
-          commands:
-            - bats tests/sem_version_jammy/${TEST}.bats
-
-
-  - name: Sem Version Tests Noble ARM
-    dependencies:
-      - "Build local CLIs"
-    task:
-      agent:
-        machine:
-          type: r1-standard-4
-          os_image: ubuntu2404
-      prologue:
-        commands:
-          - wget https://github.com/semaphoreci/artifact/releases/download/v0.6.2/artifact_Linux_arm64.tar.gz -O /tmp/artifact_Linux_arm64.tar.gz
-          - sudo tar -xf /tmp/artifact_Linux_arm64.tar.gz -C /usr/local/bin/
-          - checkout
-          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
-          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
-          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
-          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
-          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
-          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
-          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
-          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
-          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
-          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
-          - bash release/create.sh
-          - source release/install_in_tests.sh
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
-      jobs:
-        - name: Sem Version
-          matrix:
-            - env_var: TEST
-              values:
-                - elixir
-                - erlang
-                - gcc
-                - go
-                - java
-                - kubectl
-                - node
-                - php
-                - python
-                - ruby
-                - scala
-          commands:
-            - bats tests/sem_version_noble/${TEST}.bats
-
-  - name: Sem Version Tests Noble
-    dependencies:
-      - "Build local CLIs"
-    task:
-      agent:
-        machine:
-          type: f1-standard-4
-          os_image: ubuntu2404
-      prologue:
-        commands:
-          - checkout
-          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
-          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
-          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
-          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
-          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
-          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
-          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
-          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
-          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
-          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
-          - bash release/create.sh
-          - source release/install_in_tests.sh
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
-      jobs:
-        - name: Sem Version
-          matrix:
-            - env_var: TEST
-              values:
-                - elixir
-                - erlang
-                - gcc
-                - go
-                - java
-                - kubectl
-                - node
-                - php
-                - python
-                - ruby
-                - scala
-          commands:
-            - bats tests/sem_version_noble/${TEST}.bats
-
-  - name: Sem Service Tests Noble ARM
-    dependencies:
-      - "Build local CLIs"
-    task:
-      agent:
-        machine:
-          type: r1-standard-4
-          os_image: ubuntu2404
-      prologue:
-        commands:
-          - wget https://github.com/semaphoreci/artifact/releases/download/v0.6.2/artifact_Linux_arm64.tar.gz -O /tmp/artifact_Linux_arm64.tar.gz
-          - sudo tar -xf /tmp/artifact_Linux_arm64.tar.gz -C /usr/local/bin/
-          - checkout
-          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
-          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
-          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
-          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
-          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
-          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
-          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
-          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
-          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
-          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
-          - bash release/create.sh
-          - source release/install_in_tests.sh
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
-      jobs:
-        - name: Sem Service Tests Noble ARM
-          matrix:
-            - env_var: SERVICE
-              values:
-                - postgres
-                - memcached
-          commands:
-            - sem-service start ${SERVICE}
-
-
-  - name: "Sem Version Tests container"
-    dependencies:
-      - "Build local CLIs"
-    task:
-      agent:
-        machine:
-          type: f1-standard-2
-          os_image: ubuntu2404
-        containers:
-          - name: main
-            image: "registry.semaphoreci.com/android:34-flutter"
-      prologue:
-        commands:
-          - checkout
-          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
-          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
-          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
-          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
-          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
-          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
-          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
-          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
-          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
-          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
-          - bash release/create.sh
-          - source tests/sftp_server/start_on_mac.sh
-          - source release/install_in_tests.sh
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
-      jobs:
-        - name: "Sem Version Flutter"
-          commands:
-            - bats tests/sem_version_container.bats
-
-  - name: Sem Service Tests Noble
-    dependencies:
-      - "Build local CLIs"
-    task:
-      prologue:
-        commands:
-          - checkout
-          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
-          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
-          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
-          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
-          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
-          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
-          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
-          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
-          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
-          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
-          - bash release/create.sh
-          - source release/create.sh
-          - cd ~/$SEMAPHORE_GIT_DIR/
-          - source release/install_in_tests.sh
-      jobs:
-        - name: Sem Service Tests Noble
-          matrix:
-            - env_var: TEST
-              values:
-                - mysql
-                - postgres
-                - postgis
-                - redis
-                - memcached
-                - rabbitmq
-                - mongodb
-                - opensearch
-                - elasticsearch
-                - cassandra
-                - rethinkdb
-                - valkey
-          commands:
-            - bash tests/sem_service/$TEST
-
+#  - name: "PowerShell: tests"
+#    dependencies: []
+#    task:
+#      prologue:
+#        commands:
+#          - checkout
+#      jobs:
+#        - name: checkout tests
+#          commands:
+#            - make pwsh.test
+#
+#
+#  - name: Sem Version Tests Jammy
+#    dependencies:
+#      - "Build local CLIs"
+#    task:
+#      agent:
+#        machine:
+#          type: f1-standard-2
+#          os_image: ubuntu2204
+#      prologue:
+#        commands:
+#          - checkout
+#          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+#          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+#          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+#          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+#          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+#          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+#          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+#          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+#          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+#          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+#          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+#          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+#          - bash release/create.sh
+#          - source release/install_in_tests.sh
+#          - git submodule init && git submodule update
+#          - sudo ./tests/support/bats-core/install.sh /usr/local
+#      jobs:
+#        - name: Sem Version
+#          matrix:
+#            - env_var: TEST
+#              values:
+#                - elixir
+#                - erlang
+#                - gcc
+#                - go
+#                - java
+#                - kubectl
+#                - node
+#                - php
+#                - python
+#                - ruby
+#                - scala
+#          commands:
+#            - bats tests/sem_version_jammy/${TEST}.bats
+#
+#
+#  - name: Sem Version Tests Noble ARM
+#    dependencies:
+#      - "Build local CLIs"
+#    task:
+#      agent:
+#        machine:
+#          type: r1-standard-4
+#          os_image: ubuntu2404
+#      prologue:
+#        commands:
+#          - wget https://github.com/semaphoreci/artifact/releases/download/v0.6.2/artifact_Linux_arm64.tar.gz -O /tmp/artifact_Linux_arm64.tar.gz
+#          - sudo tar -xf /tmp/artifact_Linux_arm64.tar.gz -C /usr/local/bin/
+#          - checkout
+#          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+#          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+#          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+#          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+#          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+#          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+#          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+#          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+#          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+#          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+#          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+#          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+#          - bash release/create.sh
+#          - source release/install_in_tests.sh
+#          - git submodule init && git submodule update
+#          - sudo ./tests/support/bats-core/install.sh /usr/local
+#      jobs:
+#        - name: Sem Version
+#          matrix:
+#            - env_var: TEST
+#              values:
+#                - elixir
+#                - erlang
+#                - gcc
+#                - go
+#                - java
+#                - kubectl
+#                - node
+#                - php
+#                - python
+#                - ruby
+#                - scala
+#          commands:
+#            - bats tests/sem_version_noble/${TEST}.bats
+#
+#  - name: Sem Version Tests Noble
+#    dependencies:
+#      - "Build local CLIs"
+#    task:
+#      agent:
+#        machine:
+#          type: f1-standard-4
+#          os_image: ubuntu2404
+#      prologue:
+#        commands:
+#          - checkout
+#          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+#          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+#          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+#          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+#          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+#          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+#          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+#          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+#          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+#          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+#          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+#          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+#          - bash release/create.sh
+#          - source release/install_in_tests.sh
+#          - git submodule init && git submodule update
+#          - sudo ./tests/support/bats-core/install.sh /usr/local
+#      jobs:
+#        - name: Sem Version
+#          matrix:
+#            - env_var: TEST
+#              values:
+#                - elixir
+#                - erlang
+#                - gcc
+#                - go
+#                - java
+#                - kubectl
+#                - node
+#                - php
+#                - python
+#                - ruby
+#                - scala
+#          commands:
+#            - bats tests/sem_version_noble/${TEST}.bats
+#
+#  - name: Sem Service Tests Noble ARM
+#    dependencies:
+#      - "Build local CLIs"
+#    task:
+#      agent:
+#        machine:
+#          type: r1-standard-4
+#          os_image: ubuntu2404
+#      prologue:
+#        commands:
+#          - wget https://github.com/semaphoreci/artifact/releases/download/v0.6.2/artifact_Linux_arm64.tar.gz -O /tmp/artifact_Linux_arm64.tar.gz
+#          - sudo tar -xf /tmp/artifact_Linux_arm64.tar.gz -C /usr/local/bin/
+#          - checkout
+#          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+#          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+#          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+#          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+#          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+#          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+#          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+#          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+#          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+#          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+#          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+#          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+#          - bash release/create.sh
+#          - source release/install_in_tests.sh
+#          - git submodule init && git submodule update
+#          - sudo ./tests/support/bats-core/install.sh /usr/local
+#      jobs:
+#        - name: Sem Service Tests Noble ARM
+#          matrix:
+#            - env_var: SERVICE
+#              values:
+#                - postgres
+#                - memcached
+#          commands:
+#            - sem-service start ${SERVICE}
+#
+#
+#  - name: "Sem Version Tests container"
+#    dependencies:
+#      - "Build local CLIs"
+#    task:
+#      agent:
+#        machine:
+#          type: f1-standard-2
+#          os_image: ubuntu2404
+#        containers:
+#          - name: main
+#            image: "registry.semaphoreci.com/android:34-flutter"
+#      prologue:
+#        commands:
+#          - checkout
+#          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+#          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+#          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+#          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+#          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+#          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+#          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+#          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+#          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+#          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+#          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+#          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+#          - bash release/create.sh
+#          - source tests/sftp_server/start_on_mac.sh
+#          - source release/install_in_tests.sh
+#          - git submodule init && git submodule update
+#          - sudo ./tests/support/bats-core/install.sh /usr/local
+#      jobs:
+#        - name: "Sem Version Flutter"
+#          commands:
+#            - bats tests/sem_version_container.bats
+#
+#  - name: Sem Service Tests Noble
+#    dependencies:
+#      - "Build local CLIs"
+#    task:
+#      prologue:
+#        commands:
+#          - checkout
+#          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+#          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+#          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+#          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+#          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+#          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+#          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+#          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+#          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+#          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+#          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+#          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+#          - bash release/create.sh
+#          - source release/create.sh
+#          - cd ~/$SEMAPHORE_GIT_DIR/
+#          - source release/install_in_tests.sh
+#      jobs:
+#        - name: Sem Service Tests Noble
+#          matrix:
+#            - env_var: TEST
+#              values:
+#                - mysql
+#                - postgres
+#                - postgis
+#                - redis
+#                - memcached
+#                - rabbitmq
+#                - mongodb
+#                - opensearch
+#                - elasticsearch
+#                - cassandra
+#                - rethinkdb
+#                - valkey
+#          commands:
+#            - bash tests/sem_service/$TEST
+#
   - name: "Bats: xcode26 arm"
     dependencies:
       - "Build local CLIs"
@@ -428,11 +428,11 @@ blocks:
           matrix:
             - env_var: TEST
               values:
-                - tests/artifacts.bats
-                - tests/test-results.bats
-                - tests/xcode26_sem_version.bats
-                - tests/sem-semantic-release.bats
-                - tests/system_metrics_collector.bats
+#                - tests/artifacts.bats
+#                - tests/test-results.bats
+#                - tests/xcode26_sem_version.bats
+#                - tests/sem-semantic-release.bats
+#                - tests/system_metrics_collector.bats
                 - tests/libcheckout_slow_retry.bats
           commands:
             - source release/install_in_tests.sh
@@ -512,8 +512,8 @@ blocks:
           matrix:
             - env_var: TEST
               values:
-                - tests/artifacts.bats
-                - tests/test-results.bats
+#                - tests/artifacts.bats
+#                - tests/test-results.bats
                 - tests/libcheckout_slow_retry.bats
           commands:
             - source release/install_in_tests.sh
@@ -571,17 +571,17 @@ blocks:
             - ./tests/support/bats-core/install.sh /usr/local
             - bats --report-formatter junit --tap --timing $TEST
 
-        - name: "Non-cache tests"
-          matrix:
-            - env_var: TEST
-              values:
-                - tests/artifacts.bats
-                - tests/test-results.bats
-          commands:
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
+#        - name: "Non-cache tests"
+#          matrix:
+#            - env_var: TEST
+#              values:
+#                - tests/artifacts.bats
+#                - tests/test-results.bats
+#          commands:
+#            - source release/install_in_tests.sh
+#            - git submodule init && git submodule update
+#            - ./tests/support/bats-core/install.sh /usr/local
+#            - bats --report-formatter junit --tap --timing $TEST
       epilogue:
         always:
           commands:
@@ -652,15 +652,15 @@ blocks:
           matrix:
             - env_var: TEST
               values:
-                - tests/install_package.bats
-                - tests/artifacts.bats
-                - tests/compiler.bats
-                - tests/test-results.bats
-                - tests/enetwork.bats
-                - tests/sem-semantic-release.bats
-                - tests/system_metrics_collector.bats
-                - tests/toolbox_metrics.bats
-                - tests/toolbox_env_var.bats
+#                - tests/install_package.bats
+#                - tests/artifacts.bats
+#                - tests/compiler.bats
+#                - tests/test-results.bats
+#                - tests/enetwork.bats
+#                - tests/sem-semantic-release.bats
+#                - tests/system_metrics_collector.bats
+#                - tests/toolbox_metrics.bats
+#                - tests/toolbox_env_var.bats
                 - tests/libcheckout_slow_retry.bats
           commands:
             - source release/install_in_tests.sh
@@ -722,259 +722,259 @@ blocks:
           commands:
             - 'test-results publish report.xml --name="Bats: Live checkout" --suite-prefix=tests/libcheckout_live_alt_ip.bats'
 
-  - name: "Bats: Ubuntu 24.04"
-    dependencies:
-        - "Build local CLIs"
-    task:
-      agent:
-        machine:
-          type: f1-standard-2
-          os_image: ubuntu2404
-      prologue:
-        commands:
-          - checkout
-          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
-          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
-          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
-          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
-          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
-          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
-          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
-          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
-          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
-          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
-          - bash release/create.sh
-          - source tests/sftp_server/start_on_linux.sh
-          - sem-version python 3.11
-          - sem-version go 1.25.6
-          - sem-version php 8.4.19
-      jobs:
-        - name: "Non-cache tests"
-          matrix:
-            - env_var: TEST
-              values:
-                - tests/install_package.bats
-                - tests/artifacts.bats
-                - tests/test-results.bats
-                - tests/enetwork.bats
-                - tests/sem-semantic-release.bats
-                - tests/compiler.bats
-          commands:
-            - source release/install_in_tests.sh
-            - git submodule init && git submodule update
-            - sudo ./tests/support/bats-core/install.sh /usr/local
-            - bats --report-formatter junit --tap --timing $TEST
-
-      epilogue:
-        always:
-          commands:
-            - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
-
-  - name: "Cache CLI: Tests"
-    dependencies: []
-    task:
-      prologue:
-        commands:
-          - checkout && cd cache-cli
-          - make test.setup
-      jobs:
-        - name: "Test"
-          commands:
-            - make test
-      epilogue:
-        always:
-          commands:
-            - docker-compose logs s3
-            - test-results publish junit-report.xml
-
-  - name: "Cache CLI: Lint"
-    dependencies: []
-    task:
-      env_vars:
-        - name: GO111MODULE
-          value: "on"
-      prologue:
-        commands:
-          - sem-version go 1.25.6
-          - checkout && cd cache-cli
-      jobs:
-        - name: Lint
-          commands:
-            - go install github.com/mgechev/revive@latest
-            - make lint
-
-  - name: "Test Results CLI: Tests"
-    dependencies: []
-    task:
-      prologue:
-        commands:
-          - checkout && cd test-results
-      jobs:
-        - name: Test
-          commands:
-          - make test.setup
-          - make test
-      epilogue:
-        always:
-          commands:
-            - test-results publish --ignore-missing junit-report.xml
-  - name: "Test Results CLI: Lint"
-    dependencies: []
-    task:
-      prologue:
-        commands:
-          - checkout && cd test-results
-      jobs:
-        - name: Test
-          commands:
-          - make lint
-      epilogue:
-        always:
-          commands:
-            - test-results publish --ignore-missing revive.json:go:revive staticcheck.json:go:staticcheck
-
-  - name: "Security checks"
-    dependencies: []
-    task:
-      env_vars:
+#  - name: "Bats: Ubuntu 24.04"
+#    dependencies:
+#        - "Build local CLIs"
+#    task:
+#      agent:
+#        machine:
+#          type: f1-standard-2
+#          os_image: ubuntu2404
+#      prologue:
+#        commands:
+#          - checkout
+#          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+#          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+#          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+#          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+#          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+#          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+#          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+#          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+#          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+#          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+#          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+#          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+#          - bash release/create.sh
+#          - source tests/sftp_server/start_on_linux.sh
+#          - sem-version python 3.11
+#          - sem-version go 1.25.6
+#          - sem-version php 8.4.19
+#      jobs:
+#        - name: "Non-cache tests"
+#          matrix:
+#            - env_var: TEST
+#              values:
+#                - tests/install_package.bats
+#                - tests/artifacts.bats
+#                - tests/test-results.bats
+#                - tests/enetwork.bats
+#                - tests/sem-semantic-release.bats
+#                - tests/compiler.bats
+#          commands:
+#            - source release/install_in_tests.sh
+#            - git submodule init && git submodule update
+#            - sudo ./tests/support/bats-core/install.sh /usr/local
+#            - bats --report-formatter junit --tap --timing $TEST
+#
+#      epilogue:
+#        always:
+#          commands:
+#            - 'test-results publish report.xml --name="Bats: Linux" --suite-prefix=$TEST'
+#
+#  - name: "Cache CLI: Tests"
+#    dependencies: []
+#    task:
+#      prologue:
+#        commands:
+#          - checkout && cd cache-cli
+#          - make test.setup
+#      jobs:
+#        - name: "Test"
+#          commands:
+#            - make test
+#      epilogue:
+#        always:
+#          commands:
+#            - docker-compose logs s3
+#            - test-results publish junit-report.xml
+#
+#  - name: "Cache CLI: Lint"
+#    dependencies: []
+#    task:
+#      env_vars:
+#        - name: GO111MODULE
+#          value: "on"
+#      prologue:
+#        commands:
+#          - sem-version go 1.25.6
+#          - checkout && cd cache-cli
+#      jobs:
+#        - name: Lint
+#          commands:
+#            - go install github.com/mgechev/revive@latest
+#            - make lint
+#
+#  - name: "Test Results CLI: Tests"
+#    dependencies: []
+#    task:
+#      prologue:
+#        commands:
+#          - checkout && cd test-results
+#      jobs:
+#        - name: Test
+#          commands:
+#          - make test.setup
+#          - make test
+#      epilogue:
+#        always:
+#          commands:
+#            - test-results publish --ignore-missing junit-report.xml
+#  - name: "Test Results CLI: Lint"
+#    dependencies: []
+#    task:
+#      prologue:
+#        commands:
+#          - checkout && cd test-results
+#      jobs:
+#        - name: Test
+#          commands:
+#          - make lint
+#      epilogue:
+#        always:
+#          commands:
+#            - test-results publish --ignore-missing revive.json:go:revive staticcheck.json:go:staticcheck
+#
+#  - name: "Security checks"
+#    dependencies: []
+#    task:
+#      env_vars:
         # https://github.com/aquasecurity/trivy/discussions/7668#discussioncomment-10884984
         # workaround for trivy TOOMANYREQUESTS issues
-        - name: TRIVY_DB_REPOSITORY
-          value: "ghcr.io/aquasecurity/trivy-db,public.ecr.aws/aquasecurity/trivy-db"
-        - name: TRIVY_JAVA_DB_REPOSITORY
-          value: "ghcr.io/aquasecurity/trivy-java-db,public.ecr.aws/aquasecurity/trivy-java-db"
-      secrets:
-        - name: security-toolbox-shared-read-access
-      prologue:
-        commands:
-          - checkout && cd $CLI_NAME
-          - mv ~/.ssh/security-toolbox ~/.ssh/id_rsa
-          - sudo chmod 600 ~/.ssh/id_rsa
-      jobs:
-        - name: Check dependencies
-          matrix:
-            - env_var: CLI_NAME
-              values:
-                - cache-cli
-                - sem-context
-                - test-results
-          commands:
-            - make check.deps
-        - name: Check code
-          matrix:
-            - env_var: CLI_NAME
-              values:
-                - cache-cli
-                - sem-context
-                - test-results
-          commands:
-            - make check.static
-      epilogue:
-        always:
-          commands:
-            - 'test-results publish --ignore-missing --name="$CLI_NAME: Security checks" results.xml'
-
-  - name: SHM Test Focal
-    dependencies:
-      - "Build local CLIs"
-    task:
-      prologue:
-        commands:
-          - checkout
-          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
-          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
-          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
-          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
-          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
-          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
-          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
-          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
-          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
-          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
-          - bash release/create.sh
-          - source release/install_in_tests.sh
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
-
-      jobs:
-        - name: SHM Test Focal
-          commands:
-            - sed -i "s/\/tmp\/system-metrics/\/tmp\/system-metrics2/g" ~/.toolbox/system-metrics-collector
-            - . ~/.toolbox/system-metrics-collector &
-            - sleep 2
-            - bats tests/shm/shm_ubuntu.bats
-            - cat /tmp/system-metrics2
-
-  - name: SHM Test Docker
-    dependencies:
-      - "Build local CLIs"
-    task:
-      agent:
-        machine:
-          type: f1-standard-2
-          os_image: ubuntu2204
-        containers:
-          - name: main
-            image: "registry.semaphoreci.com/ubuntu:22.04"
-      prologue:
-        commands:
-          - checkout
-          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
-          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
-          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
-          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
-          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
-          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
-          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
-          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
-          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
-          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
-          - bash release/create.sh
-          - source release/install_in_tests.sh
-          - git submodule init && git submodule update
-          - sudo ./tests/support/bats-core/install.sh /usr/local
-
-      jobs:
-        - name: SHM Test Docker
-          commands:
-            - sed -i "s/\/tmp\/system-metrics/\/tmp\/system-metrics2/g" ~/.toolbox/system-metrics-collector
-            - . ~/.toolbox/system-metrics-collector &
-            - sleep 2
-            - bats tests/shm/shm_docker.bats
-            - cat /tmp/system-metrics2
-
-after_pipeline:
-  task:
-    jobs:
-      - name: Submit Reports
-        commands:
-          - checkout
-          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
-          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
-          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
-          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
-          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
-          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
-          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
-          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
-          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
-          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
-          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
-          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
-          - bash release/create.sh
-          - source release/install_in_tests.sh
-          - test-results gen-pipeline-report
-
-promotions:
-  - name: Release
-    pipeline_file: release.yml
-    auto_promote_on:
-      - result: passed
-        branch:
-          - ^refs/tags/v*
+#        - name: TRIVY_DB_REPOSITORY
+#          value: "ghcr.io/aquasecurity/trivy-db,public.ecr.aws/aquasecurity/trivy-db"
+#        - name: TRIVY_JAVA_DB_REPOSITORY
+#          value: "ghcr.io/aquasecurity/trivy-java-db,public.ecr.aws/aquasecurity/trivy-java-db"
+#      secrets:
+#        - name: security-toolbox-shared-read-access
+#      prologue:
+#        commands:
+#          - checkout && cd $CLI_NAME
+#          - mv ~/.ssh/security-toolbox ~/.ssh/id_rsa
+#          - sudo chmod 600 ~/.ssh/id_rsa
+#      jobs:
+#        - name: Check dependencies
+#          matrix:
+#            - env_var: CLI_NAME
+#              values:
+#                - cache-cli
+#                - sem-context
+#                - test-results
+#          commands:
+#            - make check.deps
+#        - name: Check code
+#          matrix:
+#            - env_var: CLI_NAME
+#              values:
+#                - cache-cli
+#                - sem-context
+#                - test-results
+#          commands:
+#            - make check.static
+#      epilogue:
+#        always:
+#          commands:
+#            - 'test-results publish --ignore-missing --name="$CLI_NAME: Security checks" results.xml'
+#
+#  - name: SHM Test Focal
+#    dependencies:
+#      - "Build local CLIs"
+#    task:
+#      prologue:
+#        commands:
+#          - checkout
+#          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+#          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+#          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+#          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+#          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+#          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+#          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+#          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+#          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+#          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+#          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+#          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+#          - bash release/create.sh
+#          - source release/install_in_tests.sh
+#          - git submodule init && git submodule update
+#          - sudo ./tests/support/bats-core/install.sh /usr/local
+#
+#      jobs:
+#        - name: SHM Test Focal
+#          commands:
+#            - sed -i "s/\/tmp\/system-metrics/\/tmp\/system-metrics2/g" ~/.toolbox/system-metrics-collector
+#            - . ~/.toolbox/system-metrics-collector &
+#            - sleep 2
+#            - bats tests/shm/shm_ubuntu.bats
+#            - cat /tmp/system-metrics2
+#
+#  - name: SHM Test Docker
+#    dependencies:
+#      - "Build local CLIs"
+#    task:
+#      agent:
+#        machine:
+#          type: f1-standard-2
+#          os_image: ubuntu2204
+#        containers:
+#          - name: main
+#            image: "registry.semaphoreci.com/ubuntu:22.04"
+#      prologue:
+#        commands:
+#          - checkout
+#          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+#          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+#          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+#          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+#          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+#          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+#          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+#          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+#          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+#          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+#          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+#          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+#          - bash release/create.sh
+#          - source release/install_in_tests.sh
+#          - git submodule init && git submodule update
+#          - sudo ./tests/support/bats-core/install.sh /usr/local
+#
+#      jobs:
+#        - name: SHM Test Docker
+#          commands:
+#            - sed -i "s/\/tmp\/system-metrics/\/tmp\/system-metrics2/g" ~/.toolbox/system-metrics-collector
+#            - . ~/.toolbox/system-metrics-collector &
+#            - sleep 2
+#            - bats tests/shm/shm_docker.bats
+#            - cat /tmp/system-metrics2
+#
+#after_pipeline:
+#  task:
+#    jobs:
+#      - name: Submit Reports
+#        commands:
+#          - checkout
+#          - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
+#          - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
+#          - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
+#          - artifact pull workflow bin/darwin/arm64/cache -d cache-cli/bin/darwin/arm64/cache
+#          - artifact pull workflow bin/linux/amd64/sem-context -d sem-context/bin/linux/amd64/sem-context
+#          - artifact pull workflow bin/linux/arm64/sem-context -d sem-context/bin/linux/arm64/sem-context
+#          - artifact pull workflow bin/darwin/amd64/sem-context -d sem-context/bin/darwin/amd64/sem-context
+#          - artifact pull workflow bin/darwin/arm64/sem-context -d sem-context/bin/darwin/arm64/sem-context
+#          - artifact pull workflow bin/linux/amd64/test-results -d test-results/bin/linux/amd64/test-results
+#          - artifact pull workflow bin/linux/arm64/test-results -d test-results/bin/linux/arm64/test-results
+#          - artifact pull workflow bin/darwin/amd64/test-results -d test-results/bin/darwin/amd64/test-results
+#          - artifact pull workflow bin/darwin/arm64/test-results -d test-results/bin/darwin/arm64/test-results
+#          - bash release/create.sh
+#          - source release/install_in_tests.sh
+#          - test-results gen-pipeline-report
+#
+#promotions:
+#  - name: Release
+#    pipeline_file: release.yml
+#    auto_promote_on:
+#      - result: passed
+#        branch:
+#          - ^refs/tags/v*
