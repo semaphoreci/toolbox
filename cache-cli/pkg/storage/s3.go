@@ -9,6 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/credentials/ec2rolecreds"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/smithy-go/middleware"
+	smithyhttp "github.com/aws/smithy-go/transport/http"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -24,6 +26,30 @@ type S3StorageOptions struct {
 	Bucket  string
 	Project string
 	Config  StorageConfig
+}
+
+type removeS3OperationIDMiddleware struct{}
+
+func (m *removeS3OperationIDMiddleware) ID() string {
+	return "RemoveS3OperationIDMiddleware"
+}
+
+func (m *removeS3OperationIDMiddleware) HandleBuild(ctx context.Context, in middleware.BuildInput, next middleware.BuildHandler) (
+	out middleware.BuildOutput,
+	metadata middleware.Metadata,
+	err error,
+) {
+	if request, ok := in.Request.(*smithyhttp.Request); ok {
+		query := request.URL.Query()
+		query.Del("x-id")
+		request.URL.RawQuery = query.Encode()
+	}
+
+	return next.HandleBuild(ctx, in)
+}
+
+func removeS3OperationID(stack *middleware.Stack) error {
+	return stack.Build.Add(&removeS3OperationIDMiddleware{}, middleware.After)
 }
 
 func NewS3Storage(options S3StorageOptions) (*S3Storage, error) {
@@ -52,7 +78,9 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 		}
 
 		return &S3Storage{
-			Client:        s3.NewFromConfig(config),
+			Client: s3.NewFromConfig(config, func(o *s3.Options) {
+				o.APIOptions = append(o.APIOptions, removeS3OperationID)
+			}),
 			Bucket:        s3Bucket,
 			Project:       project,
 			StorageConfig: storageConfig,
@@ -69,7 +97,9 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 		}
 
 		return &S3Storage{
-			Client:        s3.NewFromConfig(config),
+			Client: s3.NewFromConfig(config, func(o *s3.Options) {
+				o.APIOptions = append(o.APIOptions, removeS3OperationID)
+			}),
 			Bucket:        s3Bucket,
 			Project:       project,
 			StorageConfig: storageConfig,
@@ -83,7 +113,9 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 	}
 
 	return &S3Storage{
-		Client:        s3.NewFromConfig(config),
+		Client: s3.NewFromConfig(config, func(o *s3.Options) {
+			o.APIOptions = append(o.APIOptions, removeS3OperationID)
+		}),
 		Bucket:        s3Bucket,
 		Project:       project,
 		StorageConfig: storageConfig,
@@ -91,12 +123,18 @@ func createDefaultS3Storage(s3Bucket, project string, storageConfig StorageConfi
 }
 
 func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string, storageConfig StorageConfig) (*S3Storage, error) {
+	region := os.Getenv("SEMAPHORE_CACHE_S3_REGION")
+	if region == "" {
+		region = "auto"
+	}
+
 	options := []func(*awsConfig.LoadOptions) error{
-		awsConfig.WithRegion("auto"),
+		awsConfig.WithRegion(region),
 		awsConfig.WithEndpointResolverWithOptions(
 			aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 				return aws.Endpoint{
-					URL: s3Url,
+					URL:           s3Url,
+					SigningRegion: region,
 				}, nil
 			}),
 		),
@@ -125,6 +163,7 @@ func createS3StorageUsingEndpoint(s3Bucket, project, s3Url string, storageConfig
 		StorageConfig: storageConfig,
 		Client: s3.NewFromConfig(cfg, func(o *s3.Options) {
 			o.UsePathStyle = true
+			o.APIOptions = append(o.APIOptions, removeS3OperationID)
 		}),
 	}, nil
 }
