@@ -87,6 +87,24 @@ func InitStorageWithConfig(config StorageConfig) (Storage, error) {
 			Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysBy: config.SortKeysBy},
 		})
 
+	case "ceph":
+		project := os.Getenv("SEMAPHORE_PROJECT_ID")
+		if project == "" {
+			return nil, fmt.Errorf("no SEMAPHORE_PROJECT_ID set")
+		}
+
+		s3Bucket := os.Getenv("SEMAPHORE_CACHE_S3_BUCKET")
+		if s3Bucket == "" {
+			return nil, fmt.Errorf("no SEMAPHORE_CACHE_S3_BUCKET set")
+		}
+
+		return NewCephStorage(S3StorageOptions{
+			URL:     os.Getenv("SEMAPHORE_CACHE_S3_URL"),
+			Bucket:  s3Bucket,
+			Project: project,
+			Config:  StorageConfig{MaxSpace: math.MaxInt64, SortKeysBy: config.SortKeysBy},
+		})
+
 	case "sftp":
 		url := os.Getenv("SEMAPHORE_CACHE_URL")
 		if url == "" {
