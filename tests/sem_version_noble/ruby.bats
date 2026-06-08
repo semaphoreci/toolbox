@@ -103,7 +103,7 @@ setup() {
   run sem-version ruby 4.0
   assert_success
   run ruby --version
-  assert_line --partial "ruby 4.0.3"
+  assert_line --partial "ruby 4.0.5"
 }
 
 @test "change ruby to 5.0.1" {
