@@ -49,7 +49,7 @@ version::change_ruby() {
   [[ "$software_version" == "3.2" ]] && software_version="3.2.11"
   [[ "$software_version" == "3.3" ]] && software_version="3.3.11"
   [[ "$software_version" == "3.4" ]] && software_version="3.4.9"
-  [[ "$software_version" == "4.0" ]] && software_version="4.0.3"
+  [[ "$software_version" == "4.0" ]] && software_version="4.0.5"
 
   if ! [ -d ~/.rbenv/versions/"${software_version}" ]; then
     sem-install ruby "${software_version}"
@@ -77,6 +77,7 @@ version::change_elixir() {
   [[ "$software_version" == "1.17" ]] && software_version="1.17.3"
   [[ "$software_version" == "1.18" ]] && software_version="1.18.4"
   [[ "$software_version" == "1.19" ]] && software_version="1.19.5"
+  [[ "$software_version" == "1.20" ]] && software_version="1.20.0"
 
   if [[ $(kiex list) != *"${software_version}"* ]];then
     sem-install elixir "${software_version}"
@@ -140,6 +141,7 @@ version::change_erlang() {
   [[ "$software_version" == "26" ]] && software_version="26.2"
   [[ "$software_version" == "27" ]] && software_version="27.3"
   [[ "$software_version" == "28" ]] && software_version="28.5"
+  [[ "$software_version" == "29" ]] && software_version="29.0"
 
   if [[ $(kerl list installations) != *"${software_version}"* ]]; then
     sem-install erlang "${software_version}"
