@@ -285,7 +285,26 @@ function checkout::configure_sparse() {
   fi
 }
 
+# The optimized checkout relies on `git sparse-checkout` (cone mode), which
+# requires git >= 2.25. On older clients the subcommand is unavailable.
+function checkout::supports_optimized() {
+  ! git sparse-checkout -h 2>&1 | grep -q "is not a git command"
+}
+
 function checkout::optimized() {
+  # Fall back to a standard checkout when the git client is too old to support
+  # sparse-checkout, so the requested optimization degrades gracefully into a
+  # correct (if non-optimized) clone instead of a broken/full one.
+  if ! checkout::supports_optimized; then
+    echo "Optimized checkout requested, but this git does not support 'sparse-checkout'; falling back to a standard checkout."
+    if [ -n "${SEMAPHORE_GIT_REF_TYPE:-}" ]; then
+      checkout::refbased
+    else
+      checkout::shallow
+    fi
+    return $?
+  fi
+
   if [ -z "${SEMAPHORE_GIT_DEPTH:-""}" ]; then
     SEMAPHORE_GIT_DEPTH=50
   fi
@@ -573,6 +592,7 @@ function checkout::clone_with_alt_ip() {
 export -f checkout
 export -f checkout::optimized
 export -f checkout::configure_sparse
+export -f checkout::supports_optimized
 export -f checkout::git_clone
 export -f checkout::resilient_clone
 export -f checkout::clone_with_speed_check

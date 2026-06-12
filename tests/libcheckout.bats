@@ -3,6 +3,13 @@
 load "support/bats-support/load"
 load "support/bats-assert/load"
 
+# The optimized checkout uses `git sparse-checkout` (cone mode), available in
+# git >= 2.25. On older clients (e.g. the minimal Alpine image) it is missing
+# and checkout falls back to a standard full checkout.
+sparse_supported() {
+  ! git sparse-checkout -h 2>&1 | grep -q "is not a git command"
+}
+
 setup() {
 
   unset SEMAPHORE_GIT_REF_TYPE
@@ -314,17 +321,22 @@ teardown() {
 
   run checkout
   assert_success
-  assert_output --partial "Performing optimized clone"
-  assert_output --partial "Configuring sparse-checkout for paths: lib"
   assert_output --partial "HEAD is now at 91940c2"
-
-  # sparse path is materialized, paths outside it are not
   assert [ -d "$SEMAPHORE_GIT_DIR/lib" ]
-  assert [ ! -d "$SEMAPHORE_GIT_DIR/test" ]
 
-  # repository was cloned as a partial (promisor) clone
-  run git -C "$SEMAPHORE_GIT_DIR" config --get remote.origin.promisor
-  assert_output "true"
+  if sparse_supported; then
+    assert_output --partial "Performing optimized clone"
+    assert_output --partial "Configuring sparse-checkout for paths: lib"
+    # sparse path is materialized, paths outside it are not
+    assert [ ! -d "$SEMAPHORE_GIT_DIR/test" ]
+    # repository was cloned as a partial (promisor) clone
+    run git -C "$SEMAPHORE_GIT_DIR" config --get remote.origin.promisor
+    assert_output "true"
+  else
+    # git too old for sparse-checkout: graceful fallback to a full checkout
+    assert_output --partial "falling back to a standard checkout"
+    assert [ -d "$SEMAPHORE_GIT_DIR/test" ]
+  fi
 }
 
 @test "libcheckout - [Optimized] blobless only, no sparse paths keeps full tree" {
@@ -334,10 +346,10 @@ teardown() {
 
   run checkout
   assert_success
-  assert_output --partial "Performing optimized clone"
-  refute_output --partial "Configuring sparse-checkout"
   assert_output --partial "HEAD is now at 91940c2"
+  refute_output --partial "Configuring sparse-checkout"
 
+  # no sparse paths -> full working tree, whether optimized or fallback
   assert [ -d "$SEMAPHORE_GIT_DIR/lib" ]
   assert [ -d "$SEMAPHORE_GIT_DIR/test" ]
 }
@@ -351,10 +363,16 @@ teardown() {
 
   run checkout
   assert_success
-  assert_output --partial "Performing optimized clone"
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA Release $SEMAPHORE_GIT_TAG_NAME"
   assert [ -d "$SEMAPHORE_GIT_DIR/lib" ]
-  assert [ ! -d "$SEMAPHORE_GIT_DIR/test" ]
+
+  if sparse_supported; then
+    assert_output --partial "Performing optimized clone"
+    assert [ ! -d "$SEMAPHORE_GIT_DIR/test" ]
+  else
+    assert_output --partial "falling back to a standard checkout"
+    assert [ -d "$SEMAPHORE_GIT_DIR/test" ]
+  fi
 }
 
 @test "libcheckout - [Optimized] sparse checkout on PR" {
@@ -366,8 +384,14 @@ teardown() {
 
   run checkout
   assert_success
-  assert_output --partial "Performing optimized clone"
   assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
   assert [ -d "$SEMAPHORE_GIT_DIR/lib" ]
-  assert [ ! -d "$SEMAPHORE_GIT_DIR/test" ]
+
+  if sparse_supported; then
+    assert_output --partial "Performing optimized clone"
+    assert [ ! -d "$SEMAPHORE_GIT_DIR/test" ]
+  else
+    assert_output --partial "falling back to a standard checkout"
+    assert [ -d "$SEMAPHORE_GIT_DIR/test" ]
+  fi
 }
