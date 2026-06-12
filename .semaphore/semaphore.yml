@@ -370,11 +370,12 @@ blocks:
         commands:
           - checkout
 #          - brew untap homebrew/homebrew-cask-versions --force
-          # NONINTERACTIVE avoids the Homebrew upgrade confirmation prompt (which
-          # aborts with no TTY); `|| true` keeps a transient brew hiccup from
-          # failing the whole block before the tests run.
-          - NONINTERACTIVE=1 brew update || true
-          - NONINTERACTIVE=1 brew upgrade ruby-build || true
+          # Newer Homebrew prompts "Do you want to proceed? [y/n]" on upgrade and,
+          # with no TTY, blocks on stdin until the job is killed. Pipe `yes` to
+          # answer the prompt so brew proceeds without hanging; `|| true` keeps a
+          # transient brew failure from breaking the block before the tests run.
+          - brew update || true
+          - yes | brew upgrade ruby-build || true
           - artifact pull workflow bin/linux/amd64/cache -d cache-cli/bin/linux/amd64/cache
           - artifact pull workflow bin/linux/arm64/cache -d cache-cli/bin/linux/arm64/cache
           - artifact pull workflow bin/darwin/amd64/cache -d cache-cli/bin/darwin/amd64/cache
