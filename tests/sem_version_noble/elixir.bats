@@ -24,56 +24,56 @@ setup() {
 }
 
 #  Elixir
-@test "change elixir to 1.12.3" {
-  sem-version elixir 1.12.3
+@test "change elixir to 1.12" {
+  sem-version elixir 1.12
   run elixir --version
   assert_line --partial "Elixir 1.12.3"
 }
 
-@test "change elixir to 1.13.4" {
-  sem-version elixir 1.13.4
+@test "change elixir to 1.13" {
+  sem-version elixir 1.13
   run elixir --version
   assert_line --partial "Elixir 1.13.4"
 }
 
-@test "change elixir to 1.14.5" {
-  sem-version elixir 1.14.5
+@test "change elixir to 1.14" {
+  sem-version elixir 1.14
   run elixir --version
   assert_line --partial "Elixir 1.14.5"
 }
 
-@test "change elixir to 1.15.8" {
-  sem-version elixir 1.15.8
+@test "change elixir to 1.15" {
+  sem-version elixir 1.15
   run elixir --version
   assert_line --partial "Elixir 1.15.8"
 }
 
-@test "change elixir to 1.16.3" {
-  sem-version elixir 1.16.3
+@test "change elixir to 1.16" {
+  sem-version elixir 1.16
   run elixir --version
   assert_line --partial "Elixir 1.16.3"
 }
 
-@test "change elixir to 1.17.3" {
-  sem-version elixir 1.17.3
+@test "change elixir to 1.17" {
+  sem-version elixir 1.17
   run elixir --version
   assert_line --partial "Elixir 1.17.3"
 }
 
-@test "change elixir to 1.18.4" {
-  sem-version elixir 1.18.4
+@test "change elixir to 1.18" {
+  sem-version elixir 1.18
   run elixir --version
   assert_line --partial "Elixir 1.18.4"
 }
 
-@test "change elixir to 1.19.5" {
-  sem-version elixir 1.19.5
+@test "change elixir to 1.19" {
+  sem-version elixir 1.19
   run elixir --version
   assert_line --partial "Elixir 1.19.5"
 }
 
-@test "change elixir to 1.20.0" {
-  sem-version elixir 1.20.0
+@test "change elixir to 1.20" {
+  sem-version elixir 1.20
   run elixir --version
   assert_line --partial "Elixir 1.20.0"
 }

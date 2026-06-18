@@ -105,8 +105,12 @@ version::change_php() {
   [[ "$software_version" == "7.2" ]] && software_version="7.2.34"
   [[ "$software_version" == "7.3" ]] && software_version="7.3.33"
   [[ "$software_version" == "7.4" ]] && software_version="7.4.33"
-  [[ "$software_version" == "8" ]] && software_version="8.0.30"
+  [[ "$software_version" == "8" ]] && software_version="8.4.22"
   [[ "$software_version" == "8.0" ]] && software_version="8.0.30"
+  [[ "$software_version" == "8.1" ]] && software_version="8.1.29"
+  [[ "$software_version" == "8.2" ]] && software_version="8.2.31"
+  [[ "$software_version" == "8.3" ]] && software_version="8.3.31"
+  [[ "$software_version" == "8.4" ]] && software_version="8.4.22"
 
   if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
     sem-install php "${software_version}"
