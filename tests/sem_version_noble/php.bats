@@ -95,3 +95,20 @@ setup() {
   run phpbrew ext install iconv
   assert_success
 }
+
+@test "change php to 8.5" {
+
+  run sem-version php 8.5
+  assert_success
+  sed -i '/^Deprecated:/d' ~/.phpbrew/init 2>/dev/null || true
+  source ~/.phpbrew/bashrc
+  run php -v
+  assert_line --partial "PHP 8.5."
+  run php -m
+  assert_line --partial "gd"
+  run which composer
+  assert_success
+  assert_line --partial "8.5."
+  run phpbrew ext install iconv
+  assert_success
+}
