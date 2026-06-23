@@ -2,33 +2,35 @@ package storage
 
 import (
 	"context"
-	"fmt"
 	"sort"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 func (s *S3Storage) List() ([]CacheKey, error) {
-	output, err := s.Client.ListObjects(context.TODO(), s.listObjectsInput(nil))
-	if err != nil {
-		return nil, err
-	}
-
+	prefix := s.Project + "/"
+	paginator := s3.NewListObjectsV2Paginator(s.Client, &s3.ListObjectsV2Input{
+		Bucket: aws.String(s.Bucket),
+		Prefix: aws.String(prefix),
+	})
 	keys := make([]CacheKey, 0)
-	keys = s.appendToListResult(keys, output.Contents)
-
-	for output.IsTruncated {
-		nextMarker := findNextMarker(output)
-		output, err = s.Client.ListObjects(context.TODO(), s.listObjectsInput(&nextMarker))
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(context.TODO())
 		if err != nil {
 			return nil, err
 		}
-
-		keys = s.appendToListResult(keys, output.Contents)
+		for _, object := range output.Contents {
+			name := strings.TrimPrefix(aws.ToString(object.Key), prefix)
+			keys = append(keys, CacheKey{
+				Name:           name,
+				StoredAt:       object.LastModified,
+				LastAccessedAt: object.LastModified,
+				Size:           object.Size,
+			})
+		}
 	}
-
 	return s.sortKeys(keys), nil
 }
 
@@ -46,43 +48,4 @@ func (s *S3Storage) sortKeys(keys []CacheKey) []CacheKey {
 	}
 
 	return keys
-}
-
-func (s *S3Storage) listObjectsInput(nextMarker *string) *s3.ListObjectsInput {
-	if nextMarker != nil {
-		return &s3.ListObjectsInput{
-			Bucket: &s.Bucket,
-			Prefix: &s.Project,
-			Marker: nextMarker,
-		}
-	}
-
-	return &s3.ListObjectsInput{
-		Bucket: &s.Bucket,
-		Prefix: &s.Project,
-	}
-}
-
-func (s *S3Storage) appendToListResult(keys []CacheKey, objects []types.Object) []CacheKey {
-	for _, object := range objects {
-		keyWithoutProject := strings.ReplaceAll(*object.Key, fmt.Sprintf("%s/", s.Project), "")
-		keys = append(keys, CacheKey{
-			Name:           keyWithoutProject,
-			StoredAt:       object.LastModified,
-			LastAccessedAt: object.LastModified,
-			Size:           object.Size,
-		})
-	}
-
-	return keys
-}
-
-func findNextMarker(output *s3.ListObjectsOutput) string {
-	if output.NextMarker != nil {
-		return *output.NextMarker
-	}
-
-	contents := output.Contents
-	lastElement := contents[len(contents)-1]
-	return *lastElement.Key
 }
