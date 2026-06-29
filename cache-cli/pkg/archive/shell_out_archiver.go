@@ -76,12 +76,12 @@ func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
 }
 
 func openDecompressingReader(file *os.File) (io.ReadCloser, error) {
-	is_zstd, err := IsZstdCompressed(file)
+	isZstd, err := IsZstdCompressed(file)
 	if err != nil {
 		return nil, err
 	}
 
-	if is_zstd {
+	if isZstd {
 		var reader *zstd.Decoder
 		reader, err = zstd.NewReader(file)
 		if err != nil {

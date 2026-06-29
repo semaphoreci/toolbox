@@ -286,9 +286,9 @@ func (a *NativeArchiver) newCompressingWriter(dstFile *os.File) (io.WriteCloser,
 	if !a.UseParallelism {
 		// zstd uses limited parallelism by default so we need to explicitly turn it off
 		return zstd.NewWriter(dstFile, zstd.WithEncoderConcurrency(1))
-	} else {
-		return zstd.NewWriter(dstFile)
 	}
+
+	return zstd.NewWriter(dstFile)
 }
 
 func IsZstdCompressed(file *os.File) (bool, error) {
@@ -317,12 +317,12 @@ func IsZstdCompressed(file *os.File) (bool, error) {
 }
 
 func (a *NativeArchiver) newDecompressingReader(dstFile *os.File) (io.ReadCloser, error) {
-	is_zstd, err := IsZstdCompressed(dstFile)
+	isZstd, err := IsZstdCompressed(dstFile)
 	if err != nil {
 		return nil, err
 	}
 
-	if is_zstd {
+	if isZstd {
 		var reader *zstd.Decoder
 		var err error
 
