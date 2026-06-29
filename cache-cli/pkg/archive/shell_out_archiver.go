@@ -61,18 +61,18 @@ func (a *ShellOutArchiver) Decompress(src string) (string, error) {
 
 func (a *ShellOutArchiver) compressionCommand(dst, src string) *exec.Cmd {
 	if filepath.IsAbs(src) {
-		return exec.Command("tar", "cPf", dst, "--zstd", src)
+		return exec.Command("tar", "cPf", dst, "--zstd", src) // #nosec G204 -- command is literal "tar"; dst/src are cache paths, not user-controlled commands
 	}
 
-	return exec.Command("tar", "cf", dst, "--zstd", src)
+	return exec.Command("tar", "cf", dst, "--zstd", src) // #nosec G204 -- command is literal "tar"; dst/src are cache paths, not user-controlled commands
 }
 
 func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
 	if filepath.IsAbs(dst) {
-		return exec.Command("tar", "xPf", tempFile, "-C", ".")
+		return exec.Command("tar", "xPf", tempFile, "-C", ".") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
 	}
 
-	return exec.Command("tar", "xf", tempFile, "-C", ".")
+	return exec.Command("tar", "xf", tempFile, "-C", ".") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
 }
 
 func openDecompressingReader(file *os.File) (io.ReadCloser, error) {

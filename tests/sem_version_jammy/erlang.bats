@@ -119,3 +119,21 @@ setup() {
   run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
   assert_line --partial "28"
 }
+
+@test "change erlang to 28.4" {
+  sem-version erlang 28.4
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "28"
+}
+
+@test "change erlang to 28.5" {
+  sem-version erlang 28.5
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "28"
+}
+
+@test "change erlang to 29.0" {
+  sem-version erlang 29.0
+  run erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell
+  assert_line --partial "29"
+}
