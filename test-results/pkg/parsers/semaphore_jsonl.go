@@ -158,6 +158,8 @@ func (me SemaphoreJSONL) Parse(path string) parser.TestResults {
 	messages := []string{}
 	seenHeader := false
 	seenSummary := false
+	mixedFrameworks := false
+	firstFramework := ""
 	contextTests := 0
 
 	for scanner.Scan() {
@@ -185,6 +187,7 @@ func (me SemaphoreJSONL) Parse(path string) parser.TestResults {
 
 			if !seenHeader {
 				seenHeader = true
+				firstFramework = record.Framework
 				if record.Framework != "" {
 					results.Name = Title(record.Framework + " suite")
 					results.Framework = record.Framework
@@ -195,6 +198,9 @@ func (me SemaphoreJSONL) Parse(path string) parser.TestResults {
 					suite.Name = record.Framework
 					suite.EnsureID(results)
 				}
+			} else if record.Framework != firstFramework && !mixedFrameworks {
+				mixedFrameworks = true
+				messages = append(messages, fmt.Sprintf("mixed frameworks in stream: %q and %q, test identity follows %q", firstFramework, record.Framework, firstFramework))
 			}
 		case "test":
 			contextTests++
@@ -215,6 +221,12 @@ func (me SemaphoreJSONL) Parse(path string) parser.TestResults {
 		logger.Error("Reading %s failed: %v", path, err)
 		results.Status = parser.StatusError
 		results.StatusMessage = err.Error()
+		return results
+	}
+
+	if !seenHeader {
+		results.Status = parser.StatusError
+		results.StatusMessage = "invalid: missing report header"
 		return results
 	}
 
