@@ -1,0 +1,182 @@
+{
+  "id": "99ec6b78-8d28-33bb-9c4b-e38fd0000bf4",
+  "name": "Rspec Suite",
+  "framework": "rspec",
+  "isDisabled": false,
+  "summary": {
+    "total": 5,
+    "passed": 2,
+    "skipped": 1,
+    "error": 1,
+    "failed": 1,
+    "disabled": 0,
+    "duration": 5420000
+  },
+  "status": "success",
+  "statusMessage": "",
+  "suites": [
+    {
+      "id": "c048aa41-1cf5-36d5-951d-30e84f53da30",
+      "name": "spec/testbed_spec.rb",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "2026-08-28T09:12:41.676Z",
+      "hostname": "job-42a1",
+      "package": "",
+      "properties": {
+        "seed": "48163"
+      },
+      "summary": {
+        "total": 5,
+        "passed": 2,
+        "skipped": 1,
+        "error": 1,
+        "failed": 1,
+        "disabled": 0,
+        "duration": 5420000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "a98bdd76-7a63-345e-b4d2-32a47fb9bb0c",
+          "file": "spec/testbed_spec.rb",
+          "classname": "spec.testbed_spec",
+          "package": "",
+          "name": "Testbed always passes",
+          "duration": 420000,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "55207a5e-b5a2-303b-8df7-14f40b5e73dd",
+          "file": "spec/testbed_spec.rb",
+          "classname": "spec.testbed_spec",
+          "package": "",
+          "name": "Testbed flaky: passes on in-process retry",
+          "duration": 0,
+          "state": "error",
+          "failure": null,
+          "error": {
+            "message": "first attempt fails, rspec-retry recovers it",
+            "type": "RuntimeError",
+            "body": "spec/testbed_spec.rb:13:in `block (2 levels)'"
+          },
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "55207a5e-b5a2-303b-8df7-14f40b5e73dd",
+          "file": "spec/testbed_spec.rb",
+          "classname": "spec.testbed_spec",
+          "package": "",
+          "name": "Testbed flaky: passes on in-process retry",
+          "duration": 1900000,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "9949dbed-58de-3ca2-a069-56e0e1cfda5c",
+          "file": "spec/testbed_spec.rb",
+          "classname": "spec.testbed_spec",
+          "package": "",
+          "name": "Testbed fails an assertion",
+          "duration": 3100000,
+          "state": "failed",
+          "failure": {
+            "message": "expected: \"true\"\n     got: \"false\"",
+            "type": "RSpec::Expectations::ExpectationNotMetError",
+            "body": "spec/testbed_spec.rb:7:in `block (2 levels)'"
+          },
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "8bef1369-ca56-3a7d-aebe-6f8ce86ad695",
+          "file": "spec/testbed_spec.rb",
+          "classname": "spec.testbed_spec",
+          "package": "",
+          "name": "Testbed is skipped",
+          "duration": 0,
+          "state": "skipped",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    }
+  ]
+}

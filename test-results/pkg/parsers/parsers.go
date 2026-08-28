@@ -17,6 +17,8 @@ var availableParsers = []parser.Parser{
 	NewJUnitPHPUnit(),
 	NewJUnitEmbedded(),
 	NewJUnitGeneric(),
+	// Semaphore test report stream
+	NewSemaphoreJSONL(),
 	// Custom parsers
 	NewGoStaticcheck(),
 	NewGoRevive(),
