@@ -152,7 +152,7 @@ func (me SemaphoreJSONL) Parse(path string) parser.TestResults {
 	oversized := 0
 	scanner := bufio.NewScanner(file)
 	scanner.Buffer(make([]byte, semaphoreJSONLMaxLine), semaphoreJSONLMaxLine)
-	scanner.Split(semaphoreJSONLSplit(&oversized))
+	scanner.Split(jsonlSplit(semaphoreJSONLMaxLine, &oversized))
 
 	envelope := semaphoreJSONLEnvelope{}
 	messages := []string{}
@@ -346,51 +346,4 @@ func semaphoreJSONLDuration(ms *float64) time.Duration {
 	}
 
 	return time.Duration(*ms * float64(time.Millisecond))
-}
-
-// semaphoreJSONLSplit scans lines like bufio.ScanLines, but drops lines longer
-// than the format's line cap instead of failing the whole scan.
-func semaphoreJSONLSplit(oversized *int) bufio.SplitFunc {
-	dropping := false
-
-	return func(data []byte, atEOF bool) (int, []byte, error) {
-		if dropping {
-			if i := bytes.IndexByte(data, '\n'); i >= 0 {
-				dropping = false
-				return i + 1, nil, nil
-			}
-			return len(data), nil, nil
-		}
-
-		if i := bytes.IndexByte(data, '\n'); i >= 0 {
-			return i + 1, dropCR(data[:i]), nil
-		}
-
-		if atEOF {
-			if len(data) == 0 {
-				return 0, nil, nil
-			}
-			if len(data) >= semaphoreJSONLMaxLine {
-				*oversized++
-				return len(data), nil, nil
-			}
-			return len(data), dropCR(data), nil
-		}
-
-		if len(data) >= semaphoreJSONLMaxLine {
-			*oversized++
-			dropping = true
-			return len(data), nil, nil
-		}
-
-		return 0, nil, nil
-	}
-}
-
-func dropCR(data []byte) []byte {
-	if len(data) > 0 && data[len(data)-1] == '\r' {
-		return data[:len(data)-1]
-	}
-
-	return data
 }

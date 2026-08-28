@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"bufio"
 	"bytes"
 	"os"
 
@@ -74,4 +75,51 @@ func LoadFile(path string) ([]byte, error) {
 func Title(s string) string {
 	caser := cases.Title(language.English)
 	return caser.String(s)
+}
+
+// jsonlSplit scans lines like bufio.ScanLines, but drops lines longer than
+// maxLine instead of failing the whole scan.
+func jsonlSplit(maxLine int, oversized *int) bufio.SplitFunc {
+	dropping := false
+
+	return func(data []byte, atEOF bool) (int, []byte, error) {
+		if dropping {
+			if i := bytes.IndexByte(data, '\n'); i >= 0 {
+				dropping = false
+				return i + 1, nil, nil
+			}
+			return len(data), nil, nil
+		}
+
+		if i := bytes.IndexByte(data, '\n'); i >= 0 {
+			return i + 1, dropCR(data[:i]), nil
+		}
+
+		if atEOF {
+			if len(data) == 0 {
+				return 0, nil, nil
+			}
+			if len(data) >= maxLine {
+				*oversized++
+				return len(data), nil, nil
+			}
+			return len(data), dropCR(data), nil
+		}
+
+		if len(data) >= maxLine {
+			*oversized++
+			dropping = true
+			return len(data), nil, nil
+		}
+
+		return 0, nil, nil
+	}
+}
+
+func dropCR(data []byte) []byte {
+	if len(data) > 0 && data[len(data)-1] == '\r' {
+		return data[:len(data)-1]
+	}
+
+	return data
 }

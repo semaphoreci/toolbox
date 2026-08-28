@@ -1,0 +1,18 @@
+{"Time":"2026-08-28T12:10:12.65467+02:00","Action":"start","Package":"example.com/calc"}
+{"Time":"2026-08-28T12:10:13.071109+02:00","Action":"run","Package":"example.com/calc","Test":"TestAdd"}
+{"Time":"2026-08-28T12:10:13.071178+02:00","Action":"output","Package":"example.com/calc","Test":"TestAdd","Output":"=== RUN   TestAdd\n"}
+{"Time":"2026-08-28T12:10:13.087293+02:00","Action":"output","Package":"example.com/calc","Test":"TestAdd","Output":"--- PASS: TestAdd (0.02s)\n"}
+{"Time":"2026-08-28T12:10:13.087384+02:00","Action":"pass","Package":"example.com/calc","Test":"TestAdd","Elapsed":0.02}
+{"Time":"2026-08-28T12:10:13.087436+02:00","Action":"run","Package":"example.com/calc","Test":"TestSub"}
+{"Time":"2026-08-28T12:10:13.087449+02:00","Action":"output","Package":"example.com/calc","Test":"TestSub","Output":"=== RUN   TestSub\n"}
+{"Time":"2026-08-28T12:10:13.087459+02:00","Action":"output","Package":"example.com/calc","Test":"TestSub","Output":"    calc_test.go:17: expected 2 got 4\n"}
+{"Time":"2026-08-28T12:10:13.087468+02:00","Action":"output","Package":"example.com/calc","Test":"TestSub","Output":"--- FAIL: TestSub (0.00s)\n"}
+{"Time":"2026-08-28T12:10:13.08748+02:00","Action":"fail","Package":"example.com/calc","Test":"TestSub","Elapsed":0}
+{"Time":"2026-08-28T12:10:13.087488+02:00","Action":"run","Package":"example.com/calc","Test":"TestSkipped"}
+{"Time":"2026-08-28T12:10:13.0875+02:00","Action":"output","Package":"example.com/calc","Test":"TestSkipped","Output":"=== RUN   TestSkipped\n"}
+{"Time":"2026-08-28T12:10:13.087521+02:00","Action":"output","Package":"example.com/calc","Test":"TestSkipped","Output":"    calc_test.go:22: not implemented\n"}
+{"Time":"2026-08-28T12:10:13.087539+02:00","Action":"output","Package":"example.com/calc","Test":"TestSkipped","Output":"--- SKIP: TestSkipped (0.00s)\n"}
+{"Time":"2026-08-28T12:10:13.087547+02:00","Action":"skip","Package":"example.com/calc","Test":"TestSkipped","Elapsed":0}
+{"Time":"2026-08-28T12:10:13.087556+02:00","Action":"output","Package":"example.com/calc","Output":"FAIL\n"}
+{"Time":"2026-08-28T12:10:13.088922+02:00","Action":"output","Package":"example.com/calc","Output":"FAIL\texample.com/calc\t0.434s\n"}
+{"Time":"2026-08-28T12:10:13.088967+02:00","Action":"fail","Package":"example.com/calc","Elapsed":0.434}

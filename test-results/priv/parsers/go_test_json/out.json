@@ -1,0 +1,124 @@
+{
+  "id": "79ed1ee4-ab67-3dab-9091-08a3b29b97c2",
+  "name": "",
+  "framework": "golang",
+  "isDisabled": false,
+  "summary": {
+    "total": 3,
+    "passed": 1,
+    "skipped": 1,
+    "error": 0,
+    "failed": 1,
+    "disabled": 0,
+    "duration": 20000000
+  },
+  "status": "success",
+  "statusMessage": "",
+  "suites": [
+    {
+      "id": "ccc4b4a6-fa84-3026-8be4-0bf80361dab4",
+      "name": "example.com/calc",
+      "isSkipped": false,
+      "isDisabled": false,
+      "timestamp": "2026-08-28T12:10:12.65467+02:00",
+      "hostname": "",
+      "package": "",
+      "properties": null,
+      "summary": {
+        "total": 3,
+        "passed": 1,
+        "skipped": 1,
+        "error": 0,
+        "failed": 1,
+        "disabled": 0,
+        "duration": 20000000
+      },
+      "systemOut": "",
+      "systemErr": "",
+      "tests": [
+        {
+          "id": "7b2dacf6-a1fd-36d0-97af-23d1274e65a5",
+          "file": "",
+          "classname": "example.com/calc",
+          "package": "",
+          "name": "TestAdd",
+          "duration": 20000000,
+          "state": "passed",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "03e6c0a4-77a5-337f-91ec-1abdc2afa50b",
+          "file": "",
+          "classname": "example.com/calc",
+          "package": "",
+          "name": "TestSub",
+          "duration": 0,
+          "state": "failed",
+          "failure": {
+            "message": "expected 2 got 4",
+            "type": "",
+            "body": "calc_test.go:17\n=== RUN   TestSub\n    calc_test.go:17: expected 2 got 4\n--- FAIL: TestSub (0.00s)"
+          },
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        },
+        {
+          "id": "4fc836e5-869f-3060-9c9e-7625574078ee",
+          "file": "",
+          "classname": "example.com/calc",
+          "package": "",
+          "name": "TestSkipped",
+          "duration": 0,
+          "state": "skipped",
+          "failure": null,
+          "error": null,
+          "systemOut": "",
+          "systemErr": "",
+          "semaphoreEnv": {
+            "projectId": "project-id",
+            "pipelineId": "ppl-id",
+            "workflowId": "wf-id",
+            "pipelineStartedAt": "job-creation-time",
+            "jobName": "job-name",
+            "jobId": "job-id",
+            "agentType": "agent-machine-type",
+            "agentOsImage": "agent-machine-os-image",
+            "gitRefType": "git-ref-type",
+            "gitRefName": "",
+            "gitRefSha": ""
+          }
+        }
+      ]
+    }
+  ]
+}
