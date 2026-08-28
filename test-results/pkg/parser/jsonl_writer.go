@@ -58,6 +58,20 @@ type jsonlSummary struct {
 	DurationMS float64 `json:"duration_ms"`
 }
 
+// WriteJSONLResult serializes every parsed result set as one JSON Lines
+// stream — one report context per TestResults, concatenated.
+func WriteJSONLResult(result *Result, reporter string) ([]byte, error) {
+	var buf bytes.Buffer
+	for i := range result.TestResults {
+		payload, err := WriteJSONL(&result.TestResults[i], reporter)
+		if err != nil {
+			return nil, err
+		}
+		buf.Write(payload)
+	}
+	return buf.Bytes(), nil
+}
+
 // WriteJSONL serializes parsed test results as a semaphore/test-report
 // JSON Lines stream. Consecutive tests sharing an ID within a suite are
 // folded into one test record with ordered attempts.

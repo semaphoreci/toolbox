@@ -201,6 +201,29 @@ var publishCmd = &cobra.Command{
 			return err
 		}
 
+		if len(result.TestResults) > 0 {
+			streamData, err := parser.WriteJSONLResult(result, "test-results publish")
+			if err != nil {
+				logger.Error("Rendering JSON Lines stream failed: %v", err)
+			} else {
+				streamFile, err := cli.WriteToTmpFile(streamData, false)
+				if err != nil {
+					return err
+				}
+				defer os.Remove(streamFile)
+
+				_, stats, err = cli.PushArtifacts("job", streamFile, path.Join("test-results", "report.semaphore.jsonl"), cmd)
+				if err != nil {
+					return err
+				}
+				if stats != nil {
+					pushStats.Operations++
+					pushStats.FileCount += stats.FileCount
+					pushStats.TotalSize += stats.TotalSize
+				}
+			}
+		}
+
 		if generateMCPSummary {
 			if err = pushMCPSummaryWithStats(result, "job", path.Join("test-results", "mcp-summary.json"), cmd, pushStats); err != nil {
 				return err
