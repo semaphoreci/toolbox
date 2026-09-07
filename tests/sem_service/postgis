@@ -58,3 +58,10 @@ psql -U postgres -h localhost -c 'SELECT * FROM pg_extension' | grep -i postgis
 sem-service status postgis
 sem-service stop postgis
 
+sem-service start postgis 18-3.6
+createdb -U postgres -h 0.0.0.0 fooo
+psql -h 0.0.0.0 -U postgres -tAc "SELECT datname FROM pg_database WHERE datname = 'fooo'" | grep -x fooo
+psql -h 0.0.0.0 -U postgres -c "SELECT version()" | grep 18
+psql -U postgres -h localhost -c 'SELECT * FROM pg_extension' | grep -i postgis
+sem-service status postgis
+sem-service stop postgis
