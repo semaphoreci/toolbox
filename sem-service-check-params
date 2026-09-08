@@ -93,7 +93,6 @@ params-check::postgres () {
   echo "$service_version $default_params"
 }
 params-check::postgis () {
-  default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgis -v /var/tmp/postgres:/var/lib/postgresql/data -v /var/run/postgresql:/var/run/postgresql'
   service_version="9.6-2.5"
   sudo rm -rf /var/run/postgresql /var/tmp/postgres
   sudo mkdir -p /var/run/postgresql && sudo chmod -R 0777 /var/run/postgresql
@@ -104,8 +103,15 @@ params-check::postgis () {
   else
     service_version="${1:-$service_version}"
     tmp="${@:2}"
-    params="${tmp:-$default_params}"
+    params="$tmp"
   fi
+  version_major="$(printf '%s\n' "$service_version" | cut -d'-' -f1 | cut -d'.' -f1)"
+  version_major="${version_major:-0}"
+  default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgis -v /var/tmp/postgres:/var/lib/postgresql/data -v /var/run/postgresql:/var/run/postgresql'
+  if [ "$version_major" -ge 18 ]; then
+    default_params='--net=host --rm -d -e POSTGRES_PASSWORD=semaphore --name postgis -v /var/tmp/postgres:/var/lib/postgresql -v /var/run/postgresql:/var/run/postgresql'
+  fi
+  params="${params:-$default_params}"
   if [ "$default_params" != "$params" ];then
     username=""; password=""; db=""; dbname="";
     for words in $params; do

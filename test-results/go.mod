@@ -1,8 +1,6 @@
 module github.com/semaphoreci/toolbox/test-results
 
-go 1.24.0
-
-toolchain go1.24.7
+go 1.25.0
 
 require (
 	github.com/google/go-cmp v0.7.0
@@ -12,7 +10,7 @@ require (
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/text v0.29.0
+	golang.org/x/text v0.41.0
 )
 
 require (
