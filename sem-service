@@ -24,6 +24,7 @@ sem_services['cassandra']="3.11.3 3.11.8 3.11 3"
 sem_services['rethinkdb']="2.3.6 2.3 2.4.1 2.4 2"
 sem_services['postgis']="9.5-2.5 9.5-3.0 9.6-2.5 9.6-3.0 10-2.5 10-3.0 11-2.5 11-3.0 12-2.5 12-3.0 13-3.0 14-3.1 15-3.3 15-3.4 16-3.4 17-3.5 18-3.6"
 sem_services['opensearch']="1.3.9 1 2.6.0 2.7.0 2 3.5.0 3.7.0 3.8.0"
+sem_services['clickhouse']="26.8"
 
 service::pull_image_retry() {
   counter=1 
@@ -295,6 +296,23 @@ service::start_cassandra() {
   fi
 }
 
+service::start_clickhouse() {
+  service_version="${1:-26.8}"
+  local service_image="${registry_host}/clickhouse"
+
+  service::pull_image "$service_image:$service_version"
+  docker_output=$(docker run --net=host --rm --name clickhouse -d "$service_image":"$service_version")
+  # run only if previous command exited successfully
+  docker_status=$(sem-dockerize 8123 cclickhouse)
+  if [ "$docker_status" == "0" ]; then
+    echo "done."
+    echo "clickhouse $service_version is accessible at 0.0.0.0:8132 and 0.0.0.0:9000"
+  else
+    # if not started in 30 seconds print logs and exit
+    echo "$docker_output"
+  fi
+}
+
 service::start_rethinkdb() {
   service_version="${1:-2.3}"
   local service_image="${registry_host}/rethinkdb"
@@ -405,6 +423,13 @@ service::start() {
       service_version="${service_version:-2.3}"
       service::check_version 'rethinkdb' "${service_version%% *}"
       service::duration service::start_rethinkdb "${service_version}" total "${service_name}"
+      exit 0
+      ;;
+    "clickhouse" )
+      shift
+      service_version="${service_version:-26.8}"
+      service::check_version 'clickhouse' "${service_version%% *}"
+      service::duration service::start_clickhouse "${service_version}" total "${service_name}"
       exit 0
       ;;
 
@@ -542,6 +567,7 @@ service::print_usage() {
   echo "opensearch (default: 2), available versions: ${sem_services['opensearch']}"
   echo "cassandra (default: 3.11), available versions: ${sem_services['cassandra']}"
   echo "rethinkdb (default: 2.3), available versions: ${sem_services['rethinkdb']}"
+  echo "clickhouse (default: 26.8), available versions: ${sem_services['clickhouse']}"
 }
 
 service::duration() {
