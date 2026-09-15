@@ -12,9 +12,12 @@ setup() {
   unset SEMAPHORE_GIT_CLONE_SLOW_RETRY
   unset SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD
   unset SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT
+  unset SEMAPHORE_GIT_CLONE_SLOW_GRACE
   unset SEMAPHORE_GIT_CLONE_RETRY_COUNT
   unset SEMAPHORE_GIT_CLONE_ALT_IP_RETRIES
   unset SEMAPHORE_GIT_CLONE_ALT_REGIONS
+  unset SEMAPHORE_GIT_CLONE_DOH_CONNECT_TIMEOUT
+  unset SEMAPHORE_GIT_CLONE_DOH_MAX_TIME
 
   export SEMAPHORE_GIT_URL="https://github.com/mojombo/grit.git"
   export SEMAPHORE_GIT_BRANCH=master
@@ -105,6 +108,7 @@ SCRIPT
 @test "slow retry - speed check detects and kills slow process" {
   export SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD=999999999
   export SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT=5
+  export SEMAPHORE_GIT_CLONE_SLOW_GRACE=0
 
   local mock="/tmp/slow_mock_$$"
   cat > "$mock" <<'SCRIPT'
@@ -121,12 +125,60 @@ SCRIPT
   assert_output --partial "[checkout] Slow clone detected"
 }
 
+@test "slow retry - speed check grace window protects slow start" {
+  # Slow throughput, but the grace window outlasts the process, so it must
+  # not be killed as slow (guards against false positives on big-repo startup).
+  export SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD=999999999
+  export SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT=5
+  export SEMAPHORE_GIT_CLONE_SLOW_GRACE=60
+
+  local mock="/tmp/slow_mock_$$"
+  cat > "$mock" <<'SCRIPT'
+#!/bin/bash
+dir="$1"
+mkdir -p "$dir/.git/objects"
+dd if=/dev/zero of="$dir/.git/objects/pack" bs=1024 count=1 2>/dev/null
+sleep 12
+SCRIPT
+  chmod +x "$mock"
+
+  run checkout::clone_with_speed_check "$mock" "$SEMAPHORE_GIT_DIR"
+  assert_success
+  refute_output --partial "[checkout] Slow clone detected"
+}
+
+# === resolve_alt_ips timeout ===
+
+@test "slow retry - resolve_alt_ips passes curl connect/max timeouts" {
+  export SEMAPHORE_GIT_CLONE_ALT_REGIONS="74.0.0.0/8"
+
+  local mock_dir="/tmp/slow_mock_net_$$"
+  local args_file="${mock_dir}/curl_args"
+  mkdir -p "$mock_dir"
+  cat > "$mock_dir/curl" <<SCRIPT
+#!/bin/bash
+echo "\$@" >> "${args_file}"
+echo '{"Answer":[{"data":"185.199.108.133"}]}'
+SCRIPT
+  chmod +x "$mock_dir/curl"
+  export PATH="$mock_dir:$PATH"
+
+  run checkout::resolve_alt_ips "github.com" "140.82.121.4"
+  assert_success
+  assert_output --partial "185.199.108.133"
+
+  run cat "${args_file}"
+  assert_output --partial "--connect-timeout 5"
+  assert_output --partial "--max-time 10"
+}
+
 # === resilient_clone integration ===
 
 @test "slow retry - resilient clone retries on slow then reports failure" {
   export SEMAPHORE_GIT_CLONE_SLOW_RETRY=true
   export SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD=999999999
   export SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT=5
+  export SEMAPHORE_GIT_CLONE_SLOW_GRACE=0
   export SEMAPHORE_GIT_CLONE_RETRY_COUNT=2
   export SEMAPHORE_GIT_CLONE_ALT_IP_RETRIES=0
 
@@ -342,6 +394,24 @@ SCRIPT
   run checkout::clone_with_alt_ip "1.2.3.4" "github.com" "443" git clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
   assert_success
   assert_output --partial "http.curloptResolve=github.com:443:1.2.3.4"
+}
+
+@test "slow retry - clone_with_alt_ip fails cleanly for SSH when nc missing" {
+  export SEMAPHORE_GIT_URL="git@github.com:mojombo/grit.git"
+
+  # Restrict PATH to a dir with only a git stub so 'command -v nc' fails.
+  local mock_dir="/tmp/slow_mock_bin_$$"
+  mkdir -p "$mock_dir"
+  cat > "$mock_dir/git" <<'SCRIPT'
+#!/bin/bash
+echo "git should not be called"
+SCRIPT
+  chmod +x "$mock_dir/git"
+
+  PATH="$mock_dir" run checkout::clone_with_alt_ip "1.2.3.4" "github.com" "22" git clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+  assert_failure
+  assert_output --partial "'nc' not available"
+  refute_output --partial "git should not be called"
 }
 
 # === Full checkout flow with slow retry ===
