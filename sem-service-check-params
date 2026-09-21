@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 params-check::mysql () {
-  default_params='--net=host --rm -d  -v /var/tmp/mysql:/var/lib/mysql --name mysql -v /var/run/mysqld:/var/run/mysqld '
   service_version="5.6"
   sudo mkdir -p /var/run/mysqld && sudo chmod -R 0777 /var/run/mysqld
   sudo mkdir -p /var/tmp/mysqld && sudo chmod -R 0777 /var/tmp/mysqld
@@ -9,34 +8,43 @@ params-check::mysql () {
   local password="";
   local username="";
   local db=" -e MYSQL_DATABASE=test ";
+  local docker_extra="";
+  local mysqld_args="";
+  local in_cmd_args=0;
   if [ "${1:0:1}" == "-" ];then
     params="$@"
   else
     service_version="${1:-$service_version}"
     tmp="${@:2}"
-    params="${tmp:-$default_params}"
+    params="$tmp"
   fi
 
-  if [ "$default_params" != "$params" ];then
-    for words in $params; do
-      case $words in
-       --username=* )
-         username="$(echo $words|cut -d'=' -f2)"
-       ;;
-       --password=* )
-         password="$(echo $words|cut -d'=' -f2)"
-       ;;
-       --db=* )
-         db="  -e MYSQL_DATABASE=$(echo $words|cut -d'=' -f2) "
-       ;;
-       *)
-       ;;
-      esac
-    done
-  fi
+  for words in $params; do
+    if [ "$in_cmd_args" -eq 1 ]; then
+      mysqld_args="$mysqld_args $words"
+      continue
+    fi
+    case $words in
+     -- )
+       in_cmd_args=1
+     ;;
+     --username=* )
+       username="$(echo $words|cut -d'=' -f2)"
+     ;;
+     --password=* )
+       password="$(echo $words|cut -d'=' -f2)"
+     ;;
+     --db=* )
+       db="  -e MYSQL_DATABASE=$(echo $words|cut -d'=' -f2) "
+     ;;
+     *)
+       docker_extra="$docker_extra $words"
+     ;;
+    esac
+  done
   if [ "$username" = "" ] || [ "$username" = "root" ]; then
     username=""
-    if [ "$password" ]; then 
+    if [ "$password" ]; then
       password=" -e MYSQL_ROOT_PASSWORD=$password "
     else
       password=" -e MYSQL_ALLOW_EMPTY_PASSWORD=yes "
@@ -46,8 +54,13 @@ params-check::mysql () {
     password=" -e MYSQL_PASSWORD=$password  -e MYSQL_ALLOW_EMPTY_PASSWORD=yes "
   fi
 
-  default_params="$default_params$username$password$db "
-  echo "$service_version $default_params"
+  default_params='--net=host --rm -d --name mysql -v /var/run/mysqld:/var/run/mysqld '
+  if ! printf '%s' "$docker_extra" | grep -q '/var/lib/mysql'; then
+    default_params="$default_params -v /var/tmp/mysql:/var/lib/mysql "
+  fi
+
+  default_params="$default_params$username$password$db$docker_extra "
+  echo "$service_version $default_params -- $mysqld_args"
 }
 params-check::postgres () {
   service_version="9.6"

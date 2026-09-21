@@ -91,9 +91,25 @@ service::start_mysql() {
   shift
   local service_image="${registry_host}/mysql"
 
-  docker_params=( "$@" )
+  # Everything up to a literal '--' are 'docker run' flags; anything after it
+  # is passed as mysqld command-line arguments (docker run OPTIONS IMAGE [ARGS...]).
+  docker_params=()
+  mysqld_args=()
+  local seen_separator=0
+  for arg in "$@"; do
+    if [[ $seen_separator -eq 0 && "$arg" == "--" ]]; then
+      seen_separator=1
+      continue
+    fi
+    if [[ $seen_separator -eq 1 ]]; then
+      mysqld_args+=("$arg")
+    else
+      docker_params+=("$arg")
+    fi
+  done
+
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run "${docker_params[@]}" "$service_image":"$service_version")
+  docker_output=$(docker run "${docker_params[@]}" "$service_image":"$service_version" "${mysqld_args[@]}")
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 3306 mysql)
   if [ "$docker_status" == "0" ]; then
@@ -557,6 +573,8 @@ service::print_usage() {
 
   echo "Available services:"
   echo "mysql (default: 5.6), available versions: ${sem_services['mysql']}"
+  echo "  extra 'docker run' flags may be passed before a '--', and mysqld args after it, e.g.:"
+  echo "  sem-service start mysql 8.0 --tmpfs /var/lib/mysql:rw,size=2g -- --innodb-doublewrite=0"
   echo "postgres (default: 9.6), available versions: ${sem_services['postgres']}"
   echo "postgis (default: 9.6-2.5), available versions: ${sem_services['postgis']}"
   echo "redis (default: 4.0), available versions: ${sem_services['redis']}"
