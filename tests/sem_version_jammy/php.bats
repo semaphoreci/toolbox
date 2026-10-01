@@ -47,13 +47,13 @@ setup() {
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.2.31"
+  assert_line --partial "PHP 8.2.34"
   run php -m
   assert_line --partial "gd"
   assert_line --partial "imap"
   run which composer
   assert_success
-  assert_line --partial "8.2.31"
+  assert_line --partial "8.2.34"
   run phpbrew ext install iconv
   assert_success
 }
@@ -64,13 +64,13 @@ setup() {
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.3.31"
+  assert_line --partial "PHP 8.3.35"
   run php -m
   assert_line --partial "gd"
   assert_line --partial "imap"
   run which composer
   assert_success
-  assert_line --partial "8.3.31"
+  assert_line --partial "8.3.35"
   run phpbrew ext install iconv
   assert_success
 }
@@ -81,12 +81,12 @@ setup() {
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.4.22"
+  assert_line --partial "PHP 8.4.26"
   run php -m
   assert_line --partial "gd"
   run which composer
   assert_success
-  assert_line --partial "8.4.22"
+  assert_line --partial "8.4.26"
   run phpbrew ext install iconv
   assert_success
 }
@@ -97,12 +97,12 @@ setup() {
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.5.7"
+  assert_line --partial "PHP 8.5.11"
   run php -m
   assert_line --partial "gd"
   run which composer
   assert_success
-  assert_line --partial "8.5.7"
+  assert_line --partial "8.5.11"
   run phpbrew ext install iconv
   assert_success
 }

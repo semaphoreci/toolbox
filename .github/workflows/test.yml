@@ -18,10 +18,16 @@ jobs:
           SEMAPHORE_CACHE_S3_KEY: minioadmin
           SEMAPHORE_CACHE_S3_SECRET: minioadmin
           SEMAPHORE_TOOLBOX_METRICS_ENABLED: "true"
+          RUSTFS_ACCESS_KEY: minioadmin
+          RUSTFS_SECRET_KEY: minioadmin
+          RUSTFS_CHECK_UPDATE: "false"
+          RUSTFS_CONSOLE_ENABLE: "false"
         run: |
-          New-Item C:\minio -ItemType Directory > $null
-          Invoke-WebRequest "https://github.com/minio/minio/releases/download/RELEASE.2025-09-07T16-13-09Z/minio.windows-amd64.RELEASE.2025-09-07T16-13-09Z.exe" -OutFile C:\minio\minio.exe
-          New-Item C:\minio\data\semaphore-cache -ItemType Directory > $null
-          Start-Process C:\minio\minio.exe -ArgumentList 'server','C:\minio\data' -RedirectStandardOutput C:\minio\logs -RedirectStandardError C:\minio\errors
+          New-Item C:\rustfs -ItemType Directory > $null
+          Invoke-WebRequest "https://github.com/rustfs/rustfs/releases/download/1.0.0/rustfs-windows-x86_64-v1.0.0.zip" -OutFile C:\rustfs\rustfs.zip
+          Expand-Archive C:\rustfs\rustfs.zip -DestinationPath C:\rustfs
+          New-Item C:\rustfs\data\semaphore-cache -ItemType Directory > $null
+          Start-Process C:\rustfs\rustfs.exe -ArgumentList 'C:\rustfs\data' -RedirectStandardOutput C:\rustfs\logs -RedirectStandardError C:\rustfs\errors
+          for ($i = 0; $i -lt 30; $i++) { try { Invoke-WebRequest http://127.0.0.1:9000/minio/health/live -UseBasicParsing > $null; break } catch { Start-Sleep 1 } }
           cd cache-cli
           gotestsum --format short-verbose --packages="./..." -- -p 1
