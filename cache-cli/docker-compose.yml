@@ -29,12 +29,18 @@ services:
       - 4443:4443
     command: -backend memory -scheme http -port 4443 -public-host gcs:4443 -external-url http://gcs:4443
   s3:
-    image: quay.io/minio/minio:RELEASE.2024-09-22T00-33-43Z
+    image: rustfs/rustfs:1.0.0
     container_name: 's3'
     ports:
       - 9000:9000
+    environment:
+      RUSTFS_ACCESS_KEY: "minioadmin"
+      RUSTFS_SECRET_KEY: "minioadmin"
+      RUSTFS_CHECK_UPDATE: "false"
+      RUSTFS_OBS_LOG_DIRECTORY: ""
+      RUSTFS_CONSOLE_ENABLE: "false"
     entrypoint: sh
-    command: -c 'mkdir -p /tmp/s3-data/semaphore-cache && minio server /tmp/s3-data'
+    command: -c 'mkdir -p /tmp/s3-data/semaphore-cache && exec /entrypoint.sh /tmp/s3-data'
   sftp-server:
     container_name: sftp-server
     ports:
