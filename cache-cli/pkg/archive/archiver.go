@@ -11,14 +11,24 @@ type Archiver interface {
 	Decompress(src string) (string, error)
 }
 
+// ArchiverOptions configures optional behaviors for archive decompression.
+type ArchiverOptions struct {
+	// IgnoreCollisions skips extracting files that already exist on disk.
+	IgnoreCollisions bool
+}
+
 func NewArchiver(metricsManager metrics.MetricsManager) Archiver {
+	return NewArchiverWithOptions(metricsManager, ArchiverOptions{})
+}
+
+func NewArchiverWithOptions(metricsManager metrics.MetricsManager, opts ArchiverOptions) Archiver {
 	method := os.Getenv("SEMAPHORE_CACHE_ARCHIVE_METHOD")
 	switch method {
 	case "native":
-		return NewNativeArchiver(metricsManager, false)
+		return NewNativeArchiverWithOptions(metricsManager, false, opts)
 	case "native-parallel":
-		return NewNativeArchiver(metricsManager, true)
+		return NewNativeArchiverWithOptions(metricsManager, true, opts)
 	default:
-		return NewShellOutArchiver(metricsManager)
+		return NewShellOutArchiverWithOptions(metricsManager, opts)
 	}
 }
