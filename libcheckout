@@ -505,6 +505,7 @@ function checkout::clone_with_speed_check() {
   # Returns: 0 = success, 1 = killed (slow), 2 = git error
   local threshold="${SEMAPHORE_GIT_CLONE_SLOW_THRESHOLD:-20000}"
   local timeout="${SEMAPHORE_GIT_CLONE_SLOW_TIMEOUT:-15}"
+  local grace="${SEMAPHORE_GIT_CLONE_SLOW_GRACE:-30}"
   local check_interval=5
   local target_dir="${SEMAPHORE_GIT_DIR}"
 
@@ -513,14 +514,25 @@ function checkout::clone_with_speed_check() {
 
   local prev_size=0
   local slow_seconds=0
+  local elapsed=0
 
   while kill -0 "$pid" 2>/dev/null; do
     sleep "$check_interval"
     kill -0 "$pid" 2>/dev/null || break
+    elapsed=$((elapsed + check_interval))
 
     local cur_size
     cur_size=$(du -sk "${target_dir}" 2>/dev/null | awk '{print $1}')
     cur_size=${cur_size:-0}
+
+    # Don't arm slow-detection during the startup grace window. Server-side
+    # object counting/compression and connection setup can run for seconds
+    # with little or no on-disk growth before the receive phase ramps up;
+    # penalizing it would kill healthy clones of large repos.
+    if [ "$elapsed" -lt "$grace" ]; then
+      prev_size=$cur_size
+      continue
+    fi
 
     if [ "$cur_size" -gt 0 ]; then
       local speed=$(( (cur_size - prev_size) * 1024 / check_interval ))
@@ -553,9 +565,15 @@ function checkout::resolve_alt_ips() {
   local regions
   IFS=',' read -ra regions <<< "${SEMAPHORE_GIT_CLONE_ALT_REGIONS:-74.0.0.0/8,177.0.0.0/8,110.0.0.0/8}"
 
+  local connect_timeout="${SEMAPHORE_GIT_CLONE_DOH_CONNECT_TIMEOUT:-5}"
+  local max_time="${SEMAPHORE_GIT_CLONE_DOH_MAX_TIME:-10}"
+
   for region in "${regions[@]}"; do
     local ip
-    ip=$(curl -sf "https://dns.google/resolve?name=${git_host}&type=A&edns_client_subnet=${region}" | \
+    # --connect-timeout / --max-time keep tier 2 from hanging when dns.google
+    # is blocked or unreachable (common on locked-down self-hosted runners).
+    ip=$(curl -sf --connect-timeout "${connect_timeout}" --max-time "${max_time}" \
+      "https://dns.google/resolve?name=${git_host}&type=A&edns_client_subnet=${region}" | \
       grep -o '"data":"[^"]*"' | sed 's/"data":"//;s/"//' | head -1)
 
     if [ -n "$ip" ] && [ "$ip" != "$current_ip" ]; then
@@ -575,7 +593,11 @@ function checkout::clone_with_alt_ip() {
     # HTTPS: inject curloptResolve between 'git' and 'clone'
     checkout::clone_with_speed_check git -c "http.curloptResolve=${git_host}:${git_port}:${alt_ip}" "${@:2}"
   else
-    # SSH: route through alternative IP via ProxyCommand
+    # SSH: route through alternative IP via ProxyCommand (needs nc)
+    if ! command -v nc >/dev/null 2>&1; then
+      echo "[checkout] 'nc' not available; cannot route SSH clone through alternative endpoint"
+      return 1
+    fi
     local orig_ssh_command="${GIT_SSH_COMMAND:-}"
     export GIT_SSH_COMMAND="${orig_ssh_command:-ssh} -o ProxyCommand='nc ${alt_ip} ${git_port}'"
     checkout::clone_with_speed_check "$@"
