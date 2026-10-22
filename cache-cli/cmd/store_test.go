@@ -77,6 +77,32 @@ func Test__Store(t *testing.T) {
 			output = readOutputFromFile(t)
 			assert.Contains(t, output, "Key 'abc003' already exists")
 		})
+
+		t.Run(fmt.Sprintf("%s using duplicate key with force", backend), func(*testing.T) {
+			storage.Clear()
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
+			filePath := filepath.Join(tempDir, "file.txt")
+			ioutil.WriteFile(filePath, []byte("first"), 0600)
+
+			RunStore(storeCmd, []string{"abc004", tempDir})
+			readOutputFromFile(t)
+
+			ioutil.WriteFile(filePath, []byte("second"), 0600)
+			storeCmd.Flags().Set("force", "true")
+			RunStore(storeCmd, []string{"abc004", tempDir})
+			storeCmd.Flags().Set("force", "false")
+			output := readOutputFromFile(t)
+			assert.Contains(t, output, "Key 'abc004' already exists. Replacing it.")
+			assert.Contains(t, output, fmt.Sprintf("Uploading '%s' with cache key 'abc004'", tempDir))
+			assert.Contains(t, output, "Upload complete")
+
+			os.RemoveAll(tempDir)
+			RunRestore(restoreCmd, []string{"abc004"})
+			readOutputFromFile(t)
+			content, _ := ioutil.ReadFile(filePath)
+			assert.Equal(t, "second", string(content))
+			os.RemoveAll(tempDir)
+		})
 	})
 }
 

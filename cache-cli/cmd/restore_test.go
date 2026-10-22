@@ -49,7 +49,7 @@ func Test__Restore(t *testing.T) {
 
 			metricsManager := metrics.NewNoOpMetricsManager()
 			archiver := archive.NewShellOutArchiver(metricsManager)
-			compressAndStore(storage, archiver, metricsManager, "abc-001", tempDir)
+			compressAndStore(storage, archiver, metricsManager, "abc-001", tempDir, false)
 			RunRestore(restoreCmd, []string{"abc-001"})
 			output := readOutputFromFile(t)
 
@@ -70,7 +70,7 @@ func Test__Restore(t *testing.T) {
 
 			metricsManager := metrics.NewNoOpMetricsManager()
 			archiver := archive.NewShellOutArchiver(metricsManager)
-			compressAndStore(storage, archiver, metricsManager, "abc/00/22", tempDir)
+			compressAndStore(storage, archiver, metricsManager, "abc/00/22", tempDir, false)
 			RunRestore(restoreCmd, []string{"abc/00/22"})
 			output := readOutputFromFile(t)
 
@@ -92,7 +92,7 @@ func Test__Restore(t *testing.T) {
 
 			metricsManager := metrics.NewNoOpMetricsManager()
 			archiver := archive.NewShellOutArchiver(metricsManager)
-			compressAndStore(storage, archiver, metricsManager, "abc-001", tempDir)
+			compressAndStore(storage, archiver, metricsManager, "abc-001", tempDir, false)
 			RunRestore(restoreCmd, []string{"abc"})
 			output := readOutputFromFile(t)
 
@@ -113,8 +113,8 @@ func Test__Restore(t *testing.T) {
 
 			metricsManager := metrics.NewNoOpMetricsManager()
 			archiver := archive.NewShellOutArchiver(metricsManager)
-			compressAndStore(storage, archiver, metricsManager, "abc-001", tempDir)
-			compressAndStore(storage, archiver, metricsManager, "abc-002", tempDir)
+			compressAndStore(storage, archiver, metricsManager, "abc-001", tempDir, false)
+			compressAndStore(storage, archiver, metricsManager, "abc-002", tempDir, false)
 			RunRestore(restoreCmd, []string{"abc-001,abc-002"})
 			output := readOutputFromFile(t)
 
@@ -136,7 +136,7 @@ func Test__Restore(t *testing.T) {
 
 			metricsManager := metrics.NewNoOpMetricsManager()
 			archiver := archive.NewShellOutArchiver(metricsManager)
-			compressAndStore(storage, archiver, metricsManager, "abc", tempDir)
+			compressAndStore(storage, archiver, metricsManager, "abc", tempDir, false)
 			RunRestore(restoreCmd, []string{"abc-001,abc"})
 			output := readOutputFromFile(t)
 
@@ -158,7 +158,7 @@ func Test__Restore(t *testing.T) {
 
 			metricsManager := metrics.NewNoOpMetricsManager()
 			archiver := archive.NewShellOutArchiver(metricsManager)
-			compressAndStore(storage, archiver, metricsManager, "abc", tempDir)
+			compressAndStore(storage, archiver, metricsManager, "abc", tempDir, false)
 			RunRestore(restoreCmd, []string{"^abc"})
 			output := readOutputFromFile(t)
 
@@ -181,7 +181,7 @@ func Test__Restore(t *testing.T) {
 
 			metricsManager := metrics.NewNoOpMetricsManager()
 			archiver := archive.NewShellOutArchiver(metricsManager)
-			compressAndStore(storage, archiver, metricsManager, "abc", tempDir)
+			compressAndStore(storage, archiver, metricsManager, "abc", tempDir, false)
 
 			// set the environment variables to download using HTTP instead before restoring
 			os.Setenv("SEMAPHORE_CACHE_CDN_URL", "http://sftp-server:80")
@@ -213,7 +213,7 @@ func Test__Restore(t *testing.T) {
 
 			metricsManager := metrics.NewNoOpMetricsManager()
 			archiver := archive.NewShellOutArchiver(metricsManager)
-			compressAndStore(storage, archiver, metricsManager, "abc", tempDir)
+			compressAndStore(storage, archiver, metricsManager, "abc", tempDir, false)
 
 			// Set just the URL, but not the user/pass
 			// This means SFTP will still be used.
