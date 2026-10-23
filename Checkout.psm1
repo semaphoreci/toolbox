@@ -49,6 +49,7 @@ function Initialize-Repository {
         throw "Revision: $env:SEMAPHORE_GIT_SHA not found"
       } else {
         git checkout -qf FETCH_HEAD
+        Assert-PullRequestRevision
         Write-Output "HEAD is now at $env:SEMAPHORE_GIT_SHA"
       }
     }
@@ -96,6 +97,37 @@ function Initialize-ShallowRepository() {
         throw "SHA: $env:SEMAPHORE_GIT_SHA not found"
       }
     }
+  }
+}
+
+# PR refs can move after a job is scheduled; run SEMAPHORE_GIT_SHA (or a merge
+# built on it), never whatever newer commit the ref points to now.
+function Assert-PullRequestRevision {
+  if ($env:SEMAPHORE_GIT_SKIP_REVISION_CHECK -eq "true") {
+    return
+  }
+
+  $expected = git rev-parse -q --verify "$env:SEMAPHORE_GIT_SHA^{commit}" 2>$null
+  if (-not $expected) {
+    $expected = $env:SEMAPHORE_GIT_SHA
+  }
+
+  $head = git rev-parse HEAD
+  $mergeParent = git rev-parse -q --verify "HEAD^2" 2>$null
+  if ($head -eq $expected -or $mergeParent -eq $expected) {
+    return
+  }
+
+  Write-Output "PR ref $env:SEMAPHORE_GIT_REF moved to $head; checking out $env:SEMAPHORE_GIT_SHA"
+  git fetch --depth $env:SEMAPHORE_GIT_DEPTH origin $env:SEMAPHORE_GIT_SHA 2>$null
+  if ($?) {
+    git checkout -qf $env:SEMAPHORE_GIT_SHA 2>$null
+  }
+
+  $pinned = git rev-parse HEAD
+  $wanted = git rev-parse -q --verify "$env:SEMAPHORE_GIT_SHA^{commit}" 2>$null
+  if (-not $wanted -or $pinned -ne $wanted) {
+    throw "Revision: $env:SEMAPHORE_GIT_SHA not found"
   }
 }
 

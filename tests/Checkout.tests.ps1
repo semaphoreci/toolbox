@@ -12,6 +12,7 @@ Describe 'Initialize-Repository' {
 
     if (Test-Path env:SEMAPHORE_GIT_REF_TYPE) { Remove-Item -Path env:SEMAPHORE_GIT_REF_TYPE }
     if (Test-Path env:SEMAPHORE_GIT_TAG_NAME) { Remove-Item -Path env:SEMAPHORE_GIT_TAG_NAME }
+    if (Test-Path env:SEMAPHORE_GIT_SKIP_REVISION_CHECK) { Remove-Item -Path env:SEMAPHORE_GIT_SKIP_REVISION_CHECK }
   }
 
   Context "Required parameters" {
@@ -89,6 +90,42 @@ Describe 'Initialize-Repository' {
       $output = Initialize-Repository
       $output | Should -Contain "Initializing repository for pull-request..."
       $output | Should -Contain "HEAD is now at 30774365e11f2b1e18706c9ed0920369f6d7c205"
+    }
+
+    It 'SEMAPHORE_GIT_SHA is the PR head under the merge ref => success' {
+      $env:SEMAPHORE_GIT_REF_TYPE = "pull-request"
+      $env:SEMAPHORE_GIT_REF = "refs/pull/186/merge"
+      $env:SEMAPHORE_GIT_SHA = "72288acd1434bee213053dad22bc3e997a5508bc"
+      $output = Initialize-Repository
+      $output | Should -Contain "HEAD is now at 72288acd1434bee213053dad22bc3e997a5508bc"
+      $output | Should -Not -Match "moved to"
+      git rev-parse "HEAD^2" | Should -Be "72288acd1434bee213053dad22bc3e997a5508bc"
+    }
+
+    It 'ref moved away from SEMAPHORE_GIT_SHA => pins the scheduled commit' {
+      $env:SEMAPHORE_GIT_REF_TYPE = "pull-request"
+      $env:SEMAPHORE_GIT_REF = "refs/pull/186/merge"
+      $env:SEMAPHORE_GIT_SHA = "91940c2cc18ec08b751482f806f1b8bfa03d98a5"
+      $output = Initialize-Repository
+      $output | Should -Contain "PR ref refs/pull/186/merge moved to 30774365e11f2b1e18706c9ed0920369f6d7c205; checking out 91940c2cc18ec08b751482f806f1b8bfa03d98a5"
+      git rev-parse HEAD | Should -Be "91940c2cc18ec08b751482f806f1b8bfa03d98a5"
+    }
+
+    It 'ref moved and SEMAPHORE_GIT_SHA cannot be fetched => error' {
+      $env:SEMAPHORE_GIT_REF_TYPE = "pull-request"
+      $env:SEMAPHORE_GIT_REF = "refs/pull/186/merge"
+      $env:SEMAPHORE_GIT_SHA = "0000000000000000000000000000000000000001"
+      { Initialize-Repository } | Should -Throw "Revision: 0000000000000000000000000000000000000001 not found"
+    }
+
+    It 'revision check skipped => checks out the ref as is' {
+      $env:SEMAPHORE_GIT_REF_TYPE = "pull-request"
+      $env:SEMAPHORE_GIT_REF = "refs/pull/186/merge"
+      $env:SEMAPHORE_GIT_SHA = "0000000000000000000000000000000000000001"
+      $env:SEMAPHORE_GIT_SKIP_REVISION_CHECK = "true"
+      $output = Initialize-Repository
+      $output | Should -Not -Match "moved to"
+      git rev-parse HEAD | Should -Be "30774365e11f2b1e18706c9ed0920369f6d7c205"
     }
 
     It 'SEMAPHORE_GIT_REF does not exist => error' {

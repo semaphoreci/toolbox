@@ -19,6 +19,7 @@ setup() {
   unset SEMAPHORE_GIT_PR_NUMBER
   unset SEMAPHORE_GIT_PARTIAL_CLONE_FILTER
   unset SEMAPHORE_GIT_SPARSE_CHECKOUT_PATHS
+  unset SEMAPHORE_GIT_SKIP_REVISION_CHECK
 
   export SEMAPHORE_GIT_URL="https://github.com/mojombo/grit.git"
   export SEMAPHORE_GIT_BRANCH=master
@@ -147,6 +148,54 @@ teardown() {
   run checkout
   assert_failure
   assert_output --partial "Revision: $SEMAPHORE_GIT_SHA not found .... Exiting"
+}
+
+@test "libcheckout - [PR] SHA is the PR head under the merge ref" {
+  export SEMAPHORE_GIT_REF_TYPE="pull-request"
+  export SEMAPHORE_GIT_REF="refs/pull/186/merge"
+  export SEMAPHORE_GIT_SHA=72288acd1434bee213053dad22bc3e997a5508bc
+
+  run checkout
+  assert_success
+  refute_output --partial "moved to"
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+  assert_equal "$(git -C "$SEMAPHORE_GIT_DIR" rev-parse HEAD^2)" "$SEMAPHORE_GIT_SHA"
+}
+
+@test "libcheckout - [PR] ref moved away from SHA pins the scheduled commit" {
+  export SEMAPHORE_GIT_REF_TYPE="pull-request"
+  export SEMAPHORE_GIT_REF="refs/pull/186/merge"
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+
+  run checkout
+  assert_success
+  assert_output --partial "PR ref $SEMAPHORE_GIT_REF moved to 30774365e11f2b1e18706c9ed0920369f6d7c205; checking out $SEMAPHORE_GIT_SHA"
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+  assert_equal "$(git -C "$SEMAPHORE_GIT_DIR" rev-parse HEAD)" "$SEMAPHORE_GIT_SHA"
+}
+
+@test "libcheckout - [PR] ref moved and SHA cannot be fetched" {
+  export SEMAPHORE_GIT_REF_TYPE="pull-request"
+  export SEMAPHORE_GIT_REF="refs/pull/186/merge"
+  export SEMAPHORE_GIT_SHA=0000000000000000000000000000000000000001
+
+  run checkout
+  assert_failure
+  assert_output --partial "moved to"
+  assert_output --partial "Revision: $SEMAPHORE_GIT_SHA not found .... Exiting"
+  refute_output --partial "HEAD is now at"
+}
+
+@test "libcheckout - [PR] revision check can be skipped" {
+  export SEMAPHORE_GIT_REF_TYPE="pull-request"
+  export SEMAPHORE_GIT_REF="refs/pull/186/merge"
+  export SEMAPHORE_GIT_SHA=0000000000000000000000000000000000000001
+  export SEMAPHORE_GIT_SKIP_REVISION_CHECK=true
+
+  run checkout
+  assert_success
+  refute_output --partial "moved to"
+  assert_equal "$(git -C "$SEMAPHORE_GIT_DIR" rev-parse HEAD)" "30774365e11f2b1e18706c9ed0920369f6d7c205"
 }
 
 @test "libcheckout - [PR] Checkout and use cache" {
@@ -394,4 +443,17 @@ teardown() {
     assert_output --partial "falling back to a standard checkout"
     assert [ -d "$SEMAPHORE_GIT_DIR/test" ]
   fi
+}
+
+@test "libcheckout - [Optimized] PR ref moved away from SHA pins the scheduled commit" {
+  export SEMAPHORE_GIT_REF_TYPE="pull-request"
+  export SEMAPHORE_GIT_REF="refs/pull/186/merge"
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+  export SEMAPHORE_GIT_PARTIAL_CLONE_FILTER="blob:none"
+  export SEMAPHORE_GIT_SPARSE_CHECKOUT_PATHS="lib"
+
+  run checkout
+  assert_success
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+  assert_equal "$(git -C "$SEMAPHORE_GIT_DIR" rev-parse HEAD)" "$SEMAPHORE_GIT_SHA"
 }
