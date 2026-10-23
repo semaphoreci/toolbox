@@ -105,22 +105,24 @@ version::change_php() {
   [[ "$software_version" == "7.2" ]] && software_version="7.2.34"
   [[ "$software_version" == "7.3" ]] && software_version="7.3.33"
   [[ "$software_version" == "7.4" ]] && software_version="7.4.33"
-  [[ "$software_version" == "8" ]] && software_version="8.5.11"
+  [[ "$software_version" == "8" ]] && software_version="8.5.12"
   [[ "$software_version" == "8.0" ]] && software_version="8.0.30"
   [[ "$software_version" == "8.1" ]] && software_version="8.1.34"
-  [[ "$software_version" == "8.2" ]] && software_version="8.2.34"
-  [[ "$software_version" == "8.3" ]] && software_version="8.3.35"
-  [[ "$software_version" == "8.4" ]] && software_version="8.4.26"
-  [[ "$software_version" == "8.5" ]] && software_version="8.5.11"
+  [[ "$software_version" == "8.2" ]] && software_version="8.2.35"
+  [[ "$software_version" == "8.3" ]] && software_version="8.3.36"
+  [[ "$software_version" == "8.4" ]] && software_version="8.4.27"
+  [[ "$software_version" == "8.5" ]] && software_version="8.5.12"
 
-  if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
-    sem-install php "${software_version}"
-  fi
-  software_version="php-${software_version}"
+  # phpbrew's bundled cliframework emits PHP Deprecated notices under PHP >= 8.2,
+  # scope a throwaway php.ini via PHPRC around both the install and the switch
   local _phprc_tmp
   _phprc_tmp=$(mktemp)
   echo 'error_reporting = E_ALL & ~E_DEPRECATED' > "$_phprc_tmp"
   export PHPRC="$_phprc_tmp"
+  if ! [ -d ~/.phpbrew/php/php-"${software_version}" ]; then
+    sem-install php "${software_version}"
+  fi
+  software_version="php-${software_version}"
   version::change "phpbrew switch"
   rm -f "$_phprc_tmp"
   unset PHPRC
