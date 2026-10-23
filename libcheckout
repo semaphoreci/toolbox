@@ -177,6 +177,32 @@ function checkout::checkrevision {
   fi
 }
 
+# PR refs can move after a job is scheduled; run SEMAPHORE_GIT_SHA (or a merge
+# built on it), never whatever newer commit the ref points to now.
+function checkout::ensure_pr_revision() {
+  if [ "${SEMAPHORE_GIT_SKIP_REVISION_CHECK:-}" = "true" ]; then
+    return 0
+  fi
+
+  local expected head
+  expected=$(git rev-parse -q --verify "${SEMAPHORE_GIT_SHA}^{commit}" 2>/dev/null || echo "${SEMAPHORE_GIT_SHA}")
+  head=$(git rev-parse HEAD)
+
+  if [ "$head" = "$expected" ] || [ "$(git rev-parse -q --verify HEAD^2 2>/dev/null)" = "$expected" ]; then
+    return 0
+  fi
+
+  echo "PR ref ${SEMAPHORE_GIT_REF} moved to ${head}; checking out ${SEMAPHORE_GIT_SHA}"
+  if retry git fetch "$@" --depth "${SEMAPHORE_GIT_DEPTH}" origin "${SEMAPHORE_GIT_SHA}" 2>/dev/null &&
+    git checkout -qf "${SEMAPHORE_GIT_SHA}" 2>/dev/null &&
+    [ "$(git rev-parse HEAD)" = "$(git rev-parse -q --verify "${SEMAPHORE_GIT_SHA}^{commit}")" ]; then
+    return 0
+  fi
+
+  echo "Revision: ${SEMAPHORE_GIT_SHA} not found .... Exiting"
+  return 1
+}
+
 function checkout::branch_checkout {
   if ! git checkout -f "$SEMAPHORE_GIT_BRANCH"; then
     echo "Branch: ${SEMAPHORE_GIT_BRANCH} not found .... Exiting"
@@ -234,6 +260,7 @@ function checkout::refbased() {
     # Try fetching refs/objects with a depth.
     if retry git fetch --depth "${SEMAPHORE_GIT_DEPTH}" origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null; then
       git checkout -qf FETCH_HEAD
+      checkout::ensure_pr_revision || return 1
       echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
 
       return 0
@@ -242,6 +269,7 @@ function checkout::refbased() {
     # Fetch with depth failed, fallback to not using a depth.
     if retry git fetch origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null; then
       git checkout -qf FETCH_HEAD
+      checkout::ensure_pr_revision || return 1
       echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
 
       return 0
@@ -330,6 +358,7 @@ function checkout::optimized() {
     if retry git fetch "${filter_args[@]}" --depth "${SEMAPHORE_GIT_DEPTH}" origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null ||
       retry git fetch "${filter_args[@]}" origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null; then
       git checkout -qf FETCH_HEAD
+      checkout::ensure_pr_revision "${filter_args[@]}" || return 1
       echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
       checkout::metric "$(du -s . | awk '{ print $1 }')"
       return 0
