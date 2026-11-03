@@ -3,6 +3,13 @@
 load "support/bats-support/load"
 load "support/bats-assert/load"
 
+# The optimized checkout uses `git sparse-checkout` (cone mode), available in
+# git >= 2.25. On older clients (e.g. the minimal Alpine image) it is missing
+# and checkout falls back to a standard full checkout.
+sparse_supported() {
+  ! git sparse-checkout -h 2>&1 | grep -q "is not a git command"
+}
+
 setup() {
 
   unset SEMAPHORE_GIT_REF_TYPE
@@ -10,6 +17,8 @@ setup() {
   unset SEMAPHORE_GIT_PR_SLUG
   unset SEMAPHORE_GIT_PR_NAME
   unset SEMAPHORE_GIT_PR_NUMBER
+  unset SEMAPHORE_GIT_PARTIAL_CLONE_FILTER
+  unset SEMAPHORE_GIT_SPARSE_CHECKOUT_PATHS
 
   export SEMAPHORE_GIT_URL="https://github.com/mojombo/grit.git"
   export SEMAPHORE_GIT_BRANCH=master
@@ -300,4 +309,89 @@ teardown() {
   run cat /tmp/toolbox_metrics
   assert_failure
   assert_line "cat: /tmp/toolbox_metrics: No such file or directory"
+}
+
+# Optimized checkout: partial (blobless) clone + sparse working tree
+
+@test "libcheckout - [Optimized] blobless + sparse checkout (push)" {
+  export SEMAPHORE_GIT_REF_TYPE="push"
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+  export SEMAPHORE_GIT_PARTIAL_CLONE_FILTER="blob:none"
+  export SEMAPHORE_GIT_SPARSE_CHECKOUT_PATHS="lib"
+
+  run checkout
+  assert_success
+  assert_output --partial "HEAD is now at 91940c2"
+  assert [ -d "$SEMAPHORE_GIT_DIR/lib" ]
+
+  if sparse_supported; then
+    assert_output --partial "Performing optimized clone"
+    assert_output --partial "Configuring sparse-checkout for paths: lib"
+    # sparse path is materialized, paths outside it are not
+    assert [ ! -d "$SEMAPHORE_GIT_DIR/test" ]
+    # repository was cloned as a partial (promisor) clone
+    run git -C "$SEMAPHORE_GIT_DIR" config --get remote.origin.promisor
+    assert_output "true"
+  else
+    # git too old for sparse-checkout: graceful fallback to a full checkout
+    assert_output --partial "falling back to a standard checkout"
+    assert [ -d "$SEMAPHORE_GIT_DIR/test" ]
+  fi
+}
+
+@test "libcheckout - [Optimized] blobless only, no sparse paths keeps full tree" {
+  export SEMAPHORE_GIT_REF_TYPE="push"
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+  export SEMAPHORE_GIT_PARTIAL_CLONE_FILTER="blob:none"
+
+  run checkout
+  assert_success
+  assert_output --partial "HEAD is now at 91940c2"
+  refute_output --partial "Configuring sparse-checkout"
+
+  # no sparse paths -> full working tree, whether optimized or fallback
+  assert [ -d "$SEMAPHORE_GIT_DIR/lib" ]
+  assert [ -d "$SEMAPHORE_GIT_DIR/test" ]
+}
+
+@test "libcheckout - [Optimized] sparse checkout on tag" {
+  export SEMAPHORE_GIT_REF_TYPE="tag"
+  export SEMAPHORE_GIT_TAG_NAME='v2.4.1'
+  export SEMAPHORE_GIT_SHA=91940c2cc18ec08b751482f806f1b8bfa03d98a5
+  export SEMAPHORE_GIT_PARTIAL_CLONE_FILTER="blob:none"
+  export SEMAPHORE_GIT_SPARSE_CHECKOUT_PATHS="lib"
+
+  run checkout
+  assert_success
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA Release $SEMAPHORE_GIT_TAG_NAME"
+  assert [ -d "$SEMAPHORE_GIT_DIR/lib" ]
+
+  if sparse_supported; then
+    assert_output --partial "Performing optimized clone"
+    assert [ ! -d "$SEMAPHORE_GIT_DIR/test" ]
+  else
+    assert_output --partial "falling back to a standard checkout"
+    assert [ -d "$SEMAPHORE_GIT_DIR/test" ]
+  fi
+}
+
+@test "libcheckout - [Optimized] sparse checkout on PR" {
+  export SEMAPHORE_GIT_REF_TYPE="pull-request"
+  export SEMAPHORE_GIT_REF="refs/pull/186/merge"
+  export SEMAPHORE_GIT_SHA=30774365e11f2b1e18706c9ed0920369f6d7c205
+  export SEMAPHORE_GIT_PARTIAL_CLONE_FILTER="blob:none"
+  export SEMAPHORE_GIT_SPARSE_CHECKOUT_PATHS="lib"
+
+  run checkout
+  assert_success
+  assert_output --partial "HEAD is now at $SEMAPHORE_GIT_SHA"
+  assert [ -d "$SEMAPHORE_GIT_DIR/lib" ]
+
+  if sparse_supported; then
+    assert_output --partial "Performing optimized clone"
+    assert [ ! -d "$SEMAPHORE_GIT_DIR/test" ]
+  else
+    assert_output --partial "falling back to a standard checkout"
+    assert [ -d "$SEMAPHORE_GIT_DIR/test" ]
+  fi
 }

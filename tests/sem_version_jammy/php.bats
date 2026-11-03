@@ -24,32 +24,96 @@ setup() {
 }
 
 # PHP
-@test "change php to 8.1.29" {
+@test "change php to 8.1" {
 
-  run sem-version php 8.1.29
+  run sem-version php 8.1
   assert_success
   source ~/.phpbrew/bashrc
   run php -v
-  assert_line --partial "PHP 8.1.29"
-  run php -m 
+  assert_line --partial "PHP 8.1.34"
+  run php -m
   assert_line --partial "gd"
   assert_line --partial "imap"
-}
-
-@test "php check composer 8.1.29" {
-
   run which composer
   assert_success
-  source ~/.phpbrew/bashrc
-  assert_line --partial "8.1.29"
-}
-
-@test "php check source 8.1.29" {
-
-  run sem-version php 8.1.29
-  assert_success
-  source ~/.phpbrew/bashrc
-  assert_line --partial "8.1.29"
+  assert_line --partial "8.1.34"
   run phpbrew ext install iconv
   assert_success
+}
+
+@test "change php to 8.2" {
+
+  run sem-version php 8.2
+  assert_success
+  source ~/.phpbrew/bashrc
+  run php -v
+  assert_line --partial "PHP 8.2.35"
+  run php -m
+  assert_line --partial "gd"
+  assert_line --partial "imap"
+  run which composer
+  assert_success
+  assert_line --partial "8.2.35"
+  run phpbrew ext install iconv
+  assert_success
+}
+
+@test "change php to 8.3" {
+
+  run sem-version php 8.3
+  assert_success
+  source ~/.phpbrew/bashrc
+  run php -v
+  assert_line --partial "PHP 8.3.36"
+  run php -m
+  assert_line --partial "gd"
+  assert_line --partial "imap"
+  run which composer
+  assert_success
+  assert_line --partial "8.3.36"
+  run phpbrew ext install iconv
+  assert_success
+}
+
+@test "change php to 8.4" {
+
+  run sem-version php 8.4
+  assert_success
+  source ~/.phpbrew/bashrc
+  run php -v
+  assert_line --partial "PHP 8.4.27"
+  run php -m
+  assert_line --partial "gd"
+  run which composer
+  assert_success
+  assert_line --partial "8.4.27"
+  run phpbrew ext install iconv
+  assert_success
+}
+
+@test "change php to 8.5" {
+
+  run sem-version php 8.5
+  assert_success
+  source ~/.phpbrew/bashrc
+  run php -v
+  assert_line --partial "PHP 8.5.12"
+  run php -m
+  assert_line --partial "gd"
+  run which composer
+  assert_success
+  assert_line --partial "8.5.12"
+  run phpbrew ext install iconv
+  assert_success
+}
+
+@test "php install does not print phpbrew deprecations" {
+
+  sem-version php 8.4.26
+  run sem-version php 8.3.35
+  assert_success
+  refute_output --partial "Deprecated"
+  source ~/.phpbrew/bashrc
+  run php -v
+  assert_line --partial "PHP 8.3.35"
 }

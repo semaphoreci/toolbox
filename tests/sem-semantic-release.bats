@@ -104,8 +104,8 @@ setup() {
   assert_success 
   assert [ -e "package.json" ]
 
-  assert [ -n $(npm view @semantic-release/changelog version) ]
-  assert [ $(npm view @semantic-release/git version) = "10.0.1" ]
+  assert [ -n $(node -p "require('./node_modules/@semantic-release/changelog/package.json').version") ]
+  assert [ $(node -p "require('./node_modules/@semantic-release/git/package.json').version") = "10.0.1" ]
 
   run rm -rf ./node_modules ./package.json ./package-lock.json
 }

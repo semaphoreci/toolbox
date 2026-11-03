@@ -1,0 +1,6 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+sem-service start clickhouse
+sem-service status clickhouse

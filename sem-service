@@ -15,15 +15,16 @@ declare -A sem_services
 sem_services['memcached']="1.5 1.6"
 sem_services['mysql']="5.5 5.6.51 5.6 5.6.50 5.7.13 5.7.25 5.7.27 5.7.31 5.7.32 5.7.33 5.7 5 8.0.16 8.0.22 8.0.23 8.0 8.4.5 8.4 8 9.3.0 9.3 9"
 sem_services['redis']="2.8.23 2.8 2 3.2.4 3.2.12 3.2 3 4.0.12 4.0.14 4.0 4 5.0.6 5.0.9 5.0 5 6.0.5 6.0.8 6.0 6.2.1 6.2 6.2.7 6 7.0.5 7.0 7.2.4 7.2 7 8.0.2 8.0 8"
-sem_services['valkey']="7.2.6 7.2 7 8.1.2 8.1 8"
+sem_services['valkey']="7.2.6 7.2 7 8.1.2 8.1 8 9.1.2 9"
 sem_services['mongo']="3.2.1 3.2 3.6.20 3.6 3 4.0.20 4.0 4.1.13 4.1 4.2.10 4.2.13 4.2 4.4.1 4.4.4 4.4 4 5.0.1 5.0.2 5.0.3 5.0.4 5.0.5 5.0.6 5.0.7 5.0.8 5.0.9 5.0 5 6.0.8 6.0 6 7.0.18 7.0 7 8.0.6 8.0 8"
-sem_services['elasticsearch']="1.7.6 1.7 1 2.4.6 2.4 2 5.4.3 5.4 5.5.2 5.5 5.6.16 5.6 5 6.5.1 6.5.4 6.5 6.6 6.8.1 6.8.13 6.8 6 7.1.1 7.1 7.2.0 7.2 7.2.1 7.2 7.3.1 7.3.2 7.3 7.4.2 7.4 7.5.0 7.5.1 7.5.2 7.5 7.6.0 7.6.2 7.6 7.7.0 7.7.1 7.7 7.8.1 7.8 7.9.0 7.9.2 7.9.3 7.9 7.10.0 7.11.2 7.11 7.12.0 7.12 7.17.7 7 8.5.1 8.5.3 8.9.2 8.11.3"
+sem_services['elasticsearch']="1.7.6 1.7 1 2.4.6 2.4 2 5.4.3 5.4 5.5.2 5.5 5.6.16 5.6 5 6.5.1 6.5.4 6.5 6.6 6.8.1 6.8.13 6.8 6 7.1.1 7.1 7.2.0 7.2 7.2.1 7.2 7.3.1 7.3.2 7.3 7.4.2 7.4 7.5.0 7.5.1 7.5.2 7.5 7.6.0 7.6.2 7.6 7.7.0 7.7.1 7.7 7.8.1 7.8 7.9.0 7.9.2 7.9.3 7.9 7.10.0 7.11.2 7.11 7.12.0 7.12 7.17.7 7 8.5.1 8.5.3 8.9.2 8.11.3 9.5.5"
 sem_services['postgres']="9.4.26 9.4 9.5.15 9.5.23 9.5 9.6.6 9.6.11 9.6.18 9.6.19 9.6 9 10.0 10.5 10.6 10.7 10.11 10.12 10.13 10.14 10.16 10 11.0 11.2 11.5 11.6 11.7 11.8 11.9 11.11 11 12.1 12.2 12.3 12.4 12.6 12 13.0 13.2 13 14 15.1 15 16 17.2 17.6 17 18.1 18"
 sem_services['rabbitmq']="3.6.16 3.6 3.8.2 3.8.9 3.8.14 3.8 3"
 sem_services['cassandra']="3.11.3 3.11.8 3.11 3"
 sem_services['rethinkdb']="2.3.6 2.3 2.4.1 2.4 2"
-sem_services['postgis']="9.5-2.5 9.5-3.0 9.6-2.5 9.6-3.0 10-2.5 10-3.0 11-2.5 11-3.0 12-2.5 12-3.0 13-3.0 14-3.1 15-3.3 15-3.4 16-3.4 17-3.5"
-sem_services['opensearch']="1.3.9 1 2.6.0 2.7.0 2"
+sem_services['postgis']="9.5-2.5 9.5-3.0 9.6-2.5 9.6-3.0 10-2.5 10-3.0 11-2.5 11-3.0 12-2.5 12-3.0 13-3.0 14-3.1 15-3.3 15-3.4 16-3.4 17-3.5 18-3.6"
+sem_services['opensearch']="1.3.9 1 2.6.0 2.7.0 2 3.5.0 3.7.0 3.8.0"
+sem_services['clickhouse']="26.8"
 
 service::pull_image_retry() {
   counter=1 
@@ -90,9 +91,25 @@ service::start_mysql() {
   shift
   local service_image="${registry_host}/mysql"
 
-  docker_params=( "$@" )
+  # Everything up to a literal '--' are 'docker run' flags; anything after it
+  # is passed as mysqld command-line arguments (docker run OPTIONS IMAGE [ARGS...]).
+  docker_params=()
+  mysqld_args=()
+  local seen_separator=0
+  for arg in "$@"; do
+    if [[ $seen_separator -eq 0 && "$arg" == "--" ]]; then
+      seen_separator=1
+      continue
+    fi
+    if [[ $seen_separator -eq 1 ]]; then
+      mysqld_args+=("$arg")
+    else
+      docker_params+=("$arg")
+    fi
+  done
+
   service::pull_image "$service_image:$service_version"
-  docker_output=$(docker run "${docker_params[@]}" "$service_image":"$service_version")
+  docker_output=$(docker run "${docker_params[@]}" "$service_image":"$service_version" "${mysqld_args[@]}")
   # run only if previous command exited successfully
   docker_status=$(sem-dockerize 3306 mysql)
   if [ "$docker_status" == "0" ]; then
@@ -241,6 +258,7 @@ service::start_elasticsearch() {
 service::start_opensearch() {
   service_version=$1
   local service_image="${registry_host}/opensearch"
+  local major_version="${service_version%%.*}"
 
   docker_cmd=$(echo "$2"|base64 -d )
   service::pull_image "$service_image:$service_version"
@@ -249,7 +267,11 @@ service::start_opensearch() {
   docker_status=$(sem-dockerize 9200 opensearch)
   if [ "$docker_status" == "0" ]; then
     echo "done."
-    echo "Opensearch $service_version is accessible at 0.0.0.0:9200 Username: admin, Password: admin"
+    if [ "$major_version" -ge 3 ] 2>/dev/null; then
+      echo "Opensearch $service_version is accessible at 0.0.0.0:9200 Username: admin, Password: Semaphore123!"
+    else
+      echo "Opensearch $service_version is accessible at 0.0.0.0:9200 Username: admin, Password: admin"
+    fi
   else
     # if not started in 30 seconds print logs and exit
     echo "$docker_output"
@@ -284,6 +306,23 @@ service::start_cassandra() {
   if [ "$docker_status" == "0" ]; then
     echo "done."
     echo "cassandra $service_version is accessible at 0.0.0.0:9042"
+  else
+    # if not started in 30 seconds print logs and exit
+    echo "$docker_output"
+  fi
+}
+
+service::start_clickhouse() {
+  service_version="${1:-26.8}"
+  local service_image="${registry_host}/clickhouse"
+
+  service::pull_image "$service_image:$service_version"
+  docker_output=$(docker run --net=host --rm --name clickhouse -d "$service_image":"$service_version")
+  # run only if previous command exited successfully
+  docker_status=$(sem-dockerize 8123 cclickhouse)
+  if [ "$docker_status" == "0" ]; then
+    echo "done."
+    echo "clickhouse $service_version is accessible at 0.0.0.0:8132 and 0.0.0.0:9000"
   else
     # if not started in 30 seconds print logs and exit
     echo "$docker_output"
@@ -400,6 +439,13 @@ service::start() {
       service_version="${service_version:-2.3}"
       service::check_version 'rethinkdb' "${service_version%% *}"
       service::duration service::start_rethinkdb "${service_version}" total "${service_name}"
+      exit 0
+      ;;
+    "clickhouse" )
+      shift
+      service_version="${service_version:-26.8}"
+      service::check_version 'clickhouse' "${service_version%% *}"
+      service::duration service::start_clickhouse "${service_version}" total "${service_name}"
       exit 0
       ;;
 
@@ -527,6 +573,8 @@ service::print_usage() {
 
   echo "Available services:"
   echo "mysql (default: 5.6), available versions: ${sem_services['mysql']}"
+  echo "  extra 'docker run' flags may be passed before a '--', and mysqld args after it, e.g.:"
+  echo "  sem-service start mysql 8.0 --tmpfs /var/lib/mysql:rw,size=2g -- --innodb-doublewrite=0"
   echo "postgres (default: 9.6), available versions: ${sem_services['postgres']}"
   echo "postgis (default: 9.6-2.5), available versions: ${sem_services['postgis']}"
   echo "redis (default: 4.0), available versions: ${sem_services['redis']}"
@@ -537,6 +585,7 @@ service::print_usage() {
   echo "opensearch (default: 2), available versions: ${sem_services['opensearch']}"
   echo "cassandra (default: 3.11), available versions: ${sem_services['cassandra']}"
   echo "rethinkdb (default: 2.3), available versions: ${sem_services['rethinkdb']}"
+  echo "clickhouse (default: 26.8), available versions: ${sem_services['clickhouse']}"
 }
 
 service::duration() {

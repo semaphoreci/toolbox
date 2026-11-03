@@ -22,10 +22,10 @@ setup() {
   assert_output --partial "3.3.3"
 }
 
-@test "[macOS] sem-version node - 14.16.1 " {
-  run sem-version node 14.16.1
+@test "[macOS] sem-version node - 22 " {
+  run sem-version node 22
   assert_success
-  assert_output --partial "14.16.1"
+  assert_output --partial "22"
   run node --version
   assert_success
 }
