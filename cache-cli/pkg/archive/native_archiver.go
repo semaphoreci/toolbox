@@ -17,23 +17,20 @@ import (
 )
 
 type NativeArchiver struct {
-	MetricsManager   metrics.MetricsManager
-	UseParallelism   bool
-	IgnoreCollisions bool
+	MetricsManager metrics.MetricsManager
+	UseParallelism bool
+	ArchiverOptions
 }
 
 func NewNativeArchiver(metricsManager metrics.MetricsManager, useParallelism bool) *NativeArchiver {
-	return &NativeArchiver{
-		MetricsManager: metricsManager,
-		UseParallelism: useParallelism,
-	}
+	return NewNativeArchiverWithOptions(metricsManager, useParallelism, ArchiverOptions{})
 }
 
 func NewNativeArchiverWithOptions(metricsManager metrics.MetricsManager, useParallelism bool, opts ArchiverOptions) *NativeArchiver {
 	return &NativeArchiver{
-		MetricsManager:   metricsManager,
-		UseParallelism:   useParallelism,
-		IgnoreCollisions: opts.IgnoreCollisions,
+		MetricsManager:  metricsManager,
+		UseParallelism:  useParallelism,
+		ArchiverOptions: opts,
 	}
 }
 
@@ -170,6 +167,13 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 		}
 
 		i++
+
+		if a.IgnoreCollisions && header.Typeflag != tar.TypeDir {
+			if _, err := os.Lstat(header.Name); err == nil {
+				continue
+			}
+		}
+
 		switch header.Typeflag {
 		case tar.TypeDir:
 			mode := header.FileInfo().Mode()
@@ -195,12 +199,9 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 			}
 
 		case tar.TypeSymlink:
-			// If the symlink already exists, either skip it (IgnoreCollisions)
-			// or remove it before recreating (os.Symlink requires no existing file).
+			// we have to remove the symlink first, if it exists.
+			// Otherwise os.Symlink will complain.
 			if _, err := os.Lstat(header.Name); err == nil {
-				if a.IgnoreCollisions {
-					continue
-				}
 				_ = os.Remove(header.Name)
 			}
 
@@ -215,18 +216,6 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 			if err != nil {
 				log.Errorf("Error opening file '%s': %v", header.Name, err)
 				hadError = true
-				continue
-			}
-
-			// nil outFile means the file should be skipped (e.g., IgnoreCollisions is enabled)
-			if outFile == nil {
-				// The tar reader is sequential; we must consume this entry's bytes
-				// before advancing to the next header.
-				// #nosec
-				if _, err := io.Copy(io.Discard, tarReader); err != nil {
-					log.Errorf("Error draining tar entry for '%s' (skipped due to existing file): %v", header.Name, err)
-					hadError = true
-				}
 				continue
 			}
 
@@ -267,9 +256,6 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 	return restorationPath, nil
 }
 
-// openFile attempts to open a file for writing during decompression, or signals
-// that the file should be skipped by returning (nil, nil) when IgnoreCollisions
-// is true and the file already exists.
 func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*os.File, error) {
 	outFile, err := os.OpenFile(header.Name, os.O_RDWR|os.O_CREATE|os.O_EXCL, header.FileInfo().Mode())
 
@@ -279,12 +265,8 @@ func (a *NativeArchiver) openFile(header *tar.Header, tarReader *tar.Reader) (*o
 	}
 
 	// Since we are using O_EXCL, this error could mean that the file already exists.
+	// If that is the case, we attempt to remove it before attempting to open it again.
 	if errors.Is(err, os.ErrExist) {
-		// If IgnoreCollisions is enabled, skip this file silently.
-		if a.IgnoreCollisions {
-			return nil, nil
-		}
-		// Otherwise, attempt to remove it before opening again.
 		if err := os.Remove(header.Name); err != nil {
 			return nil, fmt.Errorf("file '%s' already exists and can't be removed: %v", header.Name, err)
 		}

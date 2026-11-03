@@ -16,19 +16,16 @@ import (
 )
 
 type ShellOutArchiver struct {
-	metricsManager   metrics.MetricsManager
-	ignoreCollisions bool
+	metricsManager metrics.MetricsManager
+	opts           ArchiverOptions
 }
 
 func NewShellOutArchiver(metricsManager metrics.MetricsManager) *ShellOutArchiver {
-	return &ShellOutArchiver{metricsManager: metricsManager}
+	return NewShellOutArchiverWithOptions(metricsManager, ArchiverOptions{})
 }
 
 func NewShellOutArchiverWithOptions(metricsManager metrics.MetricsManager, opts ArchiverOptions) *ShellOutArchiver {
-	return &ShellOutArchiver{
-		metricsManager:   metricsManager,
-		ignoreCollisions: opts.IgnoreCollisions,
-	}
+	return &ShellOutArchiver{metricsManager: metricsManager, opts: opts}
 }
 
 func (a *ShellOutArchiver) Compress(dst, src string) error {
@@ -46,6 +43,11 @@ func (a *ShellOutArchiver) Compress(dst, src string) error {
 }
 
 func (a *ShellOutArchiver) Decompress(src string) (string, error) {
+	// Only GNU tar can skip existing paths without failing or rewriting their metadata.
+	if a.opts.IgnoreCollisions && !isGNUTar() {
+		return NewNativeArchiverWithOptions(a.metricsManager, true, a.opts).Decompress(src)
+	}
+
 	restorationPath, err := a.findRestorationPath(src)
 	if err != nil {
 		if metricErr := a.metricsManager.LogEvent(metrics.CacheEvent{Command: metrics.CommandRestore, Corrupt: true}); metricErr != nil {
@@ -76,51 +78,29 @@ func (a *ShellOutArchiver) compressionCommand(dst, src string) *exec.Cmd {
 	return exec.Command("tar", "czf", dst, src) // #nosec G204 -- command is literal "tar"; dst/src are cache paths, not user-controlled commands
 }
 
-// decompressionCmd builds the tar extraction command.
-// When ignoreCollisions is enabled, GNU tar uses --skip-old-files (silently skips, exit 0),
-// while BSD tar uses -k (skips but may return non-zero on some systems).
 func (a *ShellOutArchiver) decompressionCmd(dst, tempFile string) *exec.Cmd {
+	flags := "xzf"
 	if filepath.IsAbs(dst) {
-		if a.ignoreCollisions {
-			if isGNUTar() {
-				return exec.Command("tar", "xzPf", tempFile, "-C", ".", "--skip-old-files") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
-			}
-			return exec.Command("tar", "xzPf", tempFile, "-C", ".", "-k") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
-		}
-		return exec.Command("tar", "xzPf", tempFile, "-C", ".") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
+		flags = "xzPf"
 	}
 
-	if a.ignoreCollisions {
-		if isGNUTar() {
-			return exec.Command("tar", "xzf", tempFile, "-C", ".", "--skip-old-files") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
-		}
-		return exec.Command("tar", "xzf", tempFile, "-C", ".", "-k") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
+	args := []string{flags, tempFile, "-C", "."}
+	if a.opts.IgnoreCollisions {
+		args = append(args, "--skip-old-files")
 	}
-	return exec.Command("tar", "xzf", tempFile, "-C", ".") // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
+
+	return exec.Command("tar", args...) // #nosec G204 -- command is literal "tar"; tempFile is internal temp path
 }
 
-var (
-	gnuTarOnce   sync.Once
-	gnuTarCached bool
-)
+var isGNUTar = sync.OnceValue(func() bool {
+	output, err := exec.Command("tar", "--version").Output()
+	if err != nil {
+		log.Warnf("Could not determine tar version, assuming non-GNU tar: %v", err)
+		return false
+	}
 
-// isGNUTar returns true if the system tar is GNU tar.
-// GNU tar includes "GNU tar" in its --version output.
-// The result is cached to avoid repeated subprocess calls.
-// If tar --version fails, it defaults to false (assumes BSD tar).
-func isGNUTar() bool {
-	gnuTarOnce.Do(func() {
-		cmd := exec.Command("tar", "--version")
-		output, err := cmd.Output()
-		if err != nil {
-			log.Warnf("Could not determine tar version, assuming BSD tar: %v", err)
-			gnuTarCached = false
-			return
-		}
-		gnuTarCached = strings.Contains(string(output), "GNU tar")
-	})
-	return gnuTarCached
-}
+	return strings.Contains(string(output), "GNU tar")
+})
 
 func (a *ShellOutArchiver) findRestorationPath(src string) (string, error) {
 	// #nosec
