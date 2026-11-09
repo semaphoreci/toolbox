@@ -27,8 +27,17 @@ setup() {
   sed -i $MACOS_EXTRA_ARG "s|AGENT_TYPE|$SEMAPHORE_AGENT_MACHINE_TYPE|g" /tmp/test-results-cli/junit-sample.json
   sed -i $MACOS_EXTRA_ARG "s|OS_IMAGE|$SEMAPHORE_AGENT_MACHINE_OS_IMAGE|g" /tmp/test-results-cli/junit-sample.json
   sed -i $MACOS_EXTRA_ARG "s|GIT_REF_TYPE|$SEMAPHORE_GIT_REF_TYPE|g" /tmp/test-results-cli/junit-sample.json
-  sed -i $MACOS_EXTRA_ARG "s|GIT_BRANCH|$SEMAPHORE_GIT_BRANCH|g" /tmp/test-results-cli/junit-sample.json
-  sed -i $MACOS_EXTRA_ARG "s|GIT_SHA|$SEMAPHORE_GIT_SHA|g" /tmp/test-results-cli/junit-sample.json
+  # Mirrors NewSemEnv in test-results/pkg/parser/types.go: PR builds report the PR head, not the target branch.
+  if [[ "$SEMAPHORE_GIT_REF_TYPE" == "pull-request" ]]; then
+    GIT_REF_NAME=$SEMAPHORE_GIT_PR_BRANCH
+    GIT_REF_SHA=$SEMAPHORE_GIT_PR_SHA
+  else
+    GIT_REF_NAME=$SEMAPHORE_GIT_BRANCH
+    GIT_REF_SHA=$SEMAPHORE_GIT_SHA
+  fi
+
+  sed -i $MACOS_EXTRA_ARG "s|GIT_BRANCH|$GIT_REF_NAME|g" /tmp/test-results-cli/junit-sample.json
+  sed -i $MACOS_EXTRA_ARG "s|GIT_SHA|$GIT_REF_SHA|g" /tmp/test-results-cli/junit-sample.json
 
   cp tests/test-results/junit-summary.json /tmp/test-results-cli/junit-summary.json
 }
