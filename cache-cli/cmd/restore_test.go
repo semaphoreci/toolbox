@@ -61,6 +61,33 @@ func Test__Restore(t *testing.T) {
 			os.Remove(tempDir)
 		})
 
+		t.Run(fmt.Sprintf("%s keeps existing files with --ignore-collisions", backend), func(t *testing.T) {
+			storage.Clear()
+			assert.NoError(t, restoreCmd.Flags().Set("ignore-collisions", "true"))
+			t.Cleanup(func() { _ = restoreCmd.Flags().Set("ignore-collisions", "false") })
+
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
+			tempFile, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile.Close()
+
+			metricsManager := metrics.NewNoOpMetricsManager()
+			archiver := archive.NewShellOutArchiver(metricsManager)
+			compressAndStore(storage, archiver, metricsManager, "abc-001", tempDir)
+
+			localContent := []byte("local content")
+			assert.NoError(t, ioutil.WriteFile(tempFile.Name(), localContent, 0600))
+
+			RunRestore(restoreCmd, []string{"abc-001"})
+			output := readOutputFromFile(t)
+			assert.Contains(t, output, "HIT: 'abc-001', using key 'abc-001'.")
+
+			content, err := ioutil.ReadFile(tempFile.Name())
+			assert.NoError(t, err)
+			assert.Equal(t, localContent, content)
+
+			os.RemoveAll(tempDir)
+		})
+
 		t.Run(fmt.Sprintf("%s normalizes key", backend), func(*testing.T) {
 			storage.Clear()
 
