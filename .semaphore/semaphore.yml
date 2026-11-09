@@ -483,6 +483,7 @@ blocks:
                 - tests/system_metrics_collector.bats
                 - tests/libcheckout_slow_retry.bats
                 - tests/install_toolbox.bats
+                - tests/install_self_hosted_toolbox.bats
           commands:
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
@@ -565,6 +566,7 @@ blocks:
                 - tests/test-results.bats
                 - tests/libcheckout_slow_retry.bats
                 - tests/install_toolbox.bats
+                - tests/install_self_hosted_toolbox.bats
           commands:
             - source release/install_in_tests.sh
             - git submodule init && git submodule update
@@ -713,6 +715,7 @@ blocks:
                 - tests/toolbox_env_var.bats
                 - tests/libcheckout_slow_retry.bats
                 - tests/install_toolbox.bats
+                - tests/install_self_hosted_toolbox.bats
                 - tests/sem_service_mysql.bats
           commands:
             - source release/install_in_tests.sh
