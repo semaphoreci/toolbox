@@ -20,7 +20,9 @@ case $DIST in
 esac
 
 cat << EOF >> ~/.ssh/config
-Host github.com bitbucket.org
+Host bitbucket.org
+  HostName ssh.bitbucket.org
+Host github.com bitbucket.org ssh.bitbucket.org
   StrictHostKeyChecking no
   UserKnownHostsFile=/dev/null
 EOF
