@@ -39,7 +39,12 @@ func RunRestore(cmd *cobra.Command, args []string) {
 	metricsManager, err := metrics.InitMetricsManager(metrics.LocalBackend)
 	utils.Check(err)
 
-	archiver := archive.NewArchiver(metricsManager)
+	ignoreCollisions, err := cmd.Flags().GetBool("ignore-collisions")
+	utils.Check(err)
+
+	archiver := archive.NewArchiverWithOptions(metricsManager, archive.ArchiverOptions{
+		IgnoreCollisions: ignoreCollisions,
+	})
 
 	if len(args) == 0 {
 		lookupResults := files.Lookup(files.LookupOptions{
@@ -165,5 +170,6 @@ func publishMetrics(metricsManager metrics.MetricsManager, fileInfo fs.FileInfo,
 }
 
 func init() {
+	restoreCmd.Flags().Bool("ignore-collisions", false, "Silently ignore file collisions, keeping existing files")
 	RootCmd.AddCommand(restoreCmd)
 }
