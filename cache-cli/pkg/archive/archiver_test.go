@@ -273,7 +273,112 @@ func Test__Compress(t *testing.T) {
 			assert.NoError(t, os.Remove(tempFile.Name()))
 			assert.NoError(t, os.Remove(compressedFileName))
 		})
+
+		skipArchiver := testArchiverTypes[archiverType](metrics.NewNoOpMetricsManager(), ArchiverOptions{IgnoreCollisions: true})
+
+		t.Run(archiverType+" overwrites existing files by default", func(t *testing.T) {
+			cwd, _ := os.Getwd()
+			tempDir, _ := ioutil.TempDir(cwd, "*")
+			assertRestoreOverExistingFile(t, archiver, archiver, tempDir, filepath.Base(tempDir), false)
+		})
+
+		t.Run(archiverType+" skips existing files with ignore collisions using relative paths", func(t *testing.T) {
+			cwd, _ := os.Getwd()
+			tempDir, _ := ioutil.TempDir(cwd, "*")
+			assertRestoreOverExistingFile(t, archiver, skipArchiver, tempDir, filepath.Base(tempDir), true)
+		})
+
+		t.Run(archiverType+" skips existing files with ignore collisions using absolute paths", func(t *testing.T) {
+			tempDir, _ := ioutil.TempDir(os.TempDir(), "*")
+			assertRestoreOverExistingFile(t, archiver, skipArchiver, tempDir, tempDir, true)
+		})
+
+		t.Run(archiverType+" skips existing symlinks with ignore collisions", func(t *testing.T) {
+			cwd, _ := os.Getwd()
+			tempDir, _ := ioutil.TempDir(cwd, "*")
+			tempFile1, _ := ioutil.TempFile(tempDir, "*")
+			_ = tempFile1.Close()
+
+			symlinkName := tempFile1.Name() + "-link"
+			assert.NoError(t, os.Symlink(tempFile1.Name(), symlinkName))
+
+			tempDirBase := filepath.Base(tempDir)
+
+			compressedFileName := tmpFileNameWithPrefix("abc0010")
+			err := archiver.Compress(compressedFileName, tempDirBase)
+			assert.NoError(t, err)
+
+			altTarget := tempFile1.Name() + "-alt"
+			assert.NoError(t, ioutil.WriteFile(altTarget, []byte("alt"), 0600))
+			assert.NoError(t, os.Remove(symlinkName))
+			assert.NoError(t, os.Symlink(altTarget, symlinkName))
+
+			_, err = skipArchiver.Decompress(compressedFileName)
+			assert.NoError(t, err)
+
+			target, err := os.Readlink(symlinkName)
+			assert.NoError(t, err)
+			assert.Equal(t, altTarget, target)
+
+			assert.NoError(t, os.RemoveAll(tempDirBase))
+			assert.NoError(t, os.Remove(compressedFileName))
+		})
 	})
+}
+
+// assertRestoreOverExistingFile archives src, modifies one file and deletes another, then restores.
+// With keepLocal, the modified file's content, mode and mtime must survive; otherwise the cached copy wins.
+func assertRestoreOverExistingFile(t *testing.T, compressor, restorer Archiver, dir, src string, keepLocal bool) {
+	existingFile, _ := ioutil.TempFile(dir, "*")
+	missingFile, _ := ioutil.TempFile(dir, "*")
+
+	cachedContent := []byte("cached content")
+	_, _ = existingFile.Write(cachedContent)
+	_, _ = missingFile.Write(cachedContent)
+	_ = existingFile.Close()
+	_ = missingFile.Close()
+
+	compressedFileName := tmpFileNameWithPrefix("abc0008")
+	assert.NoError(t, compressor.Compress(compressedFileName, src))
+
+	cachedInfo, err := os.Stat(existingFile.Name())
+	assert.NoError(t, err)
+
+	localContent := []byte("local content")
+	localMode := fs.FileMode(0640)
+	localMtime := time.Now().Add(-time.Hour).Truncate(time.Second)
+	assert.NoError(t, ioutil.WriteFile(existingFile.Name(), localContent, 0600))
+	assert.NoError(t, os.Chmod(existingFile.Name(), localMode))
+	assert.NoError(t, os.Chtimes(existingFile.Name(), localMtime, localMtime))
+	assert.NoError(t, os.Remove(missingFile.Name()))
+
+	unpackedAt, err := restorer.Decompress(compressedFileName)
+	assert.NoError(t, err)
+	assert.Equal(t, src+string(os.PathSeparator), unpackedAt)
+
+	wantContent, wantMode, wantMtime := cachedContent, cachedInfo.Mode(), cachedInfo.ModTime()
+	if keepLocal {
+		wantContent, wantMode, wantMtime = localContent, localMode, localMtime
+	}
+
+	content, err := ioutil.ReadFile(existingFile.Name())
+	assert.NoError(t, err)
+	assert.Equal(t, wantContent, content)
+
+	info, err := os.Stat(existingFile.Name())
+	if assert.NoError(t, err) {
+		assert.Equal(t, wantMtime.Unix(), info.ModTime().Unix())
+		if runtime.GOOS != "windows" {
+			assert.Equal(t, wantMode, info.Mode())
+		}
+	}
+
+	content, err = ioutil.ReadFile(missingFile.Name())
+	assert.NoError(t, err)
+	assert.Equal(t, cachedContent, content)
+
+	assert.NoError(t, os.RemoveAll(dir))
+	assert.NoError(t, os.Remove(compressedFileName))
 }
 
 func Test__Decompress(t *testing.T) {
@@ -297,6 +402,30 @@ func Test__Decompress(t *testing.T) {
 			os.Remove(metricsFile)
 		})
 	})
+}
+
+func Test__NewArchiverWithOptions(t *testing.T) {
+	metricsManager := metrics.NewNoOpMetricsManager()
+	opts := ArchiverOptions{IgnoreCollisions: true}
+
+	t.Run("shell-out by default", func(t *testing.T) {
+		t.Setenv("SEMAPHORE_CACHE_ARCHIVE_METHOD", "")
+		a, ok := NewArchiverWithOptions(metricsManager, opts).(*ShellOutArchiver)
+		if assert.True(t, ok) {
+			assert.True(t, a.opts.IgnoreCollisions)
+		}
+	})
+
+	for method, parallel := range map[string]bool{"native": false, "native-parallel": true} {
+		t.Run(method, func(t *testing.T) {
+			t.Setenv("SEMAPHORE_CACHE_ARCHIVE_METHOD", method)
+			a, ok := NewArchiverWithOptions(metricsManager, opts).(*NativeArchiver)
+			if assert.True(t, ok) {
+				assert.True(t, a.IgnoreCollisions)
+				assert.Equal(t, parallel, a.UseParallelism)
+			}
+		})
+	}
 }
 
 func tmpFileNameWithPrefix(prefix string) string {
@@ -341,17 +470,17 @@ func assertCompressAndUnpack(t *testing.T, archiver Archiver, tempDirectory stri
 	assert.NoError(t, os.Remove(compressedFileName))
 }
 
-type archiverInitFn func(metricsManager metrics.MetricsManager) Archiver
+type archiverInitFn func(metricsManager metrics.MetricsManager, opts ArchiverOptions) Archiver
 
 var testArchiverTypes = map[string]archiverInitFn{
-	"shell-out": func(metricsManager metrics.MetricsManager) Archiver {
-		return NewShellOutArchiver(metricsManager)
+	"shell-out": func(metricsManager metrics.MetricsManager, opts ArchiverOptions) Archiver {
+		return NewShellOutArchiverWithOptions(metricsManager, opts)
 	},
-	"native": func(metricsManager metrics.MetricsManager) Archiver {
-		return NewNativeArchiver(metricsManager, false)
+	"native": func(metricsManager metrics.MetricsManager, opts ArchiverOptions) Archiver {
+		return NewNativeArchiverWithOptions(metricsManager, false, opts)
 	},
-	"native-parallel": func(metricsManager metrics.MetricsManager) Archiver {
-		return NewNativeArchiver(metricsManager, true)
+	"native-parallel": func(metricsManager metrics.MetricsManager, opts ArchiverOptions) Archiver {
+		return NewNativeArchiverWithOptions(metricsManager, true, opts)
 	},
 }
 
@@ -364,7 +493,7 @@ func runTestForAllArchiverTypes(t *testing.T, realMetrics bool, test func(string
 			metricsManager = metrics.NewNoOpMetricsManager()
 		}
 
-		archiver := initFn(metricsManager)
+		archiver := initFn(metricsManager, ArchiverOptions{})
 		test(archiverType, archiver)
 	}
 }

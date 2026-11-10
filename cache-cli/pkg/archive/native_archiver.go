@@ -19,12 +19,18 @@ import (
 type NativeArchiver struct {
 	MetricsManager metrics.MetricsManager
 	UseParallelism bool
+	ArchiverOptions
 }
 
 func NewNativeArchiver(metricsManager metrics.MetricsManager, useParallelism bool) *NativeArchiver {
+	return NewNativeArchiverWithOptions(metricsManager, useParallelism, ArchiverOptions{})
+}
+
+func NewNativeArchiverWithOptions(metricsManager metrics.MetricsManager, useParallelism bool, opts ArchiverOptions) *NativeArchiver {
 	return &NativeArchiver{
-		MetricsManager: metricsManager,
-		UseParallelism: useParallelism,
+		MetricsManager:  metricsManager,
+		UseParallelism:  useParallelism,
+		ArchiverOptions: opts,
 	}
 }
 
@@ -161,6 +167,13 @@ func (a *NativeArchiver) Decompress(src string) (string, error) {
 		}
 
 		i++
+
+		if a.IgnoreCollisions && header.Typeflag != tar.TypeDir {
+			if _, err := os.Lstat(header.Name); err == nil {
+				continue
+			}
+		}
+
 		switch header.Typeflag {
 		case tar.TypeDir:
 			mode := header.FileInfo().Mode()
