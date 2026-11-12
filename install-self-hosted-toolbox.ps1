@@ -63,4 +63,22 @@ if ($IsWindows -or $env:OS) {
 Install-PSModule -ModuleLocation $ModulePath -ModuleName 'Checkout'
 Install-BinaryFolder
 
+Write-Output "Routing Bitbucket SSH to ssh.bitbucket.org..."
+$BitbucketSSHMarker = "# Semaphore toolbox: route Bitbucket SSH to ssh.bitbucket.org"
+$SSHDirectory = Join-Path $HOME ".ssh"
+$SSHConfigPath = Join-Path $SSHDirectory "config"
+$SSHConfig = ""
+if (Test-Path $SSHConfigPath) {
+  $SSHConfig = [string](Get-Content -Path $SSHConfigPath -Raw)
+}
+
+if ($SSHConfig.Contains($BitbucketSSHMarker)) {
+  Write-Output "Bitbucket SSH routing is already in $SSHConfigPath"
+} else {
+  if (-not (Test-Path $SSHDirectory)) {
+    New-Item -ItemType Directory -Path $SSHDirectory > $null
+  }
+  Add-Content -Path $SSHConfigPath -Encoding ascii -Value @("", $BitbucketSSHMarker, "Host bitbucket.org", "  HostName ssh.bitbucket.org", "  HostKeyAlias bitbucket.org")
+}
+
 Write-Output "Installation completed successfully."
