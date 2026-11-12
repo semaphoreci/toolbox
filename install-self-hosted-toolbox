@@ -94,4 +94,13 @@ else
   echo "Error installing the sem-context CLI at $INSTALL_PATH/sem-context"
 fi
 
+echo "Routing Bitbucket SSH to ssh.bitbucket.org"
+BITBUCKET_SSH_MARKER="# Semaphore toolbox: route Bitbucket SSH to ssh.bitbucket.org"
+[ -d ~/.ssh ] || mkdir -m 700 ~/.ssh
+if grep -qF "$BITBUCKET_SSH_MARKER" ~/.ssh/config 2>/dev/null; then
+  echo "Bitbucket SSH routing is already in $HOME/.ssh/config"
+else
+  printf '\n%s\nHost bitbucket.org\n  HostName ssh.bitbucket.org\n  HostKeyAlias bitbucket.org\n' "$BITBUCKET_SSH_MARKER" >> ~/.ssh/config
+fi
+
 source ~/.toolbox/toolbox && echo 'source ~/.toolbox/toolbox' >> ~/.bash_profile

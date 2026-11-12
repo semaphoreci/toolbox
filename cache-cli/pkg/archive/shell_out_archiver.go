@@ -45,7 +45,8 @@ func (a *ShellOutArchiver) Compress(dst, src string) error {
 func (a *ShellOutArchiver) Decompress(src string) (string, error) {
 	// Only GNU tar can skip existing paths without failing or rewriting their metadata.
 	if a.opts.IgnoreCollisions && !isGNUTar() {
-		return NewNativeArchiverWithOptions(a.metricsManager, true, a.opts).Decompress(src)
+		restorationPath, err := NewNativeArchiverWithOptions(a.metricsManager, true, a.opts).Decompress(src)
+		return filepath.FromSlash(restorationPath), err
 	}
 
 	restorationPath, err := a.findRestorationPath(src)
