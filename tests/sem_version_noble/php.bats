@@ -50,6 +50,7 @@ setup() {
   assert_line --partial "PHP 8.2.35"
   run php -m
   assert_line --partial "gd"
+  assert_line --partial "sodium"
   assert_line --partial "imap"
   run which composer
   assert_success
@@ -84,6 +85,7 @@ setup() {
   assert_line --partial "PHP 8.4.27"
   run php -m
   assert_line --partial "gd"
+  assert_line --partial "sodium"
   run which composer
   assert_success
   assert_line --partial "8.4.27"
@@ -100,6 +102,7 @@ setup() {
   assert_line --partial "PHP 8.5.12"
   run php -m
   assert_line --partial "gd"
+  assert_line --partial "sodium"
   run which composer
   assert_success
   assert_line --partial "8.5.12"

@@ -140,7 +140,8 @@ install::install_elixir() {
 install::install_php() {
   if [[ $(install::available) -eq 1 ]] ; then
     phpbrew known -u
-    phpbrew -q install -j 4 ${language_version} +default +dbs +openssl -- --with-curl=/usr/local
+    install-package libsodium-dev || install-package --update libsodium-dev
+    phpbrew -q install -j 4 ${language_version} +default +dbs +openssl +sodium -- --with-curl=/usr/local
     phpbrew switch ${language_version}
     echo "date.timezone = UTC" >> ~/.phpbrew/php/php-${language_version}/etc/php.ini
     phpbrew ext install imap -- --with-kerberos --with-imap-ssl
