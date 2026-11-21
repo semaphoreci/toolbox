@@ -35,6 +35,7 @@ func NewStoreCommand() *cobra.Command {
 	`, strings.Join(storage.ValidSortByKeys, ","))
 
 	cmd.Flags().StringP("cleanup-by", "c", storage.SortByStoreTime, description)
+	cmd.Flags().BoolP("force", "f", false, "Replace the key if it already exists.")
 	return cmd
 }
 
@@ -46,6 +47,9 @@ func RunStore(cmd *cobra.Command, args []string) {
 	}
 
 	cleanupBy, err := cmd.Flags().GetString("cleanup-by")
+	utils.Check(err)
+
+	force, err := cmd.Flags().GetBool("force")
 	utils.Check(err)
 
 	storage, err := storage.InitStorageWithConfig(storage.StorageConfig{SortKeysBy: cleanupBy})
@@ -72,19 +76,20 @@ func RunStore(cmd *cobra.Command, args []string) {
 			for _, entry := range lookupResult.Entries {
 				log.Infof("Using default cache path '%s'.", entry.Path)
 				key := entry.Keys[0]
-				compressAndStore(storage, archiver, metricsManager, key, entry.Path)
+				compressAndStore(storage, archiver, metricsManager, key, entry.Path, force)
 			}
 		}
 	} else {
 		path := filepath.FromSlash(args[1])
-		compressAndStore(storage, archiver, metricsManager, args[0], path)
+		compressAndStore(storage, archiver, metricsManager, args[0], path, force)
 	}
 }
 
-func compressAndStore(storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, rawKey, path string) {
+func compressAndStore(storage storage.Storage, archiver archive.Archiver, metricsManager metrics.MetricsManager, rawKey, path string, force bool) {
 	key := NormalizeKey(rawKey)
 	if _, err := os.Stat(path); err == nil {
-		if ok, _ := storage.HasKey(key); ok {
+		exists, _ := storage.HasKey(key)
+		if exists && !force {
 			log.Infof("Key '%s' already exists.", key)
 			return
 		}
@@ -99,6 +104,12 @@ func compressAndStore(storage storage.Storage, archiver archive.Archiver, metric
 		if compressedFileSize > maxSpace {
 			log.Errorf("Archive exceeds allocated %s for cache.", files.HumanReadableSize(maxSpace))
 			return
+		}
+
+		if exists {
+			log.Infof("Key '%s' already exists. Replacing it.", key)
+			err = storage.Delete(key)
+			utils.Check(err)
 		}
 
 		uploadStart := time.Now()
