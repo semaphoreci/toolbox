@@ -64,7 +64,7 @@ function checkout::fetch() {
   echo "Restored cache"
   cd "${HOME}/${SEMAPHORE_GIT_DIR}" || exit
   git remote prune origin
-  retry git fetch --tags origin
+  checkout::git_fetch --tags origin
 
   checkout::switch_revision
 }
@@ -88,7 +88,7 @@ function checkout::reset_to_sha {
 
 function checkout::switch_revision() {
   if [ "${SEMAPHORE_GIT_REF_TYPE:-""}" = "pull-request" ]; then
-    if ! retry git fetch origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null; then
+    if ! checkout::git_fetch origin +"${SEMAPHORE_GIT_REF}":; then
       echo "Reference: ${SEMAPHORE_GIT_REF} not found .... Exiting"
 
       return 1
@@ -191,8 +191,9 @@ function checkout::shallow() {
   echo "Performing shallow clone with depth: $SEMAPHORE_GIT_DEPTH"
 
   if ! checkout::git_clone --depth "${SEMAPHORE_GIT_DEPTH}" -b "${SEMAPHORE_GIT_BRANCH}" "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"; then
+    checkout::branch_missing || return 1
     echo "Branch not found performing full clone"
-    checkout::git_clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+    checkout::git_clone "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}" || return 1
     cd "$SEMAPHORE_GIT_DIR" || exit
 
     if ! checkout::branch_checkout; then
@@ -209,7 +210,7 @@ function checkout::shallow() {
 
     if ! git reset --hard "${SEMAPHORE_GIT_SHA}" 2>/dev/null; then
       echo "SHA: $SEMAPHORE_GIT_SHA not found performing full clone"
-      retry git fetch --unshallow
+      checkout::git_fetch --unshallow
 
       if checkout::checkrevision; then
         git reset --hard "${SEMAPHORE_GIT_SHA}" 2>/dev/null
@@ -232,7 +233,7 @@ function checkout::refbased() {
     cd "${SEMAPHORE_GIT_DIR}" || exit
 
     # Try fetching refs/objects with a depth.
-    if retry git fetch --depth "${SEMAPHORE_GIT_DEPTH}" origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null; then
+    if checkout::git_fetch --depth "${SEMAPHORE_GIT_DEPTH}" origin +"${SEMAPHORE_GIT_REF}":; then
       git checkout -qf FETCH_HEAD
       echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
 
@@ -240,7 +241,7 @@ function checkout::refbased() {
     fi
 
     # Fetch with depth failed, fallback to not using a depth.
-    if retry git fetch origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null; then
+    if checkout::git_fetch origin +"${SEMAPHORE_GIT_REF}":; then
       git checkout -qf FETCH_HEAD
       echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
 
@@ -327,8 +328,8 @@ function checkout::optimized() {
     checkout::configure_sparse
 
     # Try fetching the PR ref with a depth, fallback to no depth.
-    if retry git fetch "${filter_args[@]}" --depth "${SEMAPHORE_GIT_DEPTH}" origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null ||
-      retry git fetch "${filter_args[@]}" origin +"${SEMAPHORE_GIT_REF}": 2>/dev/null; then
+    if checkout::git_fetch "${filter_args[@]}" --depth "${SEMAPHORE_GIT_DEPTH}" origin +"${SEMAPHORE_GIT_REF}": ||
+      checkout::git_fetch "${filter_args[@]}" origin +"${SEMAPHORE_GIT_REF}":; then
       git checkout -qf FETCH_HEAD
       echo "HEAD is now at ${SEMAPHORE_GIT_SHA}"
       checkout::metric "$(du -s . | awk '{ print $1 }')"
@@ -354,8 +355,9 @@ function checkout::optimized() {
 
   # push / branch / noRef
   if ! checkout::git_clone "${filter_args[@]}" --no-checkout --depth "${SEMAPHORE_GIT_DEPTH}" -b "${SEMAPHORE_GIT_BRANCH}" "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"; then
+    checkout::branch_missing || return 1
     echo "Branch not found performing full clone"
-    checkout::git_clone "${filter_args[@]}" --no-checkout "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}"
+    checkout::git_clone "${filter_args[@]}" --no-checkout "${SEMAPHORE_GIT_URL}" "${SEMAPHORE_GIT_DIR}" || return 1
     cd "$SEMAPHORE_GIT_DIR" || exit
     checkout::configure_sparse
 
@@ -376,7 +378,7 @@ function checkout::optimized() {
     # only the sparse paths at the requested SHA.
     if ! git reset --hard "${SEMAPHORE_GIT_SHA}" 2>/dev/null; then
       echo "SHA: $SEMAPHORE_GIT_SHA not found performing full clone"
-      retry git fetch "${filter_args[@]}" --unshallow
+      checkout::git_fetch "${filter_args[@]}" --unshallow
 
       if checkout::checkrevision; then
         git reset --hard "${SEMAPHORE_GIT_SHA}" 2>/dev/null
@@ -398,15 +400,83 @@ function checkout::metric() {
   fi
 }
 
+# === Retrying git without hiding what it said ===
+# A transport hiccup (ssh handshake reset, timeout, early EOF, 5xx from the
+# smart HTTP endpoint) deserves another try after a pause. An answer from the
+# server that says no (missing repository, refused key, unknown branch, missing
+# LFS object) does not: retrying only buries the real message, and the callers
+# then misreport it as "Branch not found". Tunables:
+#   SEMAPHORE_GIT_RETRY_ATTEMPTS  attempts per command (default 5)
+#   SEMAPHORE_GIT_RETRY_BACKOFF   seconds before the 2nd attempt, doubled each
+#                                 time up to 16 s (default 2, 0 = no pause)
+CHECKOUT_GIT_FATAL_PATTERN="${CHECKOUT_GIT_FATAL_PATTERN:-Repository not found|not found in upstream|Could not find remote branch|couldn.t find remote ref|Permission denied|Authentication failed|Could not read Username|could not read Password|access denied|does not appear to be a git repository|correct access rights|Object does not exist on the server|not our ref}"
+CHECKOUT_LAST_ERROR=""
+
+function checkout::git_retry() {
+  local cleanup_dir="$1"
+  shift
+  local attempts="${SEMAPHORE_GIT_RETRY_ATTEMPTS:-5}"
+  local backoff="${SEMAPHORE_GIT_RETRY_BACKOFF:-2}"
+  local err_file attempt status
+  err_file=$(mktemp)
+  CHECKOUT_LAST_ERROR=""
+
+  for attempt in $(seq 1 "${attempts}"); do
+    # stderr is shown live and kept aside; stdout goes straight through fd 3.
+    "$@" 2>&1 1>&3 | tee "${err_file}" >&2
+    status=${PIPESTATUS[0]}
+
+    if [ "${status}" -eq 0 ]; then
+      rm -f "${err_file}"
+      return 0
+    fi
+
+    CHECKOUT_LAST_ERROR="$(cat "${err_file}")"
+
+    if grep -qiE "${CHECKOUT_GIT_FATAL_PATTERN}" "${err_file}"; then
+      echo "[checkout] '$1 $2' failed and retrying would not help: $(checkout::last_error_line)"
+      break
+    fi
+
+    if [ "${attempt}" -lt "${attempts}" ]; then
+      echo "[checkout] '$1 $2' failed (exit ${status}), retrying in ${backoff}s (attempt ${attempt}/${attempts})"
+      [ -n "${cleanup_dir}" ] && rm -rf "${cleanup_dir}"
+      sleep "${backoff}"
+      backoff=$((backoff * 2))
+      [ "${backoff}" -gt 16 ] && backoff=16
+    else
+      echo "[checkout] '$1 $2' failed after ${attempts} attempts: $(checkout::last_error_line)"
+    fi
+  done
+
+  rm -f "${err_file}"
+  return "${status}"
+} 3>&1
+
+function checkout::last_error_line() {
+  echo "${CHECKOUT_LAST_ERROR}" | grep -v '^\s*$' | tail -1
+}
+
+# True when the last clone failed because the requested branch does not exist
+# on the remote, the only case where a full clone has a chance to do better.
+function checkout::branch_missing() {
+  [[ "${CHECKOUT_LAST_ERROR}" =~ (not found in upstream|Could not find remote branch) ]]
+}
+
+function checkout::git_fetch() {
+  checkout::git_retry "" git fetch "$@"
+}
+
 # === Slow clone detection and resilient retry ===
 # Enabled via SEMAPHORE_GIT_CLONE_SLOW_RETRY=true
-# When disabled (default), checkout::git_clone delegates to `retry git clone`
+# When disabled (default), checkout::git_clone retries the clone itself,
+# wiping the target directory between attempts.
 
 function checkout::git_clone() {
   if [ "${SEMAPHORE_GIT_CLONE_SLOW_RETRY:-false}" = "true" ]; then
     checkout::resilient_clone "$@"
   else
-    retry git clone "$@"
+    checkout::git_retry "${SEMAPHORE_GIT_DIR}" git clone "$@"
   fi
 }
 
@@ -593,6 +663,10 @@ export -f checkout
 export -f checkout::optimized
 export -f checkout::configure_sparse
 export -f checkout::supports_optimized
+export -f checkout::git_retry
+export -f checkout::last_error_line
+export -f checkout::branch_missing
+export -f checkout::git_fetch
 export -f checkout::git_clone
 export -f checkout::resilient_clone
 export -f checkout::clone_with_speed_check
