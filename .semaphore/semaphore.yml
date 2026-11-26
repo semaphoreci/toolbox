@@ -587,7 +587,7 @@ blocks:
           os_image: ubuntu2204
         containers:
           - name: main
-            image: "semaphoreci/alpine:3.9"
+            image: "registry.semaphoreci.com/alpine-ci:3.24"
       prologue:
         commands:
           - checkout
